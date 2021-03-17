@@ -240,8 +240,6 @@ end
 
 return {
 	expand_or_jump = expand_or_jump,
-	next_with_text = next_with_text,
-	has_static_text = has_static_text,
-	get_active_snip = get_active_snip,
-	dump_active = dump_active
+	jump = jump,
+	snippets = snippets
 }
