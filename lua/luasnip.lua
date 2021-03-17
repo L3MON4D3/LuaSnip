@@ -219,15 +219,15 @@ end
 
 -- return true and expand snippet if expandable, return false if not.
 local function expand_or_jump()
-	if active_snippet ~= nil then
-		jump(1)
-		return true
-	end
 	local line = get_current_line_to_cursor()
 	local snip = match_snippet(line)
 	if snip ~= nil then
 		indent(snip, line)
 		expand(snip)
+		return true
+	end
+	if active_snippet ~= nil then
+		jump(1)
 		return true
 	end
 	return false
