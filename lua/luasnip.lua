@@ -111,6 +111,10 @@ local function enter_node(snip, node_id)
 end
 
 local function exit_snip()
+	for i, node in ipairs(active_snippet.nodes) do
+		vim.api.nvim_buf_del_extmark(0, ns_id, node.from)
+		vim.api.nvim_buf_del_extmark(0, ns_id, node.to)
+	end
 	active_snippet = nil
 end
 
