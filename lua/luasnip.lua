@@ -115,7 +115,7 @@ local function exit_snip()
 		vim.api.nvim_buf_del_extmark(0, ns_id, node.from)
 		vim.api.nvim_buf_del_extmark(0, ns_id, node.to)
 	end
-	active_snippet = nil
+	active_snippet = active_snippet.parent
 end
 
 -- jump(-1) on first insert would jump to end of snippet (0-insert).
@@ -169,6 +169,7 @@ local function dump_active()
 end
 
 local function expand(snip)
+	snip.parent = active_snippet
 	active_snippet = snip
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
