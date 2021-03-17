@@ -57,7 +57,6 @@ end
 local function set_cursor_0ind(c)
 	c[1] = c[1] + 1
 	vim.api.nvim_win_set_cursor(0, c)
-	return c
 end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
