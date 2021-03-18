@@ -206,11 +206,6 @@ local function expand(snip)
 	snip.parent = active_snippet
 	active_snippet = snip
 
-	-- remove snippet-trigger, Cursor at start of future snippet text.
-	local triglen = #snip.trigger;
-	remove_n_before_cur(triglen)
-
-
 	-- i needed for functions.
 	for i, node in ipairs(snip.nodes) do
 		-- save cursor position for later.
@@ -278,6 +273,10 @@ local function expand_or_jump()
 	local snip = match_snippet(line)
 	if snip ~= nil then
 		indent(snip, line)
+
+		-- remove snippet-trigger, Cursor at start of future snippet text.
+		remove_n_before_cur(#snip.trigger)
+
 		expand(snip)
 		return true
 	end
