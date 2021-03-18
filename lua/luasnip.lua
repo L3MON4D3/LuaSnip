@@ -3,6 +3,8 @@ local ns_id = vim.api.nvim_create_namespace("luasnip")
 
 local function get_active_snip() return active_snippet end
 
+local function copy(args) return {args[1][1]} end
+
 local snippets = {
 	{
 		trigger = "fn",
@@ -22,12 +24,22 @@ local snippets = {
 			},
 			{
 				type = 1,
-				static_text = {""},
+				static_text = {"lel"},
 				pos = 2,
 			},
 			{
 				type = 0,
-				static_text = {") {","\t"},
+				static_text = {")"}
+			},
+			{
+				type = 2,
+				fn = copy,
+				args = {2},
+				static_text = {""}
+			},
+			{
+				type = 0,
+				static_text = {" {","\t"},
 			},
 			{
 				type = 1,
@@ -102,6 +114,33 @@ local function enter_node(snip, node_id)
 	end
 end
 
+-- returns text in a node, eg. {"from_line1", "line2", to_line3}
+local function get_text(node)
+	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {})
+	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {})
+
+	-- end-exclusive indexing.
+	local lines = vim.api.nvim_buf_get_lines(0, node_from[1], node_to[1]+1, false)
+
+	if #lines == 1 then
+		lines[1] = string.sub(lines[1], node_from[2]+1, node_to[2])
+	else
+		lines[1] = string.sub(lines[1], node_from[2]+1, #lines[1])
+
+		-- node-range is end-exclusive.
+		lines[#lines] = string.sub(lines[#lines], 1, node_to[2])
+	end
+	return lines
+end
+
+local function set_text(snip, node, text)
+	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {})
+	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {})
+
+	enter_node(snip, node.indx)
+	vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
+end
+
 local function exit_snip()
 	for i, node in ipairs(active_snippet.nodes) do
 		vim.api.nvim_buf_del_extmark(0, ns_id, node.from)
@@ -110,11 +149,26 @@ local function exit_snip()
 	active_snippet = active_snippet.parent
 end
 
+local function make_args(snip, arglist)
+	local args = {}
+	for i, ins_id in ipairs(arglist) do
+		args[i] = get_text(snip.insert_nodes[ins_id])
+	end
+	return args
+end
+
+local function update_fn_text(snip, node)
+	set_text(snip, node, node.fn(make_args(snip, node.args)))
+end
 -- jump(-1) on first insert would jump to end of snippet (0-insert).
 local function jump(direction)
 	local snip = active_snippet
 	if snip == nil then
 		return false
+	end
+	-- update text in dependents on leaving node.
+	for _, node in ipairs(snip.insert_nodes[snip.current_insert].dependents) do
+		update_fn_text(snip, node)
 	end
 	local tmp = snip.current_insert + direction
 	-- Would jump to invalid node?
@@ -168,6 +222,7 @@ local function expand(snip)
 	local triglen = #snip.trigger;
 	remove_n_before_cur(triglen)
 
+
 	-- i needed for functions.
 	for i, node in ipairs(snip.nodes) do
 		-- save cursor position for later.
@@ -193,6 +248,16 @@ local function expand(snip)
 		end
 		-- do here as long as snippets need to be defined manually
 		node.indx = i
+	end
+
+	for _, node in ipairs(snip.nodes) do
+		if node.type == 2 then
+			update_fn_text(snip, node)
+			-- append node to dependents-table of args.
+			for _, arg in ipairs(node.args) do
+				snip.insert_nodes[arg].dependents[#snip.insert_nodes[arg].dependents+1] = node
+			end
+		end
 	end
 
 	-- Jump to first insert.
