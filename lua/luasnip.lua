@@ -207,6 +207,9 @@ function Snippet:expand()
 	self.parent = active_snippet
 	active_snippet = self
 
+	-- Snippet is node, needs from and to.
+	local cur = get_cursor_0ind()
+	self.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do
 		-- save cursor position for later.
@@ -233,6 +236,9 @@ function Snippet:expand()
 		-- do here as long as snippets need to be defined manually
 		node.indx = i
 	end
+
+	local cur = get_cursor_0ind()
+	self.to = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 then
