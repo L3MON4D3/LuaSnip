@@ -18,6 +18,7 @@ end
 TextNode = Node:new()
 InsertNode = Node:new()
 FunctionNode = Node:new()
+Snippet = Node:new()
 
 function t(static_text)
 	return TextNode:new{static_text = static_text, type = 0}
@@ -31,23 +32,22 @@ function f(fn, args)
 	return FunctionNode:new{fn = fn, args = args, type = 2}
 end
 
+function s(trigger, nodes)
+	return Snippet:new{trigger = trigger, nodes = nodes, insert_nodes = {}, current_insert = 0}
+end
+
 local snippets = {
-	{
-		trigger = "fn",
-		nodes = {
-			t({"function "}),
-			i(1),
-			t({"("}),
-			i(2, {"lel"}),
-			t({")"}),
-			f(copy, {2}),
-			t({" {","\t"}),
-			i(0),
-			t({"", "}"})
-		},
-		insert_nodes = {},
-		current_insert = 0,
-	}
+	s("fn", {
+		t({"function "}),
+		i(1),
+		t({"("}),
+		i(2, {"lel"}),
+		t({")"}),
+		f(copy, {2}),
+		t({" {","\t"}),
+		i(0),
+		t({"", "}"})
+	})
 }
 
 local function get_cursor_0ind()
@@ -71,6 +71,7 @@ local function match_snippet(line)
 			for i, n in ipairs(snip.nodes) do
 				setmetatable(o.nodes[i], getmetatable(n))
 			end
+			setmetatable(o, getmetatable(snip))
 			return o
 		end
 	end
@@ -98,16 +99,16 @@ function Node:set_to_rgrav(val)
 	self.to = vim.api.nvim_buf_set_extmark(0, ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
-local function enter_node(snip, node_id)
+function Snippet:enter_node(node_id)
 	for i = 1, node_id-1, 1 do
-		snip.nodes[i]:set_from_rgrav(false)
-		snip.nodes[i]:set_to_rgrav(false)
+		self.nodes[i]:set_from_rgrav(false)
+		self.nodes[i]:set_to_rgrav(false)
 	end
-	snip.nodes[node_id]:set_from_rgrav(false)
-	snip.nodes[node_id]:set_to_rgrav(true)
-	for i = node_id+1, #snip.nodes, 1 do
-		snip.nodes[i]:set_from_rgrav(true)
-		snip.nodes[i]:set_to_rgrav(true)
+	self.nodes[node_id]:set_from_rgrav(false)
+	self.nodes[node_id]:set_to_rgrav(true)
+	for i = node_id+1, #self.nodes, 1 do
+		self.nodes[i]:set_from_rgrav(true)
+		self.nodes[i]:set_to_rgrav(true)
 	end
 end
 
@@ -129,32 +130,32 @@ function Node:get_text()
 	return lines
 end
 
-local function set_text(snip, node, text)
+function Snippet:set_text(node, text)
 	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {})
 	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {})
 
-	enter_node(snip, node.indx)
+	self:enter_node(node.indx)
 	vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
 end
 
-local function exit_snip()
-	for _, node in ipairs(active_snippet.nodes) do
+function Snippet:exit()
+	for _, node in ipairs(self.nodes) do
 		vim.api.nvim_buf_del_extmark(0, ns_id, node.from)
 		vim.api.nvim_buf_del_extmark(0, ns_id, node.to)
 	end
-	active_snippet = active_snippet.parent
+	return self.parent
 end
 
-local function make_args(snip, arglist)
+function Snippet:make_args(arglist)
 	local args = {}
 	for i, ins_id in ipairs(arglist) do
-		args[i] = snip.insert_nodes[ins_id]:get_text()
+		args[i] = self.insert_nodes[ins_id]:get_text()
 	end
 	return args
 end
 
-local function update_fn_text(snip, node)
-	set_text(snip, node, node.fn(make_args(snip, node.args)))
+function Snippet:update_fn_text(node)
+	self:set_text(node, node.fn(self:make_args(node.args)))
 end
 
 -- jump(-1) on first insert would jump to end of snippet (0-insert).
@@ -165,7 +166,7 @@ local function jump(direction)
 	end
 	-- update text in dependents on leaving node.
 	for _, node in ipairs(snip.insert_nodes[snip.current_insert].dependents) do
-		update_fn_text(snip, node)
+		snip:update_fn_text(node)
 	end
 	local tmp = snip.current_insert + direction
 	-- Would jump to invalid node?
@@ -175,11 +176,11 @@ local function jump(direction)
 		snip.current_insert = tmp
 	end
 
-	enter_node(snip, snip.insert_nodes[snip.current_insert].indx)
+	snip:enter_node(snip.insert_nodes[snip.current_insert].indx)
 
 	move_to_mark(snip.insert_nodes[snip.current_insert].from)
 	if snip.current_insert == 0 then
-		exit_snip()
+		active_snippet = active_snippet:exit()
 	end
 	return true
 end
@@ -202,12 +203,12 @@ local function dump_active()
 	end
 end
 
-local function expand(snip)
-	snip.parent = active_snippet
-	active_snippet = snip
+function Snippet:expand()
+	self.parent = active_snippet
+	active_snippet = self
 
 	-- i needed for functions.
-	for i, node in ipairs(snip.nodes) do
+	for i, node in ipairs(self.nodes) do
 		-- save cursor position for later.
 		local cur = get_cursor_0ind()
 
@@ -225,7 +226,7 @@ local function expand(snip)
 		node.to = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 
 		if node.type == 1 then
-			snip.insert_nodes[node.pos] = node
+			self.insert_nodes[node.pos] = node
 			-- do here as long as snippets need to be defined manually
 			node.dependents = {}
 		end
@@ -233,12 +234,12 @@ local function expand(snip)
 		node.indx = i
 	end
 
-	for _, node in ipairs(snip.nodes) do
+	for _, node in ipairs(self.nodes) do
 		if node.type == 2 then
-			update_fn_text(snip, node)
+			self:update_fn_text(node)
 			-- append node to dependents-table of args.
 			for _, arg in ipairs(node.args) do
-				snip.insert_nodes[arg].dependents[#snip.insert_nodes[arg].dependents+1] = node
+				self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents+1] = node
 			end
 		end
 	end
@@ -255,9 +256,9 @@ local function get_current_line_to_cursor()
 	return string.sub(line[1], 1, cur[2])
 end
 
-local function indent(snip, line)
+function Snippet:indent(line)
 	local prefix = string.match(line, '^%s*')
-	for _, node in ipairs(snip.nodes) do
+	for _, node in ipairs(self.nodes) do
 		-- put prefix behind newlines.
 		if node.static_text then
 			for i = 2, #node.static_text do
@@ -272,12 +273,12 @@ local function expand_or_jump()
 	local line = get_current_line_to_cursor()
 	local snip = match_snippet(line)
 	if snip ~= nil then
-		indent(snip, line)
+		snip:indent(line)
 
 		-- remove snippet-trigger, Cursor at start of future snippet text.
 		remove_n_before_cur(#snip.trigger)
 
-		expand(snip)
+		snip:expand()
 		return true
 	end
 	if active_snippet ~= nil then
