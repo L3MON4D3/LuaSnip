@@ -15,7 +15,6 @@ local snippets = {
 				type = 1,
 				static_text = {""},
 				pos = 1,
-				dependents = {}
 			},
 			{
 				type = 0,
@@ -25,7 +24,6 @@ local snippets = {
 				type = 1,
 				static_text = {""},
 				pos = 2,
-				dependents = {}
 			},
 			{
 				type = 0,
@@ -35,7 +33,6 @@ local snippets = {
 				type = 1,
 				static_text = {""},
 				pos = 0,
-				dependents = {}
 			},
 			{
 				type = 0,
@@ -195,7 +192,10 @@ local function expand(snip)
 
 		if node.type == 1 then
 			snip.insert_nodes[node.pos] = node
+			-- do here as long as snippets need to be defined manually
+			node.dependents = {}
 		end
+		-- do here as long as snippets need to be defined manually
 		node.indx = i
 	end
 
