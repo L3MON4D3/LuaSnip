@@ -142,7 +142,7 @@ local function set_text(snip, node, text)
 end
 
 local function exit_snip()
-	for i, node in ipairs(active_snippet.nodes) do
+	for _, node in ipairs(active_snippet.nodes) do
 		vim.api.nvim_buf_del_extmark(0, ns_id, node.from)
 		vim.api.nvim_buf_del_extmark(0, ns_id, node.to)
 	end
@@ -160,6 +160,7 @@ end
 local function update_fn_text(snip, node)
 	set_text(snip, node, node.fn(make_args(snip, node.args)))
 end
+
 -- jump(-1) on first insert would jump to end of snippet (0-insert).
 local function jump(direction)
 	local snip = active_snippet
@@ -193,15 +194,6 @@ local function remove_n_before_cur(n)
 	vim.api.nvim_buf_set_text(0, cur[1], cur[2]-n, cur[1], cur[2], {""})
 	cur[2] = cur[2]-n
 	set_cursor_0ind(cur)
-end
-
-local function next_with_text(snip, node_ind)
-	for i = node_ind + 1, #snip.nodes do
-		if has_static_text(snip.nodes[i]) then
-			return i
-		end
-	end
-	return nil
 end
 
 local function dump_active()
@@ -301,5 +293,7 @@ end
 return {
 	expand_or_jump = expand_or_jump,
 	jump = jump,
-	snippets = snippets
+	snippets = snippets,
+	get_active_snip = get_active_snip,
+	dump_active = dump_active
 }
