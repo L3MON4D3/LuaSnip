@@ -99,16 +99,36 @@ function Node:set_to_rgrav(val)
 	self.to = vim.api.nvim_buf_set_extmark(0, ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
+local function mark_pos_equal(m1, m2)
+	p1 = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, m1, {})
+	p2 = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, m2, {})
+	return p1[1] == p2[1] and p1[2] == p2[2]
+end
+
+-- todo: impl exit_node
 function Snippet:enter_node(node_id)
-	for i = 1, node_id-1, 1 do
-		self.nodes[i]:set_from_rgrav(false)
-		self.nodes[i]:set_to_rgrav(false)
+	node = self.nodes[node_id]
+	for i=1, #self.nodes, 1 do
+		other = self.nodes[i]
+		if other.type > 0 then
+			if mark_pos_equal(other.to, node.from) then
+				other:set_to_rgrav(false)
+			else
+				other:set_to_rgrav(true)
+			end
+		end
 	end
-	self.nodes[node_id]:set_from_rgrav(false)
-	self.nodes[node_id]:set_to_rgrav(true)
+	node:set_from_rgrav(false)
+	node:set_to_rgrav(true)
 	for i = node_id+1, #self.nodes, 1 do
-		self.nodes[i]:set_from_rgrav(true)
-		self.nodes[i]:set_to_rgrav(true)
+		other = self.nodes[i]
+		if self.nodes[i].type > 0 then
+			if mark_pos_equal(node.to, other.from) then
+				other:set_from_rgrav(true)
+			else
+				other:set_from_rgrav(false)
+			end
+		end
 	end
 end
 
@@ -215,13 +235,19 @@ function Snippet:expand()
 		-- save cursor position for later.
 		local cur = get_cursor_0ind()
 
-		-- place extmark directly on previously saved position (first char
-		-- of inserted text) after putting text.
-		node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
+		-- Gravities are set 'pointing inwards' for static text, any text inserted on the border to a insert belongs
+		-- to the insert.
 
 		if node:has_static_text() then
 			-- leaves cursor behind last char of inserted text.
 			vim.api.nvim_put(node.static_text, "c", false, true);
+
+			-- place extmark directly on previously saved position (first char
+			-- of inserted text) after putting text.
+			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {})
+		else
+			-- zero-length; important that text put after doesn't move marker.
+			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 		end
 
 		cur = get_cursor_0ind()
@@ -300,5 +326,7 @@ return {
 	snippets = snippets,
 	i = i,
 	t = t,
-	f = f
+	f = f,
+	dump_active = dump_active,
+	get_active_snip = get_active_snip
 }
