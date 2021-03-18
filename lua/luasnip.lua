@@ -5,55 +5,48 @@ local function get_active_snip() return active_snippet end
 
 local function copy(args) return {args[1][1]} end
 
+Node = {}
+
+function Node:new(o)
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	return o
+end
+
+
+TextNode = Node:new()
+InsertNode = Node:new()
+FunctionNode = Node:new()
+
+function t(static_text)
+	return TextNode:new{static_text = static_text, type = 0}
+end
+
+function i(pos, static_text)
+	return InsertNode:new{pos = pos, static_text = static_text, dependents = {}, type = 1}
+end
+
+function f(fn, args)
+	return FunctionNode:new{fn = fn, args = args, type = 2}
+end
+
 local snippets = {
 	{
 		trigger = "fn",
 		nodes = {
-			{
-				type = 0,
-				static_text = {"function "},
-			},
-			{
-				type = 1,
-				static_text = {""},
-				pos = 1,
-			},
-			{
-				type = 0,
-				static_text = {"("},
-			},
-			{
-				type = 1,
-				static_text = {"lel"},
-				pos = 2,
-			},
-			{
-				type = 0,
-				static_text = {")"}
-			},
-			{
-				type = 2,
-				fn = copy,
-				args = {2},
-				static_text = {""}
-			},
-			{
-				type = 0,
-				static_text = {" {","\t"},
-			},
-			{
-				type = 1,
-				static_text = {""},
-				pos = 0,
-			},
-			{
-				type = 0,
-				static_text = {"", "}"}
-			},
+			t({"function "}),
+			i(1),
+			t({"("}),
+			i(2, {"lel"}),
+			t({")"}),
+			f(copy, {2}),
+			t({" {","\t"}),
+			i(0),
+			t({"", "}"})
 		},
 		insert_nodes = {},
 		current_insert = 0,
-		parent = nil
 	}
 }
 
@@ -74,14 +67,18 @@ local function match_snippet(line)
 		local snip = snippets[i]
 		-- if line ends with trigger
 		if string.sub(line, #line - #snip.trigger + 1, #line) == snip.trigger then
-			return vim.deepcopy(snip)
+			o = vim.deepcopy(snip)
+			for i, n in ipairs(snip.nodes) do
+				setmetatable(o.nodes[i], getmetatable(n))
+			end
+			return o
 		end
 	end
 	return nil
 end
 
 local function has_static_text(node)
-	return not (node.static_text[1] == "" and #node.static_text == 1)
+	return node.static_text and not (node.static_text[1] == "" and #node.static_text == 1)
 end
 
 local function move_to_mark(id)
@@ -114,21 +111,20 @@ local function enter_node(snip, node_id)
 	end
 end
 
--- returns text in a node, eg. {"from_line1", "line2", to_line3}
-local function get_text(node)
-	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {})
-	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {})
+function Node:get_text()
+	local from = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, self.from, {})
+	local to = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, self.to, {})
 
 	-- end-exclusive indexing.
-	local lines = vim.api.nvim_buf_get_lines(0, node_from[1], node_to[1]+1, false)
+	local lines = vim.api.nvim_buf_get_lines(0, from[1], to[1]+1, false)
 
 	if #lines == 1 then
-		lines[1] = string.sub(lines[1], node_from[2]+1, node_to[2])
+		lines[1] = string.sub(lines[1], from[2]+1, to[2])
 	else
-		lines[1] = string.sub(lines[1], node_from[2]+1, #lines[1])
+		lines[1] = string.sub(lines[1], from[2]+1, #lines[1])
 
 		-- node-range is end-exclusive.
-		lines[#lines] = string.sub(lines[#lines], 1, node_to[2])
+		lines[#lines] = string.sub(lines[#lines], 1, to[2])
 	end
 	return lines
 end
@@ -152,7 +148,7 @@ end
 local function make_args(snip, arglist)
 	local args = {}
 	for i, ins_id in ipairs(arglist) do
-		args[i] = get_text(snip.insert_nodes[ins_id])
+		args[i] = snip.insert_nodes[ins_id]:get_text()
 	end
 	return args
 end
@@ -224,7 +220,7 @@ local function expand(snip)
 		-- of inserted text) after putting text.
 		node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 
-		if has_static_text(node) then
+		if node:has_static_text() then
 			-- leaves cursor behind last char of inserted text.
 			vim.api.nvim_put(node.static_text, "c", false, true);
 		end
@@ -268,8 +264,10 @@ local function indent(snip, line)
 	local prefix = string.match(line, '^%s*')
 	for _, node in ipairs(snip.nodes) do
 		-- put prefix behind newlines.
-		for i = 2, #node.static_text do
-			node.static_text[i] = prefix .. node.static_text[i]
+		if node.static_text then
+			for i = 2, #node.static_text do
+				node.static_text[i] = prefix .. node.static_text[i]
+			end
 		end
 	end
 end
@@ -294,6 +292,7 @@ return {
 	expand_or_jump = expand_or_jump,
 	jump = jump,
 	snippets = snippets,
-	get_active_snip = get_active_snip,
-	dump_active = dump_active
+	i = i,
+	t = t,
+	f = f
 }
