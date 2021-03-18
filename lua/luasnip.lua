@@ -77,8 +77,8 @@ local function match_snippet(line)
 	return nil
 end
 
-local function has_static_text(node)
-	return node.static_text and not (node.static_text[1] == "" and #node.static_text == 1)
+function Node:has_static_text()
+	return self.static_text and not (self.static_text[1] == "" and #self.static_text == 1)
 end
 
 local function move_to_mark(id)
@@ -88,26 +88,26 @@ local function move_to_mark(id)
 	set_cursor_0ind(new_cur_pos)
 end
 
-local function set_from_rgrav(node, val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {})
-	node.from = vim.api.nvim_buf_set_extmark(0, ns_id, pos[1], pos[2], {right_gravity = val})
+function Node:set_from_rgrav(val)
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, self.from, {})
+	self.from = vim.api.nvim_buf_set_extmark(0, ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
-local function set_to_rgrav(node, val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {})
-	node.to = vim.api.nvim_buf_set_extmark(0, ns_id, pos[1], pos[2], {right_gravity = val})
+function Node:set_to_rgrav(val)
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, self.to, {})
+	self.to = vim.api.nvim_buf_set_extmark(0, ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
 local function enter_node(snip, node_id)
 	for i = 1, node_id-1, 1 do
-		set_from_rgrav(snip.nodes[i], false)
-		set_to_rgrav(snip.nodes[i], false)
+		snip.nodes[i]:set_from_rgrav(false)
+		snip.nodes[i]:set_to_rgrav(false)
 	end
-	set_from_rgrav(snip.nodes[node_id], false)
-	set_to_rgrav(snip.nodes[node_id], true)
+	snip.nodes[node_id]:set_from_rgrav(false)
+	snip.nodes[node_id]:set_to_rgrav(true)
 	for i = node_id+1, #snip.nodes, 1 do
-		set_from_rgrav(snip.nodes[i], true)
-		set_to_rgrav(snip.nodes[i], true)
+		snip.nodes[i]:set_from_rgrav(true)
+		snip.nodes[i]:set_to_rgrav(true)
 	end
 end
 
