@@ -106,19 +106,14 @@ end
 
 local function enter_node(snip, node_id)
 	for i = 1, node_id-1, 1 do
-		-- node is function or insert
-		if snip.nodes[i].type > 0 then
-			set_from_rgrav(snip.nodes[i], false)
-			set_to_rgrav(snip.nodes[i], false)
-		end
+		set_from_rgrav(snip.nodes[i], false)
+		set_to_rgrav(snip.nodes[i], false)
 	end
 	set_from_rgrav(snip.nodes[node_id], false)
 	set_to_rgrav(snip.nodes[node_id], true)
 	for i = node_id+1, #snip.nodes, 1 do
-		if snip.nodes[i].type > 0 then
-			set_from_rgrav(snip.nodes[i], true)
-			set_to_rgrav(snip.nodes[i], true)
-		end
+		set_from_rgrav(snip.nodes[i], true)
+		set_to_rgrav(snip.nodes[i], true)
 	end
 end
 
