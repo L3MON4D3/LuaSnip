@@ -160,7 +160,7 @@ local function make_args(snip, arglist)
 	return args
 end
 
-local function update_fn_text(snip, node) 
+local function update_fn_text(snip, node)
 	set_text(snip, node, node.fn(make_args(snip, node.args)))
 end
 -- jump(-1) on first insert would jump to end of snippet (0-insert).
@@ -255,7 +255,7 @@ local function expand(snip)
 			update_fn_text(snip, node)
 			-- append node to dependents-table of args.
 			for _, arg in ipairs(node.args) do
-				snip.insert_nodes[arg].dependents[#snip.insert_nodes[arg].dependents] = node
+				snip.insert_nodes[arg].dependents[#snip.insert_nodes[arg].dependents+1] = node
 			end
 		end
 	end
