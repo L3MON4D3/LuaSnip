@@ -47,6 +47,8 @@ function Snippet:enter_node(node_id)
 			end
 		end
 	end
+
+	util.move_to_mark(node.from)
 end
 
 function Snippet:set_text(node, text)
@@ -156,8 +158,6 @@ function Snippet:jump(direction)
 	end
 
 	self:enter_node(self.insert_nodes[self.current_insert].indx)
-
-	util.move_to_mark(self.insert_nodes[self.current_insert].from)
 	if self.current_insert == 0 then
 		self:exit()
 		return true
