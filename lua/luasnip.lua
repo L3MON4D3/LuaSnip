@@ -14,7 +14,7 @@ local function match_snippet(line)
 		local snip = ls.snippets[i]
 		-- if line ends with trigger
 		if string.sub(line, #line - #snip.trigger + 1, #line) == snip.trigger then
-			if snip.condition() then
+			if snip.condition(unpack(snip.user_args)) then
 				local o = vim.deepcopy(snip)
 				for j, n in ipairs(snip.nodes) do
 					setmetatable(o.nodes[j], getmetatable(n))
