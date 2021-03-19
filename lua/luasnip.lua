@@ -3,7 +3,7 @@ local ns_id = vim.api.nvim_create_namespace("luasnip")
 
 local function get_active_snip() return active_snippet end
 
-local function copy(args) return {args[1][1]} end
+local function copy(args) return args[1] end
 
 Node = {}
 
