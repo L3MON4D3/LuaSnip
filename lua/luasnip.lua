@@ -1,32 +1,17 @@
-require'node'
-require'snippet'
-require'util'
+local node_mod = require'node'
+local snip_mod = require'snippet'
+local util = require'util'
 
-Active_snippet = nil
+local active_snippet = nil
+local next_expand = nil
 Ns_id = vim.api.nvim_create_namespace("luasnip")
 
-function Get_active_snip() return Active_snippet end
-
-local function copy(args) return args[1] end
-
-local snippets = {
-	S("fn", {
-		T({"function "}),
-		I(1),
-		T({"("}),
-		I(2, {"lel", ""}),
-		T({")"}),
-		F(copy, {2}),
-		T({" {","\t"}),
-		I(0),
-		T({"", "}"})
-	})
-}
+local function get_active_snip() return active_snippet end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
 local function match_snippet(line)
-	for i = 1, #snippets do
-		local snip = snippets[i]
+	for i = 1, #ls.snippets do
+		local snip = ls.snippets[i]
 		-- if line ends with trigger
 		if string.sub(line, #line - #snip.trigger + 1, #line) == snip.trigger then
 			local o = vim.deepcopy(snip)
@@ -41,41 +26,52 @@ local function match_snippet(line)
 end
 
 local function jump(dir)
-	if Active_snippet ~= nil then
-		local exit = Active_snippet:jump(dir)
+	if active_snippet ~= nil then
+		local exit = active_snippet:jump(dir)
 		if exit then
-			Active_snippet = Active_snippet.parent
+			active_snippet = active_snippet.parent
 		end
 		return true
 	end
 	return false
 end
 
+local function expand_or_jumpable()
+	next_expand = match_snippet(util.get_current_line_to_cursor())
+	return (next_expand ~= nil) or (active_snippet ~= nil)
+end
+
 -- return true and expand snippet if expandable, return false if not.
 local function expand_or_jump()
-	local line = Get_current_line_to_cursor()
-	local snip = match_snippet(line)
-	if snip ~= nil then
-		snip:indent(line)
+	if next_expand ~= nil then
+		next_expand:indent(util.get_current_line_to_cursor())
 
 		-- remove snippet-trigger, Cursor at start of future snippet text.
-		Remove_n_before_cur(#snip.trigger)
+		util.remove_n_before_cur(#next_expand.trigger)
 
-		snip:expand()
+		next_expand:expand()
+
+		next_expand.parent = active_snippet
+		active_snippet = next_expand
+		next_expand = nil
+
 		return true
 	end
 	if jump(1) then
 		return true
 	end
-	return false
 end
 
-return {
+local ls = {
+	expand_or_jumpable = expand_or_jumpable,
 	expand_or_jump = expand_or_jump,
 	jump = jump,
-	s = S,
-	t = T,
-	f = F,
-	i = I,
-	snippets = snippets
+	get_active_snip = get_active_snip,
+	s = snip_mod.S,
+	t = node_mod.T,
+	f = node_mod.F,
+	i = node_mod.I,
+	snippets = {}
 }
+
+return ls

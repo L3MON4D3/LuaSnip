@@ -78,9 +78,6 @@ function Snippet:dump()
 end
 
 function Snippet:expand()
-	self.parent = Active_snippet
-	Active_snippet = self
-
 	-- Snippet is node, needs from and to.
 	local cur = util.get_cursor_0ind()
 	self.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
