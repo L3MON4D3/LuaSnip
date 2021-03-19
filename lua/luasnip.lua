@@ -76,5 +76,6 @@ return {
 	s = S,
 	t = T,
 	f = F,
-	i = I
+	i = I,
+	snippets = snippets
 }
