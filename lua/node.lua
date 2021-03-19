@@ -1,4 +1,4 @@
-Node = {}
+local Node = {}
 
 function Node:new(o)
 	o = o or {}
@@ -7,19 +7,19 @@ function Node:new(o)
 	return o
 end
 
-TextNode = Node:new()
-InsertNode = Node:new()
-FunctionNode = Node:new()
+local TextNode = Node:new()
+local InsertNode = Node:new()
+local FunctionNode = Node:new()
 
-function T(static_text)
+local function T(static_text)
 	return TextNode:new{static_text = static_text, type = 0}
 end
 
-function I(pos, static_text)
+local function I(pos, static_text)
 	return InsertNode:new{pos = pos, static_text = static_text, dependents = {}, type = 1}
 end
 
-function F(fn, args)
+local function F(fn, args)
 	return FunctionNode:new{fn = fn, args = args, type = 2}
 end
 
@@ -54,3 +54,10 @@ function Node:get_text()
 	end
 	return lines
 end
+
+return {
+	Node = Node,
+	T = T,
+	I = I,
+	F = F,
+}

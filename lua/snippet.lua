@@ -1,7 +1,7 @@
-require'node'
-require'util'
+local node_mod = require'node'
+local util = require'util'
 
-Snippet = Node:new()
+local Snippet = node_mod.Node:new()
 
 function S(trigger, nodes)
 	return Snippet:new{trigger = trigger, nodes = nodes, insert_nodes = {}, current_insert = 0}
@@ -82,12 +82,12 @@ function Snippet:expand()
 	Active_snippet = self
 
 	-- Snippet is node, needs from and to.
-	local cur = Get_cursor_0ind()
+	local cur = util.get_cursor_0ind()
 	self.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do
 		-- save cursor position for later.
-		cur = Get_cursor_0ind()
+		cur = util.get_cursor_0ind()
 
 		-- Gravities are set 'pointing inwards' for static text, any text inserted on the border to a insert belongs
 		-- to the insert.
@@ -104,7 +104,7 @@ function Snippet:expand()
 			node.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 		end
 
-		cur = Get_cursor_0ind()
+		cur = util.get_cursor_0ind()
 		-- place extmark directly behind last char of put text.
 		node.to = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 
@@ -117,7 +117,7 @@ function Snippet:expand()
 		node.indx = i
 	end
 
-	cur = Get_cursor_0ind()
+	cur = util.get_cursor_0ind()
 	self.to = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 
 	for _, node in ipairs(self.nodes) do
@@ -151,7 +151,7 @@ function Snippet:jump(direction)
 
 	self:enter_node(self.insert_nodes[self.current_insert].indx)
 
-	Move_to_mark(self.insert_nodes[self.current_insert].from)
+	util.move_to_mark(self.insert_nodes[self.current_insert].from)
 	if self.current_insert == 0 then
 		self:exit()
 		return true
@@ -171,3 +171,7 @@ function Snippet:indent(line)
 	end
 end
 
+return {
+	Snippet = Snippet,
+	S = S
+}
