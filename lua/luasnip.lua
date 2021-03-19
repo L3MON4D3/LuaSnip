@@ -67,9 +67,9 @@ local function match_snippet(line)
 		local snip = snippets[i]
 		-- if line ends with trigger
 		if string.sub(line, #line - #snip.trigger + 1, #line) == snip.trigger then
-			o = vim.deepcopy(snip)
-			for i, n in ipairs(snip.nodes) do
-				setmetatable(o.nodes[i], getmetatable(n))
+			local o = vim.deepcopy(snip)
+			for j, n in ipairs(snip.nodes) do
+				setmetatable(o.nodes[j], getmetatable(n))
 			end
 			setmetatable(o, getmetatable(snip))
 			return o
@@ -100,16 +100,16 @@ function Node:set_to_rgrav(val)
 end
 
 local function mark_pos_equal(m1, m2)
-	p1 = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, m1, {})
-	p2 = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, m2, {})
+	local p1 = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, m1, {})
+	local p2 = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, m2, {})
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
 
 -- todo: impl exit_node
 function Snippet:enter_node(node_id)
-	node = self.nodes[node_id]
+	local node = self.nodes[node_id]
 	for i=1, #self.nodes, 1 do
-		other = self.nodes[i]
+		local other = self.nodes[i]
 		if other.type > 0 then
 			if mark_pos_equal(other.to, node.from) then
 				other:set_to_rgrav(false)
@@ -121,7 +121,7 @@ function Snippet:enter_node(node_id)
 	node:set_from_rgrav(false)
 	node:set_to_rgrav(true)
 	for i = node_id+1, #self.nodes, 1 do
-		other = self.nodes[i]
+		local other = self.nodes[i]
 		if self.nodes[i].type > 0 then
 			if mark_pos_equal(node.to, other.from) then
 				other:set_from_rgrav(true)
@@ -233,7 +233,7 @@ function Snippet:expand()
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do
 		-- save cursor position for later.
-		local cur = get_cursor_0ind()
+		cur = get_cursor_0ind()
 
 		-- Gravities are set 'pointing inwards' for static text, any text inserted on the border to a insert belongs
 		-- to the insert.
@@ -263,7 +263,7 @@ function Snippet:expand()
 		node.indx = i
 	end
 
-	local cur = get_cursor_0ind()
+	cur = get_cursor_0ind()
 	self.to = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 
 	for _, node in ipairs(self.nodes) do
