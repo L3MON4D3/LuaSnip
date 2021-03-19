@@ -14,12 +14,14 @@ local function match_snippet(line)
 		local snip = ls.snippets[i]
 		-- if line ends with trigger
 		if string.sub(line, #line - #snip.trigger + 1, #line) == snip.trigger then
-			local o = vim.deepcopy(snip)
-			for j, n in ipairs(snip.nodes) do
-				setmetatable(o.nodes[j], getmetatable(n))
+			if snip.condition() then
+				local o = vim.deepcopy(snip)
+				for j, n in ipairs(snip.nodes) do
+					setmetatable(o.nodes[j], getmetatable(n))
+				end
+				setmetatable(o, getmetatable(snip))
+				return o
 			end
-			setmetatable(o, getmetatable(snip))
-			return o
 		end
 	end
 	return nil

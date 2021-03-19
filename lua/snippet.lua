@@ -3,8 +3,11 @@ local util = require'util'
 
 local Snippet = node_mod.Node:new()
 
-function S(trigger, nodes)
-	return Snippet:new{trigger = trigger, nodes = nodes, insert_nodes = {}, current_insert = 0}
+function S(trigger, nodes, condition)
+	if not condition then
+		condition = function() return true end
+	end
+	return Snippet:new{trigger = trigger, nodes = nodes, insert_nodes = {}, current_insert = 0, condition = condition}
 end
 
 local function mark_pos_equal(m1, m2)

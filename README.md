@@ -4,6 +4,7 @@ Snippet Engine for Neovim written in Lua.
 # Features
 - Placeholders
 - Text-Transformations using Lua functions
+- Conditional Expansion
 - Fast, small, simple
 
 # Requirements
