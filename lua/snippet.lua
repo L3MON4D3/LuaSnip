@@ -67,7 +67,7 @@ function Snippet:make_args(arglist)
 end
 
 function Snippet:update_fn_text(node)
-	self:set_text(node, node.fn(self:make_args(node.args)))
+	self:set_text(node, node.fn(self:make_args(node.args), unpack(node.user_args)))
 end
 
 function Snippet:dump()

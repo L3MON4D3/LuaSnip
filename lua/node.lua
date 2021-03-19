@@ -19,8 +19,8 @@ local function I(pos, static_text)
 	return InsertNode:new{pos = pos, static_text = static_text, dependents = {}, type = 1}
 end
 
-local function F(fn, args)
-	return FunctionNode:new{fn = fn, args = args, type = 2}
+local function F(fn, args, ...)
+	return FunctionNode:new{fn = fn, args = args, type = 2, user_args = {...}}
 end
 
 function Node:has_static_text()
