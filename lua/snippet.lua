@@ -41,8 +41,6 @@ function Snippet:enter_node(node_id)
 			end
 		end
 	end
-
-	util.move_to_mark(node.from)
 end
 
 function Snippet:set_text(node, text)
@@ -143,6 +141,9 @@ function Snippet:jump(direction)
 	for _, node in ipairs(self.insert_nodes[self.current_insert].dependents) do
 		self:update_fn_text(node)
 	end
+
+	self.insert_nodes[self.current_insert]:input_exit()
+
 	local tmp = self.current_insert + direction
 	-- Would jump to invalid node?
 	if self.insert_nodes[tmp] == nil then
@@ -152,6 +153,8 @@ function Snippet:jump(direction)
 	end
 
 	self:enter_node(self.insert_nodes[self.current_insert].indx)
+	self.insert_nodes[self.current_insert]:input_enter()
+
 	if self.current_insert == 0 then
 		self:exit()
 		return true
