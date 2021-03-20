@@ -21,8 +21,8 @@ local function match_snippet(line)
 end
 
 local function jump(dir)
-	if snip_mod.get_active ~= nil then
-		snip_mod.get_active:jump(dir)
+	if Luasnip_active_snippet ~= nil then
+		Luasnip_active_snippet:jump(dir)
 		return true
 	end
 	return false
@@ -30,7 +30,7 @@ end
 
 local function expand_or_jumpable()
 	next_expand = match_snippet(util.get_current_line_to_cursor())
-	return (next_expand ~= nil) or (snip_mod.get_active ~= nil)
+	return (next_expand ~= nil) or (Luasnip_active_snippet ~= nil)
 end
 
 -- return true and expand snippet if expandable, return false if not.
@@ -59,6 +59,7 @@ local ls = {
 	jump = jump,
 	get_active_snip = get_active_snip,
 	s = snip_mod.S,
+	sn = snip_mod.SN,
 	t = node_mod.T,
 	f = node_mod.F,
 	i = node_mod.I,

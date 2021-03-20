@@ -30,20 +30,20 @@ function Node:has_static_text()
 end
 
 function Node:set_from_rgrav(val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, self.from, {})
-	vim.api.nvim_buf_del_extmark(0, Ns_id, self.from)
-	self.from = vim.api.nvim_buf_set_extmark(0, Ns_id, pos[1], pos[2], {right_gravity = val})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.from, {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.from)
+	self.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
 function Node:set_to_rgrav(val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, self.to, {})
-	vim.api.nvim_buf_del_extmark(0, Ns_id, self.to)
-	self.to = vim.api.nvim_buf_set_extmark(0, Ns_id, pos[1], pos[2], {right_gravity = val})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.to, {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.to)
+	self.to = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
 function Node:get_text()
-	local from = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, self.from, {})
-	local to = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, self.to, {})
+	local from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.from, {})
+	local to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.to, {})
 
 	-- end-exclusive indexing.
 	local lines = vim.api.nvim_buf_get_lines(0, from[1], to[1]+1, false)
@@ -71,9 +71,10 @@ function Node:input_enter()
 	end
 end
 
-function Node:input_exit()
+function Node:input_leave()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 end
+
 return {
 	Node = Node,
 	T = T,

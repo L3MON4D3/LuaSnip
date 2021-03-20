@@ -1,8 +1,8 @@
 local node_mod = require'node'
 local util = require'util'
 
-local active_snippet = nil
-local ns_id = vim.api.nvim_create_namespace("luasnip")
+Luasnip_active_snippet = nil
+Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
 local Snippet = node_mod.Node:new()
 
@@ -10,7 +10,22 @@ function S(trigger, nodes, condition, ...)
 	if not condition then
 		condition = function() return true end
 	end
-	return Snippet:new{trigger = trigger,
+	return Snippet:new{
+		trigger = trigger,
+		nodes = nodes,
+		insert_nodes = {},
+		current_insert = 0,
+		condition = condition,
+		user_args = {...}
+	}
+end
+
+function SN(pos, nodes, condition, ...)
+	if not condition then
+		condition = function() return true end
+	end
+	return Snippet:new{
+		pos = pos,
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
@@ -54,18 +69,23 @@ function Snippet:enter_node(node_id)
 	end
 end
 
+--impl. copy for all nodes.
 function Snippet:copy()
 	local o = vim.deepcopy(self)
 	for j, n in ipairs(self.nodes) do
-		setmetatable(o.nodes[j], getmetatable(n))
+		if n.type == 3 then
+			o.nodes[j] = n:copy()
+		else
+			setmetatable(o.nodes[j], getmetatable(n))
+		end
 	end
 	setmetatable(o, getmetatable(self))
 	return o
 end
 
 function Snippet:set_text(node, text)
-	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {})
-	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {})
+	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.from, {})
+	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.to, {})
 
 	self:enter_node(node.indx)
 	vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
@@ -73,8 +93,8 @@ end
 
 function Snippet:del_marks()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, ns_id, node.from)
-		vim.api.nvim_buf_del_extmark(0, ns_id, node.to)
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.from)
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.to)
 	end
 end
 
@@ -93,9 +113,9 @@ end
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
-		local c = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {details = false})
+		local c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.from, {details = false})
 		print(c[1], c[2])
-		c = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {details = false})
+		c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.to, {details = false})
 		print(c[1], c[2])
 	end
 end
@@ -116,20 +136,20 @@ function Snippet:expand()
 
 			-- place extmark directly on previously saved position (first char
 			-- of inserted text) after putting text.
-			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {})
+			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
 		-- node is snippet?
 		elseif node.type == 3 then
 			node:expand()
 			-- zero-length; important that text put after doesn't move marker.
-			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
+			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 		else
 			-- zero-length; important that text put after doesn't move marker.
-			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
+			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 		end
 
 		cur = util.get_cursor_0ind()
 		-- place extmark directly behind last char of put text.
-		node.to = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
+		node.to = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
 		if node.type == 1 or node.type == 3 then
 			self.insert_nodes[node.pos] = node
@@ -175,7 +195,7 @@ function Snippet:jump(direction)
 	self.insert_nodes[self.current_insert]:input_enter()
 
 	if self.current_insert == 0 then
-		self:input_leave()
+		self:exit()
 		return true
 	end
 	return false
@@ -185,7 +205,7 @@ function Snippet:indent(line)
 	local prefix = string.match(line, '^%s*')
 	for _, node in ipairs(self.nodes) do
 		-- put prefix behind newlines.
-		if node.static_text then
+		if node:has_static_text() then
 			for i = 2, #node.static_text do
 				node.static_text[i] = prefix .. node.static_text[i]
 			end
@@ -194,18 +214,18 @@ function Snippet:indent(line)
 end
 
 function Snippet:input_enter()
-	self.parent = active_snippet
-	active_snippet = self
+	self.parent = Luasnip_active_snippet
+	Luasnip_active_snippet = self
 	self:jump(1)
 end
 
 local function clear_marks()
-	vim.api.nvim_buf_clear_namespace(ns_id)
+	vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 1, -1)
 end
 
-function Snippet:input_leave()
-	active_snippet = self.parent
-	if not active_snippet then
+function Snippet:exit()
+	Luasnip_active_snippet = self.parent
+	if not Luasnip_active_snippet then
 		clear_marks()
 	end
 end
@@ -213,5 +233,5 @@ end
 return {
 	Snippet = Snippet,
 	S = S,
-	get_active = function() return active_snippet end
+	SN = SN
 }
