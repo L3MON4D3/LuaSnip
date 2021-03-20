@@ -11,7 +11,7 @@ WIP, very limited testing.
 - Fast, small, simple
 
 # Requirements
-Neovim >= 0.5 (extmarks)J
+Neovim >= 0.5 (extmarks)
 
 # Setup
 - Install using eg. [vim-plug](https://github.com/junegunn/vim-plug)
