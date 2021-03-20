@@ -62,11 +62,26 @@ local function expand_or_jump()
 	end
 end
 
+local function choice_active()
+	return Luasnip_active_choice ~= nil
+end
+
+local function change_choice(val)
+	return Luasnip_active_choice:change_choice(val)
+end
+
+local function confirm_choice()
+	Luasnip_active_snippet:input_enter()
+end
+
 local ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_jump = expand_or_jump,
 	jump = jump,
 	get_active_snip = get_active_snip,
+	choice_active = choice_active,
+	change_choice = change_choice,
+	confirm_choice = confirm_choice,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = node_mod.T,

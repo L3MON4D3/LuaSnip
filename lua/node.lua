@@ -99,10 +99,12 @@ end
 
 function ChoiceNode:input_enter()
 	self.choices[self.current_choice]:input_enter()
+	Luasnip_active_choice = self
 end
 
 function ChoiceNode:input_leave()
 	self.choices[self.current_choice]:input_leave()
+	Luasnip_active_choice = nil
 end
 
 function ChoiceNode:has_static_text()
