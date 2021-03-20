@@ -139,6 +139,7 @@ function Snippet:expand()
 			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
 		-- node is snippet?
 		elseif node.type == 3 then
+			node:indent(vim.api.nvim_get_current_line())
 			node:expand()
 			-- zero-length; important that text put after doesn't move marker.
 			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
