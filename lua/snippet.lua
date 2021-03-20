@@ -195,6 +195,7 @@ function Snippet:jump(direction)
 
 	if self.current_insert == 0 then
 		self:exit()
+		self:input_leave()
 		return true
 	end
 	return false
