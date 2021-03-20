@@ -1,5 +1,6 @@
 # LuaSnip
-Snippet Engine for Neovim written in Lua.
+Snippet Engine for Neovim written in Lua.  
+WIP, very limited testing.
 
 # Features
 - Placeholders
