@@ -39,6 +39,13 @@ function Snippet:enter_node(node_id)
 			else
 				other:set_from_rgrav(false)
 			end
+			-- can be the case after expand; there all nodes without static text
+			-- have left gravity on all marks.
+			if util.mark_pos_equal(node.to, other.to) then
+				other:set_to_rgrav(true)
+			else
+				other:set_to_rgrav(false)
+			end
 		end
 	end
 end
