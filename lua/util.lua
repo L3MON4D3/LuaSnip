@@ -38,18 +38,18 @@ local function move_to_mark(id)
 	set_cursor_0ind(new_cur_pos)
 end
 
-local function normal_move_to_mark(id)
+local function normal_move_before_mark(id)
 	local new_cur_pos = vim.api.nvim_buf_get_extmark_by_id(
 		0, Ns_id, id, {details = false})
 	-- +1: indexing
-	vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G^'..tostring(new_cur_pos[2])..'l', 'n', true)
+	vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G^'..tostring(new_cur_pos[2]-1)..'l', 'n', true)
 end
 
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
 	move_to_mark = move_to_mark,
-	normal_move_to_mark = normal_move_to_mark,
+	normal_move_before_mark = normal_move_before_mark,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	mark_pos_equal = mark_pos_equal

@@ -58,15 +58,15 @@ function Node:get_text()
 end
 
 function Node:input_enter()
-	util.normal_move_to_mark(self.from)
+	util.normal_move_before_mark(self.from)
 
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	if not util.mark_pos_equal(self.to, self.from) then
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("v", true, false, true), 'n', true)
-		util.normal_move_to_mark(self.to)
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("ho<C-G>", true, false, true), 'n', true)
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("lv", true, false, true), 'n', true)
+		util.normal_move_before_mark(self.to)
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("o<C-G>", true, false, true), 'n', true)
 	else
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("i", true, false, true), 'n', true)
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("a", true, false, true), 'n', true)
 	end
 end
 
