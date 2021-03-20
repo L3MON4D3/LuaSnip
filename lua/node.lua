@@ -29,6 +29,16 @@ function Node:has_static_text()
 	return self.static_text and not (self.static_text[1] == "" and #self.static_text == 1)
 end
 
+function Node:put_initial()
+	if self:has_static_text() then
+		vim.api.nvim_put(self.static_text, "c", false, true);
+	end
+end
+
+function TextNode:put_initial()
+	vim.api.nvim_put(self.static_text, "c", false, true);
+end
+
 function Node:set_from_rgrav(val)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.from, {})
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.from)

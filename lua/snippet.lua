@@ -120,6 +120,11 @@ function Snippet:dump()
 	end
 end
 
+function Snippet:put_initial()
+	node:indent(vim.api.nvim_get_current_line())
+	node:expand()
+end
+
 function Snippet:expand()
 	local cur = util.get_cursor_0ind()
 	-- i needed for functions.
@@ -130,26 +135,21 @@ function Snippet:expand()
 		-- Gravities are set 'pointing inwards' for static text, any text inserted on the border to a insert belongs
 		-- to the insert.
 
-		if node:has_static_text() then
-			-- leaves cursor behind last char of inserted text.
-			vim.api.nvim_put(node.static_text, "c", false, true);
+		-- leaves cursor behind last char of inserted text.
+		node:put_initial()
 
+		-- Will always have the same markers.
+		if node:has_static_text() then
 			-- place extmark directly on previously saved position (first char
 			-- of inserted text) after putting text.
 			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
-		-- node is snippet?
-		elseif node.type == 3 then
-			node:indent(vim.api.nvim_get_current_line())
-			node:expand()
-			-- zero-length; important that text put after doesn't move marker.
-			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
+		-- zero-length; important that text put after doesn't move marker.
 		else
-			-- zero-length; important that text put after doesn't move marker.
 			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 		end
 
-		cur = util.get_cursor_0ind()
 		-- place extmark directly behind last char of put text.
+		cur = util.get_cursor_0ind()
 		node.to = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
 		if node.type == 1 or node.type == 3 then
