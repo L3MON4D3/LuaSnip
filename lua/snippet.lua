@@ -149,11 +149,12 @@ function Snippet:put_initial()
 		cur = util.get_cursor_0ind()
 		node.to = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
-		if node.type == 1 or node.type == 3 then
+		if node.type == 1 or node.type == 3 or node.type == 4 then
 			self.insert_nodes[node.pos] = node
 			-- do here as long as snippets need to be defined manually
 			node.dependents = {}
 		end
+
 		-- do here as long as snippets need to be defined manually
 		node.indx = i
 	end
