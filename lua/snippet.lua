@@ -136,9 +136,6 @@ function Snippet:expand()
 			end
 		end
 	end
-
-	-- Jump to first insert.
-	self:jump(1);
 end
 
 -- jump(-1) on first insert would jump to end of snippet (0-insert).

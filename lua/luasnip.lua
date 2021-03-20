@@ -53,6 +53,8 @@ local function expand_or_jump()
 
 		next_expand:expand()
 
+		next_expand:jump(1);
+
 		next_expand.parent = active_snippet
 		active_snippet = next_expand
 		next_expand = nil
