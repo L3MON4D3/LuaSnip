@@ -50,6 +50,15 @@ function Snippet:enter_node(node_id)
 	end
 end
 
+function Snippet:copy()
+	local o = vim.deepcopy(self)
+	for j, n in ipairs(self.nodes) do
+		setmetatable(o.nodes[j], getmetatable(n))
+	end
+	setmetatable(o, getmetatable(self))
+	return o
+end
+
 function Snippet:set_text(node, text)
 	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, node.from, {})
 	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, node.to, {})
