@@ -27,7 +27,7 @@ local function F(fn, args, ...)
 end
 
 local function C(pos, choices)
-	return ChoiceNode:new{pos = pos, choices = choices, type = 4, current_choice = 0}
+	return ChoiceNode:new{pos = pos, choices = choices, type = 4, current_choice = 1}
 end
 
 function Node:has_static_text()
@@ -94,7 +94,7 @@ function Node:input_leave()
 end
 
 function ChoiceNode:put_initial()
-	self.choices[0]:put_initial()
+	self.choices[1]:put_initial()
 end
 
 function ChoiceNode:input_enter()
@@ -108,7 +108,7 @@ function ChoiceNode:input_leave()
 end
 
 function ChoiceNode:has_static_text()
-	return self.choices[0]:has_static_text()
+	return self.choices[1]:has_static_text()
 end
 
 function ChoiceNode:change_choice(val)
