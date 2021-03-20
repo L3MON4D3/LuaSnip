@@ -206,7 +206,7 @@ function Snippet:indent(line)
 		-- put prefix behind newlines.
 		if node:has_static_text() then
 			for i = 2, #node.static_text do
-				node.static_text[i] = prefix .. node.static_text[i]
+				node.get_static_text[i] = prefix .. node.get_static_text[i]
 			end
 		end
 	end

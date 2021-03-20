@@ -31,17 +31,17 @@ local function C(pos, choices)
 end
 
 function Node:has_static_text()
-	return self.static_text and not (self.static_text[1] == "" and #self.static_text == 1)
+	return self.static_text and not (self.get_static_text()[1] == "" and #self.get_static_text() == 1)
 end
 
 function Node:put_initial()
 	if self:has_static_text() then
-		vim.api.nvim_put(self.static_text, "c", false, true);
+		vim.api.nvim_put(self.get_static_text(), "c", false, true);
 	end
 end
 
 function TextNode:put_initial()
-	vim.api.nvim_put(self.static_text, "c", false, true);
+	vim.api.nvim_put(self.get_static_text(), "c", false, true);
 end
 
 function Node:set_from_rgrav(val)
@@ -109,6 +109,10 @@ end
 
 function ChoiceNode:has_static_text()
 	return self.choices[1]:has_static_text()
+end
+
+function ChoiceNode:get_static_text()
+	return self.choices[1]:get_static_text()
 end
 
 function ChoiceNode:change_choice(val)
