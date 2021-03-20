@@ -31,11 +31,13 @@ end
 
 function Node:set_from_rgrav(val)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, self.from, {})
+	vim.api.nvim_buf_del_extmark(0, Ns_id, self.from)
 	self.from = vim.api.nvim_buf_set_extmark(0, Ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
 function Node:set_to_rgrav(val)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, self.to, {})
+	vim.api.nvim_buf_del_extmark(0, Ns_id, self.to)
 	self.to = vim.api.nvim_buf_set_extmark(0, Ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
