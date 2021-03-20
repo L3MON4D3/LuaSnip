@@ -5,10 +5,12 @@ Snippet Engine for Neovim written in Lua.
 - Placeholders
 - Text-Transformations using Lua functions
 - Conditional Expansion
+- Defining nested Snippets
+- Filetype-specific Snippets
 - Fast, small, simple
 
 # Requirements
-Neovim >= 0.5 (extmarks)
+Neovim >= 0.5 (extmarks)J
 
 # Setup
 - Install using eg. [vim-plug](https://github.com/junegunn/vim-plug)
@@ -24,6 +26,6 @@ imap <silent><expr> <C-l> <cmd>lua require'luasnip'.expand_or_jump()<Cr>
 inoremap <silent> <S-Tab> <cmd>lua require'luasnip'.jump(-1)<Cr>
 ```
 - Add Snippets: Snippets have to be added to the `require'luasnip'.snippets`-table.
-`Examples` contains more details. As of now, there is no separation between filetypes.
+`Examples` contains more details, for actual snippets take a look at [my Snippets](https://github.com/L3MON4D3/Dotfiles/blob/master/.config/nvim/lua/snips.lua).
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
