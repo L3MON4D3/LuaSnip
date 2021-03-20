@@ -121,11 +121,7 @@ function Snippet:dump()
 end
 
 function Snippet:put_initial()
-	node:indent(vim.api.nvim_get_current_line())
-	node:expand()
-end
-
-function Snippet:expand()
+	self:indent(vim.api.nvim_get_current_line())
 	local cur = util.get_cursor_0ind()
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do
@@ -220,14 +216,14 @@ function Snippet:input_enter()
 	self:jump(1)
 end
 
-local function clear_marks()
-	vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 1, -1)
+function Snippet:input_leave()
+	Luasnip_active_snippet = self.parent
 end
 
 function Snippet:exit()
-	Luasnip_active_snippet = self.parent
-	if not Luasnip_active_snippet then
-		clear_marks()
+	for _, node in ipairs(self.nodes) do
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.from)
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.to)
 	end
 end
 

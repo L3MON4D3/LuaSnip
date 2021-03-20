@@ -50,7 +50,7 @@ local function expand_or_jump()
 		-- remove snippet-trigger, Cursor at start of future snippet text.
 		util.remove_n_before_cur(#next_expand.trigger)
 
-		next_expand:expand()
+		next_expand:put_initial()
 
 		next_expand:input_enter()
 		next_expand = nil

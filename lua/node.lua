@@ -69,6 +69,9 @@ function Node:get_text()
 	return lines
 end
 
+function Node:exit()
+end
+
 function Node:input_enter()
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	if not util.mark_pos_equal(self.to, self.from) then
