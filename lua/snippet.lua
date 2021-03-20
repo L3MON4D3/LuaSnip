@@ -1,6 +1,9 @@
 local node_mod = require'node'
 local util = require'util'
 
+local active_snippet = nil
+local ns_id = vim.api.nvim_create_namespace("luasnip")
+
 local Snippet = node_mod.Node:new()
 
 function S(trigger, nodes, condition, ...)
@@ -61,24 +64,24 @@ function Snippet:copy()
 end
 
 function Snippet:set_text(node, text)
-	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, node.from, {})
-	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, node.to, {})
+	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {})
+	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {})
 
 	self:enter_node(node.indx)
 	vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
 end
 
-function Snippet:exit()
+function Snippet:del_marks()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, Ns_id, node.from)
-		vim.api.nvim_buf_del_extmark(0, Ns_id, node.to)
+		vim.api.nvim_buf_del_extmark(0, ns_id, node.from)
+		vim.api.nvim_buf_del_extmark(0, ns_id, node.to)
 	end
 end
 
 function Snippet:make_args(arglist)
 	local args = {}
-	for i, iNs_id in ipairs(arglist) do
-		args[i] = self.insert_nodes[iNs_id]:get_text()
+	for i, ins_id in ipairs(arglist) do
+		args[i] = self.insert_nodes[ins_id]:get_text()
 	end
 	return args
 end
@@ -90,9 +93,9 @@ end
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
-		local c = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, node.from, {details = false})
+		local c = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.from, {details = false})
 		print(c[1], c[2])
-		c = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, node.to, {details = false})
+		c = vim.api.nvim_buf_get_extmark_by_id(0, ns_id, node.to, {details = false})
 		print(c[1], c[2])
 	end
 end
@@ -113,20 +116,20 @@ function Snippet:expand()
 
 			-- place extmark directly on previously saved position (first char
 			-- of inserted text) after putting text.
-			node.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {})
+			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {})
 		-- node is snippet?
 		elseif node.type == 3 then
 			node:expand()
 			-- zero-length; important that text put after doesn't move marker.
-			node.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
+			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 		else
 			-- zero-length; important that text put after doesn't move marker.
-			node.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
+			node.from = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 		end
 
 		cur = util.get_cursor_0ind()
 		-- place extmark directly behind last char of put text.
-		node.to = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
+		node.to = vim.api.nvim_buf_set_extmark(0, ns_id, cur[1], cur[2], {right_gravity = false})
 
 		if node.type == 1 or node.type == 3 then
 			self.insert_nodes[node.pos] = node
@@ -158,7 +161,7 @@ function Snippet:jump(direction)
 		self:update_fn_text(node)
 	end
 
-	self.insert_nodes[self.current_insert]:input_exit()
+	self.insert_nodes[self.current_insert]:input_leave()
 
 	local tmp = self.current_insert + direction
 	-- Would jump to invalid node?
@@ -172,7 +175,7 @@ function Snippet:jump(direction)
 	self.insert_nodes[self.current_insert]:input_enter()
 
 	if self.current_insert == 0 then
-		self:exit()
+		self:input_leave()
 		return true
 	end
 	return false
@@ -190,7 +193,25 @@ function Snippet:indent(line)
 	end
 end
 
+function Snippet:input_enter()
+	self.parent = active_snippet
+	active_snippet = self
+	self:jump(1)
+end
+
+local function clear_marks()
+	vim.api.nvim_buf_clear_namespace(ns_id)
+end
+
+function Snippet:input_leave()
+	active_snippet = self.parent
+	if not active_snippet then
+		clear_marks()
+	end
+end
+
 return {
 	Snippet = Snippet,
-	S = S
+	S = S,
+	get_active = function() return active_snippet end
 }

@@ -2,11 +2,9 @@ local node_mod = require'node'
 local snip_mod = require'snippet'
 local util = require'util'
 
-local active_snippet = nil
 local next_expand = nil
-Ns_id = vim.api.nvim_create_namespace("luasnip")
 
-local function get_active_snip() return active_snippet end
+local function get_active_snip() return snip_mod.get_active() end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
 local function match_snippet(line)
@@ -23,11 +21,8 @@ local function match_snippet(line)
 end
 
 local function jump(dir)
-	if active_snippet ~= nil then
-		local exit = active_snippet:jump(dir)
-		if exit then
-			active_snippet = active_snippet.parent
-		end
+	if snip_mod.get_active ~= nil then
+		snip_mod.get_active:jump(dir)
 		return true
 	end
 	return false
@@ -35,7 +30,7 @@ end
 
 local function expand_or_jumpable()
 	next_expand = match_snippet(util.get_current_line_to_cursor())
-	return (next_expand ~= nil) or (active_snippet ~= nil)
+	return (next_expand ~= nil) or (snip_mod.get_active ~= nil)
 end
 
 -- return true and expand snippet if expandable, return false if not.
@@ -48,10 +43,7 @@ local function expand_or_jump()
 
 		next_expand:expand()
 
-		next_expand:jump(1);
-
-		next_expand.parent = active_snippet
-		active_snippet = next_expand
+		next_expand:input_enter()
 		next_expand = nil
 
 		return true
