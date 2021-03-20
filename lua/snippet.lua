@@ -12,7 +12,8 @@ function S(trigger, nodes, condition, ...)
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,
-		user_args = {...}
+		user_args = {...},
+		type = 3
 	}
 end
 
@@ -97,9 +98,7 @@ function Snippet:dump()
 end
 
 function Snippet:expand()
-	-- Snippet is node, needs from and to.
 	local cur = util.get_cursor_0ind()
-	self.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do
 		-- save cursor position for later.
@@ -115,6 +114,11 @@ function Snippet:expand()
 			-- place extmark directly on previously saved position (first char
 			-- of inserted text) after putting text.
 			node.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {})
+		-- node is snippet?
+		elseif node.type == 3 then
+			node:expand()
+			-- zero-length; important that text put after doesn't move marker.
+			node.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 		else
 			-- zero-length; important that text put after doesn't move marker.
 			node.from = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
@@ -124,7 +128,7 @@ function Snippet:expand()
 		-- place extmark directly behind last char of put text.
 		node.to = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 
-		if node.type == 1 then
+		if node.type == 1 or node.type == 3 then
 			self.insert_nodes[node.pos] = node
 			-- do here as long as snippets need to be defined manually
 			node.dependents = {}
@@ -134,7 +138,6 @@ function Snippet:expand()
 	end
 
 	cur = util.get_cursor_0ind()
-	self.to = vim.api.nvim_buf_set_extmark(0, Ns_id, cur[1], cur[2], {right_gravity = false})
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 then
