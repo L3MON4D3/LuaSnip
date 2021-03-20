@@ -16,19 +16,13 @@ function S(trigger, nodes, condition, ...)
 	}
 end
 
-local function mark_pos_equal(m1, m2)
-	local p1 = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, m1, {})
-	local p2 = vim.api.nvim_buf_get_extmark_by_id(0, Ns_id, m2, {})
-	return p1[1] == p2[1] and p1[2] == p2[2]
-end
-
 -- todo: impl exit_node
 function Snippet:enter_node(node_id)
 	local node = self.nodes[node_id]
 	for i=1, #self.nodes, 1 do
 		local other = self.nodes[i]
 		if other.type > 0 then
-			if mark_pos_equal(other.to, node.from) then
+			if util.mark_pos_equal(other.to, node.from) then
 				other:set_to_rgrav(false)
 			else
 				other:set_to_rgrav(true)
@@ -40,7 +34,7 @@ function Snippet:enter_node(node_id)
 	for i = node_id+1, #self.nodes, 1 do
 		local other = self.nodes[i]
 		if self.nodes[i].type > 0 then
-			if mark_pos_equal(node.to, other.from) then
+			if util.mark_pos_equal(node.to, other.from) then
 				other:set_from_rgrav(true)
 			else
 				other:set_from_rgrav(false)
