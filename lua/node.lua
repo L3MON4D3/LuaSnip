@@ -12,6 +12,7 @@ end
 local TextNode = Node:new()
 local InsertNode = Node:new()
 local FunctionNode = Node:new()
+local ChoiceNode = Node:new()
 
 local function T(static_text)
 	return TextNode:new{static_text = static_text, type = 0}
@@ -23,6 +24,10 @@ end
 
 local function F(fn, args, ...)
 	return FunctionNode:new{fn = fn, args = args, type = 2, user_args = {...}}
+end
+
+local function C(pos, choices)
+	return ChoiceNode:new{pos = pos, choices = choices, type = 4, current_choice = 0}
 end
 
 function Node:has_static_text()
@@ -86,6 +91,42 @@ end
 
 function Node:input_leave()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
+end
+
+function ChoiceNode:put_initial()
+	self.choices[0]:put_initial()
+end
+
+function ChoiceNode:input_enter()
+	self.choices[self.current_choice]:input_enter()
+end
+
+function ChoiceNode:input_leave()
+	self.choices[self.current_choice]:input_leave()
+end
+
+function ChoiceNode:has_static_text()
+	return self.choices[0]:has_static_text()
+end
+
+function ChoiceNode:change_choice(val)
+	-- tear down current choice.
+	self.choices[self.current_choice]:exit()
+	-- clear text.
+	Luasnip_active_snippet:set_text(self, "")
+	util.move_to_mark(self.from)
+	local tmp = self.current_choice + val
+	if tmp < 1 then
+		tmp = #self.choices
+	elseif tmp > #self.choices then
+		tmp = 1
+	end
+	self.current_choice = tmp
+	self.choices[self.current_choice]:put_initial()
+end
+
+function ChoiceNode:confirm_choice()
+	self.choices[self.current_choice]:input_enter()
 end
 
 return {
