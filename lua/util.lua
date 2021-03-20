@@ -42,7 +42,26 @@ local function normal_move_before_mark(id)
 	local new_cur_pos = vim.api.nvim_buf_get_extmark_by_id(
 		0, Ns_id, id, {details = false})
 	-- +1: indexing
-	vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G^'..tostring(new_cur_pos[2]-1)..'l', 'n', true)
+	vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0'..tostring(new_cur_pos[2]-1)..'l', 'n', true)
+end
+
+local function normal_move_on_mark(id)
+	local new_cur_pos = vim.api.nvim_buf_get_extmark_by_id(
+		0, Ns_id, id, {details = false})
+	-- +1: indexing
+	if new_cur_pos[2] ~= 0 then
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0'..tostring(new_cur_pos[2])..'l', 'n', true)
+	else
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0', 'n', true)
+	end
+end
+
+local function normal_move_on_mark_insert(id)
+	local new_cur_pos = vim.api.nvim_buf_get_extmark_by_id(
+		0, Ns_id, id, {details = false})
+	local keys = vim.api.nvim_replace_termcodes(
+		tostring(new_cur_pos[1]+1)..'G0i'..string.rep('<Right>', new_cur_pos[2]), true, false, true)
+	vim.api.nvim_feedkeys(keys, 'n', true)
 end
 
 return {
@@ -50,6 +69,8 @@ return {
 	set_cursor_0ind = set_cursor_0ind,
 	move_to_mark = move_to_mark,
 	normal_move_before_mark = normal_move_before_mark,
+	normal_move_on_mark = normal_move_on_mark,
+	normal_move_on_mark_insert = normal_move_on_mark_insert,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	mark_pos_equal = mark_pos_equal
