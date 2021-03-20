@@ -21,7 +21,7 @@ function Snippet:enter_node(node_id)
 	local node = self.nodes[node_id]
 	for i=1, #self.nodes, 1 do
 		local other = self.nodes[i]
-		if other.type > 0 then
+		if other.type ~= 0 then
 			if util.mark_pos_equal(other.to, node.from) then
 				other:set_to_rgrav(false)
 			else
@@ -33,7 +33,7 @@ function Snippet:enter_node(node_id)
 	node:set_to_rgrav(true)
 	for i = node_id+1, #self.nodes, 1 do
 		local other = self.nodes[i]
-		if self.nodes[i].type > 0 then
+		if self.nodes[i].type ~= 0 then
 			if util.mark_pos_equal(node.to, other.from) then
 				other:set_from_rgrav(true)
 			else
