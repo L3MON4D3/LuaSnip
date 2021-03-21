@@ -195,8 +195,10 @@ function Snippet:jump(direction)
 	self.insert_nodes[self.current_insert]:input_enter()
 
 	if self.current_insert == 0 then
-		self:exit()
 		self:input_leave()
+		if not Luasnip_active_snippet then
+			vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
+		end
 		return true
 	end
 	return false
