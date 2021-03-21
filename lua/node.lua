@@ -105,6 +105,28 @@ end
 function Node:input_leave()
 end
 
+function Node:update_dependents()
+	for _, node in ipairs(self.dependents) do
+		node:update()
+	end
+end
+
+function FunctionNode:get_args()
+	local args = {}
+	for i, node in ipairs(self.args) do
+		args[i] = node:get_text()
+	end
+	return args
+end
+
+function FunctionNode:update()
+	self.parent:set_text(self, self.fn(self:get_args(), unpack(self.user_args)))
+end
+
+function InsertNode:input_leave()
+	self:update_dependents()
+end
+
 function ChoiceNode:put_initial()
 	for _, node in ipairs(self.choices) do
 		node.markers = self.markers
@@ -122,6 +144,7 @@ function ChoiceNode:input_enter()
 end
 
 function ChoiceNode:input_leave()
+	self:update_dependents()
 	self.choices[self.current_choice]:input_leave()
 	Luasnip_active_choice = nil
 end

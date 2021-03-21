@@ -18,7 +18,8 @@ function S(trigger, nodes, condition, ...)
 		current_insert = 0,
 		condition = condition,
 		user_args = {...},
-		markers = {}
+		markers = {},
+		dependents = {}
 	}
 end
 
@@ -34,6 +35,7 @@ function SN(pos, nodes, condition, ...)
 		condition = condition,
 		user_args = {...},
 		markers = {},
+		dependents = {},
 		type = 3
 	}
 end
@@ -101,18 +103,6 @@ function Snippet:del_marks()
 	end
 end
 
-function Snippet:make_args(arglist)
-	local args = {}
-	for i, ins_id in ipairs(arglist) do
-		args[i] = self.insert_nodes[ins_id]:get_text()
-	end
-	return args
-end
-
-function Snippet:update_fn_text(node)
-	self:set_text(node, node.fn(self:make_args(node.args), unpack(node.user_args)))
-end
-
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
@@ -164,11 +154,14 @@ function Snippet:put_initial()
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 then
-			self:update_fn_text(node)
+			node.parent = self
 			-- append node to dependents-table of args.
-			for _, arg in ipairs(node.args) do
+			for i, arg in ipairs(node.args) do
+				-- Function-Node contains refs. to arg-nodes.
+				node.args[i] = self.insert_nodes[arg]
 				self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents+1] = node
 			end
+			node:update()
 		end
 	end
 end
@@ -176,11 +169,6 @@ end
 -- jump(-1) on first insert would jump to end of snippet (0-insert).
 -- Return whether jump exited snippet.
 function Snippet:jump(direction)
-	-- update text in dependents on leaving node.
-	for _, node in ipairs(self.insert_nodes[self.current_insert].dependents) do
-		self:update_fn_text(node)
-	end
-
 	self.insert_nodes[self.current_insert]:input_leave()
 
 	local tmp = self.current_insert + direction
@@ -224,6 +212,7 @@ function Snippet:input_enter()
 end
 
 function Snippet:input_leave()
+	self:update_dependents()
 	Luasnip_active_snippet = self.parent
 	if not Luasnip_active_snippet then
 		vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
