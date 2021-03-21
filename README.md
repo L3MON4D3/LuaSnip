@@ -14,7 +14,7 @@ WIP, very limited testing.
 - Fast, small, simple
 
 # Drawbacks
-- Snippets have to defined in Lua, as of now there is no parser.
+- Snippets have to be defined in Lua, as of now there is no parser.
 
 # Requirements
 Neovim >= 0.5 (extmarks)
