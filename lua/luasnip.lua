@@ -45,8 +45,6 @@ end
 -- return true and expand snippet if expandable, return false if not.
 local function expand_or_jump()
 	if next_expand ~= nil then
-		next_expand:indent(util.get_current_line_to_cursor())
-
 		-- remove snippet-trigger, Cursor at start of future snippet text.
 		util.remove_n_before_cur(#next_expand.trigger)
 
