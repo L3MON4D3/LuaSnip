@@ -90,6 +90,7 @@ function Node:exit()
 end
 
 function InsertNode:input_enter()
+	self.old_text = self:get_text()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
@@ -101,6 +102,13 @@ function InsertNode:input_enter()
 		util.normal_move_on_mark_insert(self.markers[1])
 	end
 end
+
+function InsertNode:input_leave()
+	if not util.multiline_equal(self.old_text, self:get_text()) then
+		self:update_dependents()
+	end
+end
+
 
 function TextNode:input_enter()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
@@ -133,10 +141,6 @@ function FunctionNode:update()
 	self.parent:set_text(self, self.fn(self:get_args(), unpack(self.user_args)))
 end
 
-function InsertNode:input_leave()
-	self:update_dependents()
-end
-
 function ChoiceNode:put_initial()
 	for _, node in ipairs(self.choices) do
 		node.markers = self.markers
@@ -149,12 +153,15 @@ function ChoiceNode:put_initial()
 end
 
 function ChoiceNode:input_enter()
+	self.old_text = self:get_text()
 	self.choices[self.current_choice]:input_enter()
 	Luasnip_active_choice = self
 end
 
 function ChoiceNode:input_leave()
-	self:update_dependents()
+	if not util.multiline_equal(self.old_text, self:get_text()) then
+		self:update_dependents()
+	end
 	self.choices[self.current_choice]:input_leave()
 	Luasnip_active_choice = nil
 end
@@ -201,11 +208,14 @@ function ChoiceNode:copy()
 end
 
 function DynamicNode:input_enter()
+	self.old_text = self:get_text()
 	self.snip:input_enter()
 end
 
 function DynamicNode:input_leave()
-	self:update_dependents()
+	if not util.multiline_equal(self.old_text, self:get_text()) then
+		self:update_dependents()
+	end
 	self.snip:input_leave()
 end
 

@@ -141,6 +141,11 @@ function Snippet:put_initial()
 		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
 		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
+			if node:has_static_text() then
+				node.old_text = node:get_static_text()
+			else
+				node.old_text = {""}
+			end
 			self.insert_nodes[node.pos] = node
 			-- do here as long as snippets need to be defined manually
 			node.dependents = {}

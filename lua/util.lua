@@ -64,6 +64,16 @@ local function normal_move_on_mark_insert(id)
 	vim.api.nvim_feedkeys(keys, 'n', true)
 end
 
+local function multiline_equal(t1, t2)
+	for i, line in ipairs(t1) do
+		if line ~= t2[i] then
+			return false
+		end
+	end
+
+	return #t1 == #t2
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -73,5 +83,6 @@ return {
 	normal_move_on_mark_insert = normal_move_on_mark_insert,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
-	mark_pos_equal = mark_pos_equal
+	mark_pos_equal = mark_pos_equal,
+	multiline_equal = multiline_equal
 }
