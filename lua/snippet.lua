@@ -124,7 +124,6 @@ function Snippet:dump()
 end
 
 function Snippet:put_initial()
-	self:indent(vim.api.nvim_get_current_line())
 	local cur = util.get_cursor_0ind()
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do

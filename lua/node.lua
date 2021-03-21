@@ -104,6 +104,9 @@ function ChoiceNode:put_initial()
 	for _, node in ipairs(self.choices) do
 		node.markers = self.markers
 		node.markers = self.markers
+		if node.type == 3 then
+			node:indent(vim.api.nvim_get_current_line())
+		end
 	end
 	self.choices[1]:put_initial()
 end
