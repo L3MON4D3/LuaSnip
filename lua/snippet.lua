@@ -115,6 +115,7 @@ end
 
 function Snippet:put_initial()
 	local cur = util.get_cursor_0ind()
+	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do
 		-- save cursor position for later.
@@ -156,6 +157,7 @@ function Snippet:put_initial()
 	end
 
 	cur = util.get_cursor_0ind()
+	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = true})
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 or node.type == 5 then
@@ -210,15 +212,22 @@ function Snippet:indent(line)
 end
 
 function Snippet:input_enter()
+	self.old_text = self:get_text()
+
 	self.parent = Luasnip_active_snippet
 	Luasnip_active_snippet = self
+
 	self.current_insert = 0
 	self:jump(1)
 end
 
 function Snippet:input_leave()
-	self:update_dependents()
+	if not util.multiline_equal(self.old_text, self:get_text()) then
+		self:update_dependents()
+	end
+
 	Luasnip_active_snippet = self.parent
+
 	if not Luasnip_active_snippet then
 		vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
 	end
