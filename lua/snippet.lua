@@ -208,8 +208,8 @@ function Snippet:indent(line)
 	for _, node in ipairs(self.nodes) do
 		-- put prefix behind newlines.
 		if node:has_static_text() then
-			for i = 2, #node.static_text do
-				node.get_static_text[i] = prefix .. node.get_static_text[i]
+			for i = 2, #node:get_static_text() do
+				node:get_static_text()[i] = prefix .. node:get_static_text()[i]
 			end
 		end
 	end
