@@ -167,10 +167,6 @@ function ChoiceNode:copy()
 	return o
 end
 
-function ChoiceNode:confirm_choice()
-	self.choices[self.current_choice]:input_enter()
-end
-
 return {
 	Node = Node,
 	T = T,
