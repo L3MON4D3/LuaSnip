@@ -1,6 +1,8 @@
 # LuaSnip
 Snippet Engine for Neovim written in Lua.  
-WIP, very limited testing.
+WIP, very limited testing.  
+![Basic-Example](./Examples/basic.gif)
+![Choice-Example](./Examples/choices.gif)
 
 # Features
 - Placeholders
