@@ -128,10 +128,12 @@ end
 
 function ChoiceNode:change_choice(val)
 	-- tear down current choice.
+	self.choices[self.current_choice]:input_leave()
 	self.choices[self.current_choice]:exit()
+
 	-- clear text.
-	Luasnip_active_snippet:set_text(self, "")
-	util.move_to_mark(self.from)
+	Luasnip_active_snippet:set_text(self, {""})
+	util.move_to_mark(self.markers[1])
 	local tmp = self.current_choice + val
 	if tmp < 1 then
 		tmp = #self.choices
@@ -140,6 +142,21 @@ function ChoiceNode:change_choice(val)
 	end
 	self.current_choice = tmp
 	self.choices[self.current_choice]:put_initial()
+	util.move_to_mark(self.markers[1])
+	self.choices[self.current_choice]:input_enter()
+end
+
+function ChoiceNode:copy()
+	local o = vim.deepcopy(self)
+	for i, node in ipairs(self.choices) do
+		if node.type == 3 or node.type == 4 then
+			o.choices[i] = node:copy()
+		else
+			setmetatable(o.choices[i], getmetatable(node))
+		end
+	end
+	setmetatable(o, getmetatable(self))
+	return o
 end
 
 function ChoiceNode:confirm_choice()

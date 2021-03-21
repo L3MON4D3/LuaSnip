@@ -76,7 +76,7 @@ end
 function Snippet:copy()
 	local o = vim.deepcopy(self)
 	for j, n in ipairs(self.nodes) do
-		if n.type == 3 then
+		if n.type == 3 or n.type == 4 then
 			o.nodes[j] = n:copy()
 		else
 			setmetatable(o.nodes[j], getmetatable(n))
@@ -218,6 +218,7 @@ end
 function Snippet:input_enter()
 	self.parent = Luasnip_active_snippet
 	Luasnip_active_snippet = self
+	self.current_insert = 0
 	self:jump(1)
 end
 
