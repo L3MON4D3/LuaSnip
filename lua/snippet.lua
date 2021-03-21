@@ -17,7 +17,8 @@ function S(trigger, nodes, condition, ...)
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,
-		user_args = {...}
+		user_args = {...},
+		markers = {}
 	}
 end
 
@@ -32,6 +33,7 @@ function SN(pos, nodes, condition, ...)
 		current_insert = 0,
 		condition = condition,
 		user_args = {...},
+		markers = {},
 		type = 3
 	}
 end
@@ -42,7 +44,7 @@ function Snippet:enter_node(node_id)
 	for i=1, #self.nodes, 1 do
 		local other = self.nodes[i]
 		if other.type ~= 0 then
-			if util.mark_pos_equal(other.to, node.from) then
+			if util.mark_pos_equal(other.markers[2], node.markers[1]) then
 				other:set_to_rgrav(false)
 			else
 				other:set_to_rgrav(true)
@@ -54,14 +56,14 @@ function Snippet:enter_node(node_id)
 	for i = node_id+1, #self.nodes, 1 do
 		local other = self.nodes[i]
 		if self.nodes[i].type ~= 0 then
-			if util.mark_pos_equal(node.to, other.from) then
+			if util.mark_pos_equal(node.markers[2], other.markers[1]) then
 				other:set_from_rgrav(true)
 			else
 				other:set_from_rgrav(false)
 			end
 			-- can be the case after expand; there all nodes without static text
 			-- have left gravity on all marks.
-			if util.mark_pos_equal(node.to, other.to) then
+			if util.mark_pos_equal(node.markers[2], other.markers[2]) then
 				other:set_to_rgrav(true)
 			else
 				other:set_to_rgrav(false)
@@ -85,8 +87,8 @@ function Snippet:copy()
 end
 
 function Snippet:set_text(node, text)
-	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.from, {})
-	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.to, {})
+	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[1], {})
+	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[2], {})
 
 	self:enter_node(node.indx)
 	vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
@@ -94,8 +96,8 @@ end
 
 function Snippet:del_marks()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.from)
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.to)
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[1])
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[2])
 	end
 end
 
@@ -114,9 +116,9 @@ end
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
-		local c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.from, {details = false})
+		local c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[1], {details = false})
 		print(c[1], c[2])
-		c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.to, {details = false})
+		c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[2], {details = false})
 		print(c[1], c[2])
 	end
 end
@@ -139,15 +141,15 @@ function Snippet:put_initial()
 		if node:has_static_text() then
 			-- place extmark directly on previously saved position (first char
 			-- of inserted text) after putting text.
-			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
+			node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
 		-- zero-length; important that text put after doesn't move marker.
 		else
-			node.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
+			node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 		end
 
 		-- place extmark directly behind last char of put text.
 		cur = util.get_cursor_0ind()
-		node.to = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
+		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
 		if node.type == 1 or node.type == 3 or node.type == 4 then
 			self.insert_nodes[node.pos] = node
@@ -225,8 +227,8 @@ end
 
 function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.from)
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.to)
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[1])
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[2])
 	end
 end
 

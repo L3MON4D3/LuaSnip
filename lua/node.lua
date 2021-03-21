@@ -15,50 +15,57 @@ local FunctionNode = Node:new()
 local ChoiceNode = Node:new()
 
 local function T(static_text)
-	return TextNode:new{static_text = static_text, type = 0}
+	return TextNode:new{static_text = static_text, markers = {}, type = 0}
 end
 
 local function I(pos, static_text)
-	return InsertNode:new{pos = pos, static_text = static_text, dependents = {}, type = 1}
+	return InsertNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1}
 end
 
 local function F(fn, args, ...)
-	return FunctionNode:new{fn = fn, args = args, type = 2, user_args = {...}}
+	return FunctionNode:new{fn = fn, args = args, type = 2,  markers = {},user_args = {...}}
 end
 
 local function C(pos, choices)
-	return ChoiceNode:new{pos = pos, choices = choices, type = 4, current_choice = 1}
+	return ChoiceNode:new{pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1}
 end
 
 function Node:has_static_text()
-	return self.static_text and not (self.get_static_text()[1] == "" and #self.get_static_text() == 1)
+	return self:get_static_text() and not (self:get_static_text()[1] == "" and #self:get_static_text() == 1)
+end
+
+function Node:get_static_text()
+	return self.static_text
 end
 
 function Node:put_initial()
 	if self:has_static_text() then
-		vim.api.nvim_put(self.get_static_text(), "c", false, true);
+		vim.api.nvim_put(self:get_static_text(), "c", false, true);
 	end
 end
 
 function TextNode:put_initial()
-	vim.api.nvim_put(self.get_static_text(), "c", false, true);
+	vim.api.nvim_put(self:get_static_text(), "c", false, true);
+end
+
+function TextNode:input_enter()
 end
 
 function Node:set_from_rgrav(val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.from, {})
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.from)
-	self.from = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
+	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
 function Node:set_to_rgrav(val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.to, {})
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.to)
-	self.to = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[2])
+	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
 function Node:get_text()
-	local from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.from, {})
-	local to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.to, {})
+	local from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
+	local to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
 
 	-- end-exclusive indexing.
 	local lines = vim.api.nvim_buf_get_lines(0, from[1], to[1]+1, false)
@@ -78,22 +85,26 @@ function Node:exit()
 end
 
 function Node:input_enter()
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-	if not util.mark_pos_equal(self.to, self.from) then
-		util.normal_move_on_mark(self.from)
+	if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
+		util.normal_move_on_mark(self.markers[1])
 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("v", true, false, true), 'n', true)
-		util.normal_move_before_mark(self.to)
+		util.normal_move_before_mark(self.markers[2])
 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("o<C-G>", true, false, true), 'n', true)
 	else
-		util.normal_move_on_mark_insert(self.from)
+		util.normal_move_on_mark_insert(self.markers[1])
 	end
 end
 
 function Node:input_leave()
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 end
 
 function ChoiceNode:put_initial()
+	for _, node in ipairs(self.choices) do
+		node.markers = self.markers
+		node.markers = self.markers
+	end
 	self.choices[1]:put_initial()
 end
 
