@@ -196,6 +196,9 @@ function Snippet:jump(direction)
 
 	if self.current_insert == 0 then
 		self:input_leave()
+		if direction == -1 and Luasnip_active_snippet then
+			Luasnip_active_snippet:jump(-1)
+		end
 		return true
 	end
 	return false
