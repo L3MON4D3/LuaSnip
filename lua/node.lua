@@ -48,7 +48,7 @@ function TextNode:put_initial()
 	vim.api.nvim_put(self:get_static_text(), "c", false, true);
 end
 
-function TextNode:input_enter()
+function Node:input_enter()
 end
 
 function Node:set_from_rgrav(val)
@@ -84,7 +84,7 @@ end
 function Node:exit()
 end
 
-function Node:input_enter()
+function InsertNode:input_enter()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
@@ -95,6 +95,11 @@ function Node:input_enter()
 	else
 		util.normal_move_on_mark_insert(self.markers[1])
 	end
+end
+
+function TextNode:input_enter()
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
+	util.normal_move_on_mark_insert(self.markers[1])
 end
 
 function Node:input_leave()
