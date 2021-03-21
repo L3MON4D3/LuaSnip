@@ -140,7 +140,7 @@ function Snippet:put_initial()
 		cur = util.get_cursor_0ind()
 		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
-		if node.type == 1 or node.type == 3 or node.type == 4 then
+		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
 			self.insert_nodes[node.pos] = node
 			-- do here as long as snippets need to be defined manually
 			node.dependents = {}
@@ -153,7 +153,7 @@ function Snippet:put_initial()
 	cur = util.get_cursor_0ind()
 
 	for _, node in ipairs(self.nodes) do
-		if node.type == 2 then
+		if node.type == 2 or node.type == 5 then
 			node.parent = self
 			-- append node to dependents-table of args.
 			for i, arg in ipairs(node.args) do

@@ -88,6 +88,7 @@ local ls = {
 	f = node_mod.F,
 	i = node_mod.I,
 	c = node_mod.C,
+	d = node_mod.D,
 	snippets = {}
 }
 

@@ -13,6 +13,7 @@ local TextNode = Node:new()
 local InsertNode = Node:new()
 local FunctionNode = Node:new()
 local ChoiceNode = Node:new()
+local DynamicNode = Node:new()
 
 local function T(static_text)
 	return TextNode:new{static_text = static_text, markers = {}, type = 0}
@@ -28,6 +29,10 @@ end
 
 local function C(pos, choices)
 	return ChoiceNode:new{pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1}
+end
+
+local function D(pos, fn, args, ...)
+	return DynamicNode:new{pos = pos, fn = fn, args = args, type = 5, markers = {}, user_args = {...}}
 end
 
 function Node:has_static_text()
@@ -111,12 +116,17 @@ function Node:update_dependents()
 	end
 end
 
+--- CAREFUL, DynamicNode also uses this function!!
 function FunctionNode:get_args()
 	local args = {}
 	for i, node in ipairs(self.args) do
 		args[i] = node:get_text()
 	end
 	return args
+end
+
+function DynamicNode:get_args()
+	return FunctionNode.get_args(self)
 end
 
 function FunctionNode:update()
@@ -190,10 +200,46 @@ function ChoiceNode:copy()
 	return o
 end
 
+function DynamicNode:input_enter()
+	self.snip:input_enter()
+end
+
+function DynamicNode:input_leave()
+	self:update_dependents()
+	self.snip:input_leave()
+end
+
+function DynamicNode:has_static_text()
+	return false
+end
+
+function DynamicNode:get_static_text()
+	return self.snip:get_static_text()
+end
+
+function DynamicNode:copy()
+	local o = {pos = self.pos, fn = self.fn, args = self.args, type = 5, markers = self.markers, user_args = self.user_args}
+	o.snip = self.snip:copy()
+	return o
+end
+
+function DynamicNode:update()
+	if self.snip then
+		self.snip:exit()
+	end
+	self.parent:set_text(self, {""})
+
+	self.snip = self.fn(self:get_args(), unpack(self.user_args))
+
+	util.move_to_mark(self.markers[1])
+	self.snip:put_initial()
+end
+
 return {
 	Node = Node,
 	T = T,
 	I = I,
 	F = F,
-	C = C
+	C = C,
+	D = D
 }
