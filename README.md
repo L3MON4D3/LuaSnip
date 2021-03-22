@@ -10,6 +10,7 @@ WIP, very limited testing.
 - Defining nested Snippets
 - Filetype-specific Snippets
 - Choices
+- Dynamic Snippet creation
 - Fast, small, simple
 
 # Drawbacks
