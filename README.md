@@ -4,7 +4,7 @@ WIP, very limited testing.
 ![Javadoc](./Examples/javadoc.gif)
 
 # Features
-- Placeholders
+- Tabstops
 - Text-Transformations using Lua functions
 - Conditional Expansion
 - Defining nested Snippets
