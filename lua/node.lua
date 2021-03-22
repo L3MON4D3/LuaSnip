@@ -234,7 +234,7 @@ function DynamicNode:copy()
 end
 
 function DynamicNode:update()
-	local snip = self.fn(self:get_args(), unpack(self.user_args), self.snip)
+	local snip = self.fn(self:get_args(), self.snip, unpack(self.user_args))
 	if self.snip then
 		self.snip:exit()
 	end
