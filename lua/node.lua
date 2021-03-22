@@ -107,6 +107,11 @@ function InsertNode:input_leave()
 	if not util.multiline_equal(self.old_text, self:get_text()) then
 		self:update_dependents()
 	end
+
+	-- Make sure to jump on insert mode.
+	if vim.api.nvim_get_mode().mode == 's' then
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
+	end
 end
 
 
