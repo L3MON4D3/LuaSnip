@@ -234,13 +234,13 @@ function DynamicNode:copy()
 end
 
 function DynamicNode:update()
+	local snip = self.fn(self:get_args(), unpack(self.user_args), self.snip)
 	if self.snip then
 		self.snip:exit()
 	end
+	self.snip = snip
+
 	self.parent:set_text(self, {""})
-
-	self.snip = self.fn(self:get_args(), unpack(self.user_args))
-
 	util.move_to_mark(self.markers[1])
 	self.snip:put_initial()
 end
