@@ -11,32 +11,51 @@ local c = ls.c
 -- placeholder 2,...
 local function copy(args) return args[1] end
 
-local function jdocsnip(args)
+local function jdocsnip(args, old_snip)
 	local nodes = {
 		t({"/**"," * "}),
 		i(0, {"A short Description"}),
 		t({"", ""})
 	}
 
+	-- These will be merged with the snippet; that way, should the snippet be updated,
+	-- some user input eg. text can be referred to in the new snippet.
+	local param_nodes = {}
+
 	-- At least one param.
 	if string.find(args[2][1], ", ") then
 		vim.list_extend(nodes, {t({" * ", ""})})
 	end
 
-
 	local insert = 1
-	for _, arg in ipairs(vim.split(args[2][1], ", ", true)) do
+	for indx, arg in ipairs(vim.split(args[2][1], ", ", true)) do
 		-- Get actual name parameter.
 		arg = vim.split(arg, " ", true)[2]
 		if arg then
-			vim.list_extend(nodes, {t({" * @param "..arg.." "}), i(insert), t({"", ""})})
+			local inode
+			-- if there was some text in this parameter, use it as static_text for this new snippet.
+			if old_snip and old_snip[arg] then
+				inode = i(insert, old_snip[arg]:get_text())
+			else
+				inode = i(insert)
+			end
+			vim.list_extend(nodes, {t({" * @param "..arg.." "}), inode, t({"", ""})})
+			param_nodes[arg] = inode
 
 			insert = insert + 1
 		end
 	end
 
 	if args[1][1] ~= "void" then
-		vim.list_extend(nodes, {t({" * ", " * @return "}), i(insert), t({"", ""})})
+		local inode
+		if old_snip and old_snip[args[1][1]] then
+			inode = i(insert, old_snip[args[1][1]]:get_text())
+		else
+			inode = i(insert)
+		end
+
+		vim.list_extend(nodes, {t({" * ", " * @return "}), inode, t({"", ""})})
+		param_nodes[args[1][1]] = inode
 		insert = insert + 1
 	end
 
@@ -47,7 +66,11 @@ local function jdocsnip(args)
 	end
 
 	vim.list_extend(nodes, {t({" */"})})
-	return sn(nil, nodes)
+
+	local snip = sn(nil, nodes)
+	-- Error on attempting overwrite.
+	add_values(snip, param_nodes)
+	return snip
 end
 
 ls.snippets = {
