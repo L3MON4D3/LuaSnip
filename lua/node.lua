@@ -32,7 +32,14 @@ local function C(pos, choices)
 end
 
 local function D(pos, fn, args, ...)
-	return DynamicNode:new{pos = pos, fn = fn, args = args, type = 5, markers = {}, user_args = {...}}
+	return DynamicNode:new{
+		pos = pos,
+		fn = fn,
+		args = args,
+		type = 5,
+		markers = {},
+		user_args = {...}
+	}
 end
 
 function Node:has_static_text()
@@ -239,9 +246,12 @@ function DynamicNode:copy()
 end
 
 function DynamicNode:update()
-	local snip = self.fn(self:get_args(), self.snip, unpack(self.user_args))
+	local snip
 	if self.snip then
+		snip = self.fn(self:get_args(), self.snip.old_state, unpack(self.user_args))
 		self.snip:exit()
+	else
+		snip = self.fn(self:get_args(), nil, unpack(self.user_args))
 	end
 	self.snip = snip
 
