@@ -1,4 +1,4 @@
-local node_mod = require'node'
+local node_mod = require'nodes.node'
 local util = require'util'
 
 Luasnip_active_snippet = nil

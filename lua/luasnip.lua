@@ -1,5 +1,4 @@
-local node_mod = require'node'
-local snip_mod = require'snippet'
+local snip_mod = require'nodes.snippet'
 local util = require'util'
 
 local next_expand = nil
@@ -84,11 +83,11 @@ local ls = {
 	confirm_choice = confirm_choice,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
-	t = node_mod.T,
-	f = node_mod.F,
-	i = node_mod.I,
-	c = node_mod.C,
-	d = node_mod.D,
+	t = require'nodes.textNode'.T,
+	f = require'nodes.functionNode'.F,
+	i = require'nodes.insertNode'.I,
+	c = require'nodes.choiceNode'.C,
+	d = require'nodes.dynamicNode'.D,
 	snippets = {}
 }
 
