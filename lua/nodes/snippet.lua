@@ -7,7 +7,7 @@ Luasnip_active_choice = nil
 
 local Snippet = node_mod.Node:new()
 
-function S(trigger, nodes, condition, ...)
+local function S(trigger, nodes, condition, ...)
 	if not condition then
 		condition = function() return true end
 	end
@@ -23,7 +23,7 @@ function S(trigger, nodes, condition, ...)
 	}
 end
 
-function SN(pos, nodes, condition, ...)
+local function SN(pos, nodes, condition, ...)
 	if not condition then
 		condition = function() return true end
 	end
