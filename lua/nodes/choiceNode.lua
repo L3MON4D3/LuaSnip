@@ -10,7 +10,7 @@ function ChoiceNode:put_initial()
 		node.markers = self.markers
 		node.markers = self.markers
 		if node.type == 3 then
-			node:indent(vim.api.nvim_get_current_line())
+			node:indent(self.parent.indentstr)
 		end
 	end
 	self.choices[1]:put_initial()

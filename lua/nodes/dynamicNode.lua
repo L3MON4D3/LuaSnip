@@ -58,6 +58,7 @@ function DynamicNode:update()
 
 	self.parent:set_text(self, {""})
 	util.move_to_mark(self.markers[1])
+	self.snip:indent(self.parent.indentstr)
 	self.snip:put_initial()
 end
 

@@ -118,6 +118,7 @@ function Snippet:put_initial()
 	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 	-- i needed for functions.
 	for i, node in ipairs(self.nodes) do
+		node.parent = self
 		-- save cursor position for later.
 		cur = util.get_cursor_0ind()
 
@@ -161,7 +162,6 @@ function Snippet:put_initial()
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 or node.type == 5 then
-			node.parent = self
 			-- append node to dependents-table of args.
 			for i, arg in ipairs(node.args) do
 				-- Function-Node contains refs. to arg-nodes.
@@ -201,6 +201,7 @@ end
 
 function Snippet:indent(line)
 	local prefix = string.match(line, '^%s*')
+	self.indentstr = prefix
 	for _, node in ipairs(self.nodes) do
 		-- put prefix behind newlines.
 		if node:has_static_text() then
