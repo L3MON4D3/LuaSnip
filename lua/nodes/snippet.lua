@@ -74,18 +74,22 @@ function Snippet:enter_node(node_id)
 	end
 end
 
---impl. copy for all nodes.
+-- https://gist.github.com/tylerneylon/81333721109155b2d244
+local function copy3(obj, seen)
+	-- Handle non-tables and previously-seen tables.
+	if type(obj) ~= 'table' then return obj end
+	if seen and seen[obj] then return seen[obj] end
+
+	-- New table; mark it as seen an copy recursively.
+	local s = seen or {}
+	local res = {}
+	s[obj] = res
+	for k, v in next, obj do res[copy3(k, s)] = copy3(v, s) end
+	return setmetatable(res, getmetatable(obj))
+end
+
 function Snippet:copy()
-	local o = vim.deepcopy(self)
-	for j, n in ipairs(self.nodes) do
-		if n.type == 3 or n.type == 4 then
-			o.nodes[j] = n:copy()
-		else
-			setmetatable(o.nodes[j], getmetatable(n))
-		end
-	end
-	setmetatable(o, getmetatable(self))
-	return o
+	return copy3(self)
 end
 
 function Snippet:set_text(node, text)
