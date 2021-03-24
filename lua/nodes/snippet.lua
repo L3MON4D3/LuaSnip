@@ -162,13 +162,15 @@ function Snippet:put_initial()
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 or node.type == 5 then
-			-- append node to dependents-table of args.
-			for i, arg in ipairs(node.args) do
-				-- Function-Node contains refs. to arg-nodes.
-				node.args[i] = self.insert_nodes[arg]
-				self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents+1] = node
-			end
+			if type(node.args[1]) ~= 'table' then
+				-- append node to dependents-table of args.
+				for i, arg in ipairs(node.args) do
+					-- Function-Node contains refs. to arg-nodes.
+					node.args[i] = self.insert_nodes[arg]
+					self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents+1] = node
+				end
 			node:update()
+			end
 		end
 	end
 end
