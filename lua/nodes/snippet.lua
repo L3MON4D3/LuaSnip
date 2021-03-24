@@ -154,7 +154,9 @@ function Snippet:put_initial()
 			end
 			self.insert_nodes[node.pos] = node
 			-- do here as long as snippets need to be defined manually
-			node.dependents = {}
+			if not node.dependents then
+				node.dependents = {}
+			end
 		end
 
 		-- do here as long as snippets need to be defined manually

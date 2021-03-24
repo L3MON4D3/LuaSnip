@@ -88,6 +88,7 @@ local ls = {
 	i = require'nodes.insertNode'.I,
 	c = require'nodes.choiceNode'.C,
 	d = require'nodes.dynamicNode'.D,
+	parser = require'util.parser',
 	snippets = {}
 }
 
