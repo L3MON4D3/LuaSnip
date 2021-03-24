@@ -9,8 +9,6 @@ local functions = require 'util.functions'
 local tab_stops
 local brackets
 
-local parse_functions={parse_tabstop, parse_placeholder, parse_choice, parse_variable, error}
-
 local function is_escaped(text, indx)
 	local count = 0
 	for i = indx-1, 1, -1 do
@@ -51,6 +49,7 @@ end
 
 local function simple_tabstop(text)
 	local num = tonumber(text)
+	if not num then return nil end
 	if not tab_stops[num] then
 		tab_stops[num] = iNode.I(num)
 		return tab_stops[num]
@@ -60,6 +59,8 @@ local function simple_tabstop(text)
 		return node
 	end
 end
+
+local parse_functions={simple_tabstop, parse_placeholder, parse_choice, parse_variable, error}
 
 local function parse_snippet(trigger, body)
 	-- reset state.
