@@ -1,5 +1,5 @@
 local node_mod = require'nodes.node'
-local util = require'util'
+local util = require'util.util'
 
 local TextNode = node_mod.Node:new()
 

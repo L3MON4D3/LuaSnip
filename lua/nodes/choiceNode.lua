@@ -1,5 +1,5 @@
 local ChoiceNode = require'nodes.node'.Node:new()
-local util = require'util'
+local util = require'util.util'
 
 local function C(pos, choices)
 	return ChoiceNode:new{pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1}

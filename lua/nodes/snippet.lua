@@ -1,5 +1,5 @@
 local node_mod = require'nodes.node'
-local util = require'util'
+local util = require'util.util'
 
 Luasnip_active_snippet = nil
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")

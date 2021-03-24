@@ -1,5 +1,5 @@
 local InsertNode = require'nodes.node'.Node:new()
-local util = require'util'
+local util = require'util.util'
 
 local function I(pos, static_text)
 	return InsertNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1}

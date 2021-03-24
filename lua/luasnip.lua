@@ -1,5 +1,5 @@
 local snip_mod = require'nodes.snippet'
-local util = require'util'
+local util = require'util.util'
 
 local next_expand = nil
 
