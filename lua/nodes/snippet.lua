@@ -175,8 +175,8 @@ function Snippet:put_initial()
 					node.args[i] = self.insert_nodes[arg]
 					self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents+1] = node
 				end
-			node:update()
 			end
+			node:update()
 		end
 	end
 end

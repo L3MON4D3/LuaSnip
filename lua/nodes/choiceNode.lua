@@ -2,7 +2,7 @@ local ChoiceNode = require'nodes.node'.Node:new()
 local util = require'util.util'
 
 local function C(pos, choices)
-	return ChoiceNode:new{pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1}
+	return ChoiceNode:new{pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1, dependents = {}}
 end
 
 function ChoiceNode:put_initial()
@@ -19,6 +19,7 @@ end
 function ChoiceNode:input_enter()
 	self.old_text = self:get_text()
 	self.choices[self.current_choice]:input_enter()
+	self.prev_choice = Luasnip_active_choice
 	Luasnip_active_choice = self
 end
 
@@ -27,7 +28,7 @@ function ChoiceNode:input_leave()
 		self:update_dependents()
 	end
 	self.choices[self.current_choice]:input_leave()
-	Luasnip_active_choice = nil
+	Luasnip_active_choice = self.prev_choice
 end
 
 function ChoiceNode:has_static_text()
@@ -52,8 +53,12 @@ function ChoiceNode:change_choice(val)
 	elseif tmp > #self.choices then
 		tmp = 1
 	end
+
 	self.current_choice = tmp
 	self.choices[self.current_choice]:put_initial()
+	-- safe to assume that text has changed.
+	self:update_dependents()
+
 	util.move_to_mark(self.markers[1])
 	self.choices[self.current_choice]:input_enter()
 end
