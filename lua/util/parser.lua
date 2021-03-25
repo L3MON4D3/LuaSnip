@@ -40,6 +40,14 @@ local function brckt_lst(text)
 end
 
 local function parse_text(text)
+	-- Works for now, maybe a bit naive, but gsub behaviour shouldn't change I
+	-- think...
+	text = string.gsub(text, '\\\\', '\\')
+	text = string.gsub(text, '\\{', '{')
+	text = string.gsub(text, '\\}', '}')
+	text = string.gsub(text, '\\,', ',')
+	text = string.gsub(text, '\\|', '|')
+
 	local text_table = {}
 	for line in vim.gsplit(text, "\n", true) do
 		text_table[#text_table+1] = line
