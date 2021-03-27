@@ -42,7 +42,11 @@ local function normal_move_before_mark(id)
 	local new_cur_pos = vim.api.nvim_buf_get_extmark_by_id(
 		0, Luasnip_ns_id, id, {details = false})
 	-- +1: indexing
-	vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0'..tostring(new_cur_pos[2]-1)..'l', 'n', true)
+	if new_cur_pos[2]-1 ~= 0 then
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0'..tostring(new_cur_pos[2]-1)..'l', 'n', true)
+	else
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0', 'n', true)
+	end
 end
 
 local function normal_move_on_mark(id)
