@@ -246,16 +246,12 @@ function Snippet:indent(line)
 end
 
 function Snippet:input_enter()
-	self.old_text = self:get_text()
-
 	self.parent = Luasnip_active_snippet
 	Luasnip_active_snippet = self
 end
 
 function Snippet:input_leave()
-	if not util.multiline_equal(self.old_text, self:get_text()) then
-		self:update_dependents()
-	end
+	self:update_dependents()
 
 	Luasnip_active_snippet = self.parent
 end
