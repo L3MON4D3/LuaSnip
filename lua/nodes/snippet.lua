@@ -105,6 +105,8 @@ function Snippet:trigger_expand(current_node)
 	-- Needs no prev.
 	self.insert_nodes[0].next = current_node
 
+	self.old_text = self:get_text()
+
 	self:jump_into(1)
 end
 
