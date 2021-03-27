@@ -264,13 +264,9 @@ function Snippet:jump_into(dir)
 	if self.active then
 		self:input_leave()
 		if dir == 1 then
-			if self.next then
-				self.next:jump_into(dir)
-			end
+			self.next:jump_into(dir)
 		else
-			if self.prev then
-				self.prev:jump_into(dir)
-			end
+			self.prev:jump_into(dir)
 		end
 	else
 		self:input_enter()
