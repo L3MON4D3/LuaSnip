@@ -1,4 +1,5 @@
 local node_mod = require'nodes.node'
+local iNode = require'nodes.insertNode'
 local util = require'util.util'
 
 Luasnip_active_snippet = nil
@@ -87,12 +88,22 @@ function Snippet:trigger_expand(current_node)
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)
 
+	local start_node = iNode.I(0)
+	local cur = util.get_cursor_0ind()
+	-- Marks should stay at the beginning of the snippet.
+	start_node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
+	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
+
 	self:put_initial()
 
+	-- needs no next.
+	start_node.prev = current_node
+
 	self.next = self.insert_nodes[0]
-	self.prev = current_node
+	self.prev = start_node
+
+	-- Needs no prev.
 	self.insert_nodes[0].next = current_node
-	self.insert_nodes[0].prev = current_node
 
 	self:jump_into(1)
 end
