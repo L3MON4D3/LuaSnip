@@ -249,11 +249,13 @@ end
 
 function Snippet:input_enter()
 	self.parent = Luasnip_active_snippet
+	self.active = true
 	Luasnip_active_snippet = self
 end
 
 function Snippet:input_leave()
 	self:update_dependents()
+	self.active = false
 
 	Luasnip_active_snippet = self.parent
 end
@@ -274,7 +276,6 @@ function Snippet:jump_into(dir)
 			self.inner_last:jump_into(dir)
 		end
 	end
-	self.active = not self.active
 end
 
 -- Should not happen.
