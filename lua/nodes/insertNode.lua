@@ -27,9 +27,7 @@ function InsertNode:input_enter()
 end
 
 function InsertNode:input_leave()
-	if not util.multiline_equal(self.old_text, self:get_text()) then
-		self:update_dependents()
-	end
+	self:update_dependents()
 
 	-- Make sure to jump on insert mode.
 	if vim.api.nvim_get_mode().mode == 's' then

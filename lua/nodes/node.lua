@@ -1,3 +1,5 @@
+local util = require'util.util'
+
 local Node = {}
 
 function Node:new(o)
@@ -84,9 +86,12 @@ function Node:input_leave()
 end
 
 function Node:update_dependents()
-	for _, node in ipairs(self.dependents) do
-		node:update()
+	if not util.multiline_equal(self.old_text, self:get_text()) then
+		for _, node in ipairs(self.dependents) do
+			node:update()
+		end
 	end
+	self.old_text = self:get_text()
 end
 
 return {
