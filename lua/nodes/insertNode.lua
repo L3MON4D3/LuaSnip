@@ -19,6 +19,7 @@ function ZeroNode:jump_into(dir)
 			self.next:jump_into(dir, true)
 		else
 			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
+			vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
 			return false
 		end
 	else
@@ -27,6 +28,7 @@ function ZeroNode:jump_into(dir)
 			self.prev:jump_into(dir, true)
 		else
 			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
+			vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
 			return false
 		end
 	end
