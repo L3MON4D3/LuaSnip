@@ -7,6 +7,7 @@ end
 
 function ChoiceNode:put_initial()
 	for _, node in ipairs(self.choices) do
+		node.parent = self.parent
 		node.markers = self.markers
 		node.markers = self.markers
 		node.next = self
