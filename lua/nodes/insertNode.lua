@@ -63,7 +63,7 @@ function InsertNode:input_leave()
 
 	-- Make sure to jump on insert mode.
 	if vim.api.nvim_get_mode().mode == 's' then
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>a", true, false, true), 'n', true)
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
 	end
 end
 
