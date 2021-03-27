@@ -23,11 +23,11 @@ function Node:put_initial()
 	end
 end
 
-function Node:input_enter()
+function Node:input_enter(no_move)
 end
 
-function Node:jump_into(dir)
-	self:input_enter()
+function Node:jump_into(dir, no_move)
+	self:input_enter(no_move)
 	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
 end
 

@@ -11,23 +11,25 @@ local function I(pos, static_text)
 end
 
 function ZeroNode:jump_into(dir)
+	-- move to zero-inserts position.
 	self:input_enter()
 	if dir == 1 then
 		if self.next then
-			self.next:jump_into(dir)
+			-- jump, but don't move cursor.
+			self.next:jump_into(dir, true)
 		else
 			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
 			return false
 		end
 	else
 		if self.prev then
-			self.prev:jump_into(dir)
+			-- jump, but don't move cursor.
+			self.prev:jump_into(dir, true)
 		else
 			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
 			return false
 		end
 	end
-	return true
 end
 
 function ZeroNode:input_enter()
@@ -43,18 +45,22 @@ function ZeroNode:input_enter()
 	end
 end
 
-function InsertNode:input_enter()
-	self.parent:enter_node(self.indx)
+function InsertNode:input_enter(no_move)
+	if not no_move then
+		self.parent:enter_node(self.indx)
 
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
-	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-	if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
-		util.normal_move_on_mark(self.markers[1])
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("v", true, false, true), 'n', true)
-		util.normal_move_before_mark(self.markers[2])
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("o<C-G>", true, false, true), 'n', true)
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
+		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
+		if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
+			util.normal_move_on_mark(self.markers[1])
+			vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("v", true, false, true), 'n', true)
+			util.normal_move_before_mark(self.markers[2])
+			vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("o<C-G>", true, false, true), 'n', true)
+		else
+			util.normal_move_on_mark_insert(self.markers[1])
+		end
 	else
-		util.normal_move_on_mark_insert(self.markers[1])
+		self.parent:enter_node(self.indx)
 	end
 end
 
