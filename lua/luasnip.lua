@@ -31,7 +31,11 @@ local function match_snippet(line)
 end
 
 local function jump(dir)
-	return Luasnip_current_nodes[vim.api.nvim_get_current_buf()]:jump_from(dir)
+	if Luasnip_current_nodes[vim.api.nvim_get_current_buf()] then
+		return Luasnip_current_nodes[vim.api.nvim_get_current_buf()]:jump_from(dir)
+	else
+		return false
+	end
 end
 
 local function expand_or_jumpable()
