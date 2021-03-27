@@ -7,11 +7,46 @@ Luasnip_active_choice = nil
 
 local Snippet = node_mod.Node:new()
 
+local function init_nodes(snippet)
+	local insert_nodes = {}
+	for i, node in ipairs(snippet.nodes) do
+		node.parent = snippet
+		node.indx = i
+		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
+			if node:has_static_text() then
+				node.old_text = node:get_static_text()
+			else
+				node.old_text = {""}
+			end
+			insert_nodes[node.pos] = node
+		end
+	end
+
+	-- # doesn't count [0].
+	-- insert_nodes[#insert_nodes+1] = insert_nodes[0]
+	-- save so it can be restored later.
+	local tmp = snippet.next
+
+	local last_node = snippet
+	for _, node in ipairs(insert_nodes) do
+		node.prev = last_node
+		last_node.next = node
+		last_node = node
+	end
+	snippet.next = tmp
+	insert_nodes[#insert_nodes].next = snippet
+
+	snippet.inner_first = insert_nodes[1]
+	snippet.inner_last = insert_nodes[#insert_nodes]
+
+	snippet.insert_nodes = insert_nodes
+end
+
 local function S(trigger, nodes, condition, ...)
 	if not condition then
 		condition = function() return true end
 	end
-	return Snippet:new{
+	local snip = Snippet:new{
 		trigger = trigger,
 		nodes = nodes,
 		insert_nodes = {},
@@ -19,15 +54,18 @@ local function S(trigger, nodes, condition, ...)
 		condition = condition,
 		user_args = {...},
 		markers = {},
-		dependents = {}
+		dependents = {},
+		active = false
 	}
+	init_nodes(snip)
+	return snip
 end
 
 local function SN(pos, nodes, condition, ...)
 	if not condition then
 		condition = function() return true end
 	end
-	return Snippet:new{
+	local snip = Snippet:new{
 		pos = pos,
 		nodes = nodes,
 		insert_nodes = {},
@@ -36,8 +74,27 @@ local function SN(pos, nodes, condition, ...)
 		user_args = {...},
 		markers = {},
 		dependents = {},
+		active = false,
 		type = 3
 	}
+	init_nodes(snip)
+	return snip
+end
+
+function Snippet:trigger_expand(current_node)
+	self:indent(util.get_current_line_to_cursor())
+
+	-- remove snippet-trigger, Cursor at start of future snippet text.
+	util.remove_n_before_cur(#self.trigger)
+
+	self:put_initial()
+
+	self.next = self.insert_nodes[0]
+	self.prev = current_node
+	self.insert_nodes[0].next = current_node
+	self.insert_nodes[0].prev = current_node
+
+	self:jump_into(1)
 end
 
 -- todo: impl exit_node
@@ -121,8 +178,7 @@ function Snippet:put_initial()
 	local cur = util.get_cursor_0ind()
 	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 	-- i needed for functions.
-	for i, node in ipairs(self.nodes) do
-		node.parent = self
+	for _, node in ipairs(self.nodes) do
 		-- save cursor position for later.
 		cur = util.get_cursor_0ind()
 
@@ -145,22 +201,6 @@ function Snippet:put_initial()
 		-- place extmark directly behind last char of put text.
 		cur = util.get_cursor_0ind()
 		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
-
-		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
-			if node:has_static_text() then
-				node.old_text = node:get_static_text()
-			else
-				node.old_text = {""}
-			end
-			self.insert_nodes[node.pos] = node
-			-- do here as long as snippets need to be defined manually
-			if not node.dependents then
-				node.dependents = {}
-			end
-		end
-
-		-- do here as long as snippets need to be defined manually
-		node.indx = i
 	end
 
 	cur = util.get_cursor_0ind()
@@ -181,32 +221,6 @@ function Snippet:put_initial()
 	end
 end
 
--- jump(-1) on first insert would jump to end of snippet (0-insert).
--- Return whether jump exited snippet.
-function Snippet:jump(direction)
-	self.insert_nodes[self.current_insert]:input_leave()
-
-	local tmp = self.current_insert + direction
-	-- Would jump to invalid node?
-	if self.insert_nodes[tmp] == nil then
-		self.current_insert = 0
-	else
-		self.current_insert = tmp
-	end
-
-	self:enter_node(self.insert_nodes[self.current_insert].indx)
-	self.insert_nodes[self.current_insert]:input_enter()
-
-	if self.current_insert == 0 then
-		self:input_leave()
-		if direction == -1 and Luasnip_active_snippet then
-			Luasnip_active_snippet:jump(-1)
-		end
-		return true
-	end
-	return false
-end
-
 function Snippet:indent(line)
 	local prefix = string.match(line, '^%s*')
 	self.indentstr = prefix
@@ -225,9 +239,6 @@ function Snippet:input_enter()
 
 	self.parent = Luasnip_active_snippet
 	Luasnip_active_snippet = self
-
-	self.current_insert = 0
-	self:jump(1)
 end
 
 function Snippet:input_leave()
@@ -236,10 +247,33 @@ function Snippet:input_leave()
 	end
 
 	Luasnip_active_snippet = self.parent
+end
 
-	if not Luasnip_active_snippet then
-		vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
+function Snippet:jump_into(dir)
+	if self.active then
+		self:input_leave()
+		if dir == 1 then
+			if self.next then
+				self.next:jump_into(dir)
+			end
+		else
+			if self.prev then
+				self.prev:jump_into(dir)
+			end
+		end
+	else
+		self:input_enter()
+		if dir == 1 then
+			self.inner_first:jump_into(dir)
+		else
+			self.inner_last:jump_into(dir)
+		end
 	end
+	self.active = not self.active
+end
+
+-- Should not happen.
+function Snippet:jump_from(dir)
 end
 
 function Snippet:exit()

@@ -1,11 +1,18 @@
 local InsertNode = require'nodes.node'.Node:new()
+local ZeroNode = InsertNode:new()
 local util = require'util.util'
 
 local function I(pos, static_text)
 	return InsertNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1}
 end
 
+function ZeroNode:jump_into(dir)
+	self:input_enter()
+	self:jump_from(dir)
+end
+
 function InsertNode:input_enter()
+	self.parent:enter_node(self.indx)
 	self.old_text = self:get_text()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).

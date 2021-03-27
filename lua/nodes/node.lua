@@ -24,6 +24,29 @@ end
 function Node:input_enter()
 end
 
+function Node:jump_into(dir)
+	self:input_enter()
+	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
+end
+
+function Node:jump_from(dir)
+	self:input_leave()
+	if dir == 1 then
+		if self.next then
+			self.next:jump_into(dir)
+		else
+			return false
+		end
+	else
+		if self.prev then
+			self.prev:jump_into(dir)
+		else
+			return false
+		end
+	end
+	return true
+end
+
 function Node:set_from_rgrav(val)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
@@ -56,7 +79,6 @@ end
 
 function Node:exit()
 end
-
 
 function Node:input_leave()
 end
