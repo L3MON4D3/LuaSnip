@@ -16,12 +16,13 @@ function ChoiceNode:put_initial()
 		end
 		node.indx = self.indx
 	end
-	self.choices[self.current_choice]:put_initial()
-	self.choices[self.current_choice].old_text = self.choices[self.current_choice]:get_text()
 	self.inner = self.choices[self.current_choice]
+	self.inner:put_initial()
 end
 
 function ChoiceNode:input_enter()
+	self.parent:enter_node(self.indx)
+
 	self.prev_choice = Luasnip_active_choice
 	Luasnip_active_choice = self
 	self.active = true
@@ -29,9 +30,13 @@ end
 
 function ChoiceNode:input_leave()
 	self:update_dependents()
-	self.choices[self.current_choice]:input_leave()
 	Luasnip_active_choice = self.prev_choice
 	self.active = false
+end
+
+function ChoiceNode:set_old_text()
+	self.old_text = self:get_text()
+	self.inner.old_text = self.old_text
 end
 
 function ChoiceNode:has_static_text()
@@ -65,7 +70,7 @@ function ChoiceNode:change_choice(val)
 	self.choices[self.current_choice]:exit()
 
 	-- clear text.
-	Luasnip_active_snippet:set_text(self, {""})
+	self.parent:set_text(self, {""})
 
 	local tmp = self.current_choice + val
 	if tmp < 1 then
@@ -74,14 +79,16 @@ function ChoiceNode:change_choice(val)
 		tmp = 1
 	end
 	self.current_choice = tmp
+	self.inner = self.choices[self.current_choice]
 
 	util.move_to_mark(self.markers[1])
-	self.choices[self.current_choice]:put_initial()
-	self.inner = self.choices[self.current_choice]
+	self.inner:put_initial()
 	self.inner.old_text = self.inner:get_text()
 
 	self:update_dependents()
 
+	-- Another node may have been entered in update_dependents.
+	self.parent:enter_node(self.indx)
 	self.inner:jump_into(1)
 end
 

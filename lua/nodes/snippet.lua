@@ -137,8 +137,6 @@ function Snippet:enter_node(node_id)
 			-- have left gravity on all marks.
 			if util.mark_pos_equal(node.markers[2], other.markers[2]) then
 				other:set_to_rgrav(true)
-			else
-				other:set_to_rgrav(false)
 			end
 		end
 	end
@@ -214,7 +212,7 @@ function Snippet:put_initial()
 
 		-- place extmark directly behind last char of put text.
 		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur2[1], cur2[2], {right_gravity = false})
-		node.old_text = node:get_text()
+		node:set_old_text()
 	end
 
 	cur = util.get_cursor_0ind()
@@ -250,8 +248,8 @@ end
 
 function Snippet:input_enter()
 	self.parent = Luasnip_active_snippet
-	self.active = true
 	Luasnip_active_snippet = self
+	self.active = true
 end
 
 function Snippet:input_leave()
