@@ -47,19 +47,24 @@ function DynamicNode:copy()
 end
 
 function DynamicNode:update()
-	local snip
 	if self.snip then
-		snip = self.fn(self:get_args(), self.snip.old_state, unpack(self.user_args))
 		self.snip:exit()
+		self.snip = self.fn(self:get_args(), self.snip.old_state, unpack(self.user_args))
 	else
-		snip = self.fn(self:get_args(), nil, unpack(self.user_args))
+		self.snip = self.fn(self:get_args(), nil, unpack(self.user_args))
 	end
-	self.snip = snip
+
+	self.prev.next = self.snip
+	self.next.prev = self.snip
+
+	self.snip.next = self.next
+	self.snip.prev = self.prev
 
 	self.parent:set_text(self, {""})
 	util.move_to_mark(self.markers[1])
 	self.snip:indent(self.parent.indentstr)
 	self.snip:put_initial()
+	self.snip.old_text = self.snip:get_text()
 end
 
 return {
