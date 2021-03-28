@@ -15,7 +15,7 @@ local function copy(args) return args[1] end
 local function jdocsnip(args, old_state)
 	local nodes = {
 		t({"/**"," * "}),
-		i(0, {"A short Description"}),
+		i(1, {"A short Description"}),
 		t({"", ""})
 	}
 
@@ -23,12 +23,17 @@ local function jdocsnip(args, old_state)
 	-- some user input eg. text can be referred to in the new snippet.
 	local param_nodes = {}
 
+	if old_state then
+		nodes[2] = i(1, old_state.descr:get_text())
+	end
+	param_nodes.descr = nodes[2]
+
 	-- At least one param.
 	if string.find(args[2][1], ", ") then
 		vim.list_extend(nodes, {t({" * ", ""})})
 	end
 
-	local insert = 1
+	local insert = 2
 	for indx, arg in ipairs(vim.split(args[2][1], ", ", true)) do
 		-- Get actual name parameter.
 		arg = vim.split(arg, " ", true)[2]
@@ -36,12 +41,12 @@ local function jdocsnip(args, old_state)
 			local inode
 			-- if there was some text in this parameter, use it as static_text for this new snippet.
 			if old_state and old_state[arg] then
-				inode = i(insert, old_state[arg]:get_text())
+				inode = i(insert, old_state["arg"..arg]:get_text())
 			else
 				inode = i(insert)
 			end
 			vim.list_extend(nodes, {t({" * @param "..arg.." "}), inode, t({"", ""})})
-			param_nodes[arg] = inode
+			param_nodes["arg"..arg] = inode
 
 			insert = insert + 1
 		end
@@ -49,20 +54,27 @@ local function jdocsnip(args, old_state)
 
 	if args[1][1] ~= "void" then
 		local inode
-		if old_state and old_state[args[1][1]] then
-			inode = i(insert, old_state[args[1][1]]:get_text())
+		if old_state and old_state.ret then
+			inode = i(insert, old_state.ret:get_text())
 		else
 			inode = i(insert)
 		end
 
 		vim.list_extend(nodes, {t({" * ", " * @return "}), inode, t({"", ""})})
-		param_nodes[args[1][1]] = inode
+		param_nodes.ret = inode
 		insert = insert + 1
 	end
 
 	if vim.tbl_count(args[3]) ~= 1 then
 		local exc = string.gsub(args[3][2], " throws ", "")
-		vim.list_extend(nodes, {t({" * ", " * @throws "..exc.." "}), i(insert), t({"", ""})})
+		local ins
+		if old_state and old_state.ex then
+			ins = i(insert, old_state.ex:get_text())
+		else
+			ins = i(insert)
+		end
+		vim.list_extend(nodes, {t({" * ", " * @throws "..exc.." "}), ins, t({"", ""})})
+		param_nodes.ex = ins
 		insert = insert + 1
 	end
 
@@ -91,7 +103,7 @@ ls.snippets = {
 			i(2, {"int foo"}),
 			-- Linebreak
 			t({") {", "\t"}),
-			-- Last Placeholder, exit Point of the snippet. EVERY SNIPPET NEEDS Placeholder 0.
+			-- Last Placeholder, exit Point of the snippet. EVERY 'outer' SNIPPET NEEDS Placeholder 0.
 			i(0),
 			t({"", "}"})
 		}),
@@ -106,16 +118,16 @@ ls.snippets = {
 			t({" "}),
 			c(3, {
 				t({"{"}),
-				-- sn: Nested Snippet. Instead of a trigger, it has a position, just like insert-nodes.
+				-- sn: Nested Snippet. Instead of a trigger, it has a position, just like insert-nodes. !!! These don't expect a 0-node!!!!
 				-- Inside Choices, Nodes don't need a position as the choice node is the one being jumped to.
 				sn(nil, {
 					t({"extends "}),
-					i(0),
+					i(1),
 					t({" {"})
 				}),
 				sn(nil, {
 					t({"implements "}),
-					i(0),
+					i(1),
 					t({" {"})
 				})
 			}),
@@ -148,7 +160,7 @@ ls.snippets = {
 				t({""}),
 				sn(nil, {
 					t({""," throws "}),
-					i(0)
+					i(1)
 				})
 			}),
 			t({" {", "\t"}),
