@@ -8,10 +8,10 @@ Luasnip_active_choice = nil
 
 local Snippet = node_mod.Node:new()
 
-local function init_nodes(snippet)
+function Snippet:init_nodes()
 	local insert_nodes = {}
-	for i, node in ipairs(snippet.nodes) do
-		node.parent = snippet
+	for i, node in ipairs(self.nodes) do
+		node.parent = self
 		node.indx = i
 		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
 			insert_nodes[node.pos] = node
@@ -20,25 +20,25 @@ local function init_nodes(snippet)
 
 	if #insert_nodes ~= 0 then
 		-- save so it can be restored later.
-		local tmp = snippet.next
+		local tmp = self.next
 
-		local last_node = snippet
+		local last_node = self
 		for _, node in ipairs(insert_nodes) do
 			node.prev = last_node
 			last_node.next = node
 			last_node = node
 		end
-		snippet.next = tmp
-		insert_nodes[#insert_nodes].next = snippet
+		self.next = tmp
+		insert_nodes[#insert_nodes].next = self
 
-		snippet.inner_first = insert_nodes[1]
-		snippet.inner_last = insert_nodes[#insert_nodes]
+		self.inner_first = insert_nodes[1]
+		self.inner_last = insert_nodes[#insert_nodes]
 	else
-		snippet.inner_first = snippet
-		snippet.inner_last = snippet
+		self.inner_first = self
+		self.inner_last = self
 	end
 
-	snippet.insert_nodes = insert_nodes
+	self.insert_nodes = insert_nodes
 end
 
 local function S(trigger, nodes, condition, ...)
@@ -56,7 +56,7 @@ local function S(trigger, nodes, condition, ...)
 		dependents = {},
 		active = false
 	}
-	init_nodes(snip)
+	snip:init_nodes()
 	return snip
 end
 
@@ -76,7 +76,7 @@ local function SN(pos, nodes, condition, ...)
 		active = false,
 		type = 3
 	}
-	init_nodes(snip)
+	snip:init_nodes()
 	return snip
 end
 
@@ -263,6 +263,10 @@ function Snippet:jump_into(dir)
 	else
 		self:input_enter()
 		if dir == 1 then
+			if not self.inner_first then
+				print(vim.inspect(self))
+				print(debug.traceback())
+			end
 			self.inner_first:jump_into(dir)
 		else
 			self.inner_last:jump_into(dir)
