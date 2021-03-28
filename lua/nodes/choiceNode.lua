@@ -9,16 +9,16 @@ function ChoiceNode:put_initial()
 	for _, node in ipairs(self.choices) do
 		node.parent = self.parent
 		node.markers = self.markers
-		node.markers = self.markers
 		node.next = self
 		node.prev = self
 		if node.type == 3 then
 			node:indent(self.parent.indentstr)
 		end
+		node.indx = self.indx
 	end
 	self.choices[self.current_choice]:put_initial()
+	self.choices[self.current_choice].old_text = self.choices[self.current_choice]:get_text()
 	self.inner = self.choices[self.current_choice]
-	self.inner.old_text = self.choices[self.current_choice]:get_static_text()
 end
 
 function ChoiceNode:input_enter()
@@ -78,6 +78,7 @@ function ChoiceNode:change_choice(val)
 	util.move_to_mark(self.markers[1])
 	self.choices[self.current_choice]:put_initial()
 	self.inner = self.choices[self.current_choice]
+	self.inner.old_text = self.inner:get_text()
 
 	self:update_dependents()
 
