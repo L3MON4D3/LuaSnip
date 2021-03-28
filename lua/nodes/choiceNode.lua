@@ -66,8 +66,8 @@ end
 
 function ChoiceNode:change_choice(val)
 	-- tear down current choice.
-	self.choices[self.current_choice]:input_leave()
-	self.choices[self.current_choice]:exit()
+	self.inner:input_leave()
+	self.inner:exit()
 
 	-- clear text.
 	self.parent:set_text(self, {""})

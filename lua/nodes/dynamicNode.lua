@@ -8,7 +8,8 @@ local function D(pos, fn, args, ...)
 		args = args,
 		type = 5,
 		markers = {},
-		user_args = {...}
+		user_args = {...},
+		dependents = {}
 	}
 end
 
@@ -37,6 +38,9 @@ function DynamicNode:get_static_text()
 	return self.snip:get_static_text()
 end
 
+function DynamicNode:put_initial()
+end
+
 function DynamicNode:jump_into(dir)
 	if self.active then
 		self:input_leave()
@@ -47,11 +51,7 @@ function DynamicNode:jump_into(dir)
 		end
 	else
 		self:input_enter()
-		if dir == 1 then
-			self.inner:jump_into(dir)
-		else
-			self.inner:jump_into(dir)
-		end
+		self.snip:jump_into(dir)
 	end
 end
 
@@ -62,8 +62,6 @@ function DynamicNode:update()
 	else
 		self.snip = self.fn(self:get_args(), nil, unpack(self.user_args))
 	end
-
-	self.inner = self.snip
 
 	self.snip.next = self
 	self.snip.prev = self
