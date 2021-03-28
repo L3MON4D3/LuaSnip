@@ -135,6 +135,10 @@ ls.snippets = {
 			i(0),
 			t({"", "}"})
 		}),
+		-- Parsing snippets: First parameter: Snippet-Trigger, Second: Snippet body.
+		-- Placeholders are parsed into choices with 1. the placeholder text(as a snippet) and 2. an empty string.
+		-- This means they are not SELECTed like in other editors/Snippet engines.
+		ls.parser.parse_snippet("lspsyn", "Wow! This ${1:Stuff} really ${2:works. ${3:Well, a bit.}}")
 	},
 	java = {
 		-- Very long example for a java class.
