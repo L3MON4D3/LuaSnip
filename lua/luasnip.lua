@@ -36,11 +36,12 @@ local function jump(dir)
 	else
 		return false
 	end
+	return true
 end
 
 local function expand_or_jumpable()
 	next_expand = match_snippet(util.get_current_line_to_cursor())
-	return (next_expand ~= nil) or (Luasnip_active_snippet ~= nil)
+	return (next_expand ~= nil) or (Luasnip_current_nodes[vim.api.nvim_get_current_buf()] ~= nil)
 end
 
 -- return true and expand snippet if expandable, return false if not.
@@ -61,10 +62,6 @@ end
 
 local function change_choice(val)
 	return Luasnip_active_choice:change_choice(val)
-end
-
-local function confirm_choice()
-	Luasnip_active_snippet:input_enter()
 end
 
 local ls = {

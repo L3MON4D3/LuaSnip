@@ -14,11 +14,6 @@ local function init_nodes(snippet)
 		node.parent = snippet
 		node.indx = i
 		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
-			if node:has_static_text() then
-				node.old_text = node:get_static_text()
-			else
-				node.old_text = {""}
-			end
 			insert_nodes[node.pos] = node
 		end
 	end
@@ -104,8 +99,6 @@ function Snippet:trigger_expand(current_node)
 
 	-- Needs no prev.
 	self.insert_nodes[0].next = current_node
-
-	self.old_text = self:get_text()
 
 	self:jump_into(1)
 end
@@ -217,6 +210,7 @@ function Snippet:put_initial()
 
 	cur = util.get_cursor_0ind()
 	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = true})
+	self:set_old_text()
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 or node.type == 5 then
@@ -247,16 +241,12 @@ function Snippet:indent(line)
 end
 
 function Snippet:input_enter()
-	self.parent = Luasnip_active_snippet
-	Luasnip_active_snippet = self
 	self.active = true
 end
 
 function Snippet:input_leave()
 	self:update_dependents()
 	self.active = false
-
-	Luasnip_active_snippet = self.parent
 end
 
 function Snippet:jump_into(dir)
