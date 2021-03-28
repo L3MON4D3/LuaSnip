@@ -56,12 +56,16 @@ function DynamicNode:jump_into(dir)
 end
 
 function DynamicNode:update()
+	local tmp
 	if self.snip then
+		self.snip:input_leave()
+		-- build new snippet before exiting, markers may be needed for construncting.
+		tmp = self.fn(self:get_args(), self.snip.old_state, unpack(self.user_args))
 		self.snip:exit()
-		self.snip = self.fn(self:get_args(), self.snip.old_state, unpack(self.user_args))
 	else
-		self.snip = self.fn(self:get_args(), nil, unpack(self.user_args))
+		tmp = self.fn(self:get_args(), nil, unpack(self.user_args))
 	end
+	self.snip = tmp
 
 	self.snip.next = self
 	self.snip.prev = self
@@ -70,6 +74,7 @@ function DynamicNode:update()
 	util.move_to_mark(self.markers[1])
 	self.snip:indent(self.parent.indentstr)
 	self.snip:put_initial()
+
 	self.snip:set_old_text()
 end
 
