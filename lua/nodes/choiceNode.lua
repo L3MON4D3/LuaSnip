@@ -18,7 +18,7 @@ function ChoiceNode:put_initial()
 	end
 	self.choices[self.current_choice]:put_initial()
 	self.inner = self.choices[self.current_choice]
-	self.inner.old_text = self.inner:get_text()
+	self.inner.old_text = self.choices[self.current_choice]:get_static_text()
 end
 
 function ChoiceNode:input_enter()
