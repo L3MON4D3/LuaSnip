@@ -21,15 +21,12 @@ function DynamicNode:get_args()
 end
 
 function DynamicNode:input_enter()
-	self.old_text = self:get_text()
-	self.snip:input_enter()
+	self.active = true
 end
 
 function DynamicNode:input_leave()
-	if not util.multiline_equal(self.old_text, self:get_text()) then
-		self:update_dependents()
-	end
-	self.snip:input_leave()
+	self:update_dependents()
+	self.active = false
 end
 
 function DynamicNode:has_static_text()
@@ -40,10 +37,22 @@ function DynamicNode:get_static_text()
 	return self.snip:get_static_text()
 end
 
-function DynamicNode:copy()
-	local o = {pos = self.pos, fn = self.fn, args = self.args, type = 5, markers = self.markers, user_args = self.user_args}
-	o.snip = self.snip:copy()
-	return o
+function DynamicNode:jump_into(dir)
+	if self.active then
+		self:input_leave()
+		if dir == 1 then
+			self.next:jump_into(dir)
+		else
+			self.prev:jump_into(dir)
+		end
+	else
+		self:input_enter()
+		if dir == 1 then
+			self.inner:jump_into(dir)
+		else
+			self.inner:jump_into(dir)
+		end
+	end
 end
 
 function DynamicNode:update()
@@ -54,17 +63,16 @@ function DynamicNode:update()
 		self.snip = self.fn(self:get_args(), nil, unpack(self.user_args))
 	end
 
-	self.prev.next = self.snip
-	self.next.prev = self.snip
+	self.inner = self.snip
 
-	self.snip.next = self.next
-	self.snip.prev = self.prev
+	self.snip.next = self
+	self.snip.prev = self
 
 	self.parent:set_text(self, {""})
 	util.move_to_mark(self.markers[1])
 	self.snip:indent(self.parent.indentstr)
 	self.snip:put_initial()
-	self.snip.old_text = self.snip:get_text()
+	self.snip:set_old_text()
 end
 
 return {
