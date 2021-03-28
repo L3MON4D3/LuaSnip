@@ -18,22 +18,25 @@ local function init_nodes(snippet)
 		end
 	end
 
-	-- # doesn't count [0].
-	-- insert_nodes[#insert_nodes+1] = insert_nodes[0]
-	-- save so it can be restored later.
-	local tmp = snippet.next
+	if #insert_nodes ~= 0 then
+		-- save so it can be restored later.
+		local tmp = snippet.next
 
-	local last_node = snippet
-	for _, node in ipairs(insert_nodes) do
-		node.prev = last_node
-		last_node.next = node
-		last_node = node
+		local last_node = snippet
+		for _, node in ipairs(insert_nodes) do
+			node.prev = last_node
+			last_node.next = node
+			last_node = node
+		end
+		snippet.next = tmp
+		insert_nodes[#insert_nodes].next = snippet
+
+		snippet.inner_first = insert_nodes[1]
+		snippet.inner_last = insert_nodes[#insert_nodes]
+	else
+		snippet.inner_first = snippet
+		snippet.inner_last = snippet
 	end
-	snippet.next = tmp
-	insert_nodes[#insert_nodes].next = snippet
-
-	snippet.inner_first = insert_nodes[1]
-	snippet.inner_last = insert_nodes[#insert_nodes]
 
 	snippet.insert_nodes = insert_nodes
 end
