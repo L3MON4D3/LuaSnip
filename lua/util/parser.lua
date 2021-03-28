@@ -65,26 +65,16 @@ local function simple_tabstop(text, tab_stops)
 	end
 end
 
--- Needed for eg. nested Placeholders, internal snippets don't have the first
--- num tabstops.
-local function decrease_tabstops(snip, num)
-	-- contains node with highest pos,
-	local highest = {pos = 0}
-	for i, node in ipairs(snip.nodes) do
+-- Inserts a insert(1) before all other nodes, decreases node.pos's as indexing is "wrong".
+local function modify_nodes(snip, num)
+	for i = #snip.nodes, 1, -1 do
+		snip.nodes[i+1] = snip.nodes[i]
+		local node = snip.nodes[i+1]
 		if node.pos then
-			-- Remove automatically-inserted 0-ins. IF there is no other insert.
-			if node.pos ~= 0 then
-				node.pos = node.pos - num
-			end
-
-			if node.pos > highest.pos then
-				highest = node
-			end
+			node.pos = node.pos - num + 1
 		end
 	end
-	if highest.pos ~= 0 then
-		highest.pos = 0
-	end
+	snip.nodes[1] = iNode.I(1)
 end
 
 local function brackets_offset(list, offset)
@@ -97,13 +87,15 @@ end
 
 local parse_snippet
 
-function parse_placeholder(text, tab_stops, brackets)
+local function parse_placeholder(text, tab_stops, brackets)
 	local start, stop, match = string.find(text, "(%d+):")
 	if start == 1 then
 		local pos = tonumber(match)
 		local snip = parse_snippet(nil, string.sub(text, stop+1, #text), tab_stops, brackets_offset(brackets, -stop))
 		if snip then
-			decrease_tabstops(snip, pos)
+			modify_nodes(snip, pos)
+			-- reinit nodes.
+			snip:init_nodes()
 			tab_stops[pos] = cNode.C(pos, {snip, tNode.T({""})})
 			return tab_stops[pos]
 		end
@@ -111,11 +103,15 @@ function parse_placeholder(text, tab_stops, brackets)
 	return nil
 end
 
-local parse_functions={simple_tabstop, parse_placeholder, parse_choice, parse_variable, error}
+local parse_functions={simple_tabstop, parse_placeholder, error, parse_choice, parse_variable, error}
 
 parse_snippet = function(trigger, body, tab_stops, brackets)
 	if not brackets then brackets = brckt_lst(body) end
-	if not tab_stops then tab_stops = {} end
+	local outer = false
+	if not tab_stops then
+		tab_stops = {}
+		outer = true
+	end
 
 	local nodes = {}
 	local indx = 1
@@ -170,8 +166,7 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 			if plain_text ~= "" then
 				nodes[#nodes+1] = parse_text(plain_text)
 			end
-			-- append 0 if unspecified.
-			if not tab_stops[0] then
+			if outer and not tab_stops[0] then
 				nodes[#nodes+1] = iNode.I(0)
 			end
 			return snipNode.S(trigger, nodes)
