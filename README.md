@@ -14,7 +14,7 @@ WIP, very limited testing.
 - Fast, small, simple
 
 # Drawbacks
-- Snippets have to be defined in Lua, as of now there is no parser.
+- Snippets that make use of the entire functionality of this plugin have to be defined in Lua. (A small subset of LSP-Snippet-Syntax is supported, I'll add suport for more soon).
 
 # Requirements
 Neovim >= 0.5 (extmarks)
