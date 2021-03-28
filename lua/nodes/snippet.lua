@@ -214,6 +214,7 @@ function Snippet:put_initial()
 
 		-- place extmark directly behind last char of put text.
 		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur2[1], cur2[2], {right_gravity = false})
+		node.old_text = node:get_text()
 	end
 
 	cur = util.get_cursor_0ind()
