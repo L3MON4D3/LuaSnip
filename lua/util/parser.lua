@@ -103,7 +103,38 @@ local function parse_placeholder(text, tab_stops, brackets)
 	return nil
 end
 
-local parse_functions={simple_tabstop, parse_placeholder, error, parse_choice, parse_variable, error}
+local function parse_choice(text, tab_stops)
+	local start, stop, match = string.find(text, "(%d+)|")
+	if start == 1 then
+		local nodes = {}
+		local pos = tonumber(match)
+		local indx = stop+1
+		local text_start = stop+1
+		while true do
+			local text_end = string.find(text, ",", indx, true)
+			if text_end then
+				if not is_escaped(text, text_end) then
+					-- exclude ','
+					nodes[#nodes+1] = parse_text(string.sub(text, text_start, text_end-1))
+					indx = text_end + 1
+					text_start = indx
+				else
+					indx = text_end + 1
+				end
+			else
+				break
+			end
+		end
+		-- exclude final '|'
+		nodes[#nodes+1] = parse_text(string.sub(text, text_start, #text-1))
+		tab_stops[pos] = cNode.C(pos, nodes)
+		return tab_stops[pos]
+	end
+	-- Not a choice-node.
+	return nil
+end
+
+local parse_functions={simple_tabstop, parse_placeholder, parse_choice, error, parse_variable, error}
 
 parse_snippet = function(trigger, body, tab_stops, brackets)
 	if not brackets then brackets = brckt_lst(body) end
