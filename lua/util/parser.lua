@@ -65,7 +65,7 @@ local function simple_tabstop(text, tab_stops)
 	end
 end
 
-local function simple_var(text, tab_stops)
+local function simple_var(text)
 	if functions.lsp[text] then
 		local f = fNode.F(functions.lsp.var, {})
 		f.user_args = {f, text}
@@ -149,10 +149,22 @@ local function parse_choice(text, tab_stops)
 	return nil
 end
 
-local parse_functions={simple_tabstop, parse_placeholder, parse_choice, error, parse_variable, error}
+local function parse_variable(text)
+	-- ignore regexes and ':' (not entirely sure what ':' is for..).
+	local _, _, match = string.find(text, "([%w_]+)[:/]")
+	if not match then
+		_,_,match = string.find(text, "([%w_]+)$")
+	end
+	if match then
+		-- returns empty ("") tNode if var unknown.
+		return simple_var(match)
+	end
+	return nil
+end
+
+local parse_functions={simple_tabstop, parse_placeholder, parse_choice, parse_variable}
 
 parse_snippet = function(trigger, body, tab_stops, brackets)
-	print(body)
 	if not brackets then brackets = brckt_lst(body) end
 	local outer = false
 	if not tab_stops then
@@ -185,6 +197,9 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 					for _, fn in ipairs(parse_functions) do
 						node = fn(nodestring, tab_stops, brackets_offset(brackets, -(next_node+1)))
 						if node then break end
+					end
+					if not node then
+						error("Unknown Syntax: " .. nodestring)
 					end
 					nodes[#nodes+1] = node
 					indx = match_bracket+1
