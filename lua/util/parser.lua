@@ -65,6 +65,16 @@ local function simple_tabstop(text, tab_stops)
 	end
 end
 
+local function simple_var(text, tab_stops)
+	if functions.lsp[text] then
+		local f = fNode.F(functions.lsp.var, {})
+		f.user_args = {f, text}
+		return f
+	end
+	-- if the function is unknown, just insert an empty text-snippet.
+	return tNode.T({""})
+end
+
 -- Inserts a insert(1) before all other nodes, decreases node.pos's as indexing is "wrong".
 local function modify_nodes(snip, num)
 	for i = #snip.nodes, 1, -1 do
@@ -142,6 +152,7 @@ end
 local parse_functions={simple_tabstop, parse_placeholder, parse_choice, error, parse_variable, error}
 
 parse_snippet = function(trigger, body, tab_stops, brackets)
+	print(body)
 	if not brackets then brackets = brckt_lst(body) end
 	local outer = false
 	if not tab_stops then
@@ -155,6 +166,7 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 
 	while true do
 		local next_node = string.find(body, "$", indx, true)
+		print(next_node)
 		if next_node then
 			if not is_escaped(body, next_node) then
 				-- insert text so far as textNode.
@@ -183,7 +195,7 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 					nodes[#nodes+1] = simple_tabstop(match, tab_stops)
 					indx = last_char+1
 				elseif string.find(body, "%w", next_node+1) == next_node+1 then
-					local _, last_char, match = string.find(body, "(%w+)", next_node+1)
+					local _, last_char, match = string.find(body, "([%w_]+)", next_node+1)
 					-- Add var-node
 					nodes[#nodes+1] = simple_var(match, tab_stops)
 					indx = last_char+1
@@ -205,7 +217,11 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 			if outer and not tab_stops[0] then
 				nodes[#nodes+1] = iNode.I(0)
 			end
-			return snipNode.S(trigger, nodes)
+			if trigger then
+				return snipNode.S(trigger, nodes)
+			else
+				return snipNode.SN(nil, nodes)
+			end
 		end
 	end
 end
