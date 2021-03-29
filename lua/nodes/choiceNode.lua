@@ -62,6 +62,10 @@ function ChoiceNode:jump_into(dir)
 	end
 end
 
+function ChoiceNode:update()
+	self.inner:update()
+end
+
 function ChoiceNode:setup_choice_jumps()
 end
 
@@ -84,6 +88,7 @@ function ChoiceNode:change_choice(val)
 
 	util.move_to_mark(self.markers[1])
 	self.inner:put_initial()
+	self.inner:update()
 	self.inner.old_text = self.inner:get_text()
 
 	self:update_dependents()

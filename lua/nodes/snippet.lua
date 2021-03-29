@@ -110,6 +110,7 @@ function Snippet:trigger_expand(current_node)
 	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
 	self:put_initial()
+	self:update()
 
 	-- needs no next.
 	start_node.prev = current_node
@@ -125,6 +126,10 @@ end
 
 -- todo: impl exit_node
 function Snippet:enter_node(node_id)
+	if self.parent then
+		self.parent:enter_node(self.indx)
+	end
+
 	local node = self.nodes[node_id]
 	for i=1, #self.nodes, 1 do
 		local other = self.nodes[i]
@@ -242,8 +247,13 @@ function Snippet:put_initial()
 					self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents+1] = node
 				end
 			end
-			node:update()
 		end
+	end
+end
+
+function Snippet:update()
+	for _, node in ipairs(self.nodes) do
+		node:update()
 	end
 end
 

@@ -98,6 +98,9 @@ function Node:update_dependents()
 	self.old_text = self:get_text()
 end
 
+function Node:update()
+end
+
 return {
 	Node = Node,
 }
