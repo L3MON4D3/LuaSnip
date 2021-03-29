@@ -56,6 +56,11 @@ local function expand_or_jump()
 	end
 end
 
+local function lsp_expand(body)
+	local snip = require'util.parser'.parse_snippet("", body)
+	snip:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
+end
+
 local function choice_active()
 	return Luasnip_active_choice ~= nil
 end
@@ -73,6 +78,7 @@ local ls = {
 	change_choice = change_choice,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
+	lsp_expand = lsp_expand,
 	t = require'nodes.textNode'.T,
 	f = require'nodes.functionNode'.F,
 	i = require'nodes.insertNode'.I,
