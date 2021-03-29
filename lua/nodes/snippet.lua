@@ -11,8 +11,12 @@ function Snippet:init_nodes()
 	for i, node in ipairs(self.nodes) do
 		node.parent = self
 		node.indx = i
-		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
+		if node.type == 1 or node.type == 4 or node.type == 5 then
 			insert_nodes[node.pos] = node
+		end
+		if node.type == 3 then
+			insert_nodes[node.pos] = node
+			node.env = self.env
 		end
 	end
 
@@ -52,7 +56,8 @@ local function S(trigger, nodes, condition, ...)
 		user_args = {...},
 		markers = {},
 		dependents = {},
-		active = false
+		active = false,
+		env = {}
 	}
 	snip:init_nodes()
 	return snip
@@ -78,8 +83,22 @@ local function SN(pos, nodes, condition, ...)
 	return snip
 end
 
+local function pop_env(env)
+	local cur = util.get_cursor_0ind()
+	env.TM_CURRENT_LINE = vim.api.nvim_buf_get_lines(0, cur[1], cur[1]+1, false)[1]
+	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
+	env.TM_LINE_INDEX = cur[1]
+	env.TM_LINE_NUMBER = cur[1]+1
+	env.TM_FILENAME = vim.fn.expand("%:t")
+	env.TM_FILENAME_BASE = vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
+	env.TM_DIRECTORY = vim.fn.expand("%:p:h")
+	env.TM_FILEPATH = vim.fn.expand("%:p")
+end
+
 function Snippet:trigger_expand(current_node)
 	self:indent(util.get_current_line_to_cursor())
+
+	pop_env(self.env)
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)

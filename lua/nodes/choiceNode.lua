@@ -13,6 +13,7 @@ function ChoiceNode:put_initial()
 		node.prev = self
 		if node.type == 3 then
 			node:indent(self.parent.indentstr)
+			node.env = self.parent.env
 		end
 		node.indx = self.indx
 	end

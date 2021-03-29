@@ -70,6 +70,8 @@ function DynamicNode:update()
 	self.snip.next = self
 	self.snip.prev = self
 
+	self.snip.env = self.parent.env
+
 	self.parent:set_text(self, {""})
 	util.move_to_mark(self.markers[1])
 	self.snip:indent(self.parent.indentstr)

@@ -78,6 +78,29 @@ local function multiline_equal(t1, t2)
 	return #t1 == #t2
 end
 
+local function word_under_cursor(cur, line)
+	local ind_start = 1
+	local ind_end = #line
+
+	while true do
+		local tmp = string.find(line, "%W%w", ind_start)
+		if not tmp then
+			break
+		end
+		if tmp > cur[2]+1 then
+			break
+		end
+		ind_start = tmp+1
+	end
+
+	local tmp = string.find(line, "%w%W", cur[2]+1)
+	if tmp then
+		ind_end = tmp
+	end
+
+	return string.sub(line, ind_start, ind_end)
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -88,5 +111,6 @@ return {
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	mark_pos_equal = mark_pos_equal,
-	multiline_equal = multiline_equal
+	multiline_equal = multiline_equal,
+	word_under_cursor = word_under_cursor
 }
