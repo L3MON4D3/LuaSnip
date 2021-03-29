@@ -2,7 +2,6 @@ local tNode = require 'nodes.textNode'
 local iNode = require 'nodes.insertNode'
 local fNode = require 'nodes.functionNode'
 local cNode = require 'nodes.choiceNode'
-local dNode = require 'nodes.dynamicNode'
 local snipNode = require 'nodes.snippet'
 local functions = require 'util.functions'
 
@@ -212,7 +211,7 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 				elseif string.find(body, "%w", next_node+1) == next_node+1 then
 					local _, last_char, match = string.find(body, "([%w_]+)", next_node+1)
 					-- Add var-node
-					nodes[#nodes+1] = simple_var(match, tab_stops)
+					nodes[#nodes+1] = simple_var(match)
 					indx = last_char+1
 				else
 					error("Invalid text after $ at"..tostring(next_node+1))
