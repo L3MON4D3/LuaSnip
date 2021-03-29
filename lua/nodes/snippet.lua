@@ -2,9 +2,7 @@ local node_mod = require'nodes.node'
 local iNode = require'nodes.insertNode'
 local util = require'util.util'
 
-Luasnip_active_snippet = nil
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
-Luasnip_active_choice = nil
 
 local Snippet = node_mod.Node:new()
 

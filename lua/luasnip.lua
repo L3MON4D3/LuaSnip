@@ -71,7 +71,6 @@ local ls = {
 	get_active_snip = get_active_snip,
 	choice_active = choice_active,
 	change_choice = change_choice,
-	confirm_choice = confirm_choice,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require'nodes.textNode'.T,
