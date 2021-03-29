@@ -100,6 +100,11 @@ local function parse_placeholder(text, tab_stops, brackets)
 			return tab_stops[pos]
 		end
 	end
+	-- Parse transforms as simple copy.
+	start, stop, match = string.find(text, "(%d+)/")
+	if start == 1 then
+		return simple_tabstop(match, tab_stops)
+	end
 	return nil
 end
 
