@@ -43,6 +43,7 @@ local function parse_text(text)
 	text = string.gsub(text, '\\}', '}')
 	text = string.gsub(text, '\\,', ',')
 	text = string.gsub(text, '\\|', '|')
+	text = string.gsub(text, '\\$', '$')
 
 	local text_table = {}
 	for line in vim.gsplit(text, "\n", true) do
@@ -105,6 +106,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 			modify_nodes(snip, pos)
 			-- reinit nodes.
 			snip:init_nodes()
+
 			tab_stops[pos] = cNode.C(pos, {snip, tNode.T({""})})
 			return tab_stops[pos]
 		end
