@@ -179,7 +179,6 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 
 	while true do
 		local next_node = string.find(body, "$", indx, true)
-		print(next_node)
 		if next_node then
 			if not is_escaped(body, next_node) then
 				-- insert text so far as textNode.
