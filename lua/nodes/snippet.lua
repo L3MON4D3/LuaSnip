@@ -290,10 +290,6 @@ function Snippet:jump_into(dir)
 	else
 		self:input_enter()
 		if dir == 1 then
-			if not self.inner_first then
-				print(vim.inspect(self))
-				print(debug.traceback())
-			end
 			self.inner_first:jump_into(dir)
 		else
 			self.inner_last:jump_into(dir)
