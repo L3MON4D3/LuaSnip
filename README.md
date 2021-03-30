@@ -1,6 +1,5 @@
 # LuaSnip
-Snippet Engine for Neovim written in Lua.  
-WIP, very limited testing.  
+Snippet Engine for Neovim written in Lua.
 ![Javadoc](./Examples/javadoc.gif)
 
 # Features
@@ -12,9 +11,10 @@ WIP, very limited testing.
 - Choices
 - Dynamic Snippet creation
 - Fast, small, simple
+- Parse LSP-Style Snippets (Does not, however, support Regex-Transformations)
 
 # Drawbacks
-- Snippets that make use of the entire functionality of this plugin have to be defined in Lua. (A small subset of LSP-Snippet-Syntax is supported, I'll add suport for more soon).
+- Snippets that make use of the entire functionality of this plugin have to be defined in Lua.
 
 # Requirements
 Neovim >= 0.5 (extmarks)
