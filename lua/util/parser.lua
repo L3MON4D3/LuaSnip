@@ -4,6 +4,7 @@ local fNode = require 'nodes.functionNode'
 local cNode = require 'nodes.choiceNode'
 local snipNode = require 'nodes.snippet'
 local functions = require 'util.functions'
+local util = require 'util.util'
 
 local function is_escaped(text, indx)
 	local count = 0
@@ -101,13 +102,37 @@ local function parse_placeholder(text, tab_stops, brackets)
 	local start, stop, match = string.find(text, "(%d+):")
 	if start == 1 then
 		local pos = tonumber(match)
-		local snip = parse_snippet(nil, string.sub(text, stop+1, #text), tab_stops, brackets_offset(brackets, -stop))
+		local snip = parse_snippet(pos, string.sub(text, stop+1, #text), tab_stops, brackets_offset(brackets, -stop))
 		if snip then
-			modify_nodes(snip, pos)
-			-- reinit nodes.
-			snip:init_nodes()
+			-- SELECT Simple placeholder (static text or evaulated function that is not updated again),
+			-- behaviour mopre similar to eg. vscode.
+			if not snip:is_interactive() then
+				-- override snip's jump_into so that text is selected.
+				function snip:jump_into()
+					self.parent:enter_node(self.indx)
 
-			tab_stops[pos] = cNode.C(pos, {snip, tNode.T({""})})
+					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
+					-- SELECT snippet text only when there is text to select (more oft than not there isnt).
+					if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
+						util.normal_move_on_mark(self.markers[1])
+						vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("v", true, false, true), 'n', true)
+						util.normal_move_before_mark(self.markers[2])
+						vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("o<C-G>", true, false, true), 'n', true)
+					else
+						util.normal_move_on_mark_insert(self.markers[1])
+					end
+					Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
+				end
+				-- reinit nodes.
+				snip:init_nodes()
+
+				tab_stops[pos] = snip
+			else
+				modify_nodes(snip, pos)
+				snip:init_nodes()
+
+				tab_stops[pos] = cNode.C(pos, {snip, tNode.T({""})})
+			end
 			return tab_stops[pos]
 		end
 	end
@@ -232,10 +257,10 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 			if outer and not tab_stops[0] then
 				nodes[#nodes+1] = iNode.I(0)
 			end
-			if trigger then
+			if type(trigger) == "string" then
 				return snipNode.S(trigger, nodes)
 			else
-				return snipNode.SN(nil, nodes)
+				return snipNode.SN(trigger, nodes)
 			end
 		end
 	end

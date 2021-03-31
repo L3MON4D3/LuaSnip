@@ -193,6 +193,20 @@ function Snippet:del_marks()
 	end
 end
 
+function Snippet:is_interactive()
+	print(vim.inspect(self))
+	for _, node in ipairs(self.nodes) do
+		-- return true if any node depends on another node or is an insertNode.
+		if node.type == 1 or ((node.type == 2 or node.type == 5) and #node.args ~= 0) or node.type == 4 then
+			return true
+		-- node is snippet, recurse.
+		elseif node.type == 3 then
+			return node:is_interactive()
+		end
+	end
+	return false
+end
+
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
@@ -297,9 +311,8 @@ function Snippet:jump_into(dir)
 	end
 end
 
--- Should not happen.
-function Snippet:jump_from(dir)
-end
+-- Snippets inherit Node:jump_from, it shouldn't occur normally, but may be
+-- used in LSP-Placeholders.
 
 function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
