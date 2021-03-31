@@ -49,6 +49,14 @@ function Node:jump_from(dir)
 	return true
 end
 
+function Node:jumpable(dir)
+	if dir == 1 then
+		return self.next ~= nil
+	else
+		return self.prev ~= nil
+	end
+end
+
 function Node:set_from_rgrav(val)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
