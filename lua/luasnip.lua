@@ -55,10 +55,17 @@ local function expand_or_jump()
 		next_expand:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
 		next_expand = nil
 		return true
+	else
+		local snip = match_snippet(util.get_current_line_to_cursor())
+		if snip then
+			snip:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
+			return true
+		end
 	end
 	if jump(1) then
 		return true
 	end
+	return false
 end
 
 local function lsp_expand(body)
