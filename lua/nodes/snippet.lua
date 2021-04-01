@@ -194,7 +194,6 @@ function Snippet:del_marks()
 end
 
 function Snippet:is_interactive()
-	print(vim.inspect(self))
 	for _, node in ipairs(self.nodes) do
 		-- return true if any node depends on another node or is an insertNode.
 		if node.type == 1 or ((node.type == 2 or node.type == 5) and #node.args ~= 0) or node.type == 4 then
