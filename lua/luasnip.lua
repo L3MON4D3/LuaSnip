@@ -2,6 +2,7 @@ local snip_mod = require'nodes.snippet'
 local util = require'util.util'
 
 local next_expand = nil
+local ls
 
 Luasnip_current_nodes = {}
 
@@ -73,7 +74,7 @@ local function change_choice(val)
 	return Luasnip_active_choice:change_choice(val)
 end
 
-local ls = {
+ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	jumpable = jumpable,
 	expand_or_jump = expand_or_jump,
