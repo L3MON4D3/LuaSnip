@@ -43,12 +43,17 @@ function Snippet:init_nodes()
 	self.insert_nodes = insert_nodes
 end
 
-local function S(trigger, nodes, condition, ...)
+local function S(context, nodes, condition, ...)
 	if not condition then
 		condition = function() return true end
 	end
+	if type(context) == 'string' then
+		error("Pass table containing a 'trig'-key and optionally 'dscr' and 'name' as first arg.")
+	end
 	local snip = Snippet:new{
-		trigger = trigger,
+		trigger = context.trig,
+		dscr = context.dscr or context.trig,
+		name = context.name or context.trig,
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
