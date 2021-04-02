@@ -190,7 +190,7 @@ end
 
 local parse_functions={simple_tabstop, parse_placeholder, parse_choice, parse_variable}
 
-parse_snippet = function(trigger, body, tab_stops, brackets)
+parse_snippet = function(context, body, tab_stops, brackets)
 	if not brackets then brackets = brckt_lst(body) end
 	local outer = false
 	if not tab_stops then
@@ -257,10 +257,10 @@ parse_snippet = function(trigger, body, tab_stops, brackets)
 			if outer and not tab_stops[0] then
 				nodes[#nodes+1] = iNode.I(0)
 			end
-			if type(trigger) == "string" then
-				return snipNode.S(trigger, nodes)
+			if type(context) == "table" then
+				return snipNode.S(context, nodes)
 			else
-				return snipNode.SN(trigger, nodes)
+				return snipNode.SN(context, nodes)
 			end
 		end
 	end
