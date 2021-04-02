@@ -89,7 +89,7 @@ end
 ls.snippets = {
 	all = {
 		-- trigger is fn.
-		s("fn", {
+		s({trig="fn"}, {
 			-- Simple static text.
 			t({"//Parameters: "}),
 			-- function, first parameter is the function, second the Placeholders
@@ -107,7 +107,7 @@ ls.snippets = {
 			i(0),
 			t({"", "}"})
 		}),
-		s("class", {
+		s({trig="class"}, {
 			-- Choice: Switch between two different Nodes, first parameter is its position, second a list of nodes.
 			c(1, {
 				t({"public "}),
@@ -138,11 +138,11 @@ ls.snippets = {
 		-- Parsing snippets: First parameter: Snippet-Trigger, Second: Snippet body.
 		-- Placeholders are parsed into choices with 1. the placeholder text(as a snippet) and 2. an empty string.
 		-- This means they are not SELECTed like in other editors/Snippet engines.
-		ls.parser.parse_snippet("lspsyn", "Wow! This ${1:Stuff} really ${2:works. ${3:Well, a bit.}}")
+		ls.parser.parse_snippet({trig="lspsyn"}, "Wow! This ${1:Stuff} really ${2:works. ${3:Well, a bit.}}")
 	},
 	java = {
 		-- Very long example for a java class.
-		s("fn", {
+		s({trig="fn"}, {
 			d(6, jdocsnip, {2, 4, 5}), t({"", ""}),
 			c(1, {
 				t({"public "}),
