@@ -123,6 +123,9 @@ local function parse_placeholder(text, tab_stops, brackets)
 					end
 					Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
 				end
+				function snip:is_interactive()
+					return true
+				end
 				-- reinit nodes.
 				snip:init_nodes()
 
