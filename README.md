@@ -10,6 +10,7 @@ Snippet Engine for Neovim written in Lua.
 - Filetype-specific Snippets
 - Choices
 - Dynamic Snippet creation
+- Regex-Trigger
 - Fast, small, simple
 - Parse LSP-Style Snippets (Does not, however, support Regex-Transformations)
 
