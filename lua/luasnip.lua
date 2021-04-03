@@ -10,22 +10,19 @@ local function get_active_snip() return snip_mod.get_active() end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
 local function match_snippet(line)
+	local match
 	if ls.snippets[vim.bo.ft] then
 		for _, snip in ipairs(ls.snippets[vim.bo.ft]) do
-			-- if line ends with trigger
-			if string.sub(line, #line - #snip.trigger + 1, #line) == snip.trigger then
-				if snip.condition(unpack(snip.user_args)) then
-					return snip:copy()
-				end
+			match = snip:matches(line)
+			if match then
+				return match
 			end
 		end
 	end
 	for _, snip in ipairs(ls.snippets["all"]) do
-		-- if line ends with trigger
-		if string.sub(line, #line - #snip.trigger + 1, #line) == snip.trigger then
-			if snip.condition(unpack(snip.user_args)) then
-				return snip:copy()
-			end
+		match = snip:matches(line)
+		if match then
+			return match
 		end
 	end
 	return nil

@@ -54,6 +54,8 @@ local function S(context, nodes, condition, ...)
 		trigger = context.trig,
 		dscr = context.dscr or context.trig,
 		name = context.name or context.trig,
+		wordTrig = context.wordTrig,
+		regTrig = context.regTrig,
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
@@ -127,6 +129,44 @@ function Snippet:trigger_expand(current_node)
 	self.insert_nodes[0].next = current_node
 
 	self:jump_into(1)
+end
+
+-- returns copy of snip if it matches, nil if not.
+function Snippet:matches(line)
+		local from
+		local match
+		if self.regTrig then
+			-- capture entire trigger, must be put into match.
+			from, _, match = string.find(line, "("..self.trigger..")$")
+		else
+			if string.sub(line, #line - #self.trigger + 1, #line) == self.trigger then
+				from = #line - #self.trigger + 1
+				match = self.trigger
+			end
+		end
+
+		-- Trigger or regex didn't match.
+		if not match then
+			return nil
+		end
+		local trigger = self.trigger
+		-- Regex-snippets can access matchstring in condition.
+		self.trigger = match
+
+		if not self.condition(unpack(self.user_args)) then
+			return nil
+		end
+
+		-- if wordTrig is set, the char before the trigger has to be \w or the
+		-- word has to start at the beginning of the line.
+		if self.wordTrig and not (from == 1 or string.match(string.sub(line, from-1, from-1), "[%w_]") == nil) then
+			return nil
+		end
+
+		-- has match instead of trigger (makes difference for regex)
+		local cp = self:copy()
+		self.trigger = trigger
+		return cp
 end
 
 -- todo: impl exit_node
