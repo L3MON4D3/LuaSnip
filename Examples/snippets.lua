@@ -142,7 +142,13 @@ ls.snippets = {
 		-- When wordTrig is set, snippets only expand as full words (lte won't expand, te will).
 		ls.parser.parse_snippet({trig = "te", wordTrig = true}, "${1:cond} ? ${2:true} : ${3:false}"),
 		-- When regTrig is set, trig is treated like a pattern, this snippet will expand after any number.
-		ls.parser.parse_snippet({trig = "%d", regTrig = true}, "A Number!!"),
+		ls.parser.parse_snippet({trig = "%d", regTrig = true, wordTrig = true}, "A Number!!"),
+
+		-- The last entry of args passed to the user-function is the surrounding snippet.
+		s({trig = "a%d", regTrig = true, wordTrig = true}, {
+			f(function(args) return {"Triggered with " .. args[1].trigger .. "."} end, {}),
+			i(0)
+		})
 	},
 	java = {
 		-- Very long example for a java class.
@@ -177,3 +183,4 @@ ls.snippets = {
 		})
 	}
 }
+
