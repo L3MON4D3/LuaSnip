@@ -135,9 +135,17 @@ end
 function Snippet:matches(line)
 		local from
 		local match
+		local captures = {}
 		if self.regTrig then
 			-- capture entire trigger, must be put into match.
-			from, _, match = string.find(line, "("..self.trigger..")$")
+			local find_res = {string.find(line, "("..self.trigger..")$")}
+			if find_res then
+				from = find_res[1]
+				match = find_res[3]
+				for i = 4, #find_res do
+					captures[i-3] = find_res[i]
+				end
+			end
 		else
 			if string.sub(line, #line - #self.trigger + 1, #line) == self.trigger then
 				from = #line - #self.trigger + 1
@@ -166,6 +174,7 @@ function Snippet:matches(line)
 		-- has match instead of trigger (makes difference for regex)
 		local cp = self:copy()
 		self.trigger = trigger
+		cp.captures = captures
 		return cp
 end
 
