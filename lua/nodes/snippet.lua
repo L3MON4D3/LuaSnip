@@ -121,14 +121,34 @@ function Snippet:trigger_expand(current_node)
 
 	-- needs no next.
 	start_node.prev = current_node
+	start_node.next = self
+
+	if current_node then
+		-- if not inside a normal insertNode, just insert into jumplist.
+		if current_node.type == 1 and current_node.pos == 0 then
+			if current_node.next then
+				current_node.next.prev = self.insert_nodes[0]
+			end
+			current_node.next = start_node
+			self.insert_nodes[0].inner_last = current_node.next
+		else
+			self.insert_nodes[0].next = current_node
+			current_node.inner_first = self
+			current_node.inner_last = self.insert_nodes[0]
+			start_node.prev = current_node
+		end
+	end
 
 	self.next = self.insert_nodes[0]
 	self.prev = start_node
 
-	-- Needs no prev.
-	self.insert_nodes[0].next = current_node
+	self.insert_nodes[0].prev = self
 
-	self:jump_into(1)
+	if current_node then
+		current_node:jump_from(1)
+	else
+		self:jump_into(1)
+	end
 end
 
 -- returns copy of snip if it matches, nil if not.
