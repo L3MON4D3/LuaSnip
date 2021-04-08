@@ -55,7 +55,7 @@ The most direct way to define snippets is `s`:
 `s` accepts, as the first argument, a table with the following possible
 entries:
 
-    `trig`	String	    Plain text by default		Required
+    `trig`	String	    Trigger, Plain text by default	Required
     `name`	String	    Name, used by other plugins		Optional, `trig`
     `dscr`	String	    Description, used by other		Optional, `trig`
 			    plugins
@@ -68,6 +68,10 @@ entries:
 
 The second argument to `s` is a table containing all nodes that belong to the
 snippet, at least one of which has to be an `i(0)` node.
+
+Snippets that should be loaded for all files must be put into the
+`ls.snippets.all`-table, those only for a specific filetypes `ft` belong into
+`ls.snippets.ft`.
 
 ================================================================================
 
