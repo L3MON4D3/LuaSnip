@@ -97,4 +97,25 @@ Multiline-strings can be defined by creating multiple entries inside the table:
     })
 <
 ================================================================================
+
+INSERTNODE							       *luasnip-i*
+
+These Nodes can be jumped to- and from, the functionality is best demonstrated
+with an example:
+>
+    s({trig='trigger'}, {
+    	t({"After jumping forward once cursor is here ->"}), i(2),
+    	t({"", "After expanding the cursor is here ->"}), i(1),
+    	t({"", "And after jumping once more the snippet is exited there ->"}), i(0),
+    })
+<
+It's possible to have easy-to-overwrite text inside an InsertNode initially:
+>
+    s({trig='trigger'}, {
+    	i(1, {"This text is SELECTed after expanding the snippet."}), i(0),
+    })
+<
+This initial text is defined the same way as textNodes, eg. can be multiline.
+
+================================================================================
 vim:tw=80:ts=8:noet:ft=help:
