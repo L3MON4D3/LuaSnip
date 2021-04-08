@@ -14,13 +14,12 @@ CONTENTS                                                        *luasnip-content
 
   Intro .......................................................... |luasnip-intro|
   Snippets ........................................................... |luasnip-s|
-  Nodes .......................................................... |luasnip-nodes|
-    TextNode ......................................................... |luasnip-t|
-    InsertNode ....................................................... |luasnip-i|
-    FunctionNode ..................................................... |luasnip-f|
-    SnippetNode ..................................................... |luasnip-sn|
-    ChoiceNode ....................................................... |luasnip-c|
-    DynamicNode ...................................................... |luasnip-d|
+  TextNode ........................................................... |luasnip-t|
+  InsertNode ......................................................... |luasnip-i|
+  FunctionNode ....................................................... |luasnip-f|
+  SnippetNode ....................................................... |luasnip-sn|
+  ChoiceNode ......................................................... |luasnip-c|
+  DynamicNode ........................................................ |luasnip-d|
 
 ================================================================================
 
@@ -72,5 +71,26 @@ snippet, at least one of which has to be an `i(0)` node.
 
 ================================================================================
 
+TEXTNODE							       *luasnip-t*
 
+The most simple kind of node; just text.
+>
+    s({trig='trigger'}, {
+    	t({"Wow! Text!"}),
+    	i(0)
+    })
+<
+This Snippet expands to
+>
+    Wow! Text!|
+<
+, where `|` is the cursor.
+Multiline-strings can be defined by creating multiple entries inside the table:
+>
+    s({trig='trigger'}, {
+    	t({"Wow! Text!", "And another line."}),
+    	i(0)
+    })
+<
+================================================================================
 vim:tw=80:ts=8:noet:ft=help:
