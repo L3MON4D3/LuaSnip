@@ -92,7 +92,7 @@ function InsertNode:jump_from(dir)
 	if dir == 1 then
 		if self.inner_first then
 			self.inner_active = true
-			self.inner_first:jump_into()
+			self.inner_first:jump_into(dir)
 		else
 			if self.next then
 				self:input_leave()
@@ -102,7 +102,7 @@ function InsertNode:jump_from(dir)
 	else
 		if self.inner_last then
 			self.inner_active = true
-			self.inner_last:jump_into()
+			self.inner_last:jump_into(dir)
 		else
 			if self.prev then
 				self:input_leave()

@@ -20,17 +20,12 @@ function Snippet:init_nodes()
 		end
 	end
 
-	if #insert_nodes ~= 0 then
-		-- save so it can be restored later.
-		local tmp = self.next
-
-		local last_node = self
-		for _, node in ipairs(insert_nodes) do
-			node.prev = last_node
-			last_node.next = node
-			last_node = node
+	if insert_nodes[1] then
+		insert_nodes[1].prev = self
+		for i=2, #insert_nodes do
+			insert_nodes[i].prev = insert_nodes[i-1]
+			insert_nodes[i-1].next = insert_nodes[i]
 		end
-		self.next = tmp
 		insert_nodes[#insert_nodes].next = self
 
 		self.inner_first = insert_nodes[1]
@@ -130,7 +125,8 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 			current_node.prev = snippet.insert_nodes[0]
 		else
 			snippet.insert_nodes[0].next = current_node
-			current_node.inner_first = start_node
+			-- jump into snippet directly.
+			current_node.inner_first = snippet
 			current_node.inner_last = snippet.insert_nodes[0]
 			start_node.prev = current_node
 		end
@@ -170,10 +166,9 @@ function Snippet:trigger_expand(current_node)
 	insert_into_jumplist(self, start_node, current_node)
 
 	if current_node then
-		current_node:jump_from(1)
-	else
-		self:jump_into(1)
+		current_node.inner_active = true
 	end
+	self:jump_into(1)
 end
 
 -- returns copy of snip if it matches, nil if not.
