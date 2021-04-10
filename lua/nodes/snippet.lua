@@ -154,8 +154,8 @@ function Snippet:trigger_expand(current_node)
 	self:update()
 
 	-- Marks should stay at the beginning of the snippet.
-	start_node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
-	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
+	start_node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity=false})
+	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity=false})
 
 	self.nodes[0] = start_node
 	-- differentiate start- from endnode.
