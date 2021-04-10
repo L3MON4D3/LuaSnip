@@ -1,16 +1,16 @@
 local InsertNode = require'nodes.node'.Node:new()
-local ZeroNode = InsertNode:new()
+local ExitNode = InsertNode:new()
 local util = require'util.util'
 
 local function I(pos, static_text)
 	if pos == 0 then
-		return ZeroNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1}
+		return ExitNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1}
 	else
-		return InsertNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1, active = false}
+		return InsertNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1, inner_active = false}
 	end
 end
 
--- function ZeroNode:jump_into(dir)
+-- function ExitNode:jump_into(dir)
 -- 	-- move to zero-inserts position.
 -- 	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
 -- 	self:input_enter()
@@ -31,13 +31,13 @@ end
 -- 	end
 -- end
 
-function ZeroNode:input_enter()
+function ExitNode:input_enter()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	util.normal_move_on_mark_insert(self.markers[1])
 end
 
-function ZeroNode:input_leave()
+function ExitNode:input_leave()
 	-- Make sure to jump on insert mode.
 	if vim.api.nvim_get_mode().mode == 's' then
 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
@@ -64,17 +64,17 @@ function InsertNode:input_enter(no_move)
 end
 
 function InsertNode:jump_into(dir, no_move)
-	if self.active then
+	if self.inner_active then
 		if dir == 1 then
 			if self.next then
-				self.active = false
+				self.inner_active = false
 				self.next:jump_into(dir)
 			else
 				return false
 			end
 		else
 			if self.prev then
-				self.active = false
+				self.inner_active = false
 				self.prev:jump_into(dir)
 			else
 				return false
@@ -90,7 +90,7 @@ end
 function InsertNode:jump_from(dir)
 	if dir == 1 then
 		if self.inner_first then
-			self.active = true
+			self.inner_active = true
 			self.inner_first:jump_into()
 		else
 			if self.next then
@@ -99,7 +99,7 @@ function InsertNode:jump_from(dir)
 		end
 	else
 		if self.inner_last then
-			self.active = true
+			self.inner_active = true
 			self.inner_last:jump_into()
 		else
 			if self.prev then
