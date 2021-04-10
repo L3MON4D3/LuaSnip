@@ -106,27 +106,31 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 	if current_node then
 		if current_node.pos == 0 then
 			if current_node.next then
-				if current_node.next.pos == 0 then
+				-- next is beginning of another snippet.
+				if current_node.next.pos == -1 then
 					current_node.next.prev = snippet.insert_nodes[0]
+				-- next is outer insertNode.
 				else
 					current_node.next.inner_last = snippet.insert_nodes[0]
 				end
 			end
 			snippet.insert_nodes[0].next = current_node.next
 			current_node.next = start_node
+			start_node.prev = current_node
 		elseif current_node.pos == -1 then
 			if current_node.prev then
-				if current_node.next.pos == 0 then
-					current_node.next.prev = snippet.insert_nodes[0]
+				if current_node.prev.pos == 0 then
+					current_node.prev.next = snippet.insert_nodes[0]
 				else
-					current_node.next.inner_last = snippet.insert_nodes[0]
+					current_node.prev.inner_first = start_node
 				end
 			end
-		else
-			snippet.insert_nodes[0].next = current_node.next
-			current_node.next = start_node
 			snippet.insert_nodes[0].next = current_node
-			current_node.inner_first = snippet
+			start_node.prev = current_node.prev
+			current_node.prev = snippet.insert_nodes[0]
+		else
+			snippet.insert_nodes[0].next = current_node
+			current_node.inner_first = start_node
 			current_node.inner_last = snippet.insert_nodes[0]
 			start_node.prev = current_node
 		end
