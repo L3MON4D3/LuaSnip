@@ -41,23 +41,26 @@ local function file_read(path)
 end
 
 
-local function load_snippet_file(lang, snippet_set_path)
+local function load_snippet_file(langs, snippet_set_path)
     if not path_exists(snippet_set_path) then return end
-    local lang_snips = ls.snippets[lang] or {}
-
     local snippet_set_data = json_decode(file_read(snippet_set_path))
-    for name, parts in pairs(snippet_set_data) do
-        local body = type(parts.body) == "string" and parts.body or table.concat(parts.body, '\n')
 
-        -- There are still some snippets that fail while loading
-        pcall(function()
-        table.insert(
-            lang_snips,
-            ls.parser.parse_snippet({trig=parts.prefix, name=name, wordTrig=true}, body)
-        )
-        end) 
+    for _, lang in pairs(langs) do
+        local lang_snips = ls.snippets[lang] or {}
+
+        for name, parts in pairs(snippet_set_data) do
+            local body = type(parts.body) == "string" and parts.body or table.concat(parts.body, '\n')
+
+            -- There are still some snippets that fail while loading
+            pcall(function()
+            table.insert(
+                lang_snips,
+                ls.parser.parse_snippet({trig=parts.prefix, name=name, wordTrig=true}, body)
+            )
+            end) 
+        end
+        ls.snippets[lang] = lang_snips
     end
-    ls.snippets[lang] = lang_snips
 end
 
 local function load_snippet_folder(root)
@@ -67,9 +70,16 @@ local function load_snippet_folder(root)
     if not (package_data and package_data.contributes and package_data.contributes.snippets)  then return end
 
     for _, snippet_entry in pairs(package_data.contributes.snippets) do
-        load_snippet_file(snippet_entry.language, path_join(root, snippet_entry.path))
+        local langs = snippet_entry.language
+
+        if (type(snippet_entry.language) ~= "table") then
+            langs = {langs}
+        end
+
+        load_snippet_file(langs, path_join(root, snippet_entry.path))
     end
 end
+
 local M = {}
 
 function M.load()
