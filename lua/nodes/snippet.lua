@@ -238,7 +238,7 @@ function Snippet:set_text(node, text)
 
 	self:enter_node(node.indx)
 	if vim.o.expandtab then
-	    local tab_string = string.rep(" ", vim.o.tabstop)
+	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
         for i, str in ipairs(text) do
             text[i] = string.gsub(str, "\t", tab_string)
         end
@@ -335,7 +335,7 @@ function Snippet:indent(line)
 	self.indentstr = prefix
 	-- Check once here instead of inside loop.
 	if vim.o.expandtab then
-	    local tab_string = string.rep(" ", vim.o.tabstop)
+	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
         for _, node in ipairs(self.nodes) do
             -- put prefix behind newlines.
             if node:has_static_text() then
