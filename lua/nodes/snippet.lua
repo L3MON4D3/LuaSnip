@@ -102,6 +102,43 @@ local function pop_env(env)
 	env.TM_FILEPATH = vim.fn.expand("%:p")
 end
 
+local function insert_into_jumplist(snippet, start_node, current_node)
+	if current_node then
+		if current_node.pos == 0 then
+			if current_node.next then
+				if current_node.next.pos == 0 then
+					current_node.next.prev = snippet.insert_nodes[0]
+				else
+					current_node.next.inner_last = snippet.insert_nodes[0]
+				end
+			end
+			snippet.insert_nodes[0].next = current_node.next
+			current_node.next = start_node
+		elseif current_node.pos == -1 then
+			if current_node.prev then
+				if current_node.next.pos == 0 then
+					current_node.next.prev = snippet.insert_nodes[0]
+				else
+					current_node.next.inner_last = snippet.insert_nodes[0]
+				end
+			end
+		else
+			snippet.insert_nodes[0].next = current_node.next
+			current_node.next = start_node
+			snippet.insert_nodes[0].next = current_node
+			current_node.inner_first = snippet
+			current_node.inner_last = snippet.insert_nodes[0]
+			start_node.prev = current_node
+		end
+	end
+
+	snippet.next = snippet.insert_nodes[0]
+	snippet.prev = start_node
+
+	snippet.insert_nodes[0].prev = snippet
+	start_node.next = snippet
+end
+
 function Snippet:trigger_expand(current_node)
 	self:indent(util.get_current_line_to_cursor())
 
@@ -112,37 +149,17 @@ function Snippet:trigger_expand(current_node)
 
 	local start_node = iNode.I(0)
 	local cur = util.get_cursor_0ind()
-	-- Marks should stay at the beginning of the snippet.
-	start_node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
-	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
 	self:put_initial()
 	self:update()
 
-	-- needs no next.
-	start_node.prev = current_node
-	start_node.next = self
+	-- Marks should stay at the beginning of the snippet.
+	start_node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
+	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
+	-- differentiate start- from endnode.
+	start_node.pos = -1
 
-	if current_node then
-		-- if not inside a normal insertNode, just insert into jumplist.
-		if current_node.type == 1 and current_node.pos == 0 then
-			if current_node.next then
-				current_node.next.prev = self.insert_nodes[0]
-			end
-			current_node.next = start_node
-			self.insert_nodes[0].inner_last = current_node.next
-		else
-			self.insert_nodes[0].next = current_node
-			current_node.inner_first = self
-			current_node.inner_last = self.insert_nodes[0]
-			start_node.prev = current_node
-		end
-	end
-
-	self.next = self.insert_nodes[0]
-	self.prev = start_node
-
-	self.insert_nodes[0].prev = self
+	insert_into_jumplist(self, start_node, current_node)
 
 	if current_node then
 		current_node:jump_from(1)
