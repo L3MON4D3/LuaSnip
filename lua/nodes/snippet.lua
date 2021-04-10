@@ -160,8 +160,12 @@ function Snippet:trigger_expand(current_node)
 	-- Marks should stay at the beginning of the snippet.
 	start_node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
 	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
+
+	self.nodes[0] = start_node
 	-- differentiate start- from endnode.
 	start_node.pos = -1
+	start_node.indx = 0
+	start_node.parent = self
 
 	insert_into_jumplist(self, start_node, current_node)
 
@@ -226,7 +230,7 @@ function Snippet:enter_node(node_id)
 	end
 
 	local node = self.nodes[node_id]
-	for i=1, #self.nodes, 1 do
+	for i=self.nodes[0] and 0 or 1, #self.nodes, 1 do
 		local other = self.nodes[i]
 		if other.type ~= 0 then
 			if util.mark_pos_equal(other.markers[2], node.markers[1]) then

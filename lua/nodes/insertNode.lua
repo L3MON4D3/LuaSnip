@@ -32,6 +32,7 @@ end
 -- end
 
 function ExitNode:input_enter()
+	self.parent:enter_node(self.indx)
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	util.normal_move_on_mark_insert(self.markers[1])
