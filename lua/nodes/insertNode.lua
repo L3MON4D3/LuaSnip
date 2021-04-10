@@ -10,27 +10,6 @@ local function I(pos, static_text)
 	end
 end
 
--- function ExitNode:jump_into(dir)
--- 	-- move to zero-inserts position.
--- 	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
--- 	self:input_enter()
--- 	if dir == 1 then
--- 		if self.next then
--- 			-- jump, but don't move cursor.
--- 			self.next:jump_into(dir, true)
--- 		else
--- 			return false
--- 		end
--- 	else
--- 		if self.prev then
--- 			-- jump, but don't move cursor.
--- 			self.prev:jump_into(dir, true)
--- 		else
--- 			return false
--- 		end
--- 	end
--- end
-
 function ExitNode:input_enter()
 	self.parent:enter_node(self.indx)
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
