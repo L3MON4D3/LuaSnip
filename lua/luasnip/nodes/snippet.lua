@@ -1,6 +1,6 @@
-local node_mod = require'nodes.node'
-local iNode = require'nodes.insertNode'
-local util = require'util.util'
+local node_mod = require'luasnip.nodes.node'
+local iNode = require'luasnip.nodes.insertNode'
+local util = require'luasnip.util.util'
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
