@@ -138,7 +138,7 @@ ls.snippets = {
 		-- Parsing snippets: First parameter: Snippet-Trigger, Second: Snippet body.
 		-- Placeholders are parsed into choices with 1. the placeholder text(as a snippet) and 2. an empty string.
 		-- This means they are not SELECTed like in other editors/Snippet engines.
-		ls.parser.parse_snippet({trig="lspsyn"}, "Wow! This ${2:Stuff} really ${2:works. ${3:Well, a bit.}}"),
+		ls.parser.parse_snippet({trig="lspsyn"}, "Wow! This ${1:Stuff} really ${2:works. ${3:Well, a bit.}}"),
 
 		-- When wordTrig is set, snippets only expand as full words (lte won't expand, te will).
 		ls.parser.parse_snippet({trig = "te", wordTrig = true}, "${1:cond} ? ${2:true} : ${3:false}"),
