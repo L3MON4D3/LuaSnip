@@ -1,10 +1,10 @@
-local tNode = require 'nodes.textNode'
-local iNode = require 'nodes.insertNode'
-local fNode = require 'nodes.functionNode'
-local cNode = require 'nodes.choiceNode'
-local snipNode = require 'nodes.snippet'
-local functions = require 'util.functions'
-local util = require 'util.util'
+local tNode = require 'luasnip.nodes.textNode'
+local iNode = require 'luasnip.nodes.insertNode'
+local fNode = require 'luasnip.nodes.functionNode'
+local cNode = require 'luasnip.nodes.choiceNode'
+local snipNode = require 'luasnip.nodes.snippet'
+local functions = require 'luasnip.util.functions'
+local util = require 'luasnip.util.util'
 
 local function is_escaped(text, indx)
 	local count = 0
