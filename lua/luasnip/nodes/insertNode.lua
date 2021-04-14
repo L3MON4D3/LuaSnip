@@ -11,9 +11,6 @@ local function I(pos, static_text)
 end
 
 function ExitNode:input_enter()
-	self.parent:enter_node(self.indx)
-	self:set_to_rgrav(self.pos ~= 0)
-	self:set_from_rgrav(self.pos ~= 0)
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	util.normal_move_on_mark_insert(self.markers[1])
