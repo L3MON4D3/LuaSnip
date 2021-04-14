@@ -1,5 +1,5 @@
-local ChoiceNode = require'nodes.node'.Node:new()
-local util = require'util.util'
+local ChoiceNode = require'luasnip.nodes.node'.Node:new()
+local util = require'luasnip.util.util'
 
 local function C(pos, choices)
 	return ChoiceNode:new{active = false, pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1, dependents = {}}

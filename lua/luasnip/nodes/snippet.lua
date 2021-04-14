@@ -1,6 +1,6 @@
-local node_mod = require'nodes.node'
-local iNode = require'nodes.insertNode'
-local util = require'util.util'
+local node_mod = require'luasnip.nodes.node'
+local iNode = require'luasnip.nodes.insertNode'
+local util = require'luasnip.util.util'
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -277,7 +277,13 @@ function Snippet:set_text(node, text)
 	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[2], {})
 
 	self:enter_node(node.indx)
-	vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
+	if vim.o.expandtab then
+	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
+        for i, str in ipairs(text) do
+            text[i] = string.gsub(str, "\t", tab_string)
+        end
+    end
+    vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
 end
 
 function Snippet:del_marks()
@@ -367,14 +373,28 @@ end
 function Snippet:indent(line)
 	local prefix = string.match(line, '^%s*')
 	self.indentstr = prefix
-	for _, node in ipairs(self.nodes) do
-		-- put prefix behind newlines.
-		if node:has_static_text() then
-			for i = 2, #node:get_static_text() do
-				node:get_static_text()[i] = prefix .. node:get_static_text()[i]
-			end
-		end
-	end
+	-- Check once here instead of inside loop.
+	if vim.o.expandtab then
+	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
+        for _, node in ipairs(self.nodes) do
+            -- put prefix behind newlines.
+            if node:has_static_text() then
+                for i = 2, #node:get_static_text() do
+                    -- Note: prefix is not changed but copied.
+                    node:get_static_text()[i] = prefix .. string.gsub(node:get_static_text()[i], "\t", tab_string)
+                end
+            end
+        end
+    else
+        for _, node in ipairs(self.nodes) do
+            -- put prefix behind newlines.
+            if node:has_static_text() then
+                for i = 2, #node:get_static_text() do
+                    node:get_static_text()[i] = prefix .. node:get_static_text()[i]
+                end
+            end
+        end
+    end
 end
 
 function Snippet:input_enter()

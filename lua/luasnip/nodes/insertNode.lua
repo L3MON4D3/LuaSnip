@@ -1,6 +1,6 @@
-local InsertNode = require'nodes.node'.Node:new()
+local InsertNode = require'luasnip.nodes.node'.Node:new()
 local ExitNode = InsertNode:new()
-local util = require'util.util'
+local util = require'luasnip.util.util'
 
 local function I(pos, static_text)
 	if pos == 0 then

@@ -1,5 +1,5 @@
-local DynamicNode = require'nodes.node'.Node:new()
-local util = require'util.util'
+local DynamicNode = require'luasnip.nodes.node'.Node:new()
+local util = require'luasnip.util.util'
 
 local function D(pos, fn, args, ...)
 	return DynamicNode:new{

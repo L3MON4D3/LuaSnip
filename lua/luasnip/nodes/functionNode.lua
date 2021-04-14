@@ -1,4 +1,4 @@
-local FunctionNode = require'nodes.node'.Node:new()
+local FunctionNode = require'luasnip.nodes.node'.Node:new()
 
 local function F(fn, args, ...)
 	return FunctionNode:new{fn = fn, args = args, type = 2,  markers = {},user_args = {...}}
