@@ -41,4 +41,6 @@ Neovim >= 0.5 (extmarks)
 - Add Snippets: Snippets have to be added to the `require'luasnip'.snippets`-table.
 `Examples` contains more details, for actual snippets take a look at [my Snippets](https://github.com/L3MON4D3/Dotfiles/blob/master/.config/nvim/lua/snips.lua).
 
+For Supertab-like functionality with compe, check out [#1](https://github.com/L3MON4D3/Luasnip/issues/1).
+
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
