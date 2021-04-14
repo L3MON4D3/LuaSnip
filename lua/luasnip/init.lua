@@ -95,7 +95,7 @@ ls = {
 	c = require'luasnip.nodes.choiceNode'.C,
 	d = require'luasnip.nodes.dynamicNode'.D,
 	parser = require'luasnip.util.parser',
-	snippets = {}
+	snippets = {all = {}}
 }
 
 return ls
