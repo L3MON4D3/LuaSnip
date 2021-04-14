@@ -1,6 +1,7 @@
 local InsertNode = require'luasnip.nodes.node'.Node:new()
 local ExitNode = InsertNode:new()
 local util = require'luasnip.util.util'
+local config = require'luasnip.config'
 
 local function I(pos, static_text)
 	if pos == 0 then
@@ -20,6 +21,19 @@ function ExitNode:input_leave()
 	-- Make sure to jump on insert mode.
 	if vim.api.nvim_get_mode().mode == 's' then
 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
+	end
+end
+
+function ExitNode:jump_into(dir)
+	if not config.config.history then
+		self:input_enter()
+		if (dir == 1 and not self.next) or (dir == -1 and not self.prev) then
+			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
+		else
+			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
+		end
+	else
+		InsertNode.jump_into(self, dir)
 	end
 end
 
@@ -47,6 +61,11 @@ function InsertNode:jump_into(dir, no_move)
 		if dir == 1 then
 			if self.next then
 				self.inner_active = false
+				if not config.config.history then
+					self.inner_first = nil
+					self.inner_last = nil
+				end
+				self:input_leave()
 				self.next:jump_into(dir)
 			else
 				return false
@@ -54,6 +73,11 @@ function InsertNode:jump_into(dir, no_move)
 		else
 			if self.prev then
 				self.inner_active = false
+				if not config.config.history then
+					self.inner_first = nil
+					self.inner_last = nil
+				end
+				self:input_leave()
 				self.prev:jump_into(dir)
 			else
 				return false

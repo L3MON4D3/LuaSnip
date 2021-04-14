@@ -6,10 +6,10 @@ local defaults = {
 local c
 
 c = {
-	config = defaults,
+	config = vim.deepcopy(defaults),
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
-		for k, v in ipairs(user_config) do
+		for k, v in pairs(user_config) do
 			conf[k] = v
 		end
 		c.config = conf

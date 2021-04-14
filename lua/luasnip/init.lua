@@ -1,6 +1,5 @@
 local snip_mod = require'luasnip.nodes.snippet'
 local util = require'luasnip.util.util'
-local config = require'luasnip.config'
 
 local next_expand = nil
 local ls
@@ -96,8 +95,8 @@ ls = {
 	c = require'luasnip.nodes.choiceNode'.C,
 	d = require'luasnip.nodes.dynamicNode'.D,
 	parser = require'luasnip.util.parser',
-	snippets = {},
-	config = config
+	config = require'luasnip.config',
+	snippets = {}
 }
 
 return ls
