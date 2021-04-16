@@ -115,9 +115,9 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 		elseif current_node.pos == -1 then
 			if current_node.prev then
 				if current_node.prev.pos == 0 then
-					current_node.prev.next = snippet.insert_nodes[0]
+					current_node.prev.next = start_node
 				else
-					current_node.prev.inner_first = start_node
+					current_node.prev.inner_first = snippet
 				end
 			end
 			snippet.insert_nodes[0].next = current_node
@@ -154,10 +154,11 @@ function Snippet:trigger_expand(current_node)
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
 	start_node.markers = self.nodes[1].markers
+	start_node.pos = -1
 
 	insert_into_jumplist(self, start_node, current_node)
 
-	if current_node then
+	if current_node and current_node.pos > 0 then
 		current_node.inner_active = true
 	end
 	self:jump_into(1)
