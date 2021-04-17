@@ -97,6 +97,43 @@ local function pop_env(env)
 	env.TM_FILEPATH = vim.fn.expand("%:p")
 end
 
+function Snippet:remove_from_jumplist()
+	-- Snippet is 'surrounded' by insertNodes.
+	local pre = self.prev.prev
+	local nxt = self.next.next
+
+	-- Only existing Snippet.
+	if not pre and not nxt then
+		vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
+		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
+	end
+
+	if pre then
+		-- Snippet is linearly behind previous snip.
+		if pre.pos == 0 then
+			pre.next = nxt
+		else
+			-- check if self is only snippet inside insert node.
+			if nxt ~= pre then
+				pre.inner_first = nxt.next
+			else
+				pre.inner_first = nil
+				pre.inner_last = nil
+				return
+			end
+		end
+	end
+	if nxt then
+		-- linearly before?
+		if nxt.pos == -1 then
+			nxt.prev = pre
+		else
+			-- case 'only snippet inside iNode' is handled above.
+			nxt.inner_last = pre
+		end
+	end
+end
+
 local function insert_into_jumplist(snippet, start_node, current_node)
 	if current_node then
 		if current_node.pos == 0 then
