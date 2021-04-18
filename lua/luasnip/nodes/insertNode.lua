@@ -128,6 +128,12 @@ function InsertNode:input_leave()
 	end
 end
 
+function InsertNode:exit()
+	self.inner_first = nil
+	self.inner_last = nil
+	self.inner_active = false
+end
+
 return {
 	I = I
 }

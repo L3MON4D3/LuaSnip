@@ -16,6 +16,7 @@ function ChoiceNode:put_initial()
 			node.env = self.parent.env
 		end
 		node.indx = self.indx
+		node.pos = self.pos
 	end
 	self.inner = self.choices[self.current_choice]
 	self.inner:put_initial()
