@@ -1,4 +1,4 @@
-*luasnip.txt*	For Neovim 0.5			       Last change: 2021 April 8
+*luasnip.txt*		For Neovim 0.5						       Last change: 2021 April 8
             __                       ____                          ~
            /\ \                     /\  _`\           __           ~
            \ \ \      __  __     __ \ \,\L\_\    ___ /\_\  _____   ~
@@ -23,7 +23,7 @@ CONTENTS                                                        *luasnip-content
 
 ================================================================================
 
-INTRO								   *luasnip-intro*
+INTRO															   *luasnip-intro*
 
 Luasnip is a snippet-engine written entirely in lua. It has some great features
 like inserting text (|luasnip-f|) or nodes (|luasnip-d|) based on user input,
@@ -42,12 +42,12 @@ All code-snippets in this help assume that >
 <
 ================================================================================
 
-SNIPPETS							       *luasnip-s*
+SNIPPETS														       *luasnip-s*
 
 The most direct way to define snippets is `s`: 
 >
     s({trig='trigger'}, {
-    	i(0)
+    		i(0)
     })
 < 
 (This Snippet is useless beyond being a minimal example)
@@ -55,16 +55,16 @@ The most direct way to define snippets is `s`:
 `s` accepts, as the first argument, a table with the following possible
 entries:
 
-    `trig`	String	    Trigger, Plain text by default	Required
-    `name`	String	    Name, used by other plugins		Optional, `trig`
-    `dscr`	String	    Description, used by other		Optional, `trig`
-			    plugins
-    `wordTrig`	Boolean	    If true, the snippet is only	Optional, `false`
-			    expanded if the word (`[%w_]+`)
-			    before the cursor matches the
-			    trigger entirely
-    `regTrig`	Boolean	    If true, `trig` is interpreted as	Optional, `false`
-			    a lua-pattern
+    `trig`		string		Trigger, Plain text by default		Required
+    `name`		String		Name, used by other plugins			Optional, `trig`
+    `dscr`		String		Description, used by other			Optional, `trig`
+							plugins
+    `wordTrig`	Boolean		If true, the snippet is only		Optional, `false`
+							expanded if the word (`[%w_]+`)
+					    	before the cursor matches the
+					    	trigger entirely
+    `regTrig`	Boolean		If true, `trig` is interpreted		Optional, `false`
+							as a lua-pattern
 
 The second argument to `s` is a table containing all nodes that belong to the
 snippet, at least one of which has to be an `i(0)` node.
@@ -75,13 +75,13 @@ Snippets that should be loaded for all files must be put into the
 
 ================================================================================
 
-TEXTNODE							       *luasnip-t*
+TEXTNODE														       *luasnip-t*
 
 The most simple kind of node; just text.
 >
     s({trig='trigger'}, {
-    	t({"Wow! Text!"}),
-    	i(0)
+    		t({"Wow! Text!"}),
+    		i(0)
     })
 <
 This Snippet expands to
@@ -92,13 +92,13 @@ This Snippet expands to
 Multiline-strings can be defined by creating multiple entries inside the table:
 >
     s({trig='trigger'}, {
-    	t({"Wow! Text!", "And another line."}),
-    	i(0)
+    		t({"Wow! Text!", "And another line."}),
+    		i(0)
     })
 <
 ================================================================================
 
-INSERTNODE							       *luasnip-i*
+INSERTNODE														       *luasnip-i*
 
 These Nodes can be jumped to- and from, the functionality is best demonstrated
 with an example:
@@ -106,16 +106,50 @@ with an example:
     s({trig='trigger'}, {
     	t({"After jumping forward once cursor is here ->"}), i(2),
     	t({"", "After expanding the cursor is here ->"}), i(1),
-    	t({"", "And after jumping once more the snippet is exited there ->"}), i(0),
+    	t({"", "After jumping once more the snippet is exited there ->"}), i(0),
     })
 <
 It's possible to have easy-to-overwrite text inside an InsertNode initially:
 >
     s({trig='trigger'}, {
-    	i(1, {"This text is SELECTed after expanding the snippet."}), i(0),
+    		i(1, {"This text is SELECTed after expanding the snippet."}), i(0),
     })
 <
 This initial text is defined the same way as textNodes, eg. can be multiline.
 
 ================================================================================
-vim:tw=80:ts=8:noet:ft=help:
+
+FUNCTIONNODE														   *luasnip-f*
+
+Function Nodes insert text based on the content of other nodes using a
+user-defined function: 
+>
+    s({trig = "trig"}, {
+		i(1)
+		f(function(args, user_arg_1) return {args[1][1] .. user_arg_1} end,
+		    {1},
+		    "Will be appended to text from i(0)"),
+		i(0)
+    })
+<
+The first parameter of `f` is the function. It's parameters are
+	1.: a table of text and the snippet (ie. `{{line1}, {line1}, snippet}`),
+	2.: Any parameters passed to `f` behind the second (included to more easily
+	reuse functions, ie. ternary if based on text in an insertNode).
+
+The second parameter is a table of insertNodes whose text is passed to the
+function. The table may be empty, in this case the function is evaluated once
+upon snippet-expansion.
+
+Examples:
+	Use captures from the regex-trigger using a function node:
+>
+	s({trig = "b(%d)", regTrig = true, wordTrig = true}, {
+		f(function(args) return
+			{"Captured Text: " .. args[1].captures[1] .. "."} end, {}),
+		i(0)
+	})
+<
+================================================================================
+
+vim:tw=80:ts=4:noet:ft=help:
