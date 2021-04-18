@@ -256,7 +256,8 @@ function Snippet:enter_node(node_id)
 	end
 
 	local node = self.nodes[node_id]
-	for _, other in ipairs(self.nodes) do
+	for i = 1, node_id, 1 do
+		local other = self.nodes[i]
 		if other.type ~= 0 then
 			if util.mark_pos_equal(other.markers[2], node.markers[1]) then
 				other:set_to_rgrav(false)
