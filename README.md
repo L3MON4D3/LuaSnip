@@ -45,4 +45,7 @@ Neovim >= 0.5 (extmarks)
 
 For Supertab-like functionality with compe, check out [#1](https://github.com/L3MON4D3/Luasnip/issues/1).
 
+# Config
+- `history`: If true, Snippets that were exited can still be jumped back into. As Snippets are not removed when their text is deleted, they have to be removed manually via `LuasnipUnlinkCurrent`.
+
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
