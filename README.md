@@ -13,6 +13,8 @@ Snippet Engine for Neovim written in Lua.
 - Regex-Trigger
 - Fast, small, simple
 - Parse LSP-Style Snippets (Does not, however, support Regex-Transformations)
+- Expand LSP-Snippets with [nvim-compe](https://github.com/hrsh7th/nvim-compe)
+- Snippet history (jump back into older snippets)
 
 # Drawbacks
 - Snippets that make use of the entire functionality of this plugin have to be defined in Lua.
