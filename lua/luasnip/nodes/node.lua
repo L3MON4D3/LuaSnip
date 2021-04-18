@@ -1,4 +1,4 @@
-local util = require'util.util'
+local util = require'luasnip.util.util'
 
 local Node = {}
 

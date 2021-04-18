@@ -1,5 +1,5 @@
-local DynamicNode = require'nodes.node'.Node:new()
-local util = require'util.util'
+local DynamicNode = require'luasnip.nodes.node'.Node:new()
+local util = require'luasnip.util.util'
 
 local function D(pos, fn, args, ...)
 	return DynamicNode:new{
@@ -66,6 +66,10 @@ function DynamicNode:update()
 		tmp = self.fn(self:get_args(), nil, unpack(self.user_args))
 	end
 	self.snip = tmp
+
+	-- act as if snip is directly inside parent.
+	self.snip.parent = self.parent
+	self.snip.indx = self.indx
 
 	self.snip.next = self
 	self.snip.prev = self

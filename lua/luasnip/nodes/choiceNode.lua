@@ -1,5 +1,5 @@
-local ChoiceNode = require'nodes.node'.Node:new()
-local util = require'util.util'
+local ChoiceNode = require'luasnip.nodes.node'.Node:new()
+local util = require'luasnip.util.util'
 
 local function C(pos, choices)
 	return ChoiceNode:new{active = false, pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1, dependents = {}}
@@ -16,6 +16,7 @@ function ChoiceNode:put_initial()
 			node.env = self.parent.env
 		end
 		node.indx = self.indx
+		node.pos = self.pos
 	end
 	self.inner = self.choices[self.current_choice]
 	self.inner:put_initial()

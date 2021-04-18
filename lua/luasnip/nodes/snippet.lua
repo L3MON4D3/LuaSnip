@@ -1,6 +1,6 @@
-local node_mod = require'nodes.node'
-local iNode = require'nodes.insertNode'
-local util = require'util.util'
+local node_mod = require'luasnip.nodes.node'
+local iNode = require'luasnip.nodes.insertNode'
+local util = require'luasnip.util.util'
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -20,17 +20,12 @@ function Snippet:init_nodes()
 		end
 	end
 
-	if #insert_nodes ~= 0 then
-		-- save so it can be restored later.
-		local tmp = self.next
-
-		local last_node = self
-		for _, node in ipairs(insert_nodes) do
-			node.prev = last_node
-			last_node.next = node
-			last_node = node
+	if insert_nodes[1] then
+		insert_nodes[1].prev = self
+		for i=2, #insert_nodes do
+			insert_nodes[i].prev = insert_nodes[i-1]
+			insert_nodes[i-1].next = insert_nodes[i]
 		end
-		self.next = tmp
 		insert_nodes[#insert_nodes].next = self
 
 		self.inner_first = insert_nodes[1]
@@ -102,6 +97,85 @@ local function pop_env(env)
 	env.TM_FILEPATH = vim.fn.expand("%:p")
 end
 
+function Snippet:remove_from_jumplist()
+	-- Snippet is 'surrounded' by insertNodes.
+	local pre = self.prev.prev
+	local nxt = self.next.next
+
+	-- Only existing Snippet.
+	if not pre and not nxt then
+		vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
+		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
+	end
+
+	if pre then
+		-- Snippet is linearly behind previous snip.
+		if pre.pos == 0 then
+			pre.next = nxt
+		else
+			-- check if self is only snippet inside insert node.
+			if nxt ~= pre then
+				pre.inner_first = nxt.next
+			else
+				pre.inner_first = nil
+				pre.inner_last = nil
+				return
+			end
+		end
+	end
+	if nxt then
+		-- linearly before?
+		if nxt.pos == -1 then
+			nxt.prev = pre
+		else
+			-- case 'only snippet inside iNode' is handled above.
+			nxt.inner_last = pre
+		end
+	end
+end
+
+local function insert_into_jumplist(snippet, start_node, current_node)
+	if current_node then
+		if current_node.pos == 0 then
+			if current_node.next then
+				-- next is beginning of another snippet.
+				if current_node.next.pos == -1 then
+					current_node.next.prev = snippet.insert_nodes[0]
+				-- next is outer insertNode.
+				else
+					current_node.next.inner_last = snippet.insert_nodes[0]
+				end
+			end
+			snippet.insert_nodes[0].next = current_node.next
+			current_node.next = start_node
+			start_node.prev = current_node
+		elseif current_node.pos == -1 then
+			if current_node.prev then
+				if current_node.prev.pos == 0 then
+					current_node.prev.next = start_node
+				else
+					current_node.prev.inner_first = snippet
+				end
+			end
+			snippet.insert_nodes[0].next = current_node
+			start_node.prev = current_node.prev
+			current_node.prev = snippet.insert_nodes[0]
+		else
+			snippet.insert_nodes[0].next = current_node
+			-- jump into snippet directly.
+			current_node.inner_first = snippet
+			current_node.inner_last = snippet.insert_nodes[0]
+			start_node.prev = current_node
+		end
+	end
+
+	snippet.next = snippet.insert_nodes[0]
+	snippet.prev = start_node
+
+	snippet.insert_nodes[0].prev = snippet
+	start_node.next = snippet
+end
+
 function Snippet:trigger_expand(current_node)
 	self:indent(util.get_current_line_to_cursor())
 
@@ -111,23 +185,20 @@ function Snippet:trigger_expand(current_node)
 	util.remove_n_before_cur(#self.trigger)
 
 	local start_node = iNode.I(0)
-	local cur = util.get_cursor_0ind()
-	-- Marks should stay at the beginning of the snippet.
-	start_node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
-	start_node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
 
 	self:put_initial()
 	self:update()
 
-	-- needs no next.
-	start_node.prev = current_node
+	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
+	start_node.markers = self.nodes[1].markers
+	start_node.pos = -1
+	start_node.parent = self
 
-	self.next = self.insert_nodes[0]
-	self.prev = start_node
+	insert_into_jumplist(self, start_node, current_node)
 
-	-- Needs no prev.
-	self.insert_nodes[0].next = current_node
-
+	if current_node and current_node.pos > 0 then
+		current_node.inner_active = true
+	end
 	self:jump_into(1)
 end
 
@@ -185,7 +256,7 @@ function Snippet:enter_node(node_id)
 	end
 
 	local node = self.nodes[node_id]
-	for i=1, #self.nodes, 1 do
+	for i = 1, node_id, 1 do
 		local other = self.nodes[i]
 		if other.type ~= 0 then
 			if util.mark_pos_equal(other.markers[2], node.markers[1]) then
@@ -237,7 +308,13 @@ function Snippet:set_text(node, text)
 	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[2], {})
 
 	self:enter_node(node.indx)
-	vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
+	if vim.o.expandtab then
+	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
+        for i, str in ipairs(text) do
+            text[i] = string.gsub(str, "\t", tab_string)
+        end
+    end
+    vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
 end
 
 function Snippet:del_marks()
@@ -327,14 +404,28 @@ end
 function Snippet:indent(line)
 	local prefix = string.match(line, '^%s*')
 	self.indentstr = prefix
-	for _, node in ipairs(self.nodes) do
-		-- put prefix behind newlines.
-		if node:has_static_text() then
-			for i = 2, #node:get_static_text() do
-				node:get_static_text()[i] = prefix .. node:get_static_text()[i]
-			end
-		end
-	end
+	-- Check once here instead of inside loop.
+	if vim.o.expandtab then
+	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
+        for _, node in ipairs(self.nodes) do
+            -- put prefix behind newlines.
+            if node:has_static_text() then
+                for i = 2, #node:get_static_text() do
+                    -- Note: prefix is not changed but copied.
+                    node:get_static_text()[i] = prefix .. string.gsub(node:get_static_text()[i], "\t", tab_string)
+                end
+            end
+        end
+    else
+        for _, node in ipairs(self.nodes) do
+            -- put prefix behind newlines.
+            if node:has_static_text() then
+                for i = 2, #node:get_static_text() do
+                    node:get_static_text()[i] = prefix .. node:get_static_text()[i]
+                end
+            end
+        end
+    end
 end
 
 function Snippet:input_enter()

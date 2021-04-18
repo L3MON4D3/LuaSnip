@@ -1,5 +1,5 @@
-local snip_mod = require'nodes.snippet'
-local util = require'util.util'
+local snip_mod = require'luasnip.nodes.snippet'
+local util = require'luasnip.util.util'
 
 local next_expand = nil
 local ls
@@ -66,7 +66,7 @@ local function expand_or_jump()
 end
 
 local function lsp_expand(body)
-	local snip = require'util.parser'.parse_snippet({trig = ""}, body)
+	local snip = require'luasnip.util.parser'.parse_snippet({trig = ""}, body)
 	snip:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
 end
 
@@ -78,6 +78,15 @@ local function change_choice(val)
 	return Luasnip_active_choice:change_choice(val)
 end
 
+local function unlink_current()
+	local user_expanded_snip = Luasnip_current_nodes[vim.api.nvim_get_current_buf()].parent
+	-- find 'outer' snippet.
+	while user_expanded_snip.parent do
+		user_expanded_snip = user_expanded_snip.parent
+	end
+	user_expanded_snip:remove_from_jumplist()
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	jumpable = jumpable,
@@ -86,16 +95,18 @@ ls = {
 	get_active_snip = get_active_snip,
 	choice_active = choice_active,
 	change_choice = change_choice,
+	unlink_current = unlink_current,
+	lsp_expand = lsp_expand,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
-	lsp_expand = lsp_expand,
-	t = require'nodes.textNode'.T,
-	f = require'nodes.functionNode'.F,
-	i = require'nodes.insertNode'.I,
-	c = require'nodes.choiceNode'.C,
-	d = require'nodes.dynamicNode'.D,
-	parser = require'util.parser',
-	snippets = {}
+	t = require'luasnip.nodes.textNode'.T,
+	f = require'luasnip.nodes.functionNode'.F,
+	i = require'luasnip.nodes.insertNode'.I,
+	c = require'luasnip.nodes.choiceNode'.C,
+	d = require'luasnip.nodes.dynamicNode'.D,
+	parser = require'luasnip.util.parser',
+	config = require'luasnip.config',
+	snippets = {all = {}}
 }
 
 return ls

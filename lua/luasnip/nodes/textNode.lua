@@ -1,5 +1,5 @@
-local node_mod = require'nodes.node'
-local util = require'util.util'
+local node_mod = require'luasnip.nodes.node'
+local util = require'luasnip.util.util'
 
 local TextNode = node_mod.Node:new()
 
