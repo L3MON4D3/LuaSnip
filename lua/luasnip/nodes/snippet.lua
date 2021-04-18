@@ -192,6 +192,7 @@ function Snippet:trigger_expand(current_node)
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
 	start_node.markers = self.nodes[1].markers
 	start_node.pos = -1
+	start_node.parent = self
 
 	insert_into_jumplist(self, start_node, current_node)
 
