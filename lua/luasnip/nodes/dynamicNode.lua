@@ -67,6 +67,10 @@ function DynamicNode:update()
 	end
 	self.snip = tmp
 
+	-- act as if snip is directly inside parent.
+	self.snip.parent = self.parent
+	self.snip.indx = self.indx
+
 	self.snip.next = self
 	self.snip.prev = self
 
