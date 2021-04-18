@@ -78,6 +78,15 @@ local function change_choice(val)
 	return Luasnip_active_choice:change_choice(val)
 end
 
+local function unlink_current()
+	local user_expanded_snip = Luasnip_current_nodes[vim.api.nvim_get_current_buf()].parent
+	-- find 'outer' snippet.
+	while user_expanded_snip.parent do
+		user_expanded_snip = user_expanded_snip.parent
+	end
+	user_expanded_snip:remove_from_jumplist()
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	jumpable = jumpable,
@@ -86,9 +95,10 @@ ls = {
 	get_active_snip = get_active_snip,
 	choice_active = choice_active,
 	change_choice = change_choice,
+	unlink_current = unlink_current,
+	lsp_expand = lsp_expand,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
-	lsp_expand = lsp_expand,
 	t = require'luasnip.nodes.textNode'.T,
 	f = require'luasnip.nodes.functionNode'.F,
 	i = require'luasnip.nodes.insertNode'.I,
