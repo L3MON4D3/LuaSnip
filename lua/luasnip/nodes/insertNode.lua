@@ -12,12 +12,18 @@ local function I(pos, static_text)
 end
 
 function ExitNode:input_enter()
+	-- Text of first node should be 'pushed' aside, text written in the -1-node
+	-- does not belong to snippet.
+	self:set_from_rgrav(true)
+	self:set_to_rgrav(true)
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	util.normal_move_on_mark_insert(self.markers[1])
 end
 
 function ExitNode:input_leave()
+	-- undo setting rgrav in i_e here.
+	self:set_from_rgrav(false)
 	-- Make sure to jump on insert mode.
 	if vim.api.nvim_get_mode().mode == 's' then
 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
