@@ -44,7 +44,7 @@ local function parse_text(text)
 	text = string.gsub(text, '\\}', '}')
 	text = string.gsub(text, '\\,', ',')
 	text = string.gsub(text, '\\|', '|')
-	text = string.gsub(text, '\\$', '$')
+	text = string.gsub(text, '\\%$', '$')
 
 	local text_table = {}
 	for line in vim.gsplit(text, "\n", true) do
@@ -249,7 +249,6 @@ parse_snippet = function(context, body, tab_stops, brackets)
 			else
 				-- continues search at next node
 				indx = next_node+1
-				text_start = next_node+1
 			end
 		else
 			-- insert text so far as textNode.
