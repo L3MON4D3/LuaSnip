@@ -66,7 +66,7 @@ local function expand_or_jump()
 end
 
 local function lsp_expand(body)
-	local snip = require'luasnip.util.parser'.parse_snippet({trig = ""}, body)
+	local snip = ls.parser.parse_snippet({trig = ""}, body)
 	snip:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
 end
 
