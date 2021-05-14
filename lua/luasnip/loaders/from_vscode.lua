@@ -53,11 +53,15 @@ local function load_snippet_file(langs, snippet_set_path)
 
             -- There are still some snippets that fail while loading
             pcall(function()
-            table.insert(
-                lang_snips,
-                ls.parser.parse_snippet({trig=parts.prefix, name=name, wordTrig=true}, body)
-            )
-            end) 
+                -- Sometimes it's a list of prefixes instead of a single one
+                local prefixes = type(parts.prefix) == "table" and parts.prefix or {parts.prefix}
+                for _, prefix in ipairs(prefixes) do
+                    table.insert(
+                        lang_snips,
+                        ls.parser.parse_snippet({trig=prefix, name=name, wordTrig=true}, body)
+                    )
+                end
+            end)
         end
         ls.snippets[lang] = lang_snips
     end
