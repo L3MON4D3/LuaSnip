@@ -41,7 +41,7 @@ Neovim >= 0.5 (extmarks)
   snoremap <silent> <S-Tab> <cmd>lua ls.jump(-1)<Cr>
   ```
 - Add Snippets: Snippets have to be added to the `require'luasnip'.snippets`-table.
-`Examples` contains more details, for actual snippets take a look at [my Snippets](https://github.com/L3MON4D3/Dotfiles/blob/master/.config/nvim/lua/snips.lua).
+`Examples` contains more details, for actual snippets take a look at [examples](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) or [my Snippets](https://github.com/L3MON4D3/Dotfiles/blob/master/.config/nvim/lua/snips.lua).
 
 For Supertab-like functionality with compe, check out [#1](https://github.com/L3MON4D3/Luasnip/issues/1).
 
