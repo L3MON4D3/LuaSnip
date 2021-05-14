@@ -105,6 +105,7 @@ function Snippet:remove_from_jumplist()
 	-- Only existing Snippet.
 	if not pre and not nxt then
 		vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
+		Luasnip_active_choice = nil
 		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
 	end
 
