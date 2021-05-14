@@ -79,7 +79,9 @@ local function change_choice(val)
 end
 
 local function unlink_current()
-	local user_expanded_snip = Luasnip_current_nodes[vim.api.nvim_get_current_buf()].parent
+	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	if not node then print "No active Snippet" return end
+	local user_expanded_snip = node.parent
 	-- find 'outer' snippet.
 	while user_expanded_snip.parent do
 		user_expanded_snip = user_expanded_snip.parent
