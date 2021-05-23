@@ -367,7 +367,7 @@ function Snippet:put_initial()
 		if not (cur1[1] == cur2[1] and cur1[2] == cur2[2]) then
 			-- place extmark directly on previously saved position (first char
 			-- of inserted text) after putting text.
-			node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur1[1], cur1[2], {})
+			node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur1[1], cur1[2], {right_gravity = true})
 		-- zero-length; important that text put after doesn't move marker.
 		else
 			node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur1[1], cur1[2], {right_gravity = false})
