@@ -66,32 +66,48 @@ function DynamicNode:update()
 	else
 		tmp = self.fn(self:get_args(), nil, unpack(self.user_args))
 	end
-	self.snip = tmp
+	self.snip = nil
 
 	-- act as if snip is directly inside parent.
-	self.snip.parent = self.parent
-	self.snip.indx = self.indx
+	tmp.parent = self.parent
+	tmp.indx = self.indx
 
-	self.snip.next = self
-	self.snip.prev = self
+	tmp.next = self
+	tmp.prev = self
 
-	self.snip.env = self.parent.env
-	self.snip.markers = self.markers
+	tmp.env = self.parent.env
+	tmp.markers = self.markers
 
 	util.move_to_mark(self.markers[1])
 
-	self.snip:indent(self.parent.indentstr)
-	self.snip:put_initial()
+	tmp:indent(self.parent.indentstr)
 
-	self.snip:set_old_text()
+	self.parent:enter_node(self.indx)
+	tmp:put_initial()
+
+	tmp:set_old_text()
+
+	self.snip = tmp
 end
 
 function DynamicNode:set_to_rgrav(val)
-	self.snip:set_to_rgrav(val)
+	if self.snip then
+		self.snip:set_to_rgrav(val)
+	else
+		local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[2])
+		self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	end
 end
 
 function DynamicNode:set_from_rgrav(val)
-	self.snip:set_from_rgrav(val)
+	if self.snip then
+		self.snip:set_from_rgrav(val)
+	else
+		local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
+		self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	end
 end
 
 return {
