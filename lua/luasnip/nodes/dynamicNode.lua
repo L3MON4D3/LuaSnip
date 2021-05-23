@@ -84,6 +84,8 @@ function DynamicNode:update()
 
 	self.parent:enter_node(self.indx)
 	tmp:put_initial()
+	-- Update, tbh no idea how that could come in handy, but should be done.
+	tmp:update()
 
 	tmp:set_old_text()
 
