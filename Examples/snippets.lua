@@ -17,6 +17,18 @@ ls.config.set_config({
 -- placeholder 2,...
 local function copy(args) return args[1] end
 
+-- 'recursive' dynamic snippet. Expands to some text followed by itself.
+local rec_ls
+rec_ls = function()
+	return sn(nil, {
+		c(1, {
+			-- Order is important, sn(...) first would cause infinite loop of expansion.
+			t({""}),
+			sn(nil, {t({"", "\t\\item "}), i(1), d(2, rec_ls, {})}),
+		}),
+	});
+end
+
 local function jdocsnip(args, old_state)
 	local nodes = {
 		t({"/**"," * "}),
@@ -192,6 +204,17 @@ ls.snippets = {
 			t({" {", "\t"}),
 			i(0),
 			t({"", "}"})
+		})
+	},
+	tex = {
+		-- rec_ls is self-referencing. That makes this snippet 'infinite' eg. have as many
+		-- \item as necessary by utilizing a choiceNode.
+		s({trig = "ls"}, {
+			t({"\\begin{itemize}", "\t\\item "}),
+			i(1),
+			d(2, rec_ls, {}),
+			t({"", "\\end{itemize}"}),
+			i(0)
 		})
 	}
 }
