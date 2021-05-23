@@ -92,23 +92,13 @@ function DynamicNode:update()
 	self.snip = tmp
 end
 
-function DynamicNode:set_to_rgrav(val)
+function DynamicNode:set_mark_rgrav(mark, val)
 	if self.snip then
-		self.snip:set_to_rgrav(val)
+		self.snip:set_mark_rgrav(mark, val)
 	else
-		local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[2])
-		self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
-	end
-end
-
-function DynamicNode:set_from_rgrav(val)
-	if self.snip then
-		self.snip:set_from_rgrav(val)
-	else
-		local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
-		self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+		local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
+		self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
 	end
 end
 

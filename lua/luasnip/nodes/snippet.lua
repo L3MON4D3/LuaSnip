@@ -261,26 +261,26 @@ function Snippet:enter_node(node_id)
 		local other = self.nodes[i]
 		if other.type ~= 0 then
 			if util.mark_pos_equal(other.markers[2], node.markers[1]) then
-				other:set_to_rgrav(false)
+				other:set_mark_rgrav(2, false)
 			else
-				other:set_to_rgrav(true)
+				other:set_mark_rgrav(2, true)
 			end
 		end
 	end
-	node:set_from_rgrav(false)
-	node:set_to_rgrav(true)
+	node:set_mark_rgrav(1, false)
+	node:set_mark_rgrav(2, true)
 	for i = node_id+1, #self.nodes, 1 do
 		local other = self.nodes[i]
 		if self.nodes[i].type ~= 0 then
 			if util.mark_pos_equal(node.markers[2], other.markers[1]) then
-				other:set_from_rgrav(true)
+				other:set_mark_rgrav(1, true)
 			else
-				other:set_from_rgrav(false)
+				other:set_mark_rgrav(1, false)
 			end
 			-- can be the case after expand; there all nodes without static text
 			-- have left gravity on all marks.
 			if util.mark_pos_equal(node.markers[2], other.markers[2]) then
-				other:set_to_rgrav(true)
+				other:set_mark_rgrav(2, true)
 			end
 		end
 	end
@@ -466,25 +466,14 @@ function Snippet:exit()
 	end
 end
 
-function Snippet:set_to_rgrav(val)
+function Snippet:set_mark_rgrav(mark, val)
 	-- set own markers.
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[2])
-	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
+	self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
 
 	for _, node in ipairs(self.nodes) do
-		node:set_to_rgrav(val)
-	end
-end
-
-function Snippet:set_from_rgrav(val)
-	-- set own markers.
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
-	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
-
-	for _, node in ipairs(self.nodes) do
-		node:set_from_rgrav(val)
+		node:set_mark_rgrav(mark, val)
 	end
 end
 

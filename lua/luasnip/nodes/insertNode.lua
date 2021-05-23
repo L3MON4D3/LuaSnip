@@ -13,8 +13,8 @@ end
 
 function ExitNode:input_enter()
 	-- Text written in the ExitNode does not belong to snippet.
-	self:set_from_rgrav(self.pos == -1)
-	self:set_to_rgrav(self.pos == -1)
+	self:set_mark_rgrav(1, self.pos == -1)
+	self:set_mark_rgrav(2, self.pos == -1)
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	util.normal_move_on_mark_insert(self.markers[1])
@@ -22,7 +22,7 @@ end
 
 function ExitNode:input_leave()
 	-- undo setting rgrav in i_e here.
-	self:set_from_rgrav(self.pos ~= -1)
+	self:set_mark_rgrav(1, self.pos ~= -1)
 	-- Make sure to jump on insert mode.
 	if vim.api.nvim_get_mode().mode == 's' then
 		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
@@ -43,8 +43,7 @@ function ExitNode:jump_into(dir)
 end
 
 -- Should never be changed for these nodes.
-function ExitNode:set_to_rgrav() end
-function ExitNode:set_from_rgrav() end
+function ExitNode:set_mark_rgrav(_, _) end
 
 function InsertNode:input_enter(no_move)
 	if not no_move then

@@ -57,16 +57,10 @@ function Node:jumpable(dir)
 	end
 end
 
-function Node:set_from_rgrav(val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
-	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
-end
-
-function Node:set_to_rgrav(val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[2])
-	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+function Node:set_mark_rgrav(mark, val)
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
+	self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
 end
 
 function Node:get_text()
