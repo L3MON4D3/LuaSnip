@@ -42,6 +42,10 @@ function ExitNode:jump_into(dir)
 	end
 end
 
+-- Should never be changed for these nodes.
+function ExitNode:set_to_rgrav() end
+function ExitNode:set_from_rgrav() end
+
 function InsertNode:input_enter(no_move)
 	if not no_move then
 		self.parent:enter_node(self.indx)
