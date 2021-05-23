@@ -61,6 +61,7 @@ function DynamicNode:update()
 		self.snip:input_leave()
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(self:get_args(), self.snip.old_state, unpack(self.user_args))
+		self.parent:set_text(self, {""})
 		self.snip:exit()
 	else
 		tmp = self.fn(self:get_args(), nil, unpack(self.user_args))
@@ -75,13 +76,22 @@ function DynamicNode:update()
 	self.snip.prev = self
 
 	self.snip.env = self.parent.env
+	self.snip.markers = self.markers
 
-	self.parent:set_text(self, {""})
 	util.move_to_mark(self.markers[1])
+
 	self.snip:indent(self.parent.indentstr)
 	self.snip:put_initial()
 
 	self.snip:set_old_text()
+end
+
+function DynamicNode:set_to_rgrav(val)
+	self.snip:set_to_rgrav(val)
+end
+
+function DynamicNode:set_from_rgrav(val)
+	self.snip:set_from_rgrav(val)
 end
 
 return {

@@ -257,7 +257,7 @@ function Snippet:enter_node(node_id)
 	end
 
 	local node = self.nodes[node_id]
-	for i = 1, node_id, 1 do
+	for i = 1, node_id-1, 1 do
 		local other = self.nodes[i]
 		if other.type ~= 0 then
 			if util.mark_pos_equal(other.markers[2], node.markers[1]) then
@@ -463,6 +463,28 @@ function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
 		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[1])
 		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[2])
+	end
+end
+
+function Snippet:set_to_rgrav(val)
+	-- set own markers.
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[2])
+	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+
+	for _, node in ipairs(self.nodes) do
+		node:set_to_rgrav(val)
+	end
+end
+
+function Snippet:set_from_rgrav(val)
+	-- set own markers.
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
+	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+
+	for _, node in ipairs(self.nodes) do
+		node:set_from_rgrav(val)
 	end
 end
 

@@ -73,10 +73,10 @@ end
 function ChoiceNode:change_choice(val)
 	-- tear down current choice.
 	self.inner:input_leave()
-	self.inner:exit()
-
 	-- clear text.
 	self.parent:set_text(self, {""})
+
+	self.inner:exit()
 
 	local tmp = self.current_choice + val
 	if tmp < 1 then
@@ -110,6 +110,24 @@ function ChoiceNode:copy()
 	end
 	setmetatable(o, getmetatable(self))
 	return o
+end
+
+function ChoiceNode:set_to_rgrav(val)
+	-- set own markers.
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[2])
+	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+
+	self.inner:set_to_rgrav(val)
+end
+
+function ChoiceNode:set_from_rgrav(val)
+	-- set own markers.
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[1])
+	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+
+	self.inner:set_from_rgrav(val)
 end
 
 return {
