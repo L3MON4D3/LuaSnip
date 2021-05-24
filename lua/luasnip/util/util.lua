@@ -107,6 +107,7 @@ end
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
+	get_ext_position = get_ext_position,
 	move_to_mark = move_to_mark,
 	normal_move_before_mark = normal_move_before_mark,
 	normal_move_on_mark = normal_move_on_mark,
