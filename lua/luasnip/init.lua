@@ -102,7 +102,8 @@ local function active_update_dependents()
 		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
 		active.parent:enter_node(active.indx)
 
-		cur = util.get_ext_position(cur_mark)
+		-- Don't account for utf, nvim_win_set_cursor doesn't either.
+		cur = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, cur_mark, {details = false})
 		util.set_cursor_0ind(cur)
 	end
 end
