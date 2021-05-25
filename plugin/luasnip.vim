@@ -10,6 +10,13 @@ snoremap <silent> <Plug>luasnip-jump-prev <cmd>lua require'luasnip'.jump(-1)<Cr>
 
 command! LuaSnipUnlinkCurrent lua require'luasnip'.unlink_current()
 
+function! luasnip#expand_or_jumpable()
+	return luaeval('require("luasnip").expand_or_jumpable()')
+endfunction
+
+function! luasnip#choice_active()
+	return luaeval('require("luasnip").choice_active()')
+endfunction
 
 augroup luasnip
 	au!
