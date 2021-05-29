@@ -259,29 +259,25 @@ function Snippet:enter_node(node_id)
 	local node = self.nodes[node_id]
 	for i = 1, node_id-1, 1 do
 		local other = self.nodes[i]
-		if other.type ~= 0 then
-			if util.mark_pos_equal(other.markers[2], node.markers[1]) then
-				other:set_mark_rgrav(2, false)
-			else
-				other:set_mark_rgrav(2, true)
-			end
+		if util.mark_pos_equal(other.markers[2], node.markers[1]) then
+			other:set_mark_rgrav(2, false)
+		else
+			other:set_mark_rgrav(2, true)
 		end
 	end
 	node:set_mark_rgrav(1, false)
 	node:set_mark_rgrav(2, true)
 	for i = node_id+1, #self.nodes, 1 do
 		local other = self.nodes[i]
-		if self.nodes[i].type ~= 0 then
-			if util.mark_pos_equal(node.markers[2], other.markers[1]) then
-				other:set_mark_rgrav(1, true)
-			else
-				other:set_mark_rgrav(1, false)
-			end
-			-- can be the case after expand; there all nodes without static text
-			-- have left gravity on all marks.
-			if util.mark_pos_equal(node.markers[2], other.markers[2]) then
-				other:set_mark_rgrav(2, true)
-			end
+		if util.mark_pos_equal(node.markers[2], other.markers[1]) then
+			other:set_mark_rgrav(1, true)
+		else
+			other:set_mark_rgrav(1, false)
+		end
+		-- can be the case after expand; there all nodes without static text
+		-- have left gravity on all marks.
+		if util.mark_pos_equal(node.markers[2], other.markers[2]) then
+			other:set_mark_rgrav(2, true)
 		end
 	end
 end
