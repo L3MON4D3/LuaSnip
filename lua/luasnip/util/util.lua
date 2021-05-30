@@ -105,6 +105,15 @@ local function word_under_cursor(cur, line)
 	return string.sub(line, ind_start, ind_end)
 end
 
+-- Put text and update cursor(pos).
+local function put(text, pos)
+	vim.api.nvim_buf_set_text(0, pos[1], pos[2], pos[1], pos[2], text)
+	-- add rows
+	pos[1] = pos[1] + #text-1
+	-- add columns, start at 0 if no rows were added, else at old col-value.
+	pos[2] = (#text > 1 and 0 or pos[2]) + #text[#text]
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -117,5 +126,6 @@ return {
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	mark_pos_equal = mark_pos_equal,
 	multiline_equal = multiline_equal,
-	word_under_cursor = word_under_cursor
+	word_under_cursor = word_under_cursor,
+	put = put
 }

@@ -15,8 +15,8 @@ function TextNode:input_enter()
 	util.normal_move_on_mark_insert(self.markers[1])
 end
 
-function TextNode:put_initial()
-	vim.api.nvim_put(self:get_static_text(), "c", false, true);
+function TextNode:put_initial(pos)
+	util.put(self:get_static_text(), pos);
 end
 
 return {

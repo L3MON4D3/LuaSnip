@@ -17,9 +17,9 @@ function Node:get_static_text()
 	return self.static_text
 end
 
-function Node:put_initial()
+function Node:put_initial(pos)
 	if self:has_static_text() then
-		vim.api.nvim_put(self:get_static_text(), "c", false, true);
+		util.put(self:get_static_text(), pos)
 	end
 end
 

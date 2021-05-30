@@ -38,7 +38,7 @@ function DynamicNode:get_static_text()
 	return self.snip:get_static_text()
 end
 
-function DynamicNode:put_initial()
+function DynamicNode:put_initial(_)
 end
 
 function DynamicNode:jump_into(dir)
@@ -78,12 +78,10 @@ function DynamicNode:update()
 	tmp.env = self.parent.env
 	tmp.markers = self.markers
 
-	util.move_to_mark(self.markers[1])
-
 	tmp:indent(self.parent.indentstr)
 
 	self.parent:enter_node(self.indx)
-	tmp:put_initial()
+	tmp:put_initial(util.get_ext_position(self.markers[1]))
 	-- Update, tbh no idea how that could come in handy, but should be done.
 	tmp:update()
 

@@ -5,7 +5,7 @@ local function C(pos, choices)
 	return ChoiceNode:new{active = false, pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1, dependents = {}}
 end
 
-function ChoiceNode:put_initial()
+function ChoiceNode:put_initial(pos)
 	for _, node in ipairs(self.choices) do
 		node.parent = self.parent
 		node.markers = self.markers
@@ -19,7 +19,7 @@ function ChoiceNode:put_initial()
 		node.pos = self.pos
 	end
 	self.inner = self.choices[self.current_choice]
-	self.inner:put_initial()
+	self.inner:put_initial(pos)
 end
 
 function ChoiceNode:input_enter()
@@ -87,8 +87,7 @@ function ChoiceNode:change_choice(val)
 	self.current_choice = tmp
 	self.inner = self.choices[self.current_choice]
 
-	util.move_to_mark(self.markers[1])
-	self.inner:put_initial()
+	self.inner:put_initial(util.get_ext_position(self.markers[1]))
 	self.inner:update()
 	self.inner.old_text = self.inner:get_text()
 

@@ -187,7 +187,7 @@ function Snippet:trigger_expand(current_node)
 
 	local start_node = iNode.I(0)
 
-	self:put_initial()
+	self:put_initial(util.get_cursor_0ind())
 	self:update()
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
@@ -344,38 +344,24 @@ function Snippet:dump()
 	end
 end
 
-function Snippet:put_initial()
-	local cur = util.get_cursor_0ind()
-	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = false})
+function Snippet:put_initial(pos)
+	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = false})
 	-- i needed for functions.
 	for _, node in ipairs(self.nodes) do
-		-- save cursor position for later.
-		local cur1 = util.get_cursor_0ind()
+		-- save pos to compare to later.
+		local old_pos = vim.deepcopy(pos)
+		node:put_initial(pos)
 
-		-- Gravities are set 'pointing inwards' for static text, any text inserted on the border to a insert belongs
-		-- to the insert.
-
-		-- leaves cursor behind last char of inserted text.
-		node:put_initial()
-
-		local cur2 = util.get_cursor_0ind()
-		-- Will always have the same markers.
-		if not (cur1[1] == cur2[1] and cur1[2] == cur2[2]) then
-			-- place extmark directly on previously saved position (first char
-			-- of inserted text) after putting text.
-			node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur1[1], cur1[2], {right_gravity = true})
-		-- zero-length; important that text put after doesn't move marker.
-		else
-			node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur1[1], cur1[2], {right_gravity = false})
-		end
+		-- if no text inserted, set rgrav, else not.
+		node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, old_pos[1], old_pos[2],
+			{right_gravity = not old_pos[1] == pos[1] and old_pos[2] == pos[2]})
 
 		-- place extmark directly behind last char of put text.
-		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur2[1], cur2[2], {right_gravity = false})
+		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = false})
 		node:set_old_text()
 	end
 
-	cur = util.get_cursor_0ind()
-	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {right_gravity = true})
+	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = false})
 	self:set_old_text()
 
 	for _, node in ipairs(self.nodes) do
