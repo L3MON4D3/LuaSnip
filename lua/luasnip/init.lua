@@ -89,7 +89,6 @@ local function unlink_current()
 	user_expanded_snip:remove_from_jumplist()
 end
 
--- only call in insertMode, eg via InsertLeavePre
 local function active_update_dependents()
 	local active = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
 	-- special case for startNode, still gets triggered somehow, TODO.

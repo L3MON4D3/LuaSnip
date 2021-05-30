@@ -24,5 +24,5 @@ endfunction
 
 augroup luasnip
 	au!
-	autocmd InsertLeavePre * lua require('luasnip').active_update_dependents()
+	autocmd InsertLeave * lua require('luasnip').active_update_dependents()
 augroup END
