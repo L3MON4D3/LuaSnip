@@ -354,7 +354,7 @@ function Snippet:put_initial(pos)
 
 		-- if no text inserted, set rgrav, else not.
 		node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, old_pos[1], old_pos[2],
-			{right_gravity = not old_pos[1] == pos[1] and old_pos[2] == pos[2]})
+			{right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2])})
 
 		-- place extmark directly behind last char of put text.
 		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = false})
