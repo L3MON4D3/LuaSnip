@@ -22,10 +22,6 @@ function ExitNode:input_enter()
 end
 
 function ExitNode:input_leave()
-	-- Make sure to jump on insert mode.
-	if vim.api.nvim_get_mode().mode == 's' then
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
-	end
 end
 
 function ExitNode:jump_into(dir)
@@ -120,11 +116,6 @@ end
 
 function InsertNode:input_leave()
 	self:update_dependents()
-
-	-- Make sure to jump on insert mode.
-	if vim.api.nvim_get_mode().mode == 's' then
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>i", true, false, true), 'n', true)
-	end
 end
 
 function InsertNode:exit()
