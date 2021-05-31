@@ -1,5 +1,6 @@
 local defaults = {
-	history = false
+	history = false,
+	updateevents = 'InsertLeave'
 }
 
 -- declare here to use in set_config.

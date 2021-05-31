@@ -24,5 +24,5 @@ endfunction
 
 augroup luasnip
 	au!
-	autocmd InsertLeave * lua require('luasnip').active_update_dependents()
+	execute('autocmd '.luaeval('require"luasnip".config.config.updateevents').' * lua require("luasnip").active_update_dependents()')
 augroup END
