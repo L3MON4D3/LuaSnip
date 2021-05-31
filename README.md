@@ -1,5 +1,4 @@
 # LuaSnip
-Snippet Engine for Neovim written in Lua.
 ![Javadoc](./Examples/javadoc.gif)
 
 # Features
