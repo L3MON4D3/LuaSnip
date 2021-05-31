@@ -11,6 +11,7 @@ function ChoiceNode:put_initial(pos)
 		node.markers = self.markers
 		node.next = self
 		node.prev = self
+		node.dependents = self.dependents
 		if node.type == 3 then
 			node:indent(self.parent.indentstr)
 			node.env = self.parent.env
