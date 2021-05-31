@@ -41,6 +41,6 @@ For Supertab-like functionality with compe, check out [#1](https://github.com/L3
 
 # Config
 - `history`: If true, Snippets that were exited can still be jumped back into. As Snippets are not removed when their text is deleted, they have to be removed manually via `LuasnipUnlinkCurrent`.
-- `updateevents`: Choose which events trigger an update of the active nodes' dependents. Default is just `'InsertLeave'`, `'InsertLeave,TextChanged,TextChangedI'` would update on every change.
+- `updateevents`: Choose which events trigger an update of the active nodes' dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would update on every change.
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)

@@ -12,7 +12,7 @@ local d = ls.d
 ls.config.set_config({
 	history = true,
 	-- Update more often, :h events for more info.
-	updateevents = 'InsertLeave,TextChanged,TextChangedI'
+	updateevents = 'TextChanged,TextChangedI'
 })
 
 -- args is a table, where 1 is the text in Placeholder 1, 2 the text in
