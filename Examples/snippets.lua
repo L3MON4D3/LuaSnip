@@ -10,7 +10,9 @@ local d = ls.d
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
-	history = true
+	history = true,
+	-- Update more often, :h events for more info.
+	updateevents = 'InsertLeave,TextChanged,TextChangedI'
 })
 
 -- args is a table, where 1 is the text in Placeholder 1, 2 the text in
