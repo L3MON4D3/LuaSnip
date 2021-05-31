@@ -98,6 +98,12 @@ local function active_update_dependents()
 		local cur_mark = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
 
 		active:update_dependents()
+		-- update all parent's dependents.
+		local parent = active.parent
+		while parent do
+			parent:update_dependents()
+			parent = parent.parent
+		end
 		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
 		active.parent:enter_node(active.indx)
 
