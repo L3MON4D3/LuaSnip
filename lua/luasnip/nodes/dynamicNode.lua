@@ -77,6 +77,7 @@ function DynamicNode:update()
 
 	tmp.env = self.parent.env
 	tmp.markers = self.markers
+	tmp.dependents = self.dependents
 
 	tmp:indent(self.parent.indentstr)
 
