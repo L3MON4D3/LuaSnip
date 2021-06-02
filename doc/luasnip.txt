@@ -69,6 +69,12 @@ entries:
 The second argument to `s` is a table containing all nodes that belong to the
 snippet, at least one of which has to be an `i(0)` node.
 
+Snippets contain some interesting tables, eg. `snippet.env` contains variables
+used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
+`snippet.captures`, where capture-groups of regex-triggers are stored. These
+tables are primarily useful in dynamic/functionNodes, where the snippet is
+passed to the generating function.
+
 Snippets that should be loaded for all files must be put into the
 `ls.snippets.all`-table, those only for a specific filetype `ft` belong in
 `ls.snippets.ft`.
@@ -136,7 +142,7 @@ The first parameter of `f` is the function. Its parameters are
 	1.: a table of text and the surrounding snippet (ie.
 	`{{line1}, {line1, line2}, snippet}`).
 	The Snippet is included here, as it allows access to anything that could be
-	useful in function nodes (ie.  `snippet.env` or `snippet.captures`, which
+	useful in functionNodes (ie.  `snippet.env` or `snippet.captures`, which
 	contains capture groups of regex-triggered snippets).
 
 	2.: Any parameters passed to `f` behind the second (included to more easily
@@ -147,7 +153,7 @@ passed to the function. The table may be empty, in this case the function is
 evaluated once upon snippet-expansion.
 
 Examples:
-	Use captures from the regex-trigger using a function node:
+	Use captures from the regex-trigger using a functionNode:
 >
 	s({trig = "b(%d)", regTrig = true, wordTrig = true}, {
 		f(function(args) return
@@ -156,9 +162,10 @@ Examples:
 	})
 <
 ================================================================================
+
 CHOICENODE															   *luasnip-c*
 
-Choice nodes allow choosing between multiple nodes.
+ChoiceNodes allow choosing between multiple nodes.
 >
     s({trig = "trig"}, {
 		c(1, {
@@ -171,5 +178,30 @@ Choice nodes allow choosing between multiple nodes.
 `c()` expects as it first arg, as with any jumpable node, its position in the
 jumplist, and as its second a table with nodes, the choices.
 
+Jumpable nodes that normally expect an index as their first parameter don't
+need one inside a choiceNode; their index is the same as the choiceNodes'.
+
+================================================================================
+
+SNIPPETNODE															  *luasnip-sn*
+
+SnippetNodes directly insert their contents into the surrounding snippet.
+This is useful for choiceNodes, which only accept one child, or dynamicNodes,
+where nodes are created at runtime and inserted as a snippetNode.
+
+Syntax is similar to snippets, however, where snippets require a table
+specifying when to expand, snippetNodes, similar to insertNodes, expect a
+number, as they too are jumpable:
+>
+    s({trig = "trig"}, {
+		sn(1, {
+			t({"basically just text "}),
+			i(1, {"And an insertNode."})
+		}),
+		i(0)
+	})
+<
+
+Note that snippetNodes don't expect an `i(0)`.
 
 vim:tw=80:ts=4:noet:ft=help:
