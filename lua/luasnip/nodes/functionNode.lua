@@ -1,4 +1,5 @@
 local FunctionNode = require'luasnip.nodes.node'.Node:new()
+local util = require'luasnip.util.util'
 
 local function F(fn, args, ...)
 	return FunctionNode:new{fn = fn, args = args, type = 2,  markers = {},user_args = {...}}
@@ -11,6 +12,11 @@ function FunctionNode:get_args()
 	end
 	args[#args+1] = self.parent
 	return args
+end
+
+function FunctionNode:input_enter()
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
+	util.normal_move_on_mark_insert(self.markers[1])
 end
 
 function FunctionNode:update()
