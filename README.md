@@ -1,5 +1,6 @@
 # LuaSnip
-![Javadoc](./Examples/javadoc.gif)
+https://user-images.githubusercontent.com/41961280/121092275-940c2d00-c7eb-11eb-9e77-869b1cb08f1a.mp4
+
 
 # Features
 - Tabstops
