@@ -1,12 +1,14 @@
-local snip_mod = require'luasnip.nodes.snippet'
-local util = require'luasnip.util.util'
+local snip_mod = require("luasnip.nodes.snippet")
+local util = require("luasnip.util.util")
 
 local next_expand = nil
 local ls
 
 Luasnip_current_nodes = {}
 
-local function get_active_snip() return snip_mod.get_active() end
+local function get_active_snip()
+	return snip_mod.get_active()
+end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
 local function match_snippet(line)
@@ -30,7 +32,9 @@ end
 
 local function jump(dir)
 	if Luasnip_current_nodes[vim.api.nvim_get_current_buf()] then
-		return Luasnip_current_nodes[vim.api.nvim_get_current_buf()]:jump_from(dir)
+		return Luasnip_current_nodes[vim.api.nvim_get_current_buf()]:jump_from(
+			dir
+		)
 	else
 		return false
 	end
@@ -49,13 +53,17 @@ end
 -- return true and expand snippet if expandable, return false if not.
 local function expand_or_jump()
 	if next_expand ~= nil then
-		next_expand:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
+		next_expand:trigger_expand(
+			Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+		)
 		next_expand = nil
 		return true
 	else
 		local snip = match_snippet(util.get_current_line_to_cursor())
 		if snip then
-			snip:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
+			snip:trigger_expand(
+				Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+			)
 			return true
 		end
 	end
@@ -66,7 +74,7 @@ local function expand_or_jump()
 end
 
 local function lsp_expand(body)
-	local snip = ls.parser.parse_snippet({trig = ""}, body)
+	local snip = ls.parser.parse_snippet({ trig = "" }, body)
 	snip:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
 end
 
@@ -80,7 +88,10 @@ end
 
 local function unlink_current()
 	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
-	if not node then print "No active Snippet" return end
+	if not node then
+		print("No active Snippet")
+		return
+	end
 	local user_expanded_snip = node.parent
 	-- find 'outer' snippet.
 	while user_expanded_snip.parent do
@@ -95,7 +106,13 @@ local function active_update_dependents()
 	if active and active.pos ~= -1 and active.dependents ~= {} then
 		-- Save cursor-pos to restore later.
 		local cur = util.get_cursor_0ind()
-		local cur_mark = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, cur[1], cur[2], {})
+		local cur_mark = vim.api.nvim_buf_set_extmark(
+			0,
+			Luasnip_ns_id,
+			cur[1],
+			cur[2],
+			{}
+		)
 
 		active:update_dependents()
 		-- update all parent's dependents.
@@ -108,7 +125,12 @@ local function active_update_dependents()
 		active.parent:enter_node(active.indx)
 
 		-- Don't account for utf, nvim_win_set_cursor doesn't either.
-		cur = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, cur_mark, {details = false})
+		cur = vim.api.nvim_buf_get_extmark_by_id(
+			0,
+			Luasnip_ns_id,
+			cur_mark,
+			{ details = false }
+		)
 		util.set_cursor_0ind(cur)
 	end
 end
@@ -126,14 +148,14 @@ ls = {
 	active_update_dependents = active_update_dependents,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
-	t = require'luasnip.nodes.textNode'.T,
-	f = require'luasnip.nodes.functionNode'.F,
-	i = require'luasnip.nodes.insertNode'.I,
-	c = require'luasnip.nodes.choiceNode'.C,
-	d = require'luasnip.nodes.dynamicNode'.D,
-	parser = require'luasnip.util.parser',
-	config = require'luasnip.config',
-	snippets = {all = {}}
+	t = require("luasnip.nodes.textNode").T,
+	f = require("luasnip.nodes.functionNode").F,
+	i = require("luasnip.nodes.insertNode").I,
+	c = require("luasnip.nodes.choiceNode").C,
+	d = require("luasnip.nodes.dynamicNode").D,
+	parser = require("luasnip.util.parser"),
+	config = require("luasnip.config"),
+	snippets = { all = {} },
 }
 
 return ls

@@ -14,15 +14,15 @@ end
 local function get_current_line_to_cursor()
 	local cur = get_cursor_0ind()
 	-- cur-rows are 1-indexed, api-rows 0.
-	local line = vim.api.nvim_buf_get_lines(0, cur[1], cur[1]+1, false)
+	local line = vim.api.nvim_buf_get_lines(0, cur[1], cur[1] + 1, false)
 	return string.sub(line[1], 1, cur[2])
 end
 
 -- delete n chars before cursor, MOVES CURSOR
 local function remove_n_before_cur(n)
 	local cur = get_cursor_0ind()
-	vim.api.nvim_buf_set_text(0, cur[1], cur[2]-n, cur[1], cur[2], {""})
-	cur[2] = cur[2]-n
+	vim.api.nvim_buf_set_text(0, cur[1], cur[2] - n, cur[1], cur[2], { "" })
+	cur[2] = cur[2] - n
 	set_cursor_0ind(cur)
 end
 
@@ -35,13 +35,22 @@ end
 local function move_to_mark(id)
 	local new_cur_pos
 	new_cur_pos = vim.api.nvim_buf_get_extmark_by_id(
-		0, Luasnip_ns_id, id, {details = false})
+		0,
+		Luasnip_ns_id,
+		id,
+		{ details = false }
+	)
 	set_cursor_0ind(new_cur_pos)
 end
 
 local function get_ext_position(id)
-	local cur = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, id, {details = false})
-	local line = vim.api.nvim_buf_get_lines(0, cur[1], cur[1]+1, false)
+	local cur = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		id,
+		{ details = false }
+	)
+	local line = vim.api.nvim_buf_get_lines(0, cur[1], cur[1] + 1, false)
 	cur[2] = vim.str_utfindex(line[1], cur[2])
 	return cur
 end
@@ -49,27 +58,47 @@ end
 local function normal_move_before_mark(id)
 	local new_cur_pos = get_ext_position(id)
 	-- +1: indexing
-	if new_cur_pos[2]-1 ~= 0 then
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0'..tostring(new_cur_pos[2]-1)..'l', 'n', true)
+	if new_cur_pos[2] - 1 ~= 0 then
+		vim.api.nvim_feedkeys(
+			tostring(new_cur_pos[1] + 1)
+				.. "G0"
+				.. tostring(new_cur_pos[2] - 1)
+				.. "l",
+			"n",
+			true
+		)
 	else
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0', 'n', true)
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "n", true)
 	end
 end
 
 local function normal_move_on_mark(id)
 	local new_cur_pos = get_ext_position(id)
 	if new_cur_pos[2] ~= 0 then
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0'..tostring(new_cur_pos[2])..'l', 'n', true)
+		vim.api.nvim_feedkeys(
+			tostring(new_cur_pos[1] + 1)
+				.. "G0"
+				.. tostring(new_cur_pos[2])
+				.. "l",
+			"n",
+			true
+		)
 	else
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]+1)..'G0', 'n', true)
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "n", true)
 	end
 end
 
 local function normal_move_on_mark_insert(id)
 	local new_cur_pos = get_ext_position(id)
 	local keys = vim.api.nvim_replace_termcodes(
-		tostring(new_cur_pos[1]+1)..'G0i'..string.rep('<Right>', new_cur_pos[2]), true, false, true)
-	vim.api.nvim_feedkeys(keys, 'n', true)
+		tostring(new_cur_pos[1] + 1)
+			.. "G0i"
+			.. string.rep("<Right>", new_cur_pos[2]),
+		true,
+		false,
+		true
+	)
+	vim.api.nvim_feedkeys(keys, "n", true)
 end
 
 local function multiline_equal(t1, t2)
@@ -91,13 +120,13 @@ local function word_under_cursor(cur, line)
 		if not tmp then
 			break
 		end
-		if tmp > cur[2]+1 then
+		if tmp > cur[2] + 1 then
 			break
 		end
-		ind_start = tmp+1
+		ind_start = tmp + 1
 	end
 
-	local tmp = string.find(line, "%w%W", cur[2]+1)
+	local tmp = string.find(line, "%w%W", cur[2] + 1)
 	if tmp then
 		ind_end = tmp
 	end
@@ -109,7 +138,7 @@ end
 local function put(text, pos)
 	vim.api.nvim_buf_set_text(0, pos[1], pos[2], pos[1], pos[2], text)
 	-- add rows
-	pos[1] = pos[1] + #text-1
+	pos[1] = pos[1] + #text - 1
 	-- add columns, start at 0 if no rows were added, else at old col-value.
 	pos[2] = (#text > 1 and 0 or pos[2]) + #text[#text]
 end
@@ -127,5 +156,5 @@ return {
 	mark_pos_equal = mark_pos_equal,
 	multiline_equal = multiline_equal,
 	word_under_cursor = word_under_cursor,
-	put = put
+	put = put,
 }

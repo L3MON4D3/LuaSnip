@@ -1,8 +1,16 @@
-local ChoiceNode = require'luasnip.nodes.node'.Node:new()
-local util = require'luasnip.util.util'
+local ChoiceNode = require("luasnip.nodes.node").Node:new()
+local util = require("luasnip.util.util")
 
 local function C(pos, choices)
-	return ChoiceNode:new{active = false, pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1, dependents = {}}
+	return ChoiceNode:new({
+		active = false,
+		pos = pos,
+		choices = choices,
+		type = 4,
+		markers = {},
+		current_choice = 1,
+		dependents = {},
+	})
 end
 
 function ChoiceNode:put_initial(pos)
@@ -75,7 +83,7 @@ function ChoiceNode:change_choice(val)
 	-- tear down current choice.
 	self.inner:input_leave()
 	-- clear text.
-	self.parent:set_text(self, {""})
+	self.parent:set_text(self, { "" })
 
 	self.inner:exit()
 
@@ -114,13 +122,24 @@ end
 
 function ChoiceNode:set_mark_rgrav(mark, val)
 	-- set own markers.
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		self.markers[mark],
+		{}
+	)
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-	self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	self.markers[mark] = vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		pos[1],
+		pos[2],
+		{ right_gravity = val }
+	)
 
 	self.inner:set_mark_rgrav(mark, val)
 end
 
 return {
-	C = C
+	C = C,
 }

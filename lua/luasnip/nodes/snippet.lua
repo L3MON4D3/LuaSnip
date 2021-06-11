@@ -1,6 +1,6 @@
-local node_mod = require'luasnip.nodes.node'
-local iNode = require'luasnip.nodes.insertNode'
-local util = require'luasnip.util.util'
+local node_mod = require("luasnip.nodes.node")
+local iNode = require("luasnip.nodes.insertNode")
+local util = require("luasnip.util.util")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -22,9 +22,9 @@ function Snippet:init_nodes()
 
 	if insert_nodes[1] then
 		insert_nodes[1].prev = self
-		for i=2, #insert_nodes do
-			insert_nodes[i].prev = insert_nodes[i-1]
-			insert_nodes[i-1].next = insert_nodes[i]
+		for i = 2, #insert_nodes do
+			insert_nodes[i].prev = insert_nodes[i - 1]
+			insert_nodes[i - 1].next = insert_nodes[i]
 		end
 		insert_nodes[#insert_nodes].next = self
 
@@ -40,12 +40,16 @@ end
 
 local function S(context, nodes, condition, ...)
 	if not condition then
-		condition = function() return true end
+		condition = function()
+			return true
+		end
 	end
-	if type(context) == 'string' then
-		error("Pass table containing a 'trig'-key and optionally 'dscr' and 'name' as first arg.")
+	if type(context) == "string" then
+		error(
+			"Pass table containing a 'trig'-key and optionally 'dscr' and 'name' as first arg."
+		)
 	end
-	local snip = Snippet:new{
+	local snip = Snippet:new({
 		trigger = context.trig,
 		dscr = context.dscr or context.trig,
 		name = context.name or context.trig,
@@ -55,42 +59,49 @@ local function S(context, nodes, condition, ...)
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,
-		user_args = {...},
+		user_args = { ... },
 		markers = {},
 		dependents = {},
 		active = false,
-		env = {}
-	}
+		env = {},
+	})
 	snip:init_nodes()
 	return snip
 end
 
 local function SN(pos, nodes, condition, ...)
 	if not condition then
-		condition = function() return true end
+		condition = function()
+			return true
+		end
 	end
-	local snip = Snippet:new{
+	local snip = Snippet:new({
 		pos = pos,
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,
-		user_args = {...},
+		user_args = { ... },
 		markers = {},
 		dependents = {},
 		active = false,
-		type = 3
-	}
+		type = 3,
+	})
 	snip:init_nodes()
 	return snip
 end
 
 local function pop_env(env)
 	local cur = util.get_cursor_0ind()
-	env.TM_CURRENT_LINE = vim.api.nvim_buf_get_lines(0, cur[1], cur[1]+1, false)[1]
+	env.TM_CURRENT_LINE = vim.api.nvim_buf_get_lines(
+		0,
+		cur[1],
+		cur[1] + 1,
+		false
+	)[1]
 	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
 	env.TM_LINE_INDEX = cur[1]
-	env.TM_LINE_NUMBER = cur[1]+1
+	env.TM_LINE_NUMBER = cur[1] + 1
 	env.TM_FILENAME = vim.fn.expand("%:t")
 	env.TM_FILENAME_BASE = vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
 	env.TM_DIRECTORY = vim.fn.expand("%:p:h")
@@ -142,7 +153,7 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 				-- next is beginning of another snippet.
 				if current_node.next.pos == -1 then
 					current_node.next.prev = snippet.insert_nodes[0]
-				-- next is outer insertNode.
+					-- next is outer insertNode.
 				else
 					current_node.next.inner_last = snippet.insert_nodes[0]
 				end
@@ -205,49 +216,58 @@ end
 
 -- returns copy of snip if it matches, nil if not.
 function Snippet:matches(line)
-		local from
-		local match
-		local captures = {}
-		if self.regTrig then
-			-- capture entire trigger, must be put into match.
-			local find_res = {string.find(line, "("..self.trigger..")$")}
-			if find_res then
-				from = find_res[1]
-				match = find_res[3]
-				for i = 4, #find_res do
-					captures[i-3] = find_res[i]
-				end
-			end
-		else
-			if string.sub(line, #line - #self.trigger + 1, #line) == self.trigger then
-				from = #line - #self.trigger + 1
-				match = self.trigger
+	local from
+	local match
+	local captures = {}
+	if self.regTrig then
+		-- capture entire trigger, must be put into match.
+		local find_res = { string.find(line, "(" .. self.trigger .. ")$") }
+		if find_res then
+			from = find_res[1]
+			match = find_res[3]
+			for i = 4, #find_res do
+				captures[i - 3] = find_res[i]
 			end
 		end
-
-		-- Trigger or regex didn't match.
-		if not match then
-			return nil
+	else
+		if
+			string.sub(line, #line - #self.trigger + 1, #line) == self.trigger
+		then
+			from = #line - #self.trigger + 1
+			match = self.trigger
 		end
-		local trigger = self.trigger
-		-- Regex-snippets can access matchstring in condition.
-		self.trigger = match
+	end
 
-		if not self.condition(unpack(self.user_args)) then
-			return nil
-		end
+	-- Trigger or regex didn't match.
+	if not match then
+		return nil
+	end
+	local trigger = self.trigger
+	-- Regex-snippets can access matchstring in condition.
+	self.trigger = match
 
-		-- if wordTrig is set, the char before the trigger has to be \w or the
-		-- word has to start at the beginning of the line.
-		if self.wordTrig and not (from == 1 or string.match(string.sub(line, from-1, from-1), "[%w_]") == nil) then
-			return nil
-		end
+	if not self.condition(unpack(self.user_args)) then
+		return nil
+	end
 
-		-- has match instead of trigger (makes difference for regex)
-		local cp = self:copy()
-		self.trigger = trigger
-		cp.captures = captures
-		return cp
+	-- if wordTrig is set, the char before the trigger has to be \w or the
+	-- word has to start at the beginning of the line.
+	if
+		self.wordTrig
+		and not (
+			from == 1
+			or string.match(string.sub(line, from - 1, from - 1), "[%w_]")
+				== nil
+		)
+	then
+		return nil
+	end
+
+	-- has match instead of trigger (makes difference for regex)
+	local cp = self:copy()
+	self.trigger = trigger
+	cp.captures = captures
+	return cp
 end
 
 -- todo: impl exit_node
@@ -257,7 +277,7 @@ function Snippet:enter_node(node_id)
 	end
 
 	local node = self.nodes[node_id]
-	for i = 1, node_id-1, 1 do
+	for i = 1, node_id - 1, 1 do
 		local other = self.nodes[i]
 		if util.mark_pos_equal(other.markers[2], node.markers[1]) then
 			other:set_mark_rgrav(2, false)
@@ -267,7 +287,7 @@ function Snippet:enter_node(node_id)
 	end
 	node:set_mark_rgrav(1, false)
 	node:set_mark_rgrav(2, true)
-	for i = node_id+1, #self.nodes, 1 do
+	for i = node_id + 1, #self.nodes, 1 do
 		local other = self.nodes[i]
 		if util.mark_pos_equal(node.markers[2], other.markers[1]) then
 			other:set_mark_rgrav(1, true)
@@ -285,14 +305,20 @@ end
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
 local function copy3(obj, seen)
 	-- Handle non-tables and previously-seen tables.
-	if type(obj) ~= 'table' then return obj end
-	if seen and seen[obj] then return seen[obj] end
+	if type(obj) ~= "table" then
+		return obj
+	end
+	if seen and seen[obj] then
+		return seen[obj]
+	end
 
 	-- New table; mark it as seen an copy recursively.
 	local s = seen or {}
 	local res = {}
 	s[obj] = res
-	for k, v in next, obj do res[copy3(k, s)] = copy3(v, s) end
+	for k, v in next, obj do
+		res[copy3(k, s)] = copy3(v, s)
+	end
 	return setmetatable(res, getmetatable(obj))
 end
 
@@ -301,17 +327,37 @@ function Snippet:copy()
 end
 
 function Snippet:set_text(node, text)
-	local node_from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[1], {})
-	local node_to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[2], {})
+	local node_from = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		node.markers[1],
+		{}
+	)
+	local node_to = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		node.markers[2],
+		{}
+	)
 
 	self:enter_node(node.indx)
 	if vim.o.expandtab then
-	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
-        for i, str in ipairs(text) do
-            text[i] = string.gsub(str, "\t", tab_string)
-        end
-    end
-    vim.api.nvim_buf_set_text(0, node_from[1], node_from[2], node_to[1], node_to[2], text)
+		local tab_string = string.rep(
+			" ",
+			vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
+		)
+		for i, str in ipairs(text) do
+			text[i] = string.gsub(str, "\t", tab_string)
+		end
+	end
+	vim.api.nvim_buf_set_text(
+		0,
+		node_from[1],
+		node_from[2],
+		node_to[1],
+		node_to[2],
+		text
+	)
 end
 
 function Snippet:del_marks()
@@ -324,9 +370,13 @@ end
 function Snippet:is_interactive()
 	for _, node in ipairs(self.nodes) do
 		-- return true if any node depends on another node or is an insertNode.
-		if node.type == 1 or ((node.type == 2 or node.type == 5) and #node.args ~= 0) or node.type == 4 then
+		if
+			node.type == 1
+			or ((node.type == 2 or node.type == 5) and #node.args ~= 0)
+			or node.type == 4
+		then
 			return true
-		-- node is snippet, recurse.
+			-- node is snippet, recurse.
 		elseif node.type == 3 then
 			return node:is_interactive()
 		end
@@ -337,15 +387,31 @@ end
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
-		local c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[1], {details = false})
+		local c = vim.api.nvim_buf_get_extmark_by_id(
+			0,
+			Luasnip_ns_id,
+			node.markers[1],
+			{ details = false }
+		)
 		print(c[1], c[2])
-		c = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, node.markers[2], {details = false})
+		c = vim.api.nvim_buf_get_extmark_by_id(
+			0,
+			Luasnip_ns_id,
+			node.markers[2],
+			{ details = false }
+		)
 		print(c[1], c[2])
 	end
 end
 
 function Snippet:put_initial(pos)
-	self.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = false})
+	self.markers[1] = vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		pos[1],
+		pos[2],
+		{ right_gravity = false }
+	)
 	-- i needed for functions.
 	for _, node in ipairs(self.nodes) do
 		-- save pos to compare to later.
@@ -353,25 +419,48 @@ function Snippet:put_initial(pos)
 		node:put_initial(pos)
 
 		-- if no text inserted, set rgrav, else not.
-		node.markers[1] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, old_pos[1], old_pos[2],
-			{right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2])})
+		node.markers[1] = vim.api.nvim_buf_set_extmark(
+			0,
+			Luasnip_ns_id,
+			old_pos[1],
+			old_pos[2],
+			{
+				right_gravity = not (
+						old_pos[1] == pos[1]
+						and old_pos[2] == pos[2]
+					),
+			}
+		)
 
 		-- place extmark directly behind last char of put text.
-		node.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = false})
+		node.markers[2] = vim.api.nvim_buf_set_extmark(
+			0,
+			Luasnip_ns_id,
+			pos[1],
+			pos[2],
+			{ right_gravity = false }
+		)
 		node:set_old_text()
 	end
 
-	self.markers[2] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = false})
+	self.markers[2] = vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		pos[1],
+		pos[2],
+		{ right_gravity = false }
+	)
 	self:set_old_text()
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 or node.type == 5 then
-			if type(node.args[1]) ~= 'table' then
+			if type(node.args[1]) ~= "table" then
 				-- append node to dependents-table of args.
 				for i, arg in ipairs(node.args) do
 					-- Function-Node contains refs. to arg-nodes.
 					node.args[i] = self.insert_nodes[arg]
-					self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents+1] = node
+					self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents + 1] =
+						node
 				end
 			end
 		end
@@ -385,30 +474,39 @@ function Snippet:update()
 end
 
 function Snippet:indent(line)
-	local prefix = string.match(line, '^%s*')
+	local prefix = string.match(line, "^%s*")
 	self.indentstr = prefix
 	-- Check once here instead of inside loop.
 	if vim.o.expandtab then
-	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
-        for _, node in ipairs(self.nodes) do
-            -- put prefix behind newlines.
-            if node:has_static_text() then
-                for i = 2, #node:get_static_text() do
-                    -- Note: prefix is not changed but copied.
-                    node:get_static_text()[i] = prefix .. string.gsub(node:get_static_text()[i], "\t", tab_string)
-                end
-            end
-        end
-    else
-        for _, node in ipairs(self.nodes) do
-            -- put prefix behind newlines.
-            if node:has_static_text() then
-                for i = 2, #node:get_static_text() do
-                    node:get_static_text()[i] = prefix .. node:get_static_text()[i]
-                end
-            end
-        end
-    end
+		local tab_string = string.rep(
+			" ",
+			vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
+		)
+		for _, node in ipairs(self.nodes) do
+			-- put prefix behind newlines.
+			if node:has_static_text() then
+				for i = 2, #node:get_static_text() do
+					-- Note: prefix is not changed but copied.
+					node:get_static_text()[i] = prefix
+						.. string.gsub(
+							node:get_static_text()[i],
+							"\t",
+							tab_string
+						)
+				end
+			end
+		end
+	else
+		for _, node in ipairs(self.nodes) do
+			-- put prefix behind newlines.
+			if node:has_static_text() then
+				for i = 2, #node:get_static_text() do
+					node:get_static_text()[i] = prefix
+						.. node:get_static_text()[i]
+				end
+			end
+		end
+	end
 end
 
 function Snippet:input_enter()
@@ -450,9 +548,20 @@ end
 
 function Snippet:set_mark_rgrav(mark, val)
 	-- set own markers.
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		self.markers[mark],
+		{}
+	)
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-	self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	self.markers[mark] = vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		pos[1],
+		pos[2],
+		{ right_gravity = val }
+	)
 
 	for _, node in ipairs(self.nodes) do
 		node:set_mark_rgrav(mark, val)
@@ -462,5 +571,5 @@ end
 return {
 	Snippet = Snippet,
 	S = S,
-	SN = SN
+	SN = SN,
 }

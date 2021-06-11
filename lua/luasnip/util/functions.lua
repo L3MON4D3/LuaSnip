@@ -9,7 +9,11 @@ return {
 		TM_FILENAME_BASE = true,
 		TM_DIRECTORY = true,
 		TM_FILEPATH = true,
-		var = function(_, node, text) return {node.parent.env[text]} end
+		var = function(_, node, text)
+			return { node.parent.env[text] }
+		end,
 	},
-	copy = function(args) return args[1] end
+	copy = function(args)
+		return args[1]
+	end,
 }

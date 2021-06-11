@@ -1,6 +1,6 @@
 local defaults = {
 	history = false,
-	updateevents = 'InsertLeave'
+	updateevents = "InsertLeave",
 }
 
 -- declare here to use in set_config.
@@ -14,7 +14,7 @@ c = {
 			conf[k] = v
 		end
 		c.config = conf
-	end
+	end,
 }
 
 return c

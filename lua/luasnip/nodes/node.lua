@@ -1,4 +1,4 @@
-local util = require'luasnip.util.util'
+local util = require("luasnip.util.util")
 
 local Node = {}
 
@@ -10,7 +10,11 @@ function Node:new(o)
 end
 
 function Node:has_static_text()
-	return self:get_static_text() and not (self:get_static_text()[1] == "" and #self:get_static_text() == 1)
+	return self:get_static_text()
+		and not (
+			self:get_static_text()[1] == ""
+			and #self:get_static_text() == 1
+		)
 end
 
 function Node:get_static_text()
@@ -58,22 +62,43 @@ function Node:jumpable(dir)
 end
 
 function Node:set_mark_rgrav(mark, val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		self.markers[mark],
+		{}
+	)
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-	self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	self.markers[mark] = vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		pos[1],
+		pos[2],
+		{ right_gravity = val }
+	)
 end
 
 function Node:get_text()
-	local from = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[1], {})
-	local to = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[2], {})
+	local from = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		self.markers[1],
+		{}
+	)
+	local to = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		self.markers[2],
+		{}
+	)
 
 	-- end-exclusive indexing.
-	local lines = vim.api.nvim_buf_get_lines(0, from[1], to[1]+1, false)
+	local lines = vim.api.nvim_buf_get_lines(0, from[1], to[1] + 1, false)
 
 	if #lines == 1 then
-		lines[1] = string.sub(lines[1], from[2]+1, to[2])
+		lines[1] = string.sub(lines[1], from[2] + 1, to[2])
 	else
-		lines[1] = string.sub(lines[1], from[2]+1, #lines[1])
+		lines[1] = string.sub(lines[1], from[2] + 1, #lines[1])
 
 		-- node-range is end-exclusive.
 		lines[#lines] = string.sub(lines[#lines], 1, to[2])
