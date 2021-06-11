@@ -45,6 +45,19 @@ local function S(context, nodes, condition, ...)
 	if type(context) == 'string' then
 		error("Pass table containing a 'trig'-key and optionally 'dscr' and 'name' as first arg.")
 	end
+
+    local insert_nodes = vim.tbl_filter(function(n)
+      -- todo: type should be an enum
+      return n.type == 1 and n.pos == 0
+    end, nodes)
+
+    if #insert_nodes == 0 then
+      error(string.format(
+        "It is required to have an `i(0)` insert node in your snippet\nctx: %s\nnodes: %s",
+        util.short_inspect(context), util.short_inspect(nodes)
+      ))
+    end
+
 	local snip = Snippet:new{
 		trigger = context.trig,
 		dscr = context.dscr or context.trig,
@@ -172,6 +185,10 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 
 	snippet.next = snippet.insert_nodes[0]
 	snippet.prev = start_node
+
+    if not snippet.insert_nodes[0] then
+      error("[LuaSnip] Missing `i(0)` which is a required node")
+    end
 
 	snippet.insert_nodes[0].prev = snippet
 	start_node.next = snippet
