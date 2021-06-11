@@ -14,7 +14,19 @@ c = {
 			conf[k] = v
 		end
 		c.config = conf
-	end
+
+        c._setup()
+	end,
+
+    _setup = function()
+      vim.cmd(string.format([[
+        augroup luasnip
+            au!
+            autocmd %s * lua require("luasnip").active_update_dependents()
+        augroup END
+      ]], c.config.updateevents ))
+    end,
+
 }
 
 return c

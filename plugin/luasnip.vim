@@ -22,7 +22,4 @@ function! luasnip#choice_active()
 	return luaeval('require("luasnip").choice_active()')
 endfunction
 
-augroup luasnip
-	au!
-	execute('autocmd '.luaeval('require"luasnip".config.config.updateevents').' * lua require("luasnip").active_update_dependents()')
-augroup END
+lua require('luasnip.config')._setup()
