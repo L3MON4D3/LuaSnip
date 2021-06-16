@@ -18,6 +18,7 @@ function DynamicNode:get_args()
 	for i, node in ipairs(self.args) do
 		args[i] = node:get_text()
 	end
+	args[#args + 1] = self.parent
 	return args
 end
 
