@@ -1,6 +1,5 @@
 # LuaSnip
-https://user-images.githubusercontent.com/41961280/121092275-940c2d00-c7eb-11eb-9e77-869b1cb08f1a.mp4
-
+https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-91f7-331893f61fbf.mp4
 
 # Features
 - Tabstops
