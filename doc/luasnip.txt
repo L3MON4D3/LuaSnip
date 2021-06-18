@@ -205,4 +205,85 @@ number, as they too are jumpable:
 
 Note that snippetNodes don't expect an `i(0)`.
 
+================================================================================
+
+DYNAMICNODE                                                            *luasnip-d* 
+
+Very similar to functionNode: returns a snippetNode instead of just text,
+which makes them very powerful.
+
+Parameters:
+	1. position (just like all jumpable nodes)
+	2. function: Similar to functionNodes' function, first parameter is the
+		`table of text` from nodes the dynamicNode depends on, the second,
+		unlike functionNode, is a user-defined table, `old_state`.
+		This table can contain anything, its main usage is to preserve
+		information from the previous snippetNode:
+		If the dynamicNode depends on another node it may be reconstructed,
+		which means all user input to the dynamicNode is lost. Using
+		old_state, the user may pass eg. insertNodes and then get their text
+		upon reconstruction to initialize the new nodes with.
+		The old_state-table must be stored inside the snippetNode returned by
+		the function.
+		All parameters following the second are user defined.
+	3.  Nodes the dynamicNode depends on: if any of these trigger an update,
+		the dynamicNodes function will be executed and the result inserted at
+		the nodes place.
+	4f. The fourth and following parameters are user defined, anything passed
+		here will also be passed to the function (arg 2) following its second
+		parameter (easy to reuse similar functions with small changes).
+>
+	local function lines(args, old_state, initial_text)
+		local nodes = {}
+		if not old_state then old_state = {} end
+
+		-- count is nil for invalid input.
+		local count = tonumber(args[1][1])
+		-- Make sure there's a number in args[1].
+		if count then
+			for j=1, count do
+				local iNode
+				if old_state and old_state[j] then
+					-- old_text is used internally to determine whether
+					-- dependents should be updated. It is updated whenever the
+					-- node is left, but remains valid when the node is no
+					-- longer 'rendered', whereas get_text() grabs the text
+					-- directly form the node.
+					iNode = i(j, old_state[j].old_text)
+				else
+				  iNode = i(j, initial_text)
+				end
+				nodes[2*j-1] = iNode
+
+				-- linebreak
+				nodes[2*j] = t({"",""})
+				-- Store insertNode in old_state, potentially overwriting older
+				-- nodes.
+				old_state[j] = iNode
+			end
+		else
+			nodes[1] = t({"Enter a number!"})
+		end
+		
+		local snip = sn(nil, nodes)
+		snip.old_state = old_state
+		return snip
+	end
+
+	...
+
+	s({trig="trig"}, {
+		i(1, {"1"}),
+		-- pos, function, nodes, user_arg1
+		d(2, lines, {1}, {"Sample Text"})
+		i(0)
+	})
+<
+This snippet would start out as "1\nSample Text" and, upon changing the 1 to
+eg. 3, it would change to "3\nSample Text\nSample Text\nSample Text". Text
+that was inserted into any of the dynamicNodes insertNodes is kept when
+changing to a bigger number.
+
+================================================================================
+
 vim:tw=78:ts=4:ft=help:norl:
