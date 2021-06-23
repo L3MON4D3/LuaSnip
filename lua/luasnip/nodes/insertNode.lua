@@ -38,8 +38,7 @@ function ExitNode:input_enter()
 	util.normal_move_on_mark_insert(self.markers[1])
 end
 
-function ExitNode:input_leave()
-end
+function ExitNode:input_leave() end
 
 function ExitNode:jump_into(dir)
 	if not config.config.history then

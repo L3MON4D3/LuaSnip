@@ -136,7 +136,7 @@ local function active_update_dependents()
 			Luasnip_ns_id,
 			cur[1],
 			cur[2],
-			{right_gravity = false}
+			{ right_gravity = false }
 		)
 
 		active:update_dependents()

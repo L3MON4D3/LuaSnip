@@ -27,8 +27,7 @@ function Node:put_initial(pos)
 	end
 end
 
-function Node:input_enter(no_move)
-end
+function Node:input_enter(no_move) end
 
 function Node:jump_into(dir, no_move)
 	self:input_enter(no_move)
@@ -110,11 +109,9 @@ function Node:set_old_text()
 	self.old_text = self:get_text()
 end
 
-function Node:exit()
-end
+function Node:exit() end
 
-function Node:input_leave()
-end
+function Node:input_leave() end
 
 function Node:update_dependents()
 	if not util.multiline_equal(self.old_text, self:get_text()) then
@@ -125,8 +122,7 @@ function Node:update_dependents()
 	self.old_text = self:get_text()
 end
 
-function Node:update()
-end
+function Node:update() end
 
 return {
 	Node = Node,

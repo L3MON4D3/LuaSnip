@@ -39,8 +39,7 @@ function DynamicNode:get_static_text()
 	return self.snip:get_static_text()
 end
 
-function DynamicNode:put_initial(_)
-end
+function DynamicNode:put_initial(_) end
 
 function DynamicNode:jump_into(dir)
 	if self.active then

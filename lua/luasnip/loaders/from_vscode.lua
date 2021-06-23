@@ -56,60 +56,70 @@ local function load_snippet_file(langs, snippet_set_path)
 	if not path_exists(snippet_set_path) then
 		return
 	end
-	async_read_file(snippet_set_path, true, vim.schedule_wrap(function(data)
-		local snippet_set_data = json_decode(data)
-		for _, lang in pairs(langs) do
-			local lang_snips = ls.snippets[lang] or {}
+	async_read_file(
+		snippet_set_path,
+		true,
+		vim.schedule_wrap(function(data)
+			local snippet_set_data = json_decode(data)
+			for _, lang in pairs(langs) do
+				local lang_snips = ls.snippets[lang] or {}
 
-			for name, parts in pairs(snippet_set_data) do
-				local body = type(parts.body) == "string" and parts.body
-					or table.concat(parts.body, "\n")
+				for name, parts in pairs(snippet_set_data) do
+					local body = type(parts.body) == "string" and parts.body
+						or table.concat(parts.body, "\n")
 
-				-- There are still some snippets that fail while loading
-				pcall(function()
-					-- Sometimes it's a list of prefixes instead of a single one
-					local prefixes = type(parts.prefix) == "table" and parts.prefix
-						or { parts.prefix }
-					for _, prefix in ipairs(prefixes) do
-						table.insert(
-							lang_snips,
-							ls.parser.parse_snippet(
-								{ trig = prefix, name = name, wordTrig = true },
-								body
+					-- There are still some snippets that fail while loading
+					pcall(function()
+						-- Sometimes it's a list of prefixes instead of a single one
+						local prefixes = type(parts.prefix) == "table"
+								and parts.prefix
+							or { parts.prefix }
+						for _, prefix in ipairs(prefixes) do
+							table.insert(
+								lang_snips,
+								ls.parser.parse_snippet({
+									trig = prefix,
+									name = name,
+									wordTrig = true,
+								}, body)
 							)
-						)
-					end
-				end)
+						end
+					end)
+				end
+				ls.snippets[lang] = lang_snips
 			end
-			ls.snippets[lang] = lang_snips
-		end
-	end))
+		end)
+	)
 end
 
 local function load_snippet_folder(root)
 	local package = path_join(root, "package.json")
-	async_read_file(package, true, vim.schedule_wrap(function(data)
-		local package_data = json_decode(data)
-		if
-			not (
-				package_data
-				and package_data.contributes
-				and package_data.contributes.snippets
-			)
-		then
-			return
-		end
-
-		for _, snippet_entry in pairs(package_data.contributes.snippets) do
-			local langs = snippet_entry.language
-
-			if type(snippet_entry.language) ~= "table" then
-				langs = { langs }
+	async_read_file(
+		package,
+		true,
+		vim.schedule_wrap(function(data)
+			local package_data = json_decode(data)
+			if
+				not (
+					package_data
+					and package_data.contributes
+					and package_data.contributes.snippets
+				)
+			then
+				return
 			end
 
-			load_snippet_file(langs, path_join(root, snippet_entry.path))
-		end
-	end))
+			for _, snippet_entry in pairs(package_data.contributes.snippets) do
+				local langs = snippet_entry.language
+
+				if type(snippet_entry.language) ~= "table" then
+					langs = { langs }
+				end
+
+				load_snippet_file(langs, path_join(root, snippet_entry.path))
+			end
+		end)
+	)
 end
 
 local M = {}

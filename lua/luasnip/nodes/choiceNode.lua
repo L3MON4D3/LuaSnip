@@ -76,8 +76,7 @@ function ChoiceNode:update()
 	self.inner:update()
 end
 
-function ChoiceNode:setup_choice_jumps()
-end
+function ChoiceNode:setup_choice_jumps() end
 
 function ChoiceNode:change_choice(val)
 	-- tear down current choice.
