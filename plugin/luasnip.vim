@@ -9,7 +9,7 @@ snoremap <silent> <Plug>luasnip-jump-next <cmd>lua require'luasnip'.jump(1)<Cr>
 snoremap <silent> <Plug>luasnip-jump-prev <cmd>lua require'luasnip'.jump(-1)<Cr>
 
 command! LuaSnipUnlinkCurrent lua require'luasnip'.unlink_current()
-command! LuaSnipListAvailable lua require'luasnip'.list_available()
+command! LuaSnipListAvailable lua print(vim.inspect(require'luasnip'.available()))
 
 function! luasnip#expand_or_jumpable()
 	return luaeval('require("luasnip").expand_or_jumpable()')

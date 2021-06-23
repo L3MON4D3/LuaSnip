@@ -30,29 +30,27 @@ local function match_snippet(line)
 	return nil
 end
 
-local function print_context(snip)
-	print("name :", snip.name)
-	print("trigger :", snip.trigger)
-	print("description :", snip.dscr)
-	print("wordTrig :", snip.wordTrig and true or false)
-	print("regTrig :", snip.regTrig and true or false)
+local function get_context(snip)
+	return {
+		name = snip.name,
+		trigger = snip.trigger,
+		description = snip.dscr,
+		wordTrig = snip.wordTrig and true or false,
+		regTrig = snip.regTrig and true or false,
+	}
 end
 
-local function list_available()
+local function available()
+	local res = { [vim.bo.ft] = {}, all = {} }
 	if ls.snippets[vim.bo.ft] then
-		print(vim.bo.ft .. ":")
 		for _, snip in ipairs(ls.snippets[vim.bo.ft]) do
-			print_context(snip)
-			-- won't print newline otherwise.
-			print(" ")
+			table.insert(res[vim.bo.ft], get_context(snip))
 		end
 	end
-	print("all:")
 	for _, snip in ipairs(ls.snippets["all"]) do
-		print_context(snip)
-		print(" ")
+		table.insert(res.all, get_context(snip))
 	end
-	return nil
+	return res
 end
 
 local function jump(dir)
@@ -171,7 +169,7 @@ ls = {
 	unlink_current = unlink_current,
 	lsp_expand = lsp_expand,
 	active_update_dependents = active_update_dependents,
-	list_available = list_available,
+	available = available,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,
