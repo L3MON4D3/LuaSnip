@@ -116,6 +116,16 @@ local function jdocsnip(args, old_state)
 	return snip
 end
 
+-- Make sure to not pass an invalid command, as io.popen() may write over nvim-text.
+local function bash(_, command)
+	local file = io.popen(command, "r")
+	local res = {}
+	for line in file:lines() do
+		table.insert(res, line)
+	end
+	return res
+end
+
 ls.snippets = {
 	all = {
 		-- trigger is fn.
@@ -197,6 +207,11 @@ ls.snippets = {
 			f(function(args)
 				return { "Captured Text: " .. args[1].captures[1] .. "." }
 			end, {}),
+			i(0),
+		}),
+		-- Use a function to execute any shell command and print its text.
+		s({ trig = "bash" }, {
+			f(bash, {}, "ls"),
 			i(0),
 		}),
 	},
