@@ -13,36 +13,37 @@
 CONTENTS                                                        *luasnip-contents*
 
 	Intro ........................................................ |luasnip-intro|
-	Snippets ......................................................... |luasnip-s|
-	TextNode ......................................................... |luasnip-t|
-	InsertNode ....................................................... |luasnip-i|
-	FunctionNode ..................................................... |luasnip-f|
-	ChoiceNode ....................................................... |luasnip-c|
-	SnippetNode ..................................................... |luasnip-sn|
-	DynamicNode ...................................................... |luasnip-d|
+	Snippets ................................................... |luasnip-snippet|
+	TextNode ................................................. |luasnip-text-node|
+	InsertNode ............................................. |luasnip-insert-node|
+	FunctionNode ......................................... |luasnip-function-node|
+	ChoiceNode ............................................. |luasnip-choice-node|
+	SnippetNode ........................................... |luasnip-snippet-node|
+	DynamicNode ........................................... |luasnip-dynamic-node|
 
 ================================================================================
 
 INTRO                                                              *luasnip-intro*
 
-Luasnip is a snippet-engine written entirely in lua. It has some great features
-like inserting text (|luasnip-f|) or nodes (|luasnip-d|) based on user input,
-parsing lsp-syntax and switching nodes (|luasnip-c|).
+Luasnip is a snippet-engine written entirely in lua. It has some great
+features like inserting text (|luasnip-function-node|) or nodes
+(|luasnip-dynamic-node|) based on user input, parsing LSP syntax and switching
+nodes (|luasnip-choice-node|).
 
 All code-snippets in this help assume that >
 
 	local ls = require'luasnip'
-	local s = ls.s
-	local sn = ls.sn
-	local t = ls.t
-	local i = ls.i
-	local f = ls.f
-	local c = ls.c
-	local d = ls.d
+	local s = ls.snippet
+	local sn = ls.snippet_node
+	local t = ls.text_node
+	local i = ls.insert_node
+	local f = ls.function_node
+	local c = ls.choice_node
+	local d = ls.dynamic_node
 <
 ================================================================================
 
-SNIPPETS                                                               *luasnip-s*
+SNIPPETS                                                         *luasnip-snippet*
 
 The most direct way to define snippets is `s`: 
 >
@@ -50,7 +51,7 @@ The most direct way to define snippets is `s`:
 	i(0)
 	})
 
-(This Snippet is useless beyond being a minimal example)
+(This snippet is useless beyond being a minimal example)
 
 `s` accepts, as the first argument, a table with the following possible
 entries:
@@ -81,7 +82,7 @@ Snippets that should be loaded for all files must be put into the
 
 ================================================================================
 
-TEXTNODE                                                               *luasnip-t*
+TEXTNODE                                                       *luasnip-text-node*
 
 The most simple kind of node; just text.
 >
@@ -90,11 +91,11 @@ The most simple kind of node; just text.
 		i(0)
 	})
 <
-This Snippet expands to
+This snippet expands to
 >
     Wow! Text!|
 <
-, where `|` is the cursor.
+where `|` is the cursor.
 Multiline-strings can be defined by creating multiple entries inside the table:
 >
 	s({trig='trigger'}, {
@@ -104,9 +105,9 @@ Multiline-strings can be defined by creating multiple entries inside the table:
 <
 ================================================================================
 
-INSERTNODE                                                             *luasnip-i*
+INSERTNODE                                                   *luasnip-insert-node*
 
-These Nodes can be jumped to- and from, the functionality is best demonstrated
+These Nodes can be jumped to and from. The functionality is best demonstrated
 with an example:
 >
 	s({trig='trigger'}, {
@@ -126,10 +127,10 @@ This initial text is defined the same way as textNodes, eg. can be multiline.
 
 ================================================================================
 
-FUNCTIONNODE                                                           *luasnip-f*
+FUNCTIONNODE                                               *luasnip-function-node*
 
 Function Nodes insert text based on the content of other nodes using a
-user-defined function: 
+user-defined function:
 >
 	s({trig = "trig"}, {
 		i(1)
@@ -142,7 +143,7 @@ user-defined function:
 The first parameter of `f` is the function. Its parameters are
 	1.: a table of text and the surrounding snippet (ie.
 	`{{line1}, {line1, line2}, snippet}`).
-	The Snippet is included here, as it allows access to anything that could be
+	The snippet is included here, as it allows access to anything that could be
 	useful in functionNodes (ie.  `snippet.env` or `snippet.captures`, which
 	contains capture groups of regex-triggered snippets).
 
@@ -164,7 +165,7 @@ Examples:
 <
 ================================================================================
 
-CHOICENODE                                                             *luasnip-c*
+CHOICENODE                                                   *luasnip-choice-node*
 
 ChoiceNodes allow choosing between multiple nodes.
 >
@@ -184,7 +185,7 @@ need one inside a choiceNode; their index is the same as the choiceNodes'.
 
 ================================================================================
 
-SNIPPETNODE                                                           *luasnip-sn*
+SNIPPETNODE                                                 *luasnip-snippet-node*
 
 SnippetNodes directly insert their contents into the surrounding snippet.
 This is useful for choiceNodes, which only accept one child, or dynamicNodes,
@@ -207,7 +208,7 @@ Note that snippetNodes don't expect an `i(0)`.
 
 ================================================================================
 
-DYNAMICNODE                                                            *luasnip-d* 
+DYNAMICNODE                                                 *luasnip-dynamic-node*
 
 Very similar to functionNode: returns a snippetNode instead of just text,
 which makes them very powerful.
@@ -221,9 +222,9 @@ Parameters:
 		information from the previous snippetNode:
 		If the dynamicNode depends on another node it may be reconstructed,
 		which means all user input to the dynamicNode is lost. Using
-		old_state, the user may pass eg. insertNodes and then get their text
+		`old_state`, the user may pass eg. insertNodes and then get their text
 		upon reconstruction to initialize the new nodes with.
-		The old_state-table must be stored inside the snippetNode returned by
+		The `old_state` table must be stored inside the snippetNode returned by
 		the function.
 		All parameters following the second are user defined.
 	3.  Nodes the dynamicNode depends on: if any of these trigger an update,
