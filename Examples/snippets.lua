@@ -27,7 +27,7 @@ rec_ls = function()
 	return sn(nil, {
 		c(1, {
 			-- Order is important, sn(...) first would cause infinite loop of expansion.
-			t({ "" }),
+			t(""),
 			sn(nil, { t({ "", "\t\\item " }), i(1), d(2, rec_ls, {}) }),
 		}),
 	})
@@ -36,7 +36,7 @@ end
 local function jdocsnip(args, old_state)
 	local nodes = {
 		t({ "/**", " * " }),
-		i(1, { "A short Description" }),
+		i(1, "A short Description"),
 		t({ "", "" }),
 	}
 
@@ -131,16 +131,16 @@ ls.snippets = {
 		-- trigger is fn.
 		s("fn", {
 			-- Simple static text.
-			t({ "//Parameters: " }),
+			t"//Parameters: ",
 			-- function, first parameter is the function, second the Placeholders
 			-- whose text it gets as input.
-			f(copy, { 2 }),
+			f(copy, 2),
 			t({ "", "function " }),
 			-- Placeholder/Insert.
 			i(1),
-			t({ "(" }),
+			t("("),
 			-- Placeholder with initial text.
-			i(2, { "int foo" }),
+			i(2, "int foo"),
 			-- Linebreak
 			t({ ") {", "\t" }),
 			-- Last Placeholder, exit Point of the snippet. EVERY 'outer' SNIPPET NEEDS Placeholder 0.
@@ -150,25 +150,25 @@ ls.snippets = {
 		s("class", {
 			-- Choice: Switch between two different Nodes, first parameter is its position, second a list of nodes.
 			c(1, {
-				t({ "public " }),
-				t({ "private " }),
+				t("public "),
+				t("private "),
 			}),
-			t({ "class " }),
+			t("class "),
 			i(2),
-			t({ " " }),
+			t(" "),
 			c(3, {
-				t({ "{" }),
+				t("{"),
 				-- sn: Nested Snippet. Instead of a trigger, it has a position, just like insert-nodes. !!! These don't expect a 0-node!!!!
 				-- Inside Choices, Nodes don't need a position as the choice node is the one being jumped to.
 				sn(nil, {
-					t({ "extends " }),
+					t("extends "),
 					i(1),
-					t({ " {" }),
+					t(" {"),
 				}),
 				sn(nil, {
-					t({ "implements " }),
+					t("implements "),
 					i(1),
-					t({ " {" }),
+					t(" {"),
 				}),
 			}),
 			t({ "", "\t" }),
@@ -198,14 +198,14 @@ ls.snippets = {
 		-- The last entry of args passed to the user-function is the surrounding snippet.
 		s({ trig = "a%d", regTrig = true, wordTrig = true }, {
 			f(function(args)
-				return { "Triggered with " .. args[1].trigger .. "." }
+				return "Triggered with " .. args[1].trigger .. "."
 			end, {}),
 			i(0),
 		}),
 		-- It's possible to use capture-groups inside regex-triggers.
 		s({ trig = "b(%d)", regTrig = true, wordTrig = true }, {
 			f(function(args)
-				return { "Captured Text: " .. args[1].captures[1] .. "." }
+				return "Captured Text: " .. args[1].captures[1] .. "."
 			end, {}),
 			i(0),
 		}),
@@ -219,27 +219,27 @@ ls.snippets = {
 		-- Very long example for a java class.
 		s("fn", {
 			d(6, jdocsnip, { 2, 4, 5 }),
-			t({ "", "" }),
+			t("", ""),
 			c(1, {
-				t({ "public " }),
-				t({ "private " }),
+				t("public "),
+				t("private "),
 			}),
 			c(2, {
-				t({ "void" }),
-				t({ "String" }),
-				t({ "char" }),
-				t({ "int" }),
-				t({ "double" }),
-				t({ "boolean" }),
-				i(nil, { "" }),
+				t("void"),
+				t("String"),
+				t("char"),
+				t("int"),
+				t("double"),
+				t("boolean"),
+				i(nil, ""),
 			}),
-			t({ " " }),
-			i(3, { "myFunc" }),
-			t({ "(" }),
+			t(" "),
+			i(3, "myFunc"),
+			t("("),
 			i(4),
-			t({ ")" }),
+			t(")"),
 			c(5, {
-				t({ "" }),
+				t(""),
 				sn(nil, {
 					t({ "", " throws " }),
 					i(1),
