@@ -185,8 +185,10 @@ function M.load(opts)
 			or (opts.paths or vim.o.runtimepath):gmatch("([^,]+)")
 		)
 	for path in opts.paths do
-    local full_path = expand_path(path)
-		if full_path  then load_snippet_folder(full_path, opts) end
+		local full_path = expand_path(path)
+		if full_path then
+			load_snippet_folder(full_path, opts)
+		end
 	end
 end
 
