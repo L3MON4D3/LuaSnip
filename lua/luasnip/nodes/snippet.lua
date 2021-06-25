@@ -45,9 +45,7 @@ local function S(context, nodes, condition, ...)
 		end
 	end
 	if type(context) == "string" then
-		error(
-			"Pass table containing a 'trig'-key and optionally 'dscr' and 'name' as first arg."
-		)
+		context = { trig = context }
 	end
 	local snip = Snippet:new({
 		trigger = context.trig,
