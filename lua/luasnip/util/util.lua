@@ -145,10 +145,10 @@ end
 
 -- Wrap a value in a table if it isn't one already
 local function wrap_value(value)
-	if not value or type(value) == 'table' then
+	if not value or type(value) == "table" then
 		return value
 	end
-	return  { value }
+	return { value }
 end
 
 return {

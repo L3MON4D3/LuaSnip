@@ -131,7 +131,7 @@ ls.snippets = {
 		-- trigger is fn.
 		s("fn", {
 			-- Simple static text.
-			t"//Parameters: ",
+			t("//Parameters: "),
 			-- function, first parameter is the function, second the Placeholders
 			-- whose text it gets as input.
 			f(copy, 2),
