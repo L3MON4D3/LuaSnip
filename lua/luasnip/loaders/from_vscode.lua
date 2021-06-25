@@ -92,7 +92,7 @@ local function load_snippet_file(langs, snippet_set_path)
 	)
 end
 
-local function load_snippet_folder(root)
+local function load_snippet_folder(root, opts)
 	local package = path_join(root, "package.json")
 	async_read_file(
 		package,
@@ -115,18 +115,70 @@ local function load_snippet_folder(root)
 				if type(snippet_entry.language) ~= "table" then
 					langs = { langs }
 				end
+				langs = filter_list(langs, opts.exclude, opts.include)
 
-				load_snippet_file(langs, path_join(root, snippet_entry.path))
+				if #langs then
+					load_snippet_file(
+						langs,
+						path_join(root, snippet_entry.path)
+					)
+				end
 			end
 		end)
 	)
 end
 
+function filter_list(list, exclude, include)
+	local out = {}
+	for _, entry in ipairs(list) do
+		if exclude[entry] then
+			goto continue
+		end
+		-- If include is nil then it's true
+		if include == nil or include[entry] then
+			table.insert(out, entry)
+		end
+		::continue::
+	end
+	return out
+end
+
+function values(input)
+	local last_key = nil
+	local v = nil
+	return function()
+		last_key, v = next(input, last_key)
+		return v
+	end
+end
+
+function list_to_set(list)
+	if not list then
+		return list
+	end
+	local out = {}
+	for _, item in ipairs(list) do
+		out[item] = true
+	end
+	return out
+end
 local M = {}
 
-function M.load()
-	for path in vim.o.runtimepath:gmatch("([^,]+)") do
-		load_snippet_folder(path)
+function M.load(opts)
+	opts = opts or {}
+	-- nil (unset) to include all languages (default), a list for the ones you wanna include
+	opts.include = list_to_set(opts.include)
+
+	-- A list for the ones you wanna exclude (empty by default)
+	opts.exclude = list_to_set(opts.exclude) or {}
+
+	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
+	opts.paths = (
+			type(opts.paths) == "table" and values(opts.paths)
+			or (opts.paths or vim.o.runtimepath):gmatch("([^,]+)")
+		)
+	for path in opts.paths do
+		load_snippet_folder(path, opts)
 	end
 end
 
