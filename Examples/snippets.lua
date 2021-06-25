@@ -129,7 +129,7 @@ end
 ls.snippets = {
 	all = {
 		-- trigger is fn.
-		s({ trig = "fn" }, {
+		s("fn", {
 			-- Simple static text.
 			t({ "//Parameters: " }),
 			-- function, first parameter is the function, second the Placeholders
@@ -147,7 +147,7 @@ ls.snippets = {
 			i(0),
 			t({ "", "}" }),
 		}),
-		s({ trig = "class" }, {
+		s("class", {
 			-- Choice: Switch between two different Nodes, first parameter is its position, second a list of nodes.
 			c(1, {
 				t({ "public " }),
@@ -179,7 +179,7 @@ ls.snippets = {
 		-- Placeholders are parsed into choices with 1. the placeholder text(as a snippet) and 2. an empty string.
 		-- This means they are not SELECTed like in other editors/Snippet engines.
 		ls.parser.parse_snippet(
-			{ trig = "lspsyn" },
+			"lspsyn",
 			"Wow! This ${1:Stuff} really ${2:works. ${3:Well, a bit.}}"
 		),
 
@@ -210,14 +210,14 @@ ls.snippets = {
 			i(0),
 		}),
 		-- Use a function to execute any shell command and print its text.
-		s({ trig = "bash" }, {
+		s("bash", {
 			f(bash, {}, "ls"),
 			i(0),
 		}),
 	},
 	java = {
 		-- Very long example for a java class.
-		s({ trig = "fn" }, {
+		s("fn", {
 			d(6, jdocsnip, { 2, 4, 5 }),
 			t({ "", "" }),
 			c(1, {
@@ -253,7 +253,7 @@ ls.snippets = {
 	tex = {
 		-- rec_ls is self-referencing. That makes this snippet 'infinite' eg. have as many
 		-- \item as necessary by utilizing a choiceNode.
-		s({ trig = "ls" }, {
+		s("ls", {
 			t({ "\\begin{itemize}", "\t\\item " }),
 			i(1),
 			d(2, rec_ls, {}),
