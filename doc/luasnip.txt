@@ -67,6 +67,13 @@ entries:
 	`regTrig`    Boolean      If true, `trig` is interpreted      Optional, `false`
                             as a lua-pattern
 
+`s` can also be a single string, in which case it is used instead of `trig`,
+all other values being defaulted:
+
+>
+	s('trigger', { i(0) })
+<
+
 The second argument to `s` is a table containing all nodes that belong to the
 snippet, at least one of which has to be an `i(0)` node.
 
