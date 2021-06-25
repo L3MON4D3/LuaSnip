@@ -162,8 +162,16 @@ function list_to_set(list)
 	end
 	return out
 end
-local M = {}
 
+
+-- remove /init.lua or /init.vim  most of the time ~/.config/nvim/
+local MYCONFIG_ROOT =  vim.env.MYVIMRC:gsub('/[^/]+$', '')
+function expand_path(path)
+   local expanded = path:gsub('^~', vim.env.HOME):gsub('^[.]', MYCONFIG_ROOT)
+   return uv.fs_realpath(expanded)
+end
+
+local M = {}
 function M.load(opts)
 	opts = opts or {}
 	-- nil (unset) to include all languages (default), a list for the ones you wanna include
@@ -178,7 +186,7 @@ function M.load(opts)
 			or (opts.paths or vim.o.runtimepath):gmatch("([^,]+)")
 		)
 	for path in opts.paths do
-		load_snippet_folder(path, opts)
+		load_snippet_folder(expand_path(path), opts)
 	end
 end
 
