@@ -75,7 +75,7 @@ local function SN(pos, nodes, condition, ...)
 	end
 	local snip = Snippet:new({
 		pos = pos,
-		nodes = nodes,
+		nodes = util.wrap_value(nodes),
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,

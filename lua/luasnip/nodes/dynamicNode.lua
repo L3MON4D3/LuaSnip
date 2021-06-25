@@ -5,7 +5,7 @@ local function D(pos, fn, args, ...)
 	return DynamicNode:new({
 		pos = pos,
 		fn = fn,
-		args = args,
+		args = util.wrap_value(args),
 		type = 5,
 		markers = {},
 		user_args = { ... },
