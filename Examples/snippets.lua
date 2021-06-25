@@ -270,4 +270,5 @@ ls.snippets = {
 -- will need to extend the table yourself instead of setting a new one.
 ]]
 
-require("luasnip/loaders/from_vscode").load()
+require("luasnip/loaders/from_vscode").load({ include = { "python" } }) -- Load only python snippets
+require("luasnip/loaders/from_vscode").load({ paths = { "./my-snippets" } }) -- Load snippets from my-snippets folder

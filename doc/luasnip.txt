@@ -20,7 +20,7 @@ CONTENTS                                                        *luasnip-content
 	ChoiceNode ............................................. |luasnip-choice-node|
 	SnippetNode ........................................... |luasnip-snippet-node|
 	DynamicNode ........................................... |luasnip-dynamic-node|
-
+	VsCode Snippets Loader ............................... |luasnip-vscode-loader|
 ================================================================================
 
 INTRO                                                              *luasnip-intro*
@@ -287,4 +287,26 @@ changing to a bigger number.
 
 ================================================================================
 
+VSCODE SNIPPETS LOADER ............................... *luasnip-vscode-loader*
+
+As luasnip is capable of loading the same format of plugins as vscode, it also
+includes an easy way for loading those automatically. You just have to call:
+>
+ 	require("luasnip/loaders/from_vscode").load(opts) -- opts can be ommited
+<
+Where `opts` is a table containing the keys:
+	-  `paths`: List of paths to load as a table or as a single string separated
+	   by a comma, if not set it's |'runtimepath'|, you can start the paths with
+	   `~/` or `./` to indicate that the path is relative to your home or to
+	   the folder where your |$MYVIMRC| resides (useful to add your snippets).
+	-  `exclude`: List of languages to exclude, by default is empty.
+	-  `include`: List of languages to include, by default is not set.
+
+The last two are useful mainly to avoid loading snippets from 3erd parties you don't wanna include.
+
+Keep in mind that it will extend your `snippets` table, so do it after setting
+your snippets or you will have to extend the table as well.
+
+
+================================================================================
 vim:tw=78:ts=4:ft=help:norl:

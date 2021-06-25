@@ -163,12 +163,11 @@ function list_to_set(list)
 	return out
 end
 
-
 -- remove /init.lua or /init.vim  most of the time ~/.config/nvim/
-local MYCONFIG_ROOT =  vim.env.MYVIMRC:gsub('/[^/]+$', '')
+local MYCONFIG_ROOT = vim.env.MYVIMRC:gsub("/[^/]+$", "")
 function expand_path(path)
-   local expanded = path:gsub('^~', vim.env.HOME):gsub('^[.]', MYCONFIG_ROOT)
-   return uv.fs_realpath(expanded)
+	local expanded = path:gsub("^~", vim.env.HOME):gsub("^[.]", MYCONFIG_ROOT)
+	return uv.fs_realpath(expanded)
 end
 
 local M = {}
