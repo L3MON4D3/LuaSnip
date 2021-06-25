@@ -171,9 +171,9 @@ function M.load(opts)
 	opts.exclude = list_to_set(opts.exclude) or {}
 
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
-  if type(opts.paths) ~= "table" then
-      opts.paths = vim.split(opts.paths or vim.o.runtimepath, ",")
-  end
+	if type(opts.paths) ~= "table" then
+		opts.paths = vim.split(opts.paths or vim.o.runtimepath, ",")
+	end
 
 	for _, path in ipairs(opts.paths) do
 		local full_path = expand_path(path)
