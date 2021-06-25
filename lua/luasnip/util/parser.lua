@@ -329,10 +329,10 @@ parse_snippet = function(context, body, tab_stops, brackets)
 			if outer and not tab_stops[0] then
 				nodes[#nodes + 1] = iNode.I(0)
 			end
-			if type(context) == "table" then
-				return snipNode.S(context, nodes)
-			else
+			if type(context) == "number" then
 				return snipNode.SN(context, nodes)
+			else
+				return snipNode.S(context, nodes)
 			end
 		end
 	end
