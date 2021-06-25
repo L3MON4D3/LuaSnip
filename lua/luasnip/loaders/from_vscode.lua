@@ -143,15 +143,6 @@ function filter_list(list, exclude, include)
 	return out
 end
 
-function values(input)
-	local last_key = nil
-	local v = nil
-	return function()
-		last_key, v = next(input, last_key)
-		return v
-	end
-end
-
 function list_to_set(list)
 	if not list then
 		return list
@@ -180,11 +171,11 @@ function M.load(opts)
 	opts.exclude = list_to_set(opts.exclude) or {}
 
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
-	opts.paths = (
-			type(opts.paths) == "table" and values(opts.paths)
-			or (opts.paths or vim.o.runtimepath):gmatch("([^,]+)")
-		)
-	for path in opts.paths do
+  if type(opts.paths) ~= "table" then
+      opts.paths = vim.split(opts.paths or vim.o.runtimepath, ",")
+  end
+
+	for _, path in ipairs(opts.paths) do
 		local full_path = expand_path(path)
 		if full_path then
 			load_snippet_folder(full_path, opts)
