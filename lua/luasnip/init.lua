@@ -7,7 +7,7 @@ local ls
 Luasnip_current_nodes = {}
 
 local function get_active_snip()
-	return snip_mod.get_active()
+return snip_mod.get_active()
 end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
