@@ -143,6 +143,14 @@ local function put(text, pos)
 	pos[2] = (#text > 1 and 0 or pos[2]) + #text[#text]
 end
 
+-- Wrap a value in a table if it isn't one already
+local function wrap_value(value)
+	if not value or type(value) == "table" then
+		return value
+	end
+	return { value }
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -157,4 +165,5 @@ return {
 	multiline_equal = multiline_equal,
 	word_under_cursor = word_under_cursor,
 	put = put,
+	wrap_value = wrap_value,
 }

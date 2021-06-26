@@ -4,7 +4,11 @@ local util = require("luasnip.util.util")
 local TextNode = node_mod.Node:new()
 
 local function T(static_text)
-	return TextNode:new({ static_text = static_text, markers = {}, type = 0 })
+	return TextNode:new({
+		static_text = util.wrap_value(static_text),
+		markers = {},
+		type = 0,
+	})
 end
 
 -- Don't touch gravities for TextNodes.

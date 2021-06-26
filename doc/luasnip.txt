@@ -94,7 +94,7 @@ TEXTNODE                                                       *luasnip-text-nod
 The most simple kind of node; just text.
 >
 	s({trig='trigger'}, {
-		t({"Wow! Text!"}),
+		t("Wow! Text!"),
 		i(0)
 	})
 <
@@ -103,7 +103,8 @@ This snippet expands to
     Wow! Text!|
 <
 where `|` is the cursor.
-Multiline-strings can be defined by creating multiple entries inside the table:
+Multiline-strings can be defined by passing a table of lines rather than a
+string:
 >
 	s({trig='trigger'}, {
 		t({"Wow! Text!", "And another line."}),
@@ -126,7 +127,7 @@ with an example:
 It's possible to have easy-to-overwrite text inside an InsertNode initially:
 >
 	s({trig='trigger'}, {
-		i(1, {"This text is SELECTed after expanding the snippet."}),
+		i(1, "This text is SELECTed after expanding the snippet."),
 		i(0),
 	})
 <
@@ -141,7 +142,7 @@ user-defined function:
 >
 	s({trig = "trig"}, {
 		i(1)
-		f(function(args, user_arg_1) return {args[1][1] .. user_arg_1} end,
+		f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
 			{1},
 			"Will be appended to text from i(0)"),
 		i(0)
@@ -159,14 +160,18 @@ The first parameter of `f` is the function. Its parameters are
 
 The second parameter is a table of indizes of jumpable nodes whose text is
 passed to the function. The table may be empty, in this case the function is
-evaluated once upon snippet-expansion.
+evaluated once upon snippet-expansion. If the table only has a single node, it
+can be passed directly without wrapping it in a table.
+
+The function shall return a string, which will be inserted as-is, or a table
+of strings for multiline snippets.
 
 Examples:
 	Use captures from the regex-trigger using a functionNode:
 >
 	s({trig = "b(%d)", regTrig = true, wordTrig = true}, {
 		f(function(args) return
-			{"Captured Text: " .. args[1].captures[1] .. "."} end, {}),
+			"Captured Text: " .. args[1].captures[1] .. "." end, {}),
 		i(0)
 	})
 <
@@ -178,9 +183,9 @@ ChoiceNodes allow choosing between multiple nodes.
 >
 	s({trig = "trig"}, {
 		c(1, {
-			t({"Ugh boring, a text node"}),
-			i(nil, {"At least I can edit something now..."}),
-			f(function(args) return {"Still only counts as text!!"} end, {})
+			t("Ugh boring, a text node"),
+			i(nil, "At least I can edit something now..."),
+			f(function(args) return "Still only counts as text!!" end, {})
 		}), i(0)
 	})
 
@@ -204,8 +209,8 @@ number, as they too are jumpable:
 >
 	s({trig = "trig"}, {
 		sn(1, {
-			t({"basically just text "}),
-			i(1, {"And an insertNode."})
+			t("basically just text "),
+			i(1, "And an insertNode.")
 		}),
 		i(0)
 	})
@@ -236,7 +241,7 @@ Parameters:
 		All parameters following the second are user defined.
 	3.  Nodes the dynamicNode depends on: if any of these trigger an update,
 		the dynamicNodes function will be executed and the result inserted at
-		the nodes place.
+		the nodes place. Can be a single node or a table of nodes.
 	4f. The fourth and following parameters are user defined, anything passed
 		here will also be passed to the function (arg 2) following its second
 		parameter (easy to reuse similar functions with small changes).
@@ -270,7 +275,7 @@ Parameters:
 				old_state[j] = iNode
 			end
 		else
-			nodes[1] = t({"Enter a number!"})
+			nodes[1] = t("Enter a number!")
 		end
 		
 		local snip = sn(nil, nodes)
@@ -281,9 +286,9 @@ Parameters:
 	...
 
 	s({trig="trig"}, {
-		i(1, {"1"}),
+		i(1, "1"),
 		-- pos, function, nodes, user_arg1
-		d(2, lines, {1}, {"Sample Text"})
+		d(2, lines, {1}, "Sample Text")
 		i(0)
 	})
 <

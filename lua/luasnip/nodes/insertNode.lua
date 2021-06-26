@@ -4,6 +4,7 @@ local util = require("luasnip.util.util")
 local config = require("luasnip.config")
 
 local function I(pos, static_text)
+	local static_text = util.wrap_value(static_text)
 	if pos == 0 then
 		return ExitNode:new({
 			pos = pos,

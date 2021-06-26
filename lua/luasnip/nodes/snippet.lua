@@ -75,7 +75,7 @@ local function SN(pos, nodes, condition, ...)
 	end
 	local snip = Snippet:new({
 		pos = pos,
-		nodes = nodes,
+		nodes = util.wrap_value(nodes),
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,
@@ -424,8 +424,7 @@ function Snippet:put_initial(pos)
 			old_pos[2],
 			{
 				right_gravity = not (
-						old_pos[1] == pos[1]
-						and old_pos[2] == pos[2]
+						old_pos[1] == pos[1] and old_pos[2] == pos[2]
 					),
 			}
 		)

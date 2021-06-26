@@ -4,7 +4,7 @@ local util = require("luasnip.util.util")
 local function F(fn, args, ...)
 	return FunctionNode:new({
 		fn = fn,
-		args = args,
+		args = util.wrap_value(args),
 		type = 2,
 		markers = {},
 		user_args = { ... },
@@ -30,7 +30,10 @@ function FunctionNode:input_enter()
 end
 
 function FunctionNode:update()
-	self.parent:set_text(self, self.fn(self:get_args(), unpack(self.user_args)))
+	local text = util.wrap_value(
+		self.fn(self:get_args(), unpack(self.user_args))
+	)
+	self.parent:set_text(self, text)
 end
 
 return {

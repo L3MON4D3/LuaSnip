@@ -12,8 +12,7 @@ end
 function Node:has_static_text()
 	return self:get_static_text()
 		and not (
-			self:get_static_text()[1] == ""
-			and #self:get_static_text() == 1
+			self:get_static_text()[1] == "" and #self:get_static_text() == 1
 		)
 end
 
