@@ -33,6 +33,7 @@ function FunctionNode:update()
 	local text = util.wrap_value(
 		self.fn(self:get_args(), unpack(self.user_args))
 	)
+	self.parent:set_text(self, text)
 end
 
 return {

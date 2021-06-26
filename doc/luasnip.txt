@@ -94,7 +94,7 @@ TEXTNODE                                                       *luasnip-text-nod
 The most simple kind of node; just text.
 >
 	s({trig='trigger'}, {
-		t"Wow! Text!",
+		t("Wow! Text!"),
 		i(0)
 	})
 <
@@ -142,7 +142,7 @@ user-defined function:
 >
 	s({trig = "trig"}, {
 		i(1)
-		f(function(args, user_arg_1) return {args[1][1] .. user_arg_1} end,
+		f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
 			{1},
 			"Will be appended to text from i(0)"),
 		i(0)
@@ -162,6 +162,9 @@ The second parameter is a table of indizes of jumpable nodes whose text is
 passed to the function. The table may be empty, in this case the function is
 evaluated once upon snippet-expansion. If the table only has a single node, it
 can be passed directly without wrapping it in a table.
+
+The function shall return a string, which will be inserted as-is, or a table
+of strings for multiline snippets.
 
 Examples:
 	Use captures from the regex-trigger using a functionNode:
