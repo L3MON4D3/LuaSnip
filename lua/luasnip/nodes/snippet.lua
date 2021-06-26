@@ -424,8 +424,7 @@ function Snippet:put_initial(pos)
 			old_pos[2],
 			{
 				right_gravity = not (
-						old_pos[1] == pos[1]
-						and old_pos[2] == pos[2]
+						old_pos[1] == pos[1] and old_pos[2] == pos[2]
 					),
 			}
 		)
