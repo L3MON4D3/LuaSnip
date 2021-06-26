@@ -80,6 +80,7 @@ local function load_snippet_file(langs, snippet_set_path)
 								ls.parser.parse_snippet({
 									trig = prefix,
 									name = name,
+									dscr = parts.description or name,
 									wordTrig = true,
 								}, body)
 							)
