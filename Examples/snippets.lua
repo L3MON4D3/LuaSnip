@@ -200,19 +200,16 @@ ls.snippets = {
 			f(function(args)
 				return "Triggered with " .. args[1].trigger .. "."
 			end, {}),
-			i(0),
 		}),
 		-- It's possible to use capture-groups inside regex-triggers.
 		s({ trig = "b(%d)", regTrig = true, wordTrig = true }, {
 			f(function(args)
 				return "Captured Text: " .. args[1].captures[1] .. "."
 			end, {}),
-			i(0),
 		}),
 		-- Use a function to execute any shell command and print its text.
 		s("bash", {
 			f(bash, {}, "ls"),
-			i(0),
 		}),
 	},
 	java = {
@@ -258,7 +255,6 @@ ls.snippets = {
 			i(1),
 			d(2, rec_ls, {}),
 			t({ "", "\\end{itemize}" }),
-			i(0),
 		}),
 	},
 }
