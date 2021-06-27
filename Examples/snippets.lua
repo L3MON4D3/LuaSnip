@@ -24,13 +24,14 @@ end
 -- 'recursive' dynamic snippet. Expands to some text followed by itself.
 local rec_ls
 rec_ls = function()
-	return sn(nil, {
+	return sn(
+		nil,
 		c(1, {
 			-- Order is important, sn(...) first would cause infinite loop of expansion.
 			t(""),
 			sn(nil, { t({ "", "\t\\item " }), i(1), d(2, rec_ls, {}) }),
-		}),
-	})
+		})
+	)
 end
 
 local function jdocsnip(args, old_state)
@@ -196,21 +197,21 @@ ls.snippets = {
 		),
 
 		-- The last entry of args passed to the user-function is the surrounding snippet.
-		s({ trig = "a%d", regTrig = true, wordTrig = true }, {
+		s(
+			{ trig = "a%d", regTrig = true, wordTrig = true },
 			f(function(args)
 				return "Triggered with " .. args[1].trigger .. "."
-			end, {}),
-		}),
+			end, {})
+		),
 		-- It's possible to use capture-groups inside regex-triggers.
-		s({ trig = "b(%d)", regTrig = true, wordTrig = true }, {
+		s(
+			{ trig = "b(%d)", regTrig = true, wordTrig = true },
 			f(function(args)
 				return "Captured Text: " .. args[1].captures[1] .. "."
-			end, {}),
-		}),
+			end, {})
+		),
 		-- Use a function to execute any shell command and print its text.
-		s("bash", {
-			f(bash, {}, "ls"),
-		}),
+		s("bash", f(bash, {}, "ls")),
 	},
 	java = {
 		-- Very long example for a java class.

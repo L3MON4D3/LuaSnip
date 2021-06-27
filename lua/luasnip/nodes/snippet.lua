@@ -44,6 +44,13 @@ local function S(context, nodes, condition, ...)
 			return true
 		end
 	end
+
+	local nodes = nodes
+	if not nodes[1] then
+		-- Then it's a node-table rather than an array of nodes: auto-wrap it
+		nodes = { nodes }
+	end
+
 	if type(context) == "string" then
 		context = { trig = context }
 	end
