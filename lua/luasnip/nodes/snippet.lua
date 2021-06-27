@@ -47,6 +47,19 @@ local function S(context, nodes, condition, ...)
 	if type(context) == "string" then
 		context = { trig = context }
 	end
+
+	local has_i0 = false
+	for _, node in pairs(nodes) do
+		if node.type == 1 and node.pos == 0 then
+			has_i0 = true
+		end
+	end
+
+	if not has_i0 then
+		local i0 = iNode.I(0)
+		nodes[#nodes + 1] = iNode.I(0)
+	end
+
 	local snip = Snippet:new({
 		trigger = context.trig,
 		dscr = context.dscr or context.trig,
