@@ -32,7 +32,7 @@ nodes (|luasnip-choice-node|).
 
 All code-snippets in this help assume that >
 
-	local ls = require'luasnip'
+	local ls = require"luasnip"
 	local s = ls.snippet
 	local sn = ls.snippet_node
 	local t = ls.text_node
@@ -47,16 +47,14 @@ SNIPPETS                                                         *luasnip-snippe
 
 The most direct way to define snippets is `s`: 
 >
-	s({trig='trigger'}, {
-	i(0)
-	})
+	s({trig="trigger"}, {})
 
 (This snippet is useless beyond being a minimal example)
 
 `s` accepts, as the first argument, a table with the following possible
 entries:
 
-	`trig`        string      Trigger, Plain text by default    Required
+	`trig`        String      Trigger, Plain text by default    Required
 	`name`        String      Name, used by other plugins       Optional, `trig`
 	`dscr`        String      Description, used by other        Optional, `trig`
 	                        plugins
@@ -64,18 +62,18 @@ entries:
 	                        expanded if the word (`[%w_]+`)
 	                        before the cursor matches the
 	                        trigger entirely
-	`regTrig`    Boolean      If true, `trig` is interpreted      Optional, `false`
+	`regTrig`     Boolean     If true, `trig` is interpreted      Optional, `false`
                             as a lua-pattern
 
 `s` can also be a single string, in which case it is used instead of `trig`,
 all other values being defaulted:
 
 >
-	s('trigger', { i(0) })
+	s("trigger", {})
 <
 
 The second argument to `s` is a table containing all nodes that belong to the
-snippet, at least one of which has to be an `i(0)` node.
+snippet.
 
 Snippets contain some interesting tables, eg. `snippet.env` contains variables
 used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
@@ -93,10 +91,7 @@ TEXTNODE                                                       *luasnip-text-nod
 
 The most simple kind of node; just text.
 >
-	s({trig='trigger'}, {
-		t("Wow! Text!"),
-		i(0)
-	})
+	s("trigger", { t("Wow! Text!") })
 <
 This snippet expands to
 >
@@ -106,9 +101,8 @@ where `|` is the cursor.
 Multiline-strings can be defined by passing a table of lines rather than a
 string:
 >
-	s({trig='trigger'}, {
+	s("trigger", {
 		t({"Wow! Text!", "And another line."}),
-		i(0)
 	})
 <
 ================================================================================
@@ -118,17 +112,20 @@ INSERTNODE                                                   *luasnip-insert-nod
 These Nodes can be jumped to and from. The functionality is best demonstrated
 with an example:
 >
-	s({trig='trigger'}, {
+	s("trigger", {
 		t({"After jumping forward once cursor is here ->"}), i(2),
 		t({"", "After expanding the cursor is here ->"}), i(1),
 		t({"", "After jumping once more the snippet is exited there ->"}), i(0),
 	})
 <
+The InsertNodes are jumped over in order, with the 0-th one always being last.
+If no 0-th InsertNode is found in a snippet, one is automatically inserted
+after all other nodes.
+
 It's possible to have easy-to-overwrite text inside an InsertNode initially:
 >
-	s({trig='trigger'}, {
+	s("trigger", {
 		i(1, "This text is SELECTed after expanding the snippet."),
-		i(0),
 	})
 <
 This initial text is defined the same way as textNodes, eg. can be multiline.
@@ -140,7 +137,7 @@ FUNCTIONNODE                                               *luasnip-function-nod
 Function Nodes insert text based on the content of other nodes using a
 user-defined function:
 >
-	s({trig = "trig"}, {
+	s("trig", {
 		i(1)
 		f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
 			{1},
@@ -171,8 +168,7 @@ Examples:
 >
 	s({trig = "b(%d)", regTrig = true, wordTrig = true}, {
 		f(function(args) return
-			"Captured Text: " .. args[1].captures[1] .. "." end, {}),
-		i(0)
+			"Captured Text: " .. args[1].captures[1] .. "." end, {})
 	})
 <
 ================================================================================
@@ -181,12 +177,12 @@ CHOICENODE                                                   *luasnip-choice-nod
 
 ChoiceNodes allow choosing between multiple nodes.
 >
-	s({trig = "trig"}, {
+	s("trig", {
 		c(1, {
 			t("Ugh boring, a text node"),
 			i(nil, "At least I can edit something now..."),
 			f(function(args) return "Still only counts as text!!" end, {})
-		}), i(0)
+		})
 	})
 
 `c()` expects as it first arg, as with any jumpable node, its position in the
@@ -207,12 +203,11 @@ Syntax is similar to snippets, however, where snippets require a table
 specifying when to expand, snippetNodes, similar to insertNodes, expect a
 number, as they too are jumpable:
 >
-	s({trig = "trig"}, {
+	s("trig", {
 		sn(1, {
 			t("basically just text "),
 			i(1, "And an insertNode.")
-		}),
-		i(0)
+		})
 	})
 <
 
@@ -285,11 +280,10 @@ Parameters:
 
 	...
 
-	s({trig="trig"}, {
+	s("trig", {
 		i(1, "1"),
 		-- pos, function, nodes, user_arg1
 		d(2, lines, {1}, "Sample Text")
-		i(0)
 	})
 <
 This snippet would start out as "1\nSample Text" and, upon changing the 1 to
