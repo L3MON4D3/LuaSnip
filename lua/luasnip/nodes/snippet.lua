@@ -48,18 +48,6 @@ local function S(context, nodes, condition, ...)
 		context = { trig = context }
 	end
 
-	local has_i0 = false
-	for _, node in pairs(nodes) do
-		if node.type == 1 and node.pos == 0 then
-			has_i0 = true
-		end
-	end
-
-	if not has_i0 then
-		local i0 = iNode.I(0)
-		nodes[#nodes + 1] = iNode.I(0)
-	end
-
 	local snip = Snippet:new({
 		trigger = context.trig,
 		dscr = context.dscr or context.trig,
@@ -76,7 +64,18 @@ local function S(context, nodes, condition, ...)
 		active = false,
 		env = {},
 	})
+
 	snip:init_nodes()
+
+	if not snip.insert_nodes[0] then
+		-- Generate implied i(0)
+		local i0 = iNode.I(0)
+		i0.parent = snip
+		i0.indx = 0
+		snip.insert_nodes[0] = i0
+		nodes[#nodes + 1] = i0
+	end
+
 	return snip
 end
 
