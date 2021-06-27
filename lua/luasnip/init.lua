@@ -13,11 +13,11 @@ end
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
 local function match_snippet(line)
 	local match
-		for _, snip in ipairs(ls.snippets[vim.bo.ft] or {}) do
-			match = snip:matches(line)
-			if match then
-				return match
-			end
+	for _, snip in ipairs(ls.snippets[vim.bo.ft] or {}) do
+		match = snip:matches(line)
+		if match then
+			return match
+		end
 	end
 	for _, snip in ipairs(ls.snippets["all"] or {}) do
 		match = snip:matches(line)
