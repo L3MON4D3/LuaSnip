@@ -77,10 +77,11 @@ local function S(context, nodes, condition, ...)
 	if not snip.insert_nodes[0] then
 		-- Generate implied i(0)
 		local i0 = iNode.I(0)
+		local i0_indx = #nodes + 1
 		i0.parent = snip
-		i0.indx = 0
+		i0.indx = i0_indx
 		snip.insert_nodes[0] = i0
-		nodes[#nodes + 1] = i0
+		nodes[i0_indx] = i0
 	end
 
 	return snip
