@@ -269,3 +269,24 @@ ls.snippets = {
 
 require("luasnip/loaders/from_vscode").load({ include = { "python" } }) -- Load only python snippets
 require("luasnip/loaders/from_vscode").load({ paths = { "./my-snippets" } }) -- Load snippets from my-snippets folder
+
+-- You can use the loader to implement your own lazy-loading of snippets
+
+local loader = require("luasnip/loaders/from_vscode")
+loader.load({ include = { "all" } }) -- Load the default snippets at the begining
+
+local loaded = {}
+_G.load_snips = function()
+	local ft = vim.bo.filetype
+	if not loaded[ft] then
+		loaded[ft] = true
+		loader.load({ include = { ft } })
+	end
+end
+
+vim.cmd([[
+    augroup my_snips
+    autocmd!
+    au BufEnter * lua _G.load_snips()
+    augroup END
+]])
