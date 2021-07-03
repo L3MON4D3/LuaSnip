@@ -44,3 +44,5 @@ For Supertab-like functionality with compe, check out [#1](https://github.com/L3
 - `updateevents`: Choose which events trigger an update of the active nodes' dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would update on every change.
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
+
+Talk, ask or suggest on [matrix](https://matrix.to/#/%23luasnip:matrix.org)
