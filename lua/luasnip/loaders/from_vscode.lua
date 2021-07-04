@@ -183,11 +183,11 @@ function M.load(opts)
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
 	if type(opts.paths) ~= "table" and opts.paths ~= nil then
 		opts.paths = vim.split(opts.paths, ",")
+		opts.paths = vim.tbl_map(expand_path, opts.paths) -- Expand before deduping, fake paths will become nil
 	else
 		opts.paths = get_snippets_rtp()
 	end
 
-	opts.paths = vim.tbl_map(expand_path, opts.paths)  -- Expand before deduping, fake paths will become nil
 	opts.paths = vim.tbl_keys(list_to_set(opts.paths)) -- Remove doppelgänger paths and ditch nil ones
 
 	for _, path in ipairs(opts.paths) do
@@ -197,7 +197,6 @@ end
 
 local lazy_load_paths = {}
 local lazy_loaded_ft = {}
-
 
 function _G._luasnip_vscode_lazy_load()
 	for _, ft in ipairs({ vim.bo.filetype, "all" }) do
@@ -218,6 +217,9 @@ function M.lazy_load(opts)
 		opts.paths = get_snippets_rtp()
 	end
 	vim.list_extend(lazy_load_paths, opts.paths)
+
+	lazy_load_paths = vim.tbl_keys(list_to_set(lazy_load_paths)) -- Remove doppelgänger paths and ditch nil ones
+
 	vim.cmd([[
 		augroup _luasnip_vscode_lazy_load
 		autocmd!
