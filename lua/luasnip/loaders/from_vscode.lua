@@ -187,22 +187,17 @@ function M.load(opts)
 		opts.paths = get_snippets_rtp()
 	end
 
+	opts.paths = vim.tbl_map(expand_path, opts.paths)  -- Expand before deduping, fake paths will become nil
+	opts.paths = vim.tbl_keys(list_to_set(opts.paths)) -- Remove doppelgänger paths and ditch nil ones
+
 	for _, path in ipairs(opts.paths) do
-		local full_path = expand_path(path)
-		if full_path then
-			load_snippet_folder(full_path, opts)
-		end
+		load_snippet_folder(path, opts)
 	end
 end
 
 local lazy_load_paths = {}
 local lazy_loaded_ft = {}
 
-local function not_contains(tbl)
-	return function(it)
-		return not vim.tbl_contains(tbl, it)
-	end
-end
 
 function _G._luasnip_vscode_lazy_load()
 	for _, ft in ipairs({ vim.bo.filetype, "all" }) do
@@ -215,19 +210,14 @@ end
 
 function M.lazy_load(opts)
 	opts = opts or {}
+
 	-- We have to do this here too, because we have to store them in lozy_load_paths
 	if type(opts.paths) ~= "table" and opts.paths ~= nil then
 		opts.paths = vim.split(opts.paths, ",")
 	else
 		opts.paths = get_snippets_rtp()
 	end
-
-	-- Extend the snippet paths list but avoid doppelgänger
-	vim.list_extend(
-		lazy_load_paths,
-		vim.tbl_filter(not_contains(lazy_load_paths), opts.paths)
-	)
-
+	vim.list_extend(lazy_load_paths, opts.paths)
 	vim.cmd([[
 		augroup _luasnip_vscode_lazy_load
 		autocmd!
