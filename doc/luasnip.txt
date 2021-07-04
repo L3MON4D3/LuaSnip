@@ -306,6 +306,13 @@ The last two are useful mainly to avoid loading snippets from 3erd parties you d
 Keep in mind that it will extend your `snippets` table, so do it after setting
 your snippets or you will have to extend the table as well.
 
+Another way of using the loader is making it lazily
+>
+ 	require("luasnip/loaders/from_vscode").lazy_load(opts) -- opts can be ommited
+>
+In this case `opts` only accepts paths (runtimepath if any). That will load
+the general snippets (the ones of filetype 'all') and those of the filetype
+of the buffers, you open every time you open a new one (but it won't reload them).
 
 ================================================================================
 vim:tw=78:ts=4:ft=help:norl:
