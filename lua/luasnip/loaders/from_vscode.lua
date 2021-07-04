@@ -198,7 +198,7 @@ end
 local lazy_load_paths = {}
 local lazy_loaded_ft = {}
 
-function _G._luasnip_vscode_lazy_load()
+function M._luasnip_vscode_lazy_load()
 	for _, ft in ipairs({ vim.bo.filetype, "all" }) do
 		if not lazy_loaded_ft[ft] then
 			lazy_loaded_ft[ft] = true
@@ -223,7 +223,7 @@ function M.lazy_load(opts)
 	vim.cmd([[
 		augroup _luasnip_vscode_lazy_load
 		autocmd!
-		au BufEnter * lua _G._luasnip_vscode_lazy_load()
+		au BufEnter * lua require('luasnip/loaders/from_vscode')._luasnip_vscode_lazy_load()
 		augroup END
 	]])
 end
