@@ -155,6 +155,15 @@ function list_to_set(list)
 	return out
 end
 
+local function get_snippets_rtp()
+	return vim.tbl_map(function(itm)
+		return vim.fn.fnamemodify(itm, ":h")
+	end, vim.api.nvim_get_runtime_file(
+		"package.json",
+		true
+	))
+end
+
 -- remove /init.lua or /init.vim  most of the time ~/.config/nvim/
 local MYCONFIG_ROOT = vim.env.MYVIMRC:gsub("/[^/]+$", "")
 function expand_path(path)
@@ -172,8 +181,10 @@ function M.load(opts)
 	opts.exclude = list_to_set(opts.exclude) or {}
 
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
-	if type(opts.paths) ~= "table" then
-		opts.paths = vim.split(opts.paths or vim.o.runtimepath, ",")
+	if type(opts.paths) ~= "table" and opts.paths ~= nil then
+		opts.paths = vim.split(opts.paths, ",")
+	else
+		opts.paths = get_snippets_rtp()
 	end
 
 	for _, path in ipairs(opts.paths) do
