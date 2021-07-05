@@ -135,7 +135,7 @@ Function Nodes insert text based on the content of other nodes using a
 user-defined function:
 >
 	s("trig", {
-		i(1)
+		i(1),
 		f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
 			{1},
 			"Will be appended to text from i(0)"),
