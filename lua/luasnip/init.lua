@@ -7,7 +7,14 @@ local ls
 Luasnip_current_nodes = {}
 
 local function get_active_snip()
-	return snip_mod.get_active()
+	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	if not node then
+		return nil
+	end
+	while node.parent do
+		node = node.parent
+	end
+	return node
 end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
