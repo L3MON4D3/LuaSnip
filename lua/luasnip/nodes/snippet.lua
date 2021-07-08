@@ -55,9 +55,21 @@ local function S(context, nodes, condition, ...)
 		context = { trig = context }
 	end
 
+	-- context.dscr could be nil, string or table.
+	context.dscr = util.wrap_value(context.dscr or context.trig)
+
+	-- split entries at \n.
+	local dscr = {}
+	for _, str in ipairs(context.dscr) do
+		local split = vim.split(str, "\n", true)
+		for i = 1, #split do
+			dscr[#dscr + 1] = split[i]
+		end
+	end
+
 	local snip = Snippet:new({
 		trigger = context.trig,
-		dscr = context.dscr or context.trig,
+		dscr = dscr,
 		name = context.name or context.trig,
 		wordTrig = context.wordTrig,
 		regTrig = context.regTrig,
