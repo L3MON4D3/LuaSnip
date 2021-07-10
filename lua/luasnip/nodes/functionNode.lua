@@ -4,9 +4,14 @@ local lambda = require("luasnip.util.lambda")
 
 local function F(fn, args, ...)
 	if lambda.isPE(fn) then
+		local function _concat(tbl)
+			return table.concat(tbl, "\n")
+		end
 		local expr = lambda.instantiate(fn)
 		fn = function(args)
-			return expr(unpack(args[1]))
+			local inputs = vim.tbl_map(_concat, args)
+			local out = expr(unpack(inputs))
+			return vim.split(out, "\n")
 		end
 	end
 	return FunctionNode:new({
