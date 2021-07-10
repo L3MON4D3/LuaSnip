@@ -1,7 +1,14 @@
 local FunctionNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
+local lambda = require("luasnip.util.lambda")
 
 local function F(fn, args, ...)
+	if lambda.isPE(fn) then
+		local expr = lambda.instantiate(fn)
+		fn = function(args)
+			return expr(unpack(args[1]))
+		end
+	end
 	return FunctionNode:new({
 		fn = fn,
 		args = util.wrap_value(args),
