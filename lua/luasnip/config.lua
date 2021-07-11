@@ -31,5 +31,6 @@ c = {
 		))
 	end,
 }
+c.setup = c.set_config
 
 return c
