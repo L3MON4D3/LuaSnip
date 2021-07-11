@@ -1,9 +1,9 @@
-name: stylua
+name: Formating and doc generation
 
 on: [push, pull_request_target]
 
 jobs:
-  stylua:
+  postprocessing:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,4 +14,13 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Format with stylua"
+          branch: ${{ github.head_ref }}
+
+      - name: "Auto Generate docs"
+        uses: docker://leiserfg/md2vim
+        with:
+          args:  '-desc  "Luasnip Snippet Engine"  DOC.md doc/luasnip.txt'
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto generate docs"
           branch: ${{ github.head_ref }}
