@@ -11,11 +11,16 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: .
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Format with stylua"
+          branch: ${{ github.head_ref }}
+
       - name: "Auto Generate docs"
         uses: docker://leiserfg/md2vim
         with:
           args:  '-desc  "Luasnip Snippet Engine"  DOC.md doc/luasnip.txt'
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Format with stylua"
+          commit_message: "Auto generate docs"
           branch: ${{ github.head_ref }}
