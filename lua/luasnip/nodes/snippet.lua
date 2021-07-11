@@ -372,15 +372,33 @@ function Snippet:set_text(node, text)
 
 	self:enter_node(node.indx)
 	if vim.o.expandtab then
-	    local tab_string = string.rep(" ", vim.o.shiftwidth ~=0 and vim.o.shiftwidth or vim.o.tabstop)
-        for i, str in ipairs(text) do
-            text[i] = string.gsub(str, "\t", tab_string)
-        end
-    end
-    local ok, msg = pcall(vim.api.nvim_buf_set_text, 0, node_from[1], node_from[2], node_to[1], node_to[2], text)
-    if not ok then
-      print("[LuaSnip Failed]:", node_from[1], node_from[2], node_to[1], node_to[2], vim.inspect(text))
-    end
+		local tab_string = string.rep(
+			" ",
+			vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
+		)
+		for i, str in ipairs(text) do
+			text[i] = string.gsub(str, "\t", tab_string)
+		end
+	end
+	local ok, msg = pcall(
+		vim.api.nvim_buf_set_text,
+		0,
+		node_from[1],
+		node_from[2],
+		node_to[1],
+		node_to[2],
+		text
+	)
+	if not ok then
+		print(
+			"[LuaSnip Failed]:",
+			node_from[1],
+			node_from[2],
+			node_to[1],
+			node_to[2],
+			vim.inspect(text)
+		)
+	end
 end
 
 function Snippet:del_marks()
