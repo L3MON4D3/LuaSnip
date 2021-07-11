@@ -54,18 +54,24 @@ The most direct way to define snippets is `s`:
 `s` accepts, as the first argument, a table with the following possible
 entries:
 
-|------------|---------|--------------------------------|
-| Field      | Type    | Description                    |
-|------------|---------|--------------------------------|
-| `trig`     | String  |                                |
-| `name`     | String  | Name, used by other plugins    |
-| `dscr`     | String  | Description, used by other     |
-|            |         |                                |
-| `wordTrig` | Boolean | If true, the snippet is only   |
-|            |         |                                |
-| `regTrig`  | Boolean | If true, `trig` is interpreted |
-|------------|---------|--------------------------------|
-
+|------------|---------|---------------------------------|-------------------|
+| Field      | Type    | Description                     | Required          |
+|------------|---------|---------------------------------|-------------------|
+| `trig`     | String  | Trigger, Plain text by default  | Required          |
+|------------|---------|---------------------------------|-------------------|
+| `name`     | String  | Name, used by other plugins     | Optional, `trig`  |
+|------------|---------|---------------------------------|-------------------|
+| `dscr`     | String  | Description, used by other      | Optional, `trig`  |
+|            |         | plugins                         |                   |
+|------------|---------|---------------------------------|-------------------|
+| `wordTrig` | Boolean | If true, the snippet is only    | Optional, `false` |
+|            |         | expanded if the word (`[%w_]+`) |                   |
+|            |         | before the cursor matches the   |                   |
+|            |         | trigger entirely                |                   |
+|------------|---------|---------------------------------|-------------------|
+| `regTrig`  | Boolean | If true, `trig` is interpreted  | Optional, `false` |
+|            |         | as a lua-pattern                |                   |
+|------------|---------|---------------------------------|-------------------|
 `s` can also be a single string, in which case it is used instead of `trig`,
 all other values being defaulted:
 >
