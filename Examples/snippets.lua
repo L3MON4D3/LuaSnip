@@ -7,6 +7,8 @@ local i = ls.insert_node
 local f = ls.function_node
 local c = ls.choice_node
 local d = ls.dynamic_node
+local l = require("luasnip.extras").lambda
+local r = require("luasnip.util.functions").rep
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
@@ -212,6 +214,22 @@ ls.snippets = {
 		),
 		-- Use a function to execute any shell command and print its text.
 		s("bash", f(bash, {}, "ls")),
+		-- Short version for applying String transformations using function nodes.
+		s("transform", {
+			i(1, "initial text"),
+			t{"",""},
+			-- lambda nodes accept an l._1,2,3,4,5, which in turn accept any string transformations.
+			-- This list will be applied in order to the first node given in the second argument.
+			l(l._1:match("[^i]*$"):gsub("i", "o"):gsub(" ", "_"):upper(), 1),
+		}),
+		s("transform2", {
+			i(1, "initial text"), t"::", i(2, "replacement for e"),
+			t{"",""},
+			-- Lambdas can also apply transforms USING the text of other nodes:
+			l(l._1:gsub("e", l._2), {1,2}),
+		}),
+		-- Shorthand for repeating the text in a given node.
+		s("repeat", {i(1, "text"), t({"",""}), r(1)})
 	},
 	java = {
 		-- Very long example for a java class.
