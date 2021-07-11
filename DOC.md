@@ -32,7 +32,7 @@ local d = ls.dynamic_node
 
 The most direct way to define snippets is `s`: 
 ```lua
-	s({trig="trigger"}, {})
+s({trig="trigger"}, {})
 ```
 
 (This snippet is useless beyond being a minimal example)
@@ -56,7 +56,7 @@ entries:
 all other values being defaulted:
 
 ```lua
-	s("trigger", {})
+s("trigger", {})
 ```
 
 The second argument to `s` is a table containing all nodes that belong to the
@@ -77,11 +77,11 @@ Snippets that should be loaded for all files must be put into the
 
 The most simple kind of node; just text.
 ```lua
-	s("trigger", t("Wow! Text!"))
+s("trigger", t("Wow! Text!"))
 ```
 This snippet expands to
 
-```lua
+```
     Wow! Text!⎵
 ```
 Where ⎵ is the cursor.
@@ -89,7 +89,7 @@ Multiline-strings can be defined by passing a table of lines rather than a
 string:
 
 ```lua
-	s("trigger", t({"Wow! Text!", "And another line."}))
+s("trigger", t({"Wow! Text!", "And another line."}))
 ```
 
 
@@ -99,11 +99,11 @@ These Nodes can be jumped to and from. The functionality is best demonstrated
 with an example:
 
 ```lua
-	s("trigger", {
-		t({"After jumping forward once cursor is here ->"}), i(2),
-		t({"", "After expanding the cursor is here ->"}), i(1),
-		t({"", "After jumping once more the snippet is exited there ->"}), i(0),
-	})
+s("trigger", {
+	t({"After jumping forward once cursor is here ->"}), i(2),
+	t({"", "After expanding the cursor is here ->"}), i(1),
+	t({"", "After jumping once more the snippet is exited there ->"}), i(0),
+})
 ```
 The InsertNodes are jumped over in order, with the 0-th one always being last.
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
@@ -122,13 +122,13 @@ This initial text is defined the same way as textNodes, eg. can be multiline.
 Function Nodes insert text based on the content of other nodes using a
 user-defined function:
 ```lua
-	s("trig", {
-		i(1),
-		f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
-			{1},
-			"Will be appended to text from i(0)"),
-		i(0)
-	})
+ s("trig", {
+ 	i(1),
+ 	f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
+ 		{1},
+ 		"Will be appended to text from i(0)"),
+ 	i(0)
+ })
 ```
 The first parameter of `f` is the function. Its parameters are
 	1.: a table of text and the surrounding snippet (ie.
@@ -150,23 +150,26 @@ of strings for multiline snippets.
 
 Examples:
 	Use captures from the regex-trigger using a functionNode:
+
 ```lua
-	s({trig = "b(%d)", regTrig = true, wordTrig = true},
-		f(function(args) return
-			"Captured Text: " .. args[1].captures[1] .. "." end, {})
-	)
+ s({trig = "b(%d)", regTrig = true, wordTrig = true},
+ 	f(function(args) return
+ 		"Captured Text: " .. args[1].captures[1] .. "." end, {})
+ )
 ```
 
 
 # CHOICENODE
 
 ChoiceNodes allow choosing between multiple nodes.
+
 ```lua
-	s("trig", c(1, {
-		t("Ugh boring, a text node"),
-		i(nil, "At least I can edit something now..."),
-		f(function(args) return "Still only counts as text!!" end, {})
-	}))
+ s("trig", c(1, {
+ 	t("Ugh boring, a text node"),
+ 	i(nil, "At least I can edit something now..."),
+ 	f(function(args) return "Still only counts as text!!" end, {})
+ }))
+```
 
 `c()` expects as it first arg, as with any jumpable node, its position in the
 jumplist, and as its second a table with nodes, the choices.
@@ -186,10 +189,10 @@ Syntax is similar to snippets, however, where snippets require a table
 specifying when to expand, snippetNodes, similar to insertNodes, expect a
 number, as they too are jumpable:
 ```lua
-	s("trig", sn(1, {
-		t("basically just text "),
-		i(1, "And an insertNode.")
-	}))
+ s("trig", sn(1, {
+ 	t("basically just text "),
+ 	i(1, "And an insertNode.")
+ }))
 ```
 
 Note that snippetNodes don't expect an `i(0)`.
@@ -202,71 +205,71 @@ Very similar to functionNode: returns a snippetNode instead of just text,
 which makes them very powerful.
 
 Parameters:
-	1. position (just like all jumpable nodes)
-	2. function: Similar to functionNodes' function, first parameter is the
-		`table of text` from nodes the dynamicNode depends on, the second,
-		unlike functionNode, is a user-defined table, `old_state`.
-		This table can contain anything, its main usage is to preserve
-		information from the previous snippetNode:
-		If the dynamicNode depends on another node it may be reconstructed,
-		which means all user input to the dynamicNode is lost. Using
-		`old_state`, the user may pass eg. insertNodes and then get their text
-		upon reconstruction to initialize the new nodes with.
-		The `old_state` table must be stored inside the snippetNode returned by
-		the function.
-		All parameters following the second are user defined.
-	3.  Nodes the dynamicNode depends on: if any of these trigger an update,
-		the dynamicNodes function will be executed and the result inserted at
-		the nodes place. Can be a single node or a table of nodes.
-	4f. The fourth and following parameters are user defined, anything passed
-		here will also be passed to the function (arg 2) following its second
-		parameter (easy to reuse similar functions with small changes).
+1. position (just like all jumpable nodes)
+2. function: Similar to functionNodes' function, first parameter is the
+	`table of text` from nodes the dynamicNode depends on, the second,
+	unlike functionNode, is a user-defined table, `old_state`.
+	This table can contain anything, its main usage is to preserve
+	information from the previous snippetNode:
+	If the dynamicNode depends on another node it may be reconstructed,
+	which means all user input to the dynamicNode is lost. Using
+	`old_state`, the user may pass eg. insertNodes and then get their text
+	upon reconstruction to initialize the new nodes with.
+	The `old_state` table must be stored inside the snippetNode returned by
+	the function.
+	All parameters following the second are user defined.
+3.  Nodes the dynamicNode depends on: if any of these trigger an update,
+	the dynamicNodes function will be executed and the result inserted at
+	the nodes place. Can be a single node or a table of nodes.
+4. The fourth and following parameters are user defined, anything passed
+	here will also be passed to the function (arg 2) following its second
+	parameter (easy to reuse similar functions with small changes).
 
 ```lua
-	local function lines(args, old_state, initial_text)
-		local nodes = {}
-		if not old_state then old_state = {} end
+ local function lines(args, old_state, initial_text)
+ 	local nodes = {}
+ 	if not old_state then old_state = {} end
 
-		-- count is nil for invalid input.
-		local count = tonumber(args[1][1])
-		-- Make sure there's a number in args[1].
-		if count then
-			for j=1, count do
-				local iNode
-				if old_state and old_state[j] then
-					-- old_text is used internally to determine whether
-					-- dependents should be updated. It is updated whenever the
-					-- node is left, but remains valid when the node is no
-					-- longer 'rendered', whereas get_text() grabs the text
-					-- directly form the node.
-					iNode = i(j, old_state[j].old_text)
-				else
-				  iNode = i(j, initial_text)
-				end
-				nodes[2*j-1] = iNode
+ 	-- count is nil for invalid input.
+ 	local count = tonumber(args[1][1])
+ 	-- Make sure there's a number in args[1].
+ 	if count then
+ 		for j=1, count do
+ 			local iNode
+ 			if old_state and old_state[j] then
+ 				-- old_text is used internally to determine whether
+ 				-- dependents should be updated. It is updated whenever the
+ 				-- node is left, but remains valid when the node is no
+ 				-- longer 'rendered', whereas get_text() grabs the text
+ 				-- directly form the node.
+ 				iNode = i(j, old_state[j].old_text)
+ 			else
+ 			  iNode = i(j, initial_text)
+ 			end
+ 			nodes[2*j-1] = iNode
 
-				-- linebreak
-				nodes[2*j] = t({"",""})
-				-- Store insertNode in old_state, potentially overwriting older
-				-- nodes.
-				old_state[j] = iNode
-			end
-		else
-			nodes[1] = t("Enter a number!")
-		end
-		
-		local snip = sn(nil, nodes)
-		snip.old_state = old_state
-		return snip
-	end
+ 			-- linebreak
+ 			nodes[2*j] = t({"",""})
+ 			-- Store insertNode in old_state, potentially overwriting older
+ 			-- nodes.
+ 			old_state[j] = iNode
+ 		end
+ 	else
+ 		nodes[1] = t("Enter a number!")
+ 	end
+ 	
+ 	local snip = sn(nil, nodes)
+ 	snip.old_state = old_state
+ 	return snip
+ end
 
-	...
+ ...
 
-	s("trig", {
-		i(1, "1"),
-		-- pos, function, nodes, user_arg1
-		d(2, lines, {1}, "Sample Text")
-	})
+ s("trig", {
+ 	i(1, "1"),
+ 	-- pos, function, nodes, user_arg1
+ 	d(2, lines, {1}, "Sample Text")
+ })
 ```
 This snippet would start out as "1\nSample Text" and, upon changing the 1 to
 eg. 3, it would change to "3\nSample Text\nSample Text\nSample Text". Text
