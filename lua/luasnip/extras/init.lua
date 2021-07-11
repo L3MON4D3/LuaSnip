@@ -28,23 +28,9 @@ end
 
 setmetatable(lambda, LM)
 
-local function _idem(x)
-	return x[1]
-end
-
-local function rep(input_id, tx)
-	if not tx then
-		return F(_idem, { input_id })
-	end
-	tx = expr_to_fn(tx)
-	return F(tx, { input_id })
-end
-
 return {
 	lambda = lambda,
-	rep = rep,
 
-	--aliases
+	--alias
 	l = lambda,
-	r = rep,
 }

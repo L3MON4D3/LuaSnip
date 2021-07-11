@@ -1,3 +1,5 @@
+local f = require("luasnip.nodes.functionNode").F
+
 return {
 	-- supported lsp-vars.
 	lsp = {
@@ -15,5 +17,10 @@ return {
 	},
 	copy = function(args)
 		return args[1]
+	end,
+	rep = function(node_indx)
+		return f(function(args)
+			return args[1][1]
+		end, node_indx)
 	end,
 }
