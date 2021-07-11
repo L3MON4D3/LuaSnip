@@ -1,19 +1,7 @@
 local FunctionNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
-local lambda = require("luasnip.util.lambda")
 
 local function F(fn, args, ...)
-	if lambda.isPE(fn) then
-		local function _concat(tbl)
-			return table.concat(tbl, "\n")
-		end
-		local expr = lambda.instantiate(fn)
-		fn = function(args)
-			local inputs = vim.tbl_map(_concat, args)
-			local out = expr(unpack(inputs))
-			return vim.split(out, "\n")
-		end
-	end
 	return FunctionNode:new({
 		fn = fn,
 		args = util.wrap_value(args),
