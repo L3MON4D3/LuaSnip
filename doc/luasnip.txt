@@ -54,24 +54,15 @@ The most direct way to define snippets is `s`:
 `s` accepts, as the first argument, a table with the following possible
 entries:
 
-|------------|---------|---------------------------------|-------------------|
 | Field      | Type    | Description                     | Required          |
 |------------|---------|---------------------------------|-------------------|
 | `trig`     | String  | Trigger, Plain text by default  | Required          |
-|------------|---------|---------------------------------|-------------------|
 | `name`     | String  | Name, used by other plugins     | Optional, `trig`  |
-|------------|---------|---------------------------------|-------------------|
 | `dscr`     | String  | Description, used by other      | Optional, `trig`  |
 |            |         | plugins                         |                   |
-|------------|---------|---------------------------------|-------------------|
-| `wordTrig` | Boolean | If true, the snippet is only    | Optional, `false` |
-|            |         | expanded if the word (`[%w_]+`) |                   |
-|            |         | before the cursor matches the   |                   |
-|            |         | trigger entirely                |                   |
-|------------|---------|---------------------------------|-------------------|
-| `regTrig`  | Boolean | If true, `trig` is interpreted  | Optional, `false` |
-|            |         | as a lua-pattern                |                   |
-|------------|---------|---------------------------------|-------------------|
+| `wordTrig` | Boolean | If true, the snippet is only expanded if the word (`[%w_]+`) before the cursor matches the trigger entirely | Optional, `false` |
+| `regTrig`  | Boolean | If true, `trig` is interpreted  as a lua-pattern | Optional, `false` |
+
 `s` can also be a single string, in which case it is used instead of `trig`,
 all other values being defaulted:
 >
