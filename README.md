@@ -1,6 +1,5 @@
 # LuaSnip
-https://user-images.githubusercontent.com/41961280/121092275-940c2d00-c7eb-11eb-9e77-869b1cb08f1a.mp4
-
+https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-91f7-331893f61fbf.mp4
 
 # Features
 - Tabstops
@@ -28,10 +27,10 @@ Neovim >= 0.5 (extmarks)
   ```vim
   imap <silent><expr> <Tab> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<Tab>' 
   inoremap <silent> <S-Tab> <cmd>lua require'luasnip'.jump(-1)<Cr>
-  
-  snoremap <silent> <Tab> <cmd>lua ls.jump(1)<Cr>
-  snoremap <silent> <S-Tab> <cmd>lua ls.jump(-1)<Cr>
-  
+
+  snoremap <silent> <Tab> <cmd>lua require('luasnip').jump(1)<Cr>
+  snoremap <silent> <S-Tab> <cmd>lua require('luasnip').jump(-1)<Cr>
+
   imap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
   smap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
   ```
@@ -45,3 +44,5 @@ For Supertab-like functionality with compe, check out [#1](https://github.com/L3
 - `updateevents`: Choose which events trigger an update of the active nodes' dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would update on every change.
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
+
+Talk, ask or suggest on [matrix](https://matrix.to/#/%23luasnip:matrix.org)

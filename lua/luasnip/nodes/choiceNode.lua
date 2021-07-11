@@ -1,8 +1,16 @@
-local ChoiceNode = require'luasnip.nodes.node'.Node:new()
-local util = require'luasnip.util.util'
+local ChoiceNode = require("luasnip.nodes.node").Node:new()
+local util = require("luasnip.util.util")
 
 local function C(pos, choices)
-	return ChoiceNode:new{active = false, pos = pos, choices = choices, type = 4, markers = {}, current_choice = 1, dependents = {}}
+	return ChoiceNode:new({
+		active = false,
+		pos = pos,
+		choices = choices,
+		type = 4,
+		markers = {},
+		current_choice = 1,
+		dependents = {},
+	})
 end
 
 function ChoiceNode:put_initial(pos)
@@ -18,6 +26,19 @@ function ChoiceNode:put_initial(pos)
 		end
 		node.indx = self.indx
 		node.pos = self.pos
+		-- if function- or dynamicNode, dependents may need to be replaced with
+		-- actual nodes, until here dependents may only contain indices of nodes.
+		if node.type == 2 or node.type == 5 then
+			if type(node.args[1]) ~= "table" then
+				-- append node to dependents-table of args.
+				for i, arg in ipairs(node.args) do
+					-- Function-Node contains refs. to arg-nodes.
+					node.args[i] = self.parent.insert_nodes[arg]
+					self.parent.insert_nodes[arg].dependents[#self.parent.insert_nodes[arg].dependents + 1] =
+						node
+				end
+			end
+		end
 	end
 	self.inner = self.choices[self.current_choice]
 	self.inner:put_initial(pos)
@@ -68,14 +89,13 @@ function ChoiceNode:update()
 	self.inner:update()
 end
 
-function ChoiceNode:setup_choice_jumps()
-end
+function ChoiceNode:setup_choice_jumps() end
 
 function ChoiceNode:change_choice(val)
 	-- tear down current choice.
 	self.inner:input_leave()
 	-- clear text.
-	self.parent:set_text(self, {""})
+	self.parent:set_text(self, { "" })
 
 	self.inner:exit()
 
@@ -114,13 +134,24 @@ end
 
 function ChoiceNode:set_mark_rgrav(mark, val)
 	-- set own markers.
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+	local pos = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		self.markers[mark],
+		{}
+	)
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-	self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+	self.markers[mark] = vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		pos[1],
+		pos[2],
+		{ right_gravity = val }
+	)
 
 	self.inner:set_mark_rgrav(mark, val)
 end
 
 return {
-	C = C
+	C = C,
 }

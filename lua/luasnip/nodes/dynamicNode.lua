@@ -1,16 +1,16 @@
-local DynamicNode = require'luasnip.nodes.node'.Node:new()
-local util = require'luasnip.util.util'
+local DynamicNode = require("luasnip.nodes.node").Node:new()
+local util = require("luasnip.util.util")
 
 local function D(pos, fn, args, ...)
-	return DynamicNode:new{
+	return DynamicNode:new({
 		pos = pos,
 		fn = fn,
-		args = args,
+		args = util.wrap_value(args),
 		type = 5,
 		markers = {},
-		user_args = {...},
-		dependents = {}
-	}
+		user_args = { ... },
+		dependents = {},
+	})
 end
 
 function DynamicNode:get_args()
@@ -18,6 +18,7 @@ function DynamicNode:get_args()
 	for i, node in ipairs(self.args) do
 		args[i] = node:get_text()
 	end
+	args[#args + 1] = self.parent
 	return args
 end
 
@@ -38,8 +39,7 @@ function DynamicNode:get_static_text()
 	return self.snip:get_static_text()
 end
 
-function DynamicNode:put_initial(_)
-end
+function DynamicNode:put_initial(_) end
 
 function DynamicNode:jump_into(dir)
 	if self.active then
@@ -60,8 +60,12 @@ function DynamicNode:update()
 	if self.snip then
 		self.snip:input_leave()
 		-- build new snippet before exiting, markers may be needed for construncting.
-		tmp = self.fn(self:get_args(), self.snip.old_state, unpack(self.user_args))
-		self.parent:set_text(self, {""})
+		tmp = self.fn(
+			self:get_args(),
+			self.snip.old_state,
+			unpack(self.user_args)
+		)
+		self.parent:set_text(self, { "" })
 		self.snip:exit()
 	else
 		tmp = self.fn(self:get_args(), nil, unpack(self.user_args))
@@ -95,12 +99,23 @@ function DynamicNode:set_mark_rgrav(mark, val)
 	if self.snip then
 		self.snip:set_mark_rgrav(mark, val)
 	else
-		local pos = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, self.markers[mark], {})
+		local pos = vim.api.nvim_buf_get_extmark_by_id(
+			0,
+			Luasnip_ns_id,
+			self.markers[mark],
+			{}
+		)
 		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-		self.markers[mark] = vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, pos[1], pos[2], {right_gravity = val})
+		self.markers[mark] = vim.api.nvim_buf_set_extmark(
+			0,
+			Luasnip_ns_id,
+			pos[1],
+			pos[2],
+			{ right_gravity = val }
+		)
 	end
 end
 
 return {
-	D = D
+	D = D,
 }

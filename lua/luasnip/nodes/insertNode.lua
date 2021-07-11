@@ -1,13 +1,27 @@
-local InsertNode = require'luasnip.nodes.node'.Node:new()
+local InsertNode = require("luasnip.nodes.node").Node:new()
 local ExitNode = InsertNode:new()
-local util = require'luasnip.util.util'
-local config = require'luasnip.config'
+local util = require("luasnip.util.util")
+local config = require("luasnip.config")
 
 local function I(pos, static_text)
+	local static_text = util.wrap_value(static_text)
 	if pos == 0 then
-		return ExitNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1}
+		return ExitNode:new({
+			pos = pos,
+			static_text = static_text,
+			markers = {},
+			dependents = {},
+			type = 1,
+		})
 	else
-		return InsertNode:new{pos = pos, static_text = static_text, markers = {}, dependents = {}, type = 1, inner_active = false}
+		return InsertNode:new({
+			pos = pos,
+			static_text = static_text,
+			markers = {},
+			dependents = {},
+			type = 1,
+			inner_active = false,
+		})
 	end
 end
 
@@ -16,13 +30,16 @@ function ExitNode:input_enter()
 	self:set_mark_rgrav(1, self.pos == -1)
 	self:set_mark_rgrav(2, self.pos == -1)
 
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
+	vim.api.nvim_feedkeys(
+		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+		"n",
+		true
+	)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 	util.normal_move_on_mark_insert(self.markers[1])
 end
 
-function ExitNode:input_leave()
-end
+function ExitNode:input_leave() end
 
 function ExitNode:jump_into(dir)
 	if not config.config.history then
@@ -41,13 +58,25 @@ function InsertNode:input_enter(no_move)
 	if not no_move then
 		self.parent:enter_node(self.indx)
 
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), 'n', true)
+		vim.api.nvim_feedkeys(
+			vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+			"n",
+			true
+		)
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 		if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
 			util.normal_move_on_mark(self.markers[1])
-			vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("v", true, false, true), 'n', true)
+			vim.api.nvim_feedkeys(
+				vim.api.nvim_replace_termcodes("v", true, false, true),
+				"n",
+				true
+			)
 			util.normal_move_before_mark(self.markers[2])
-			vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("o<C-G>", true, false, true), 'n', true)
+			vim.api.nvim_feedkeys(
+				vim.api.nvim_replace_termcodes("o<C-G>", true, false, true),
+				"n",
+				true
+			)
 		else
 			util.normal_move_on_mark_insert(self.markers[1])
 		end
@@ -125,5 +154,5 @@ function InsertNode:exit()
 end
 
 return {
-	I = I
+	I = I,
 }
