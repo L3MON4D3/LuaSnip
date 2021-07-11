@@ -14,6 +14,21 @@ c = {
 			conf[k] = v
 		end
 		c.config = conf
+		c._setup()
+	end,
+
+	_setup = function()
+		vim.cmd(string.format(
+			[[
+        augroup luasnip
+            au!
+            autocmd %s * lua require("luasnip").active_update_dependents()
+			"Remove buffers' nodes on deletion+wipeout.
+			autocmd BufDelete,BufWipeout * lua Luasnip_current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil
+        augroup END
+      ]],
+			c.config.updateevents
+		))
 	end,
 }
 

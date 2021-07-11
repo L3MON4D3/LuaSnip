@@ -380,7 +380,8 @@ function Snippet:set_text(node, text)
 			text[i] = string.gsub(str, "\t", tab_string)
 		end
 	end
-	vim.api.nvim_buf_set_text(
+	local ok, msg = pcall(
+		vim.api.nvim_buf_set_text,
 		0,
 		node_from[1],
 		node_from[2],
@@ -388,6 +389,16 @@ function Snippet:set_text(node, text)
 		node_to[2],
 		text
 	)
+	if not ok then
+		print(
+			"[LuaSnip Failed]:",
+			node_from[1],
+			node_from[2],
+			node_to[1],
+			node_to[2],
+			vim.inspect(text)
+		)
+	end
 end
 
 function Snippet:del_marks()

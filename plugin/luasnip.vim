@@ -23,9 +23,4 @@ function! luasnip#choice_active()
 	return luaeval('require("luasnip").choice_active()')
 endfunction
 
-augroup luasnip
-	au!
-	execute('autocmd '.luaeval('require"luasnip".config.config.updateevents').' * lua require("luasnip").active_update_dependents()')
-	"Remove buffers' nodes on deletion+wipeout.
-	autocmd BufDelete,BufWipeout * lua Luasnip_current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil
-augroup END
+lua require('luasnip.config')._setup()
