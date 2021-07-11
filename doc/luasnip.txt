@@ -1,63 +1,76 @@
-```
-            __                       ____                          
-           /\ \                     /\  _`\           __           
-           \ \ \      __  __     __ \ \,\L\_\    ___ /\_\  _____   
-            \ \ \  __/\ \/\ \  /'__`\\/_\__ \  /' _ `\/\ \/\ '__`\ 
-             \ \ \L\ \ \ \_\ \/\ \L\.\_/\ \L\ \/\ \/\ \ \ \ \ \L\ \
-              \ \____/\ \____/\ \__/.\_\ `\____\ \_\ \_\ \_\ \ ,__/
-               \/___/  \/___/  \/__/\/_/\/_____/\/_/\/_/\/_/\ \ \/ 
-                                                             \ \_\ 
-                                                              \/_/ 
-```
+*luasnip.txt*       For Neovim 0.5                       Last change: 2021 April 8
+            __                       ____                          ~
+           /\ \                     /\  _`\           __           ~
+           \ \ \      __  __     __ \ \,\L\_\    ___ /\_\  _____   ~
+            \ \ \  __/\ \/\ \  /'__`\\/_\__ \  /' _ `\/\ \/\ '__`\ ~
+             \ \ \L\ \ \ \_\ \/\ \L\.\_/\ \L\ \/\ \/\ \ \ \ \ \L\ \~
+              \ \____/\ \____/\ \__/.\_\ `\____\ \_\ \_\ \_\ \ ,__/~
+               \/___/  \/___/  \/__/\/_/\/_____/\/_/\/_/\/_/\ \ \/ ~
+                                                             \ \_\ ~
+                                                              \/_/ ~
+
+================================================================================
+CONTENTS                                                        *luasnip-contents*
+
+	Intro ........................................................ |luasnip-intro|
+	Snippets ................................................... |luasnip-snippet|
+	TextNode ................................................. |luasnip-text-node|
+	InsertNode ............................................. |luasnip-insert-node|
+	FunctionNode ......................................... |luasnip-function-node|
+	ChoiceNode ............................................. |luasnip-choice-node|
+	SnippetNode ........................................... |luasnip-snippet-node|
+	DynamicNode ........................................... |luasnip-dynamic-node|
+	VsCode Snippets Loader ............................... |luasnip-vscode-loader|
+================================================================================
+
+INTRO                                                              *luasnip-intro*
 
 Luasnip is a snippet-engine written entirely in lua. It has some great
-features like inserting text (`luasnip-function-node`) or nodes
-(`luasnip-dynamic-node`) based on user input, parsing LSP syntax and switching
-nodes (`luasnip-choice-node`).
+features like inserting text (|luasnip-function-node|) or nodes
+(|luasnip-dynamic-node|) based on user input, parsing LSP syntax and switching
+nodes (|luasnip-choice-node|).
 
-All code-snippets in this help assume that
+All code-snippets in this help assume that >
 
-```lua
-local ls = require"luasnip"
-local s = ls.snippet
-local sn = ls.snippet_node
-local t = ls.text_node
-local i = ls.insert_node
-local f = ls.function_node
-local c = ls.choice_node
-local d = ls.dynamic_node
-```
+	local ls = require"luasnip"
+	local s = ls.snippet
+	local sn = ls.snippet_node
+	local t = ls.text_node
+	local i = ls.insert_node
+	local f = ls.function_node
+	local c = ls.choice_node
+	local d = ls.dynamic_node
+<
+================================================================================
 
-# SNIPPETS
+SNIPPETS                                                         *luasnip-snippet*
 
 The most direct way to define snippets is `s`: 
-```lua
+>
 	s({trig="trigger"}, {})
-```
 
 (This snippet is useless beyond being a minimal example)
 
 `s` accepts, as the first argument, a table with the following possible
 entries:
 
-|------------|---------|--------------------------------|
-| Field      | Type    | Description                    |
-|------------|---------|--------------------------------|
-| `trig`     | String  |                                |
-| `name`     | String  | Name, used by other plugins    |
-| `dscr`     | String  | Description, used by other     |
-|            |         |                                |
-| `wordTrig` | Boolean | If true, the snippet is only   |
-|            |         |                                |
-| `regTrig`  | Boolean | If true, `trig` is interpreted |
-|------------|---------|--------------------------------|
+	`trig`        String      Trigger, Plain text by default    Required
+	`name`        String      Name, used by other plugins       Optional, `trig`
+	`dscr`        String      Description, used by other        Optional, `trig`
+	                        plugins
+	`wordTrig`    Boolean     If true, the snippet is only      Optional, `false`
+	                        expanded if the word (`[%w_]+`)
+	                        before the cursor matches the
+	                        trigger entirely
+	`regTrig`     Boolean     If true, `trig` is interpreted      Optional, `false`
+                            as a lua-pattern
 
 `s` can also be a single string, in which case it is used instead of `trig`,
 all other values being defaulted:
 
-```lua
+>
 	s("trigger", {})
-```
+<
 
 The second argument to `s` is a table containing all nodes that belong to the
 snippet. If the table only has a single node, it can be passed directly
@@ -73,55 +86,54 @@ Snippets that should be loaded for all files must be put into the
 `ls.snippets.all`-table, those only for a specific filetype `ft` belong in
 `ls.snippets.ft`.
 
-# TEXTNODE
+================================================================================
+
+TEXTNODE                                                       *luasnip-text-node*
 
 The most simple kind of node; just text.
-```lua
+>
 	s("trigger", t("Wow! Text!"))
-```
+<
 This snippet expands to
-
-```lua
-    Wow! Text!⎵
-```
-Where ⎵ is the cursor.
+>
+    Wow! Text!|
+<
+where `|` is the cursor.
 Multiline-strings can be defined by passing a table of lines rather than a
 string:
-
-```lua
+>
 	s("trigger", t({"Wow! Text!", "And another line."}))
-```
+<
+================================================================================
 
-
-# INSERTNODE
+INSERTNODE                                                   *luasnip-insert-node*
 
 These Nodes can be jumped to and from. The functionality is best demonstrated
 with an example:
-
-```lua
+>
 	s("trigger", {
 		t({"After jumping forward once cursor is here ->"}), i(2),
 		t({"", "After expanding the cursor is here ->"}), i(1),
 		t({"", "After jumping once more the snippet is exited there ->"}), i(0),
 	})
-```
+<
 The InsertNodes are jumped over in order, with the 0-th one always being last.
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
 after all other nodes.
 
 It's possible to have easy-to-overwrite text inside an InsertNode initially:
-```lua
+>
 	s("trigger", i(1, "This text is SELECTed after expanding the snippet."))
-```
+<
 This initial text is defined the same way as textNodes, eg. can be multiline.
 
+================================================================================
 
-
-# FUNCTIONNODE
+FUNCTIONNODE                                               *luasnip-function-node*
 
 Function Nodes insert text based on the content of other nodes using a
 user-defined function:
-```lua
+>
 	s("trig", {
 		i(1),
 		f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
@@ -129,7 +141,7 @@ user-defined function:
 			"Will be appended to text from i(0)"),
 		i(0)
 	})
-```
+<
 The first parameter of `f` is the function. Its parameters are
 	1.: a table of text and the surrounding snippet (ie.
 	`{{line1}, {line1, line2}, snippet}`).
@@ -150,18 +162,18 @@ of strings for multiline snippets.
 
 Examples:
 	Use captures from the regex-trigger using a functionNode:
-```lua
+>
 	s({trig = "b(%d)", regTrig = true, wordTrig = true},
 		f(function(args) return
 			"Captured Text: " .. args[1].captures[1] .. "." end, {})
 	)
-```
+<
+================================================================================
 
-
-# CHOICENODE
+CHOICENODE                                                   *luasnip-choice-node*
 
 ChoiceNodes allow choosing between multiple nodes.
-```lua
+>
 	s("trig", c(1, {
 		t("Ugh boring, a text node"),
 		i(nil, "At least I can edit something now..."),
@@ -174,9 +186,9 @@ jumplist, and as its second a table with nodes, the choices.
 Jumpable nodes that normally expect an index as their first parameter don't
 need one inside a choiceNode; their index is the same as the choiceNodes'.
 
+================================================================================
 
-
-# SNIPPETNODE
+SNIPPETNODE                                                 *luasnip-snippet-node*
 
 SnippetNodes directly insert their contents into the surrounding snippet.
 This is useful for choiceNodes, which only accept one child, or dynamicNodes,
@@ -185,18 +197,18 @@ where nodes are created at runtime and inserted as a snippetNode.
 Syntax is similar to snippets, however, where snippets require a table
 specifying when to expand, snippetNodes, similar to insertNodes, expect a
 number, as they too are jumpable:
-```lua
+>
 	s("trig", sn(1, {
 		t("basically just text "),
 		i(1, "And an insertNode.")
 	}))
-```
+<
 
 Note that snippetNodes don't expect an `i(0)`.
 
+================================================================================
 
-
-# DYNAMICNODE
+DYNAMICNODE                                                 *luasnip-dynamic-node*
 
 Very similar to functionNode: returns a snippetNode instead of just text,
 which makes them very powerful.
@@ -221,8 +233,7 @@ Parameters:
 	4f. The fourth and following parameters are user defined, anything passed
 		here will also be passed to the function (arg 2) following its second
 		parameter (easy to reuse similar functions with small changes).
-
-```lua
+>
 	local function lines(args, old_state, initial_text)
 		local nodes = {}
 		if not old_state then old_state = {} end
@@ -267,26 +278,26 @@ Parameters:
 		-- pos, function, nodes, user_arg1
 		d(2, lines, {1}, "Sample Text")
 	})
-```
+<
 This snippet would start out as "1\nSample Text" and, upon changing the 1 to
 eg. 3, it would change to "3\nSample Text\nSample Text\nSample Text". Text
 that was inserted into any of the dynamicNodes insertNodes is kept when
 changing to a bigger number.
 
+================================================================================
 
-
-# VSCODE SNIPPETS LOADER
+VSCODE SNIPPETS LOADER ............................... *luasnip-vscode-loader*
 
 As luasnip is capable of loading the same format of plugins as vscode, it also
 includes an easy way for loading those automatically. You just have to call:
-```lua
+>
  	require("luasnip/loaders/from_vscode").load(opts) -- opts can be ommited
-```
+<
 Where `opts` is a table containing the keys:
 	-  `paths`: List of paths to load as a table or as a single string separated
-	   by a comma, if not set it's `'runtimepath'`, you can start the paths with
+	   by a comma, if not set it's |'runtimepath'|, you can start the paths with
 	   `~/` or `./` to indicate that the path is relative to your home or to
-	   the folder where your `$MYVIMRC` resides (useful to add your snippets).
+	   the folder where your |$MYVIMRC| resides (useful to add your snippets).
 	-  `exclude`: List of languages to exclude, by default is empty.
 	-  `include`: List of languages to include, by default is not set.
 
@@ -296,13 +307,12 @@ Keep in mind that it will extend your `snippets` table, so do it after setting
 your snippets or you will have to extend the table as well.
 
 Another way of using the loader is making it lazily
-
-```lua
+>
  	require("luasnip/loaders/from_vscode").lazy_load(opts) -- opts can be ommited
-```
-
-In this case `opts` only accepts paths (`runtimepath` if any). That will load
+>
+In this case `opts` only accepts paths (runtimepath if any). That will load
 the general snippets (the ones of filetype 'all') and those of the filetype
 of the buffers, you open every time you open a new one (but it won't reload them).
 
-
+================================================================================
+vim:tw=78:ts=4:ft=help:norl:
