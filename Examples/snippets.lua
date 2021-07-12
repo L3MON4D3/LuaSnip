@@ -9,6 +9,7 @@ local c = ls.choice_node
 local d = ls.dynamic_node
 local l = require("luasnip.extras").lambda
 local r = require("luasnip.util.functions").rep
+local p = require("luasnip.util.functions").partial
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
@@ -232,6 +233,8 @@ ls.snippets = {
 		}),
 		-- Shorthand for repeating the text in a given node.
 		s("repeat", { i(1, "text"), t({ "", "" }), r(1) }),
+		-- Directly insert the ouput from a function evaluated at runtime.
+		s("part", p(os.date, "%Y"))
 	},
 	java = {
 		-- Very long example for a java class.
