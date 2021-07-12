@@ -24,7 +24,7 @@ c = {
             au!
             autocmd %s * lua require("luasnip").active_update_dependents()
 			"Remove buffers' nodes on deletion+wipeout.
-			autocmd BufDelete,BufWipeout * lua Luasnip_current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil
+			autocmd BufDelete,BufWipeout * lua if Luasnip_current_nodes then Luasnip_current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
         augroup END
       ]],
 			c.config.updateevents
