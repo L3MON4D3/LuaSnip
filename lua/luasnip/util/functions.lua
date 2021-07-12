@@ -29,5 +29,5 @@ return {
 		return f(function(_, fn, ...)
 			return fn(...)
 		end, {}, func, ...)
-	end
+	end,
 }

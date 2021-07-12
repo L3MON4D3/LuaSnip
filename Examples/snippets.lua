@@ -234,7 +234,7 @@ ls.snippets = {
 		-- Shorthand for repeating the text in a given node.
 		s("repeat", { i(1, "text"), t({ "", "" }), r(1) }),
 		-- Directly insert the ouput from a function evaluated at runtime.
-		s("part", p(os.date, "%Y"))
+		s("part", p(os.date, "%Y")),
 	},
 	java = {
 		-- Very long example for a java class.
