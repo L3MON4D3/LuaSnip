@@ -68,7 +68,9 @@ local function S(context, nodes, condition, ...)
 	end
 
 	-- default: true.
-	if context.wordTrig == nil then context.wordTrig = true end
+	if context.wordTrig == nil then
+		context.wordTrig = true
+	end
 
 	local snip = Snippet:new({
 		trigger = context.trig,

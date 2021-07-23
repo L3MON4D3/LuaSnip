@@ -194,10 +194,7 @@ ls.snippets = {
 		),
 
 		-- When regTrig is set, trig is treated like a pattern, this snippet will expand after any number.
-		ls.parser.parse_snippet(
-			{ trig = "%d", regTrig = true },
-			"A Number!!"
-		),
+		ls.parser.parse_snippet({ trig = "%d", regTrig = true }, "A Number!!"),
 
 		-- The last entry of args passed to the user-function is the surrounding snippet.
 		s(
