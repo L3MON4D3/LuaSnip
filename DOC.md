@@ -46,7 +46,7 @@ entries:
           for multiple lines.
 - `wordTrig`: boolean, if true, the snippet is only expanded if the word
               (`[%w_]+`) before the cursor matches the trigger entirely.
-	      False by default.
+			  True by default.
 - `regTrig`: boolean, whether the trigger should be interpreted as a
              lua pattern. False by default.
 
@@ -150,7 +150,7 @@ Examples:
 	Use captures from the regex-trigger using a functionNode:
 
 ```lua
- s({trig = "b(%d)", regTrig = true, wordTrig = true},
+ s({trig = "b(%d)", regTrig = true},
  	f(function(args) return
  		"Captured Text: " .. args[1].captures[1] .. "." end, {})
  )

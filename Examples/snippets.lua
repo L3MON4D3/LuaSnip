@@ -187,28 +187,28 @@ ls.snippets = {
 			"Wow! This ${1:Stuff} really ${2:works. ${3:Well, a bit.}}"
 		),
 
-		-- When wordTrig is set, snippets only expand as full words (lte won't expand, te will).
+		-- When wordTrig is set to false, snippets may also expand inside other words.
 		ls.parser.parse_snippet(
-			{ trig = "te", wordTrig = true },
+			{ trig = "te", wordTrig = false },
 			"${1:cond} ? ${2:true} : ${3:false}"
 		),
 
 		-- When regTrig is set, trig is treated like a pattern, this snippet will expand after any number.
 		ls.parser.parse_snippet(
-			{ trig = "%d", regTrig = true, wordTrig = true },
+			{ trig = "%d", regTrig = true },
 			"A Number!!"
 		),
 
 		-- The last entry of args passed to the user-function is the surrounding snippet.
 		s(
-			{ trig = "a%d", regTrig = true, wordTrig = true },
+			{ trig = "a%d", regTrig = true },
 			f(function(args)
 				return "Triggered with " .. args[1].trigger .. "."
 			end, {})
 		),
 		-- It's possible to use capture-groups inside regex-triggers.
 		s(
-			{ trig = "b(%d)", regTrig = true, wordTrig = true },
+			{ trig = "b(%d)", regTrig = true },
 			f(function(args)
 				return "Captured Text: " .. args[1].captures[1] .. "."
 			end, {})
