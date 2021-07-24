@@ -48,12 +48,16 @@ local function to_function(val, use_re)
 	assert(false, "Can't convert argument to function")
 end
 
-local function match(index, _then, _match, _else)
-	assert(_then, "You have to pass at least 2 arguments")
+local function _idem(x)
+	return x
+end
+
+local function match(index, _match, _then, _else)
+	assert(_match, "You have to pass at least 2 arguments")
 	assert(type(index) == "number", "Index has to be a single number")
 
-	_then = to_function(_then)
-	_match = to_function(_match or "^$", true)
+	_match = to_function(_match, true)
+	_then = to_function(_then or _idem)
 	_else = to_function(_else or "")
 
 	local function func(arg)
