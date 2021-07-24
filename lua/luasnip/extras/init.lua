@@ -73,6 +73,19 @@ end
 return {
 	lambda = lambda,
 	match = match,
+	-- repeat a node.
+	rep = function(node_indx)
+		return F(function(args)
+			return args[1]
+		end, node_indx)
+	end,
+	-- Insert the output of a function.
+	partial = function(func, ...)
+		return F(function(_, fn, ...)
+			return fn(...)
+		end, {}, func, ...)
+	end,
+
 	--alias
 	l = lambda,
 	m = match,

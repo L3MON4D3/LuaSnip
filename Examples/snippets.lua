@@ -8,8 +8,8 @@ local f = ls.function_node
 local c = ls.choice_node
 local d = ls.dynamic_node
 local l = require("luasnip.extras").lambda
-local r = require("luasnip.util.functions").rep
-local p = require("luasnip.util.functions").partial
+local r = require("luasnip.extras").rep
+local p = require("luasnip.extras").partial
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
