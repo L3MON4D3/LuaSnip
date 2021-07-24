@@ -48,7 +48,7 @@ local function to_function(val, use_re)
 	assert(false, "Can't convert argument to function")
 end
 
-local function match(index, _then, _match, _else)
+local function match(index, _match, _then, _else)
 	assert(_then, "You have to pass at least 2 arguments")
 	assert(type(index) == "number", "Index has to be a single number")
 
