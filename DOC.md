@@ -98,14 +98,34 @@ with an example:
 
 ```lua
 s("trigger", {
-	t({"After jumping forward once cursor is here ->"}), i(2),
-	t({"", "After expanding the cursor is here ->"}), i(1),
-	t({"", "After jumping once more the snippet is exited there ->"}), i(0),
+	t({"", "After expanding, the cursor is here ->"}), i(1),
+	t({"After jumping forward once, cursor is here ->"}), i(2),
+	t({"", "After jumping once more, the snippet is exited there ->"}), i(0),
 })
 ```
-The InsertNodes are jumped over in order, with the 0-th one always being last.
+
+The InsertNodes are jumped over in order from `1 to n`.
+0-th node is special as it's always the last one.
+So the order of InsertNode jump is as follows:
+- After expansion, we will be at InsertNode 1.
+- After jumping forward, we will be at InsertNode 2.
+- After jumping forward again, we will be at InsertNode 0.
+
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
 after all other nodes.
+
+It is possible to have mixed order in jumping nodes:
+```lua
+s("trigger", {
+	t({"After jumping forward once, cursor is here ->"}), i(2),
+	t({"", "After expanding, the cursor is here ->"}), i(1),
+	t({"", "After jumping once more, the snippet is exited there ->"}), i(0),
+})
+```
+The above snippet will use the same jump flow as above which is: 
+- After expansion, we will be at InsertNode 1.
+- After jumping forward, we will be at InsertNode 2.
+- After jumping forward again, we will be at InsertNode 0.
 
 It's possible to have easy-to-overwrite text inside an InsertNode initially:
 ```lua
@@ -113,6 +133,10 @@ It's possible to have easy-to-overwrite text inside an InsertNode initially:
 ```
 This initial text is defined the same way as textNodes, eg. can be multiline.
 
+0-th Node can not have placeholder text. So the following is not possible
+```lua
+	s("trigger", i(0, "Not Valid"))
+```
 
 
 # FUNCTIONNODE
