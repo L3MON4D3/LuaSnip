@@ -50,6 +50,8 @@ end
 
 local function match(index, _then, _match, _else)
 	assert(_then, "You have to pass at least 2 arguments")
+	assert(type(index) == "number", "Index has to be a single number")
+
 	_then = to_function(_then)
 	_match = to_function(_match or "^$", true)
 	_else = to_function(_else or "")
