@@ -10,6 +10,7 @@ local d = ls.dynamic_node
 local l = require("luasnip.extras").lambda
 local r = require("luasnip.extras").rep
 local p = require("luasnip.extras").partial
+local m = require("luasnip.extras").match
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
@@ -232,6 +233,29 @@ ls.snippets = {
 		s("repeat", { i(1, "text"), t({ "", "" }), r(1) }),
 		-- Directly insert the ouput from a function evaluated at runtime.
 		s("part", p(os.date, "%Y")),
+		-- use matchNodes to insert text based on a pattern/function/lambda-evaluation.
+		s("mat", {i(1, {"sample_text"}), t(": "), m(1, "%d", "contains a number", "no number :(")}),
+		-- The inserted text defaults to the first capture group/the entire
+		-- match if there are none
+		s("mat2", {
+			i(1, {"sample_text"}), t(": "),
+			m(1, "[abc][abc][abc]")
+		}),
+		-- It is even possible to apply gsubs' or other transformations
+		-- before matching.
+		s("mat3", {
+			i(1, {"sample_text"}), t(": "),
+			m(1, l._1:gsub("[123]", ""):match("%d"), "contains a number that isn't 1, 2 or 3!")
+		}),
+		-- `match` also accepts a function, which in turn accepts a string
+		-- (text in node, \n-concatted) and returns any non-nil value to match.
+		-- If that value is a string, it is used for the default-inserted text.
+		s("mat4", {
+			i(1, {"sample_text"}), t(": "),
+			m(1, function(text)
+				return (#text % 2 == 0 and text) or nil
+			end)
+		})
 	},
 	java = {
 		-- Very long example for a java class.
