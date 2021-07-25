@@ -11,6 +11,7 @@ local l = require("luasnip.extras").lambda
 local r = require("luasnip.extras").rep
 local p = require("luasnip.extras").partial
 local m = require("luasnip.extras").match
+local n = require("luasnip.extras").nonempty
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
@@ -255,6 +256,12 @@ ls.snippets = {
 			m(1, function(text)
 				return (#text % 2 == 0 and text) or nil
 			end)
+		}),
+		-- The nonempty-node inserts text depending on whether the arg-node is
+		-- empty.
+		s("nempty", {
+			i(1, "sample_text"),
+			n(1, "i(1) is not empty!")
 		})
 	},
 	java = {
