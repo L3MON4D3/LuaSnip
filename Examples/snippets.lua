@@ -236,14 +236,11 @@ ls.snippets = {
 		-- Directly insert the ouput from a function evaluated at runtime.
 		s("part", p(os.date, "%Y")),
 		-- use matchNodes to insert text based on a pattern/function/lambda-evaluation.
-		s(
-			"mat",
-			{
-				i(1, { "sample_text" }),
-				t(": "),
-				m(1, "%d", "contains a number", "no number :("),
-			}
-		),
+		s("mat", {
+			i(1, { "sample_text" }),
+			t(": "),
+			m(1, "%d", "contains a number", "no number :("),
+		}),
 		-- The inserted text defaults to the first capture group/the entire
 		-- match if there are none
 		s("mat2", {
@@ -282,14 +279,17 @@ ls.snippets = {
 		-- don't return a textNode, but a dynamicNode containing one insertNode.
 		-- This makes it easier to dynamically set preset-text for insertNodes.
 		s("dl1", {
-			i(1, "sample_text"), t{":", ""},
-			dl(2, l._1, 1)
+			i(1, "sample_text"),
+			t({ ":", "" }),
+			dl(2, l._1, 1),
 		}),
 		-- Obviously, it's also possible to apply transformations, just like lambdas.
 		s("dl2", {
-			i(1, "sample_text"), i(2, "sample_text_2"), t{"",""},
-			dl(3, l._1:gsub("\n", " linebreak ")..l._2, {1,2})
-		})
+			i(1, "sample_text"),
+			i(2, "sample_text_2"),
+			t({ "", "" }),
+			dl(3, l._1:gsub("\n", " linebreak ") .. l._2, { 1, 2 }),
+		}),
 	},
 	java = {
 		-- Very long example for a java class.

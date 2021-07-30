@@ -115,7 +115,7 @@ return {
 			local inputs = vim.tbl_map(_concat, args_text)
 			local out = insert_preset_text_func(unpack(inputs))
 			return SN(pos, {
-				I(1, vim.split(out, "\n"))
+				I(1, vim.split(out, "\n")),
 			})
 		end, args_indcs)
 	end,
