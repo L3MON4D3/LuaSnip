@@ -12,6 +12,7 @@ local r = require("luasnip.extras").rep
 local p = require("luasnip.extras").partial
 local m = require("luasnip.extras").match
 local n = require("luasnip.extras").nonempty
+local dl = require("luasnip.extras").dynamic_lambda
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
@@ -277,6 +278,18 @@ ls.snippets = {
 			i(1, "sample_text"),
 			n(1, "i(1) is not empty!"),
 		}),
+		-- dynamic lambdas work exactly like regular lambdas, except that they
+		-- don't return a textNode, but a dynamicNode containing one insertNode.
+		-- This makes it easier to dynamically set preset-text for insertNodes.
+		s("dl1", {
+			i(1, "sample_text"), t{":", ""},
+			dl(2, l._1, 1)
+		}),
+		-- Obviously, it's also possible to apply transformations, just like lambdas.
+		s("dl2", {
+			i(1, "sample_text"), i(2, "sample_text_2"), t{"",""},
+			dl(3, l._1:gsub("\n", " linebreak ")..l._2, {1,2})
+		})
 	},
 	java = {
 		-- Very long example for a java class.

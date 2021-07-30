@@ -1,4 +1,7 @@
 local F = require("luasnip.nodes.functionNode").F
+local SN = require("luasnip.nodes.snippet").SN
+local D = require("luasnip.nodes.dynamicNode").D
+local I = require("luasnip.nodes.insertNode").I
 
 local lambda = {}
 
@@ -104,6 +107,17 @@ return {
 		end, {
 			indx,
 		})
+	end,
+	dynamic_lambda = function(pos, lambd, args_indcs)
+		local insert_preset_text_func = lambda.instantiate(lambd)
+		return D(pos, function(args_text)
+			-- \n-concat lines from each node.
+			local inputs = vim.tbl_map(_concat, args_text)
+			local out = insert_preset_text_func(unpack(inputs))
+			return SN(pos, {
+				I(1, vim.split(out, "\n"))
+			})
+		end, args_indcs)
 	end,
 
 	--alias
