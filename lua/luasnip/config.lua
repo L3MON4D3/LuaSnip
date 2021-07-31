@@ -1,7 +1,7 @@
 local defaults = {
 	history = false,
 	updateevents = "InsertLeave",
-	enable_autosnippets = true,
+	enable_autosnippets = false,
 }
 
 -- declare here to use in set_config.
