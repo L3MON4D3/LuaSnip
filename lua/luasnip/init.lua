@@ -18,15 +18,15 @@ local function get_active_snip()
 end
 
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
-local function match_snippet(line)
+local function match_snippet(line, snippet_table)
 	local match
-	for _, snip in ipairs(ls.snippets[vim.bo.ft] or {}) do
+	for _, snip in ipairs(snippet_table[vim.bo.ft] or {}) do
 		match = snip:matches(line)
 		if match then
 			return match
 		end
 	end
-	for _, snip in ipairs(ls.snippets["all"] or {}) do
+	for _, snip in ipairs(snippet_table["all"] or {}) do
 		match = snip:matches(line)
 		if match then
 			return match
@@ -74,7 +74,7 @@ local function jumpable(dir)
 end
 
 local function expandable()
-	next_expand = match_snippet(util.get_current_line_to_cursor())
+	next_expand = match_snippet(util.get_current_line_to_cursor(), ls.snippets)
 	return next_expand ~= nil
 end
 
@@ -90,7 +90,10 @@ local function expand()
 		next_expand = nil
 		return true
 	else
-		local snip = match_snippet(util.get_current_line_to_cursor())
+		local snip = match_snippet(
+			util.get_current_line_to_cursor(),
+			ls.snippets
+		)
 		if snip then
 			snip:trigger_expand(
 				Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
