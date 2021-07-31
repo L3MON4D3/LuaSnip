@@ -343,7 +343,7 @@ ls.snippets = {
 ls.autosnippets = {
 	all = {
 		s("autotrigger", {
-			t"autosnippet"
+			t("autosnippet"),
 		}),
 	},
 }
