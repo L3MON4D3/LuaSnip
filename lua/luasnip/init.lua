@@ -104,6 +104,18 @@ local function expand()
 	return false
 end
 
+local function expand_auto()
+	local snip = match_snippet(
+		util.get_current_line_to_cursor(),
+		ls.autosnippets
+	)
+	if snip then
+		snip:trigger_expand(
+			Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+		)
+	end
+end
+
 -- return true and expand snippet if expandable, return false if not.
 local function expand_or_jump()
 	if expand() then
@@ -182,6 +194,7 @@ ls = {
 	jumpable = jumpable,
 	expandable = expandable,
 	expand = expand,
+	expand_auto = expand_auto,
 	expand_or_jump = expand_or_jump,
 	jump = jump,
 	get_active_snip = get_active_snip,
@@ -208,6 +221,7 @@ ls = {
 	parser = require("luasnip.util.parser"),
 	config = require("luasnip.config"),
 	snippets = { all = {} },
+	autosnippets = { all = {} },
 }
 
 return ls
