@@ -9,7 +9,7 @@ local function I(pos, static_text)
 		return ExitNode:new({
 			pos = pos,
 			static_text = static_text,
-			markers = {},
+			mark = nil,
 			dependents = {},
 			type = 1,
 		})
@@ -17,7 +17,7 @@ local function I(pos, static_text)
 		return InsertNode:new({
 			pos = pos,
 			static_text = static_text,
-			markers = {},
+			mark = nil,
 			dependents = {},
 			type = 1,
 			inner_active = false,
@@ -27,8 +27,7 @@ end
 
 function ExitNode:input_enter()
 	-- Text written in the ExitNode does not belong to snippet.
-	self:set_mark_rgrav(1, self.pos == -1)
-	self:set_mark_rgrav(2, self.pos == -1)
+	self:set_mark_rgrav(self.pos == -1, self.pos == -1)
 
 	vim.api.nvim_feedkeys(
 		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
@@ -36,7 +35,7 @@ function ExitNode:input_enter()
 		true
 	)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-	util.normal_move_on_mark_insert(self.markers[1])
+	util.normal_move_on_insert(util.get_ext_position_begin(self.mark))
 end
 
 function ExitNode:input_leave() end
@@ -64,21 +63,22 @@ function InsertNode:input_enter(no_move)
 			true
 		)
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-		if not util.mark_pos_equal(self.markers[2], self.markers[1]) then
-			util.normal_move_on_mark(self.markers[1])
+		local mark_begin_pos, mark_end_pos = util.get_ext_positions(self.mark)
+		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
+			util.normal_move_on(mark_begin_pos)
 			vim.api.nvim_feedkeys(
 				vim.api.nvim_replace_termcodes("v", true, false, true),
 				"n",
 				true
 			)
-			util.normal_move_before_mark(self.markers[2])
+			util.normal_move_before(mark_end_pos)
 			vim.api.nvim_feedkeys(
 				vim.api.nvim_replace_termcodes("o<C-G>", true, false, true),
 				"n",
 				true
 			)
 		else
-			util.normal_move_on_mark_insert(self.markers[1])
+			util.normal_move_on_insert(mark_begin_pos)
 		end
 	else
 		self.parent:enter_node(self.indx)

@@ -7,7 +7,7 @@ local function C(pos, choices)
 		pos = pos,
 		choices = choices,
 		type = 4,
-		markers = {},
+		mark = nil,
 		current_choice = 1,
 		dependents = {},
 	})
@@ -16,7 +16,7 @@ end
 function ChoiceNode:put_initial(pos)
 	for _, node in ipairs(self.choices) do
 		node.parent = self.parent
-		node.markers = self.markers
+		node.mark = self.mark
 		node.next = self
 		node.prev = self
 		node.dependents = self.dependents
@@ -108,7 +108,7 @@ function ChoiceNode:change_choice(val)
 	self.current_choice = tmp
 	self.inner = self.choices[self.current_choice]
 
-	self.inner:put_initial(util.get_ext_position(self.markers[1]))
+	self.inner:put_initial(util.get_ext_position_begin(self.mark))
 	self.inner:update()
 	self.inner.old_text = self.inner:get_text()
 
@@ -132,24 +132,41 @@ function ChoiceNode:copy()
 	return o
 end
 
-function ChoiceNode:set_mark_rgrav(mark, val)
-	-- set own markers.
-	local pos = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		self.markers[mark],
-		{}
-	)
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-	self.markers[mark] = vim.api.nvim_buf_set_extmark(
-		0,
-		Luasnip_ns_id,
-		pos[1],
-		pos[2],
-		{ right_gravity = val }
-	)
+-- val_begin/end may be nil, in this case that gravity won't be changed.
+function ChoiceNode:set_mark_rgrav(val_begin, val_end)
+	local mark_id = self.mark
+	local opts = {
+		id = mark_id
+	}
 
-	self.inner:set_mark_rgrav(mark, val)
+	if val_begin ~= nil then
+		opts.right_gravity = val_begin
+	end
+
+	if val_end ~= nil then
+		opts.end_right_gravity = val_end
+	end
+
+	-- pos[3] contains old opts-table.
+	local info = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		mark_id,
+		{details=true}
+	)
+	opts.end_line = info[3].end_row
+	opts.end_col = info[3].end_col
+	opts.hl_group = info[3].hl_group
+	opts.priority = info[3].priority
+
+	vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		info[1],
+		info[2],
+		opts
+	)
+	self.inner:set_mark_rgrav(val_begin, val_end)
 end
 
 return {

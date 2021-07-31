@@ -43,20 +43,48 @@ local function move_to_mark(id)
 	set_cursor_0ind(new_cur_pos)
 end
 
-local function get_ext_position(id)
-	local cur = vim.api.nvim_buf_get_extmark_by_id(
+local function bytecol_to_utfcol(pos)
+	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
+	return {pos[1], vim.str_utfindex(line[1], pos[2])}
+end
+
+local function get_ext_positions(id)
+	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
 		Luasnip_ns_id,
 		id,
-		{ details = false }
+		{ details = true }
 	)
-	local line = vim.api.nvim_buf_get_lines(0, cur[1], cur[1] + 1, false)
-	cur[2] = vim.str_utfindex(line[1], cur[2])
-	return cur
+
+	return
+		bytecol_to_utfcol({mark_info[1], mark_info[2]}),
+		bytecol_to_utfcol({mark_info[3].end_row, mark_info[3].end_col})
 end
 
-local function normal_move_before_mark(id)
-	local new_cur_pos = get_ext_position(id)
+local function get_ext_position_begin(mark_id)
+	print(debug.traceback())
+	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		mark_id,
+		{ details = false }
+	)
+
+	return bytecol_to_utfcol({mark_info[1], mark_info[2]})
+end
+
+local function get_ext_position_end(id)
+	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		id,
+		{ details = true }
+	)
+
+	return bytecol_to_utfcol({mark_info[3].end_row, mark_info[3].end_col})
+end
+
+local function normal_move_before(new_cur_pos)
 	-- +1: indexing
 	if new_cur_pos[2] - 1 ~= 0 then
 		vim.api.nvim_feedkeys(
@@ -72,8 +100,7 @@ local function normal_move_before_mark(id)
 	end
 end
 
-local function normal_move_on_mark(id)
-	local new_cur_pos = get_ext_position(id)
+local function normal_move_on(new_cur_pos)
 	if new_cur_pos[2] ~= 0 then
 		vim.api.nvim_feedkeys(
 			tostring(new_cur_pos[1] + 1)
@@ -88,8 +115,7 @@ local function normal_move_on_mark(id)
 	end
 end
 
-local function normal_move_on_mark_insert(id)
-	local new_cur_pos = get_ext_position(id)
+local function normal_move_on_insert(new_cur_pos)
 	local keys = vim.api.nvim_replace_termcodes(
 		tostring(new_cur_pos[1] + 1)
 			.. "G0i"
@@ -163,14 +189,20 @@ local function store_selection()
 	vim.api.nvim_buf_set_var(0, LUASNIP_LAST_SELECTION, chunks)
 end
 
+local function pos_equal(p1, p2)
+	return p1[1] == p2[1] and p1[2] == p2[2]
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
-	get_ext_position = get_ext_position,
+	get_ext_positions = get_ext_positions,
+	get_ext_position_begin = get_ext_position_begin,
+	get_ext_position_end = get_ext_position_end,
 	move_to_mark = move_to_mark,
-	normal_move_before_mark = normal_move_before_mark,
-	normal_move_on_mark = normal_move_on_mark,
-	normal_move_on_mark_insert = normal_move_on_mark_insert,
+	normal_move_before = normal_move_before,
+	normal_move_on = normal_move_on,
+	normal_move_on_insert = normal_move_on_insert,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	mark_pos_equal = mark_pos_equal,
@@ -180,4 +212,5 @@ return {
 	wrap_value = wrap_value,
 	store_selection = store_selection,
 	get_selection = get_selection,
+	pos_equal = pos_equal
 }

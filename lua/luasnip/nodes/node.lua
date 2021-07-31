@@ -59,47 +59,54 @@ function Node:jumpable(dir)
 	end
 end
 
-function Node:set_mark_rgrav(mark, val)
-	local pos = vim.api.nvim_buf_get_extmark_by_id(
+function Node:set_mark_rgrav(val_begin, val_end)
+	local mark_id = self.mark
+	local opts = {
+		id = mark_id
+	}
+
+	if val_begin ~= nil then
+		opts.right_gravity = val_begin
+	end
+
+	if val_end ~= nil then
+		opts.end_right_gravity = val_end
+	end
+
+	-- pos[3] contains old opts-table.
+	local info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
 		Luasnip_ns_id,
-		self.markers[mark],
-		{}
+		mark_id,
+		{details=true}
 	)
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-	self.markers[mark] = vim.api.nvim_buf_set_extmark(
+	opts.end_line = info[3].end_row
+	opts.end_col = info[3].end_col
+	opts.hl_group = info[3].hl_group
+	opts.priority = info[3].priority
+
+	vim.api.nvim_buf_set_extmark(
 		0,
 		Luasnip_ns_id,
-		pos[1],
-		pos[2],
-		{ right_gravity = val }
+		info[1],
+		info[2],
+		opts
 	)
 end
 
 function Node:get_text()
-	local from = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		self.markers[1],
-		{}
-	)
-	local to = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		self.markers[2],
-		{}
-	)
+	local from_pos, to_pos = util.get_ext_positions(self.mark)
 
 	-- end-exclusive indexing.
-	local lines = vim.api.nvim_buf_get_lines(0, from[1], to[1] + 1, false)
+	local lines = vim.api.nvim_buf_get_lines(0, from_pos[1], to_pos[1] + 1, false)
 
 	if #lines == 1 then
-		lines[1] = string.sub(lines[1], from[2] + 1, to[2])
+		lines[1] = string.sub(lines[1], from_pos[2] + 1, to_pos[2])
 	else
-		lines[1] = string.sub(lines[1], from[2] + 1, #lines[1])
+		lines[1] = string.sub(lines[1], from_pos[2] + 1, #lines[1])
 
 		-- node-range is end-exclusive.
-		lines[#lines] = string.sub(lines[#lines], 1, to[2])
+		lines[#lines] = string.sub(lines[#lines], 1, to_pos[2])
 	end
 	return lines
 end

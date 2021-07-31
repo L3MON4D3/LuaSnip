@@ -83,7 +83,7 @@ local function S(context, nodes, condition, ...)
 		current_insert = 0,
 		condition = condition,
 		user_args = { ... },
-		markers = {},
+		mark = nil,
 		dependents = {},
 		active = false,
 		env = {},
@@ -117,7 +117,7 @@ local function SN(pos, nodes, condition, ...)
 		current_insert = 0,
 		condition = condition,
 		user_args = { ... },
-		markers = {},
+		mark = nil,
 		dependents = {},
 		active = false,
 		type = 3,
@@ -238,7 +238,7 @@ function Snippet:trigger_expand(current_node)
 	self:update()
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
-	start_node.markers = self.nodes[1].markers
+	start_node.mark = self.nodes[1].mark
 	start_node.pos = -1
 	start_node.parent = self
 
@@ -312,28 +312,29 @@ function Snippet:enter_node(node_id)
 		self.parent:enter_node(self.indx)
 	end
 
+	local node_from, node_to = util.get_ext_positions(self.mark)
 	local node = self.nodes[node_id]
 	for i = 1, node_id - 1, 1 do
 		local other = self.nodes[i]
-		if util.mark_pos_equal(other.markers[2], node.markers[1]) then
-			other:set_mark_rgrav(2, false)
+		if util.pos_equal(util.get_ext_position_end(other.mark), node_from) then
+			other:set_mark_rgrav(nil, false)
 		else
-			other:set_mark_rgrav(2, true)
+			other:set_mark_rgrav(nil, true)
 		end
 	end
-	node:set_mark_rgrav(1, false)
-	node:set_mark_rgrav(2, true)
+	node:set_mark_rgrav(false, true)
 	for i = node_id + 1, #self.nodes, 1 do
 		local other = self.nodes[i]
-		if util.mark_pos_equal(node.markers[2], other.markers[1]) then
-			other:set_mark_rgrav(1, true)
+		local other_from, other_to = util.get_ext_positions(other.mark)
+		if util.pos_equal(node_to, other_from) then
+			other:set_mark_rgrav(true, nil)
 		else
-			other:set_mark_rgrav(1, false)
+			other:set_mark_rgrav(false, nil)
 		end
 		-- can be the case after expand; there all nodes without static text
 		-- have left gravity on all marks.
-		if util.mark_pos_equal(node.markers[2], other.markers[2]) then
-			other:set_mark_rgrav(2, true)
+		if util.pos_equal(node_to, other_to) then
+			other:set_mark_rgrav(nil, true)
 		end
 	end
 end
@@ -363,18 +364,7 @@ function Snippet:copy()
 end
 
 function Snippet:set_text(node, text)
-	local node_from = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		node.markers[1],
-		{}
-	)
-	local node_to = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		node.markers[2],
-		{}
-	)
+	local node_from, node_to = util.get_ext_positions(self.mark)
 
 	self:enter_node(node.indx)
 	if vim.o.expandtab then
@@ -409,8 +399,7 @@ end
 
 function Snippet:del_marks()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[1])
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[2])
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.mark)
 	end
 end
 
@@ -434,67 +423,45 @@ end
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
-		local c = vim.api.nvim_buf_get_extmark_by_id(
-			0,
-			Luasnip_ns_id,
-			node.markers[1],
-			{ details = false }
-		)
-		print(c[1], c[2])
-		c = vim.api.nvim_buf_get_extmark_by_id(
-			0,
-			Luasnip_ns_id,
-			node.markers[2],
-			{ details = false }
-		)
-		print(c[1], c[2])
+		local from, to = util.get_ext_positions(node.mark)
+		print(from[1], from[2])
+		print(to[1], to[2])
 	end
 end
 
 function Snippet:put_initial(pos)
-	self.markers[1] = vim.api.nvim_buf_set_extmark(
-		0,
-		Luasnip_ns_id,
-		pos[1],
-		pos[2],
-		{ right_gravity = false }
-	)
+	local snip_begin_pos = vim.deepcopy(pos)
+
 	-- i needed for functions.
 	for _, node in ipairs(self.nodes) do
 		-- save pos to compare to later.
 		local old_pos = vim.deepcopy(pos)
-		node:put_initial(pos)
 
-		-- if no text inserted, set rgrav, else not.
-		node.markers[1] = vim.api.nvim_buf_set_extmark(
-			0,
-			Luasnip_ns_id,
-			old_pos[1],
-			old_pos[2],
-			{
-				right_gravity = not (
-						old_pos[1] == pos[1] and old_pos[2] == pos[2]
-					),
-			}
+		-- get new mark-id here, may be needed in node:put_initial.
+		node.mark = vim.api.nvim_buf_set_extmark(
+			0, Luasnip_ns_id, old_pos[1], old_pos[2], {}
 		)
 
-		-- place extmark directly behind last char of put text.
-		node.markers[2] = vim.api.nvim_buf_set_extmark(
-			0,
-			Luasnip_ns_id,
-			pos[1],
-			pos[2],
-			{ right_gravity = false }
+		node:put_initial(pos)
+
+		-- correctly set extmark for node.
+		vim.api.nvim_buf_set_extmark(
+			0, Luasnip_ns_id, old_pos[1], old_pos[2], {
+				id = node.mark,
+				right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
+				end_right_gravity = false,
+				end_line = pos[1], end_col = pos[2]
+			}
 		)
 		node:set_old_text()
 	end
 
-	self.markers[2] = vim.api.nvim_buf_set_extmark(
-		0,
-		Luasnip_ns_id,
-		pos[1],
-		pos[2],
-		{ right_gravity = false }
+	self.mark = vim.api.nvim_buf_set_extmark(
+		0, Luasnip_ns_id, snip_begin_pos[1], snip_begin_pos[2], {
+			right_gravity = false,
+			end_right_gravity = false,
+			end_line = pos[1], end_col = pos[2]
+		}
 	)
 	self:set_old_text()
 
@@ -587,30 +554,16 @@ end
 
 function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[1])
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.markers[2])
+		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.mark)
 	end
 end
 
-function Snippet:set_mark_rgrav(mark, val)
+function Snippet:set_mark_rgrav(val_begin, val_end)
 	-- set own markers.
-	local pos = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		self.markers[mark],
-		{}
-	)
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.markers[mark])
-	self.markers[mark] = vim.api.nvim_buf_set_extmark(
-		0,
-		Luasnip_ns_id,
-		pos[1],
-		pos[2],
-		{ right_gravity = val }
-	)
+	node_mod.Node.set_mark_rgrav(self, val_begin, val_end)
 
 	for _, node in ipairs(self.nodes) do
-		node:set_mark_rgrav(mark, val)
+		node:set_mark_rgrav(val_begin, val_end)
 	end
 end
 

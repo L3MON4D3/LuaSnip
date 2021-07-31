@@ -6,7 +6,7 @@ local function F(fn, args, ...)
 		fn = fn,
 		args = util.wrap_value(args),
 		type = 2,
-		markers = {},
+		mark = nil,
 		user_args = { ... },
 	})
 end
@@ -26,7 +26,7 @@ function FunctionNode:input_enter()
 		"n",
 		true
 	)
-	util.normal_move_on_mark_insert(self.markers[1])
+	util.normal_move_on_mark_insert(self.mark)
 end
 
 function FunctionNode:update()
