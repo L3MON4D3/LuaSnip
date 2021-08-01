@@ -26,6 +26,10 @@ local function I(pos, static_text)
 end
 
 function ExitNode:input_enter()
+	-- Don't enter node for -1-node, it isn't in the node-table.
+	if self.pos == 0 then
+		self.parent:enter_node(self.indx)
+	end
 	-- Text written in the ExitNode does not belong to snippet.
 	self:set_mark_rgrav(self.pos == -1, self.pos == -1)
 
