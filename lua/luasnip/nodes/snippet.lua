@@ -312,14 +312,14 @@ function Snippet:enter_node(node_id)
 		self.parent:enter_node(self.indx)
 	end
 
-	local node_from, node_to = util.get_ext_positions(self.mark)
 	local node = self.nodes[node_id]
+	local node_from, node_to = util.get_ext_positions(node.mark)
 	for i = 1, node_id - 1, 1 do
 		local other = self.nodes[i]
 		if util.pos_equal(util.get_ext_position_end(other.mark), node_from) then
-			other:set_mark_rgrav(nil, false)
+			other:set_mark_rgrav(false, false)
 		else
-			other:set_mark_rgrav(nil, true)
+			other:set_mark_rgrav(false, true)
 		end
 	end
 	node:set_mark_rgrav(false, true)
@@ -327,14 +327,14 @@ function Snippet:enter_node(node_id)
 		local other = self.nodes[i]
 		local other_from, other_to = util.get_ext_positions(other.mark)
 		if util.pos_equal(node_to, other_from) then
-			other:set_mark_rgrav(true, nil)
+			other:set_mark_rgrav(true, true)
 		else
-			other:set_mark_rgrav(false, nil)
+			other:set_mark_rgrav(false, true)
 		end
 		-- can be the case after expand; there all nodes without static text
 		-- have left gravity on all marks.
 		if util.pos_equal(node_to, other_to) then
-			other:set_mark_rgrav(nil, true)
+			other:set_mark_rgrav(true, true)
 		end
 	end
 end
@@ -364,7 +364,8 @@ function Snippet:copy()
 end
 
 function Snippet:set_text(node, text)
-	local node_from, node_to = util.get_ext_positions(self.mark)
+	local node_from, node_to = util.get_ext_positions(node.mark)
+	print(node_from[1], node_from[2], node_to[1], node_to[2])
 
 	self:enter_node(node.indx)
 	if vim.o.expandtab then

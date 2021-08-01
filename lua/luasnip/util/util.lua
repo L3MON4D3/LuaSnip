@@ -45,6 +45,7 @@ end
 
 local function bytecol_to_utfcol(pos)
 	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
+	-- line[1]: get_lines returns table.
 	return {pos[1], vim.str_utfindex(line[1], pos[2])}
 end
 
@@ -62,7 +63,6 @@ local function get_ext_positions(id)
 end
 
 local function get_ext_position_begin(mark_id)
-	print(debug.traceback())
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
 		Luasnip_ns_id,

@@ -20,7 +20,6 @@ function TextNode:input_enter()
 		"n",
 		true
 	)
-	print("mark: "..vim.inspect(self.mark))
 	util.normal_move_on_insert(util.get_ext_position_begin(self.mark))
 end
 
