@@ -180,7 +180,7 @@ local LUASNIP_LAST_SELECTION = "LUASNIP_LAST_SELECTION"
 
 local function get_selection()
 	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, LUASNIP_LAST_SELECTION)
-	return ok and val or ""
+	return ok and val or {}
 end
 
 local function store_selection()
