@@ -142,7 +142,7 @@ end
 local function active_update_dependents()
 	local active = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
 	-- special case for startNode, still gets triggered somehow, TODO.
-	if active and active.pos ~= -1 and active.dependents ~= {} then
+	if active and #active.dependents > 0 then
 		-- Save cursor-pos to restore later.
 		local cur = util.get_cursor_0ind()
 		local cur_mark = vim.api.nvim_buf_set_extmark(

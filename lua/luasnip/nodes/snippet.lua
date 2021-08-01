@@ -362,7 +362,6 @@ end
 
 function Snippet:set_text(node, text)
 	local node_from, node_to = util.get_ext_positions(node.mark)
-	print(node_from[1], node_from[2], node_to[1], node_to[2])
 
 	self:enter_node(node.indx)
 	if vim.o.expandtab then
@@ -449,11 +448,8 @@ function Snippet:put_initial(pos)
 				right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
 				end_right_gravity = false,
 				end_line = pos[1], end_col = pos[2],
-				hl_mode ="combine",
-				hl_group = "Error"
 			}
 		)
-		print(node.mark)
 		node:set_old_text()
 	end
 
