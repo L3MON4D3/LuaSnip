@@ -306,37 +306,34 @@ function Snippet:matches(line)
 	return cp
 end
 
--- todo: impl exit_node
 function Snippet:enter_node(node_id)
 	if self.parent then
 		self.parent:enter_node(self.indx)
 	end
 
 	local node = self.nodes[node_id]
-	local node_from, node_to = util.get_ext_positions(node.mark)
-	for i = 1, node_id - 1, 1 do
-		local other = self.nodes[i]
-		if util.pos_equal(util.get_ext_position_end(other.mark), node_from) then
-			other:set_mark_rgrav(false, false)
-		else
-			other:set_mark_rgrav(false, true)
-		end
+	local node_to = util.get_ext_position_end(node.mark)
+	for i = 1, node_id - 1 do
+		-- print(string.format("%d: %s, %s", i, "<", "<"))
+		self.nodes[i]:set_mark_rgrav(false, false)
 	end
-	node:set_mark_rgrav(false, true)
-	for i = node_id + 1, #self.nodes, 1 do
+	-- print(vim.inspect(node_from), vim.inspect(node_to))
+	-- print(string.format("[crt] %d: %s, %s", node_id,
+	-- 	node.ext_gravities_active[1] and ">" or "<",
+	-- 	node.ext_gravities_active[2] and ">" or "<"))
+	node:set_mark_rgrav(node.ext_gravities_active[1], node.ext_gravities_active[2])
+	for i = node_id + 1, #self.nodes do
 		local other = self.nodes[i]
 		local other_from, other_to = util.get_ext_positions(other.mark)
-		if util.pos_equal(node_to, other_from) then
-			other:set_mark_rgrav(true, true)
-		else
-			other:set_mark_rgrav(false, true)
-		end
-		-- can be the case after expand; there all nodes without static text
-		-- have left gravity on all marks.
-		if util.pos_equal(node_to, other_to) then
-			other:set_mark_rgrav(true, true)
-		end
+
+		-- print(vim.inspect(other_from), vim.inspect(other_to))
+		-- print(string.format("%d: %s, %s", i,
+		-- 	util.pos_equal(other_from, node_to) and ">" or "<",
+		-- 	util.pos_equal(other_to, node_to) and ">" or "<"))
+
+		other:set_mark_rgrav(util.pos_equal(other_from, node_to), util.pos_equal(other_to, node_to))
 	end
+	-- print("\n ")
 end
 
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
@@ -451,9 +448,12 @@ function Snippet:put_initial(pos)
 				id = node.mark,
 				right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
 				end_right_gravity = false,
-				end_line = pos[1], end_col = pos[2]
+				end_line = pos[1], end_col = pos[2],
+				hl_mode ="combine",
+				hl_group = "Error"
 			}
 		)
+		print(node.mark)
 		node:set_old_text()
 	end
 

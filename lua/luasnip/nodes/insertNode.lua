@@ -12,6 +12,8 @@ local function I(pos, static_text)
 			mark = nil,
 			dependents = {},
 			type = 1,
+			-- will only be needed for 0-node, -1-node isn't set with this.
+			ext_gravities_active = {false, false}
 		})
 	else
 		return InsertNode:new({
@@ -29,9 +31,10 @@ function ExitNode:input_enter()
 	-- Don't enter node for -1-node, it isn't in the node-table.
 	if self.pos == 0 then
 		self.parent:enter_node(self.indx)
+	-- -1-node:
+	else
+		self:set_mark_rgrav(true, true)
 	end
-	-- Text written in the ExitNode does not belong to snippet.
-	self:set_mark_rgrav(self.pos == -1, self.pos == -1)
 
 	vim.api.nvim_feedkeys(
 		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),

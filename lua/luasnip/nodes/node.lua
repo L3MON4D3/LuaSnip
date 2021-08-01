@@ -130,6 +130,8 @@ end
 
 function Node:update() end
 
+Node.ext_gravities_active = {false, true}
+
 return {
 	Node = Node,
 }
