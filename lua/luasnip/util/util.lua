@@ -151,6 +151,18 @@ local function wrap_value(value)
 	return { value }
 end
 
+local LUASNIP_LAST_SELECTION = "LUASNIP_LAST_SELECTION"
+
+local function get_selection()
+	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, LUASNIP_LAST_SELECTION)
+	return ok and val or ""
+end
+
+local function store_selection()
+	local chunks = vim.split(vim.fn.getreg('"'), "\n")
+	vim.api.nvim_buf_set_var(0, LUASNIP_LAST_SELECTION, chunks)
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -166,4 +178,6 @@ return {
 	word_under_cursor = word_under_cursor,
 	put = put,
 	wrap_value = wrap_value,
+	store_selection = store_selection,
+	get_selection = get_selection,
 }
