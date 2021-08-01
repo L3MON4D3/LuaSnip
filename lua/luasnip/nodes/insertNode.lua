@@ -13,7 +13,7 @@ local function I(pos, static_text)
 			dependents = {},
 			type = 1,
 			-- will only be needed for 0-node, -1-node isn't set with this.
-			ext_gravities_active = {false, false}
+			ext_gravities_active = { false, false },
 		})
 	else
 		return InsertNode:new({
@@ -31,7 +31,7 @@ function ExitNode:input_enter()
 	-- Don't enter node for -1-node, it isn't in the node-table.
 	if self.pos == 0 then
 		self.parent:enter_node(self.indx)
-	-- -1-node:
+		-- -1-node:
 	else
 		self:set_mark_rgrav(true, true)
 	end

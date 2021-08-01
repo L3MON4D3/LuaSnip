@@ -136,7 +136,7 @@ end
 function ChoiceNode:set_mark_rgrav(val_begin, val_end)
 	local mark_id = self.mark
 	local opts = {
-		id = mark_id
+		id = mark_id,
 	}
 
 	if val_begin ~= nil then
@@ -152,20 +152,14 @@ function ChoiceNode:set_mark_rgrav(val_begin, val_end)
 		0,
 		Luasnip_ns_id,
 		mark_id,
-		{details=true}
+		{ details = true }
 	)
 	opts.end_line = info[3].end_row
 	opts.end_col = info[3].end_col
 	opts.hl_group = info[3].hl_group
 	opts.priority = info[3].priority
 
-	vim.api.nvim_buf_set_extmark(
-		0,
-		Luasnip_ns_id,
-		info[1],
-		info[2],
-		opts
-	)
+	vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, info[1], info[2], opts)
 	self.inner:set_mark_rgrav(val_begin, val_end)
 end
 

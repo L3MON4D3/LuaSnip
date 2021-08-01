@@ -321,7 +321,10 @@ function Snippet:enter_node(node_id)
 	-- print(string.format("[crt] %d: %s, %s", node_id,
 	-- 	node.ext_gravities_active[1] and ">" or "<",
 	-- 	node.ext_gravities_active[2] and ">" or "<"))
-	node:set_mark_rgrav(node.ext_gravities_active[1], node.ext_gravities_active[2])
+	node:set_mark_rgrav(
+		node.ext_gravities_active[1],
+		node.ext_gravities_active[2]
+	)
 	for i = node_id + 1, #self.nodes do
 		local other = self.nodes[i]
 		local other_from, other_to = util.get_ext_positions(other.mark)
@@ -331,7 +334,10 @@ function Snippet:enter_node(node_id)
 		-- 	util.pos_equal(other_from, node_to) and ">" or "<",
 		-- 	util.pos_equal(other_to, node_to) and ">" or "<"))
 
-		other:set_mark_rgrav(util.pos_equal(other_from, node_to), util.pos_equal(other_to, node_to))
+		other:set_mark_rgrav(
+			util.pos_equal(other_from, node_to),
+			util.pos_equal(other_to, node_to)
+		)
 	end
 	-- print("\n ")
 end
@@ -436,28 +442,36 @@ function Snippet:put_initial(pos)
 
 		-- get new mark-id here, may be needed in node:put_initial.
 		node.mark = vim.api.nvim_buf_set_extmark(
-			0, Luasnip_ns_id, old_pos[1], old_pos[2], {}
+			0,
+			Luasnip_ns_id,
+			old_pos[1],
+			old_pos[2],
+			{}
 		)
 
 		node:put_initial(pos)
 
 		-- correctly set extmark for node.
-		vim.api.nvim_buf_set_extmark(
-			0, Luasnip_ns_id, old_pos[1], old_pos[2], {
-				id = node.mark,
-				right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
-				end_right_gravity = false,
-				end_line = pos[1], end_col = pos[2],
-			}
-		)
+		vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, old_pos[1], old_pos[2], {
+			id = node.mark,
+			right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
+			end_right_gravity = false,
+			end_line = pos[1],
+			end_col = pos[2],
+		})
 		node:set_old_text()
 	end
 
 	self.mark = vim.api.nvim_buf_set_extmark(
-		0, Luasnip_ns_id, snip_begin_pos[1], snip_begin_pos[2], {
+		0,
+		Luasnip_ns_id,
+		snip_begin_pos[1],
+		snip_begin_pos[2],
+		{
 			right_gravity = false,
 			end_right_gravity = false,
-			end_line = pos[1], end_col = pos[2]
+			end_line = pos[1],
+			end_col = pos[2],
 		}
 	)
 	self:set_old_text()
