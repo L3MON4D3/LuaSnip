@@ -9,6 +9,7 @@ return {
 		TM_FILENAME_BASE = true,
 		TM_DIRECTORY = true,
 		TM_FILEPATH = true,
+		TM_SELECTED_TEXT = true,
 		var = function(_, node, text)
 			return { node.parent.env[text] }
 		end,
