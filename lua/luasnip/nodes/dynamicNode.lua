@@ -8,7 +8,7 @@ local function D(pos, fn, args, ...)
 		fn = fn,
 		args = util.wrap_value(args),
 		type = 5,
-		mark = nil,
+		mark = {},
 		user_args = { ... },
 		dependents = {},
 	})
@@ -87,7 +87,7 @@ function DynamicNode:update()
 	tmp:indent(self.parent.indentstr)
 
 	self.parent:enter_node(self.indx)
-	tmp:put_initial(util.get_ext_position_begin(self.mark))
+	tmp:put_initial(util.get_ext_position_begin(self.mark.id))
 	-- Update, tbh no idea how that could come in handy, but should be done.
 	tmp:update()
 

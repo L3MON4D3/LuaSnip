@@ -9,7 +9,7 @@ local function I(pos, static_text)
 		return ExitNode:new({
 			pos = pos,
 			static_text = static_text,
-			mark = nil,
+			mark = {},
 			dependents = {},
 			type = 1,
 			-- will only be needed for 0-node, -1-node isn't set with this.
@@ -19,7 +19,7 @@ local function I(pos, static_text)
 		return InsertNode:new({
 			pos = pos,
 			static_text = static_text,
-			mark = nil,
+			mark = {},
 			dependents = {},
 			type = 1,
 			inner_active = false,
@@ -42,7 +42,7 @@ function ExitNode:input_enter()
 		true
 	)
 	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-	util.normal_move_on_insert(util.get_ext_position_begin(self.mark))
+	util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
 end
 
 function ExitNode:input_leave() end
@@ -70,7 +70,7 @@ function InsertNode:input_enter(no_move)
 			true
 		)
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-		local mark_begin_pos, mark_end_pos = util.get_ext_positions(self.mark)
+		local mark_begin_pos, mark_end_pos = util.get_ext_positions(self.mark.id)
 		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
 			util.normal_move_on(mark_begin_pos)
 			vim.api.nvim_feedkeys(

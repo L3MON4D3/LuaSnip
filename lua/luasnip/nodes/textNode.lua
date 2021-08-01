@@ -6,7 +6,7 @@ local TextNode = node_mod.Node:new()
 local function T(static_text)
 	return TextNode:new({
 		static_text = util.wrap_value(static_text),
-		mark = nil,
+		mark = {},
 		type = 0,
 	})
 end
@@ -20,7 +20,7 @@ function TextNode:input_enter()
 		"n",
 		true
 	)
-	util.normal_move_on_insert(util.get_ext_position_begin(self.mark))
+	util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
 end
 
 function TextNode:put_initial(pos)

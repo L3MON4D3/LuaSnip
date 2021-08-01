@@ -7,7 +7,7 @@ local function C(pos, choices)
 		pos = pos,
 		choices = choices,
 		type = 4,
-		mark = nil,
+		mark = {},
 		current_choice = 1,
 		dependents = {},
 	})
@@ -108,7 +108,7 @@ function ChoiceNode:change_choice(val)
 	self.current_choice = tmp
 	self.inner = self.choices[self.current_choice]
 
-	self.inner:put_initial(util.get_ext_position_begin(self.mark))
+	self.inner:put_initial(util.get_ext_position_begin(self.mark.id))
 	self.inner:update()
 	self.inner.old_text = self.inner:get_text()
 
@@ -134,7 +134,7 @@ end
 
 -- val_begin/end may be nil, in this case that gravity won't be changed.
 function ChoiceNode:set_mark_rgrav(val_begin, val_end)
-	local mark_id = self.mark
+	local mark_id = self.mark.id
 	local opts = {
 		id = mark_id,
 	}

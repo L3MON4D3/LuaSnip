@@ -60,7 +60,7 @@ function Node:jumpable(dir)
 end
 
 function Node:set_mark_rgrav(val_begin, val_end)
-	local mark_id = self.mark
+	local mark_id = self.mark.id
 	local opts = {
 		id = mark_id,
 	}
@@ -89,7 +89,7 @@ function Node:set_mark_rgrav(val_begin, val_end)
 end
 
 function Node:get_text()
-	local from_pos, to_pos = util.get_ext_positions(self.mark)
+	local from_pos, to_pos = util.get_ext_positions(self.mark.id)
 
 	-- end-exclusive indexing.
 	local lines = vim.api.nvim_buf_get_lines(
