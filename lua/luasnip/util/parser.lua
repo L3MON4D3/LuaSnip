@@ -129,13 +129,11 @@ local function parse_placeholder(text, tab_stops, brackets)
 						true
 					)
 					-- SELECT snippet text only when there is text to select (more oft than not there isnt).
+					local from_pos, to_pos = util.get_ext_positions(self.mark)
 					if
-						not util.mark_pos_equal(
-							self.markers[2],
-							self.markers[1]
-						)
+						not util.pos_equal(from_pos, to_pos)
 					then
-						util.normal_move_on_mark(self.markers[1])
+						util.normal_move_on(from_pos)
 						vim.api.nvim_feedkeys(
 							vim.api.nvim_replace_termcodes(
 								"v",
@@ -146,7 +144,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 							"n",
 							true
 						)
-						util.normal_move_before_mark(self.markers[2])
+						util.normal_move_before(to_pos)
 						vim.api.nvim_feedkeys(
 							vim.api.nvim_replace_termcodes(
 								"o<C-G>",
@@ -158,7 +156,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 							true
 						)
 					else
-						util.normal_move_on_mark_insert(self.markers[1])
+						util.normal_move_on_insert(from_pos)
 					end
 					Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
 				end
