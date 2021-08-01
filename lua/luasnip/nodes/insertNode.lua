@@ -70,7 +70,9 @@ function InsertNode:input_enter(no_move)
 			true
 		)
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-		local mark_begin_pos, mark_end_pos = util.get_ext_positions(self.mark.id)
+		local mark_begin_pos, mark_end_pos = util.get_ext_positions(
+			self.mark.id
+		)
 		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
 			util.normal_move_on(mark_begin_pos)
 			vim.api.nvim_feedkeys(

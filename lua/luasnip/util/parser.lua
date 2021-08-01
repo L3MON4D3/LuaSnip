@@ -129,7 +129,9 @@ local function parse_placeholder(text, tab_stops, brackets)
 						true
 					)
 					-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-					local from_pos, to_pos = util.get_ext_positions(self.mark.id)
+					local from_pos, to_pos = util.get_ext_positions(
+						self.mark.id
+					)
 					if not util.pos_equal(from_pos, to_pos) then
 						util.normal_move_on(from_pos)
 						vim.api.nvim_feedkeys(
