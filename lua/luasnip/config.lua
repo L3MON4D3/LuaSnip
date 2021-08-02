@@ -2,7 +2,6 @@ local defaults = {
 	history = false,
 	updateevents = "InsertLeave",
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
-	store_selection_register = "l", --name of the register to use for capturing selections
 }
 
 -- declare here to use in set_config.
@@ -34,9 +33,8 @@ c = {
 		if c.config.store_selection_keys then
 			vim.cmd(
 				string.format(
-					[[xnoremap <silent>  %s  "%ss<c-o>:lua require('luasnip.util.util').store_selection()<cr>]],
-					c.config.store_selection_keys,
-					c.config.store_selection_register
+					[[xnoremap <silent>  %s  :lua require('luasnip.util.util').store_selection()<cr>gv"_s]],
+					c.config.store_selection_keys
 				)
 			)
 		end
