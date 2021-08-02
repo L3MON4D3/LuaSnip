@@ -33,7 +33,7 @@ c = {
 		if c.config.store_selection_keys then
 			vim.cmd(
 				string.format(
-					[[xnoremap <silent>  %s  s<c-o>:lua require('luasnip.util.util').store_selection()<cr>]],
+					[[xnoremap <silent>  %s  :lua require('luasnip.util.util').store_selection()<cr>gv"_s]],
 					c.config.store_selection_keys
 				)
 			)

@@ -185,7 +185,40 @@ local function get_selection()
 end
 
 local function store_selection()
-	local chunks = vim.split(vim.fn.getreg('"'), "\n")
+	local start_line, start_col = vim.fn.line("'<"), vim.fn.col("'<")
+	local end_line, end_col = vim.fn.line("'>"), vim.fn.col("'>")
+	local mode = vim.fn.visualmode()
+	if
+		not vim.o.selection == "exclusive"
+		and not (start_line == end_line and start_col == end_col)
+	then
+		end_col = end_col - 1
+	end
+
+	local function _vim_line(lnum)
+		return vim.api.nvim_buf_get_lines(0, lnum, lnum + 1, true)[1]
+	end
+	local chunks = {}
+	if start_line == end_line then
+		chunks = { _vim_line(start_line - 1):sub(start_col, end_col + 1) }
+	else
+		local first_col = 0
+		local last_col = nil
+		if mode:lower() ~= "v" then -- mode is block
+			first_col = start_col
+			last_col = end_col
+		end
+
+		chunks = { _vim_line(start_line - 1):sub(start_col, last_col) }
+
+		for cl = start_line, (end_line - 2) do
+			table.insert(chunks, _vim_line(cl):sub(first_col, last_col))
+		end
+		table.insert(
+			chunks,
+			_vim_line(end_line - 1):sub(first_col, end_col + 1)
+		)
+	end
 	vim.api.nvim_buf_set_var(0, LUASNIP_LAST_SELECTION, chunks)
 end
 
