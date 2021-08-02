@@ -370,15 +370,6 @@ function Snippet:set_text(node, text)
 	local node_from, node_to = util.get_ext_positions(node.mark.id)
 
 	self:enter_node(node.indx)
-	if vim.o.expandtab then
-		local tab_string = string.rep(
-			" ",
-			vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
-		)
-		for i, str in ipairs(text) do
-			text[i] = string.gsub(str, "\t", tab_string)
-		end
-	end
 	local ok, msg = pcall(
 		vim.api.nvim_buf_set_text,
 		0,

@@ -26,6 +26,33 @@ local function remove_n_before_cur(n)
 	set_cursor_0ind(cur)
 end
 
+-- in-place modifies the table.
+local function dedent(text, indentstring)
+	-- 2 because 1 shouldn't contain indent.
+	for i = 2, #text do
+		text[i] = text[i]:gsub("^"..indentstring, "")
+	end
+	return text
+end
+
+-- in-place insert indenstrig before each
+local function indent(text, indentstring)
+	for i = 2, #text do
+		text[i] = text[i]:gsub("^", indentstring)
+	end
+	return text
+end
+
+local function expand_tabs(text)
+	local tab_string = string.rep(
+		" ",
+		vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
+	)
+	for i, str in ipairs(text) do
+		text[i] = string.gsub(str, "\t", tab_string)
+	end
+end
+
 local function mark_pos_equal(m1, m2)
 	local p1 = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, m1, {})
 	local p2 = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, m2, {})
@@ -243,4 +270,7 @@ return {
 	store_selection = store_selection,
 	get_selection = get_selection,
 	pos_equal = pos_equal,
+	dedent = dedent,
+	indent = indent,
+	expand_tabs = expand_tabs
 }

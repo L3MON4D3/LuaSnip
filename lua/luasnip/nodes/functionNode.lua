@@ -14,7 +14,7 @@ end
 function FunctionNode:get_args()
 	local args = {}
 	for i, node in ipairs(self.args) do
-		args[i] = node:get_text()
+		args[i] = util.dedent(node:get_text(), self.parent.indentstr)
 	end
 	args[#args + 1] = self.parent
 	return args
@@ -33,7 +33,11 @@ function FunctionNode:update()
 	local text = util.wrap_value(
 		self.fn(self:get_args(), unpack(self.user_args))
 	)
-	self.parent:set_text(self, text)
+	if vim.o.expandtab then
+		util.expand_tabs(text)
+	end
+	-- don't expand tabs in parent.indentstr, use it as-is.
+	self.parent:set_text(self, util.indent(text, self.parent.indentstr))
 end
 
 return {

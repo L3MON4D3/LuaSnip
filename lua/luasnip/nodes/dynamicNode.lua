@@ -17,7 +17,7 @@ end
 function DynamicNode:get_args()
 	local args = {}
 	for i, node in ipairs(self.args) do
-		args[i] = node:get_text()
+		args[i] = util.dedent(node:get_text(), self.parent.indentstr)
 	end
 	args[#args + 1] = self.parent
 	return args
