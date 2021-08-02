@@ -200,7 +200,7 @@ local function store_selection()
 	end
 	local chunks = {}
 	if start_line == end_line then
-		chunks = { _vim_line(start_line - 1):sub(start_col, end_col + 1) }
+		chunks = { _vim_line(start_line - 1):sub(start_col, end_col) }
 	else
 		local first_col = 0
 		local last_col = nil
@@ -214,10 +214,7 @@ local function store_selection()
 		for cl = start_line, (end_line - 2) do
 			table.insert(chunks, _vim_line(cl):sub(first_col, last_col))
 		end
-		table.insert(
-			chunks,
-			_vim_line(end_line - 1):sub(first_col, end_col + 1)
-		)
+		table.insert(chunks, _vim_line(end_line - 1):sub(first_col, end_col))
 	end
 	vim.api.nvim_buf_set_var(0, LUASNIP_LAST_SELECTION, chunks)
 end
