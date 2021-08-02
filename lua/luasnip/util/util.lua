@@ -185,7 +185,8 @@ local function get_selection()
 end
 
 local function store_selection()
-	local chunks = vim.split(vim.fn.getreg('"'), "\n")
+	local c = require("luasnip.config").config
+	local chunks = vim.fn.getreg(c.store_selection_register, 1, true)
 	vim.api.nvim_buf_set_var(0, LUASNIP_LAST_SELECTION, chunks)
 end
 
