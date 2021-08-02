@@ -30,7 +30,7 @@ end
 local function dedent(text, indentstring)
 	-- 2 because 1 shouldn't contain indent.
 	for i = 2, #text do
-		text[i] = text[i]:gsub("^"..indentstring, "")
+		text[i] = text[i]:gsub("^" .. indentstring, "")
 	end
 	return text
 end
@@ -272,5 +272,5 @@ return {
 	pos_equal = pos_equal,
 	dedent = dedent,
 	indent = indent,
-	expand_tabs = expand_tabs
+	expand_tabs = expand_tabs,
 }
