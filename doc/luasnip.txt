@@ -170,7 +170,8 @@ user-defined function:
 
 The first parameter of `f` is the function. Its parameters are
     1.: a table of text and the surrounding snippet (ie.
-    `{{line1}, {line1, line2}, snippet}`).
+    `{{line1}, {line1, line2}, snippet}`). the snippet-indent will be removed
+    from all lines following the first.
     The snippet is included here, as it allows access to anything that could be
     useful in functionNodes (ie.  `snippet.env` or `snippet.captures`, which
     contains capture groups of regex-triggered snippets).
@@ -185,7 +186,8 @@ evaluated once upon snippet-expansion. If the table only has a single node, it
 can be passed directly without wrapping it in a table.
 
 The function shall return a string, which will be inserted as-is, or a table
-of strings for multiline snippets.
+of strings for multiline snippets, here all lines following the first will be
+prepended with the snippets' indentation.
 
 Examples:
     Use captures from the regex-trigger using a functionNode:
@@ -242,7 +244,7 @@ which makes them very powerful.
 Parameters:
 1. position (just like all jumpable nodes)
 2. function: Similar to functionNodes' function, first parameter is the
-    `table of text` from nodes the dynamicNode depends on, the second,
+    `table of text` from nodes the dynamicNode depends on(also without snippet-indent), the second,
     unlike functionNode, is a user-defined table, `old_state`.
     This table can contain anything, its main usage is to preserve
     information from the previous snippetNode:
