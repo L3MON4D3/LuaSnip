@@ -100,19 +100,12 @@ local function S(context, nodes, condition, ...)
 	return snip
 end
 
-local function SN(pos, nodes, condition, ...)
-	if not condition then
-		condition = function()
-			return true
-		end
-	end
+local function SN(pos, nodes)
 	local snip = Snippet:new({
 		pos = pos,
 		nodes = util.wrap_value(nodes),
 		insert_nodes = {},
 		current_insert = 0,
-		condition = condition,
-		user_args = { ... },
 		mark = {},
 		dependents = {},
 		active = false,
