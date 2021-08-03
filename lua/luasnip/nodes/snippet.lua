@@ -11,12 +11,8 @@ function Snippet:init_nodes()
 	for i, node in ipairs(self.nodes) do
 		node.parent = self
 		node.indx = i
-		if node.type == 1 or node.type == 4 or node.type == 5 then
+		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
 			insert_nodes[node.pos] = node
-		end
-		if node.type == 3 then
-			insert_nodes[node.pos] = node
-			node.env = self.env
 		end
 	end
 
@@ -439,6 +435,12 @@ function Snippet:put_initial(pos)
 			old_pos[2],
 			{}
 		)
+
+		-- set for snippetNodes.
+		if node.type == 3 then
+			node:indent(self.indentstr)
+			node.env = self.env
+		end
 
 		node:put_initial(pos)
 
