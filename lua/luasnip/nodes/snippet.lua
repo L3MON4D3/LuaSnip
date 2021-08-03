@@ -39,17 +39,21 @@ function Snippet:init_nodes()
 	self.insert_nodes = insert_nodes
 end
 
+local function wrap_nodes(nodes)
+	-- safe to assume, if nodes has a metatable, it is a single node, not a
+	-- table.
+	if getmetatable(nodes) then
+		return {nodes}
+	else
+		return nodes
+	end
+end
+
 local function S(context, nodes, condition, ...)
 	if not condition then
 		condition = function()
 			return true
 		end
-	end
-
-	local nodes = nodes
-	if not nodes[1] then
-		-- Then it's a node-table rather than an array of nodes: auto-wrap it
-		nodes = { nodes }
 	end
 
 	if type(context) == "string" then
@@ -79,7 +83,7 @@ local function S(context, nodes, condition, ...)
 		name = context.name or context.trig,
 		wordTrig = context.wordTrig,
 		regTrig = context.regTrig,
-		nodes = nodes,
+		nodes = wrap_nodes(nodes),
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,
@@ -108,7 +112,7 @@ end
 local function SN(pos, nodes)
 	local snip = Snippet:new({
 		pos = pos,
-		nodes = util.wrap_value(nodes),
+		nodes = wrap_nodes(nodes),
 		insert_nodes = {},
 		current_insert = 0,
 		mark = {},
