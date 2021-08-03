@@ -11,7 +11,12 @@ function Snippet:init_nodes()
 	for i, node in ipairs(self.nodes) do
 		node.parent = self
 		node.indx = i
-		if node.type == 1 or node.type == 3 or node.type == 4 or node.type == 5 then
+		if
+			node.type == 1
+			or node.type == 3
+			or node.type == 4
+			or node.type == 5
+		then
 			insert_nodes[node.pos] = node
 		end
 	end
@@ -256,7 +261,10 @@ function Snippet:matches(line_to_cursor)
 		end
 	else
 		if
-			line_to_cursor:sub(#line_to_cursor - #self.trigger + 1, #line_to_cursor) == self.trigger
+			line_to_cursor:sub(
+				#line_to_cursor - #self.trigger + 1,
+				#line_to_cursor
+			) == self.trigger
 		then
 			from = #line_to_cursor - #self.trigger + 1
 			match = self.trigger
@@ -278,7 +286,10 @@ function Snippet:matches(line_to_cursor)
 		self.wordTrig
 		and not (
 			from == 1
-			or string.match(string.sub(line_to_cursor, from - 1, from - 1), "[%w_]")
+			or string.match(
+					string.sub(line_to_cursor, from - 1, from - 1),
+					"[%w_]"
+				)
 				== nil
 		)
 	then
