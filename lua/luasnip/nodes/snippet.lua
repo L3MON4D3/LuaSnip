@@ -454,6 +454,8 @@ function Snippet:put_initial(pos)
 		snip_begin_pos[1],
 		snip_begin_pos[2],
 		{
+			-- may be set already with dynamicNode.
+			id = self.mark.id or nil,
 			right_gravity = false,
 			end_right_gravity = false,
 			end_line = pos[1],
