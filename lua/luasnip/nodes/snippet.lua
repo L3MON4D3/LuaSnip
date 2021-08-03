@@ -214,7 +214,7 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 end
 
 function Snippet:trigger_expand(current_node)
-	self:indent(util.get_current_line_to_cursor())
+	self:indent(util.get_current_line_to_cursor():match("^%s*"))
 
 	pop_env(self.env)
 
@@ -483,8 +483,7 @@ function Snippet:update()
 	end
 end
 
-function Snippet:indent(line)
-	local prefix = string.match(line, "^%s*")
+function Snippet:indent(prefix)
 	self.indentstr = prefix
 	-- Check once here instead of inside loop.
 	if vim.o.expandtab then
