@@ -240,25 +240,25 @@ function Snippet:trigger_expand(current_node)
 end
 
 -- returns copy of snip if it matches, nil if not.
-function Snippet:matches(line)
+function Snippet:matches(line_to_cursor)
 	local from
 	local match
 	local captures = {}
 	if self.regTrig then
 		-- capture entire trigger, must be put into match.
-		local find_res = { string.find(line, "(" .. self.trigger .. ")$") }
-		if find_res then
+		local find_res = { string.find(line_to_cursor, self.trigger .. "$") }
+		if #find_res > 0 then
 			from = find_res[1]
-			match = find_res[3]
-			for i = 4, #find_res do
-				captures[i - 3] = find_res[i]
+			match = line_to_cursor:sub(from, #line_to_cursor)
+			for i = 3, #find_res do
+				captures[i - 2] = find_res[i]
 			end
 		end
 	else
 		if
-			string.sub(line, #line - #self.trigger + 1, #line) == self.trigger
+			line_to_cursor:sub(#line_to_cursor - #self.trigger + 1, #line_to_cursor) == self.trigger
 		then
-			from = #line - #self.trigger + 1
+			from = #line_to_cursor - #self.trigger + 1
 			match = self.trigger
 		end
 	end
@@ -267,9 +267,6 @@ function Snippet:matches(line)
 	if not match then
 		return nil
 	end
-	local trigger = self.trigger
-	-- Regex-snippets can access matchstring in condition.
-	self.trigger = match
 
 	if not self.condition(unpack(self.user_args)) then
 		return nil
@@ -281,16 +278,15 @@ function Snippet:matches(line)
 		self.wordTrig
 		and not (
 			from == 1
-			or string.match(string.sub(line, from - 1, from - 1), "[%w_]")
+			or string.match(string.sub(line_to_cursor, from - 1, from - 1), "[%w_]")
 				== nil
 		)
 	then
 		return nil
 	end
 
-	-- has match instead of trigger (makes difference for regex)
 	local cp = self:copy()
-	self.trigger = trigger
+	cp.trigger = match
 	cp.captures = captures
 	return cp
 end
