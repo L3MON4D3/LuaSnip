@@ -29,15 +29,7 @@ function ChoiceNode:put_initial(pos)
 		-- if function- or dynamicNode, dependents may need to be replaced with
 		-- actual nodes, until here dependents may only contain indices of nodes.
 		if node.type == 2 or node.type == 5 then
-			if type(node.args[1]) ~= "table" then
-				-- append node to dependents-table of args.
-				for i, arg in ipairs(node.args) do
-					-- Function-Node contains refs. to arg-nodes.
-					node.args[i] = self.parent.insert_nodes[arg]
-					self.parent.insert_nodes[arg].dependents[#self.parent.insert_nodes[arg].dependents + 1] =
-						node
-				end
-			end
+			self.parent:populate_args(node)
 		end
 	end
 	self.inner = self.choices[self.current_choice]

@@ -477,15 +477,7 @@ function Snippet:put_initial(pos)
 
 	for _, node in ipairs(self.nodes) do
 		if node.type == 2 or node.type == 5 then
-			if type(node.args[1]) ~= "table" then
-				-- append node to dependents-table of args.
-				for i, arg in ipairs(node.args) do
-					-- Function-Node contains refs. to arg-nodes.
-					node.args[i] = self.insert_nodes[arg]
-					self.insert_nodes[arg].dependents[#self.insert_nodes[arg].dependents + 1] =
-						node
-				end
-			end
+			self:populate_args(node)
 		end
 	end
 end
@@ -573,6 +565,25 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 
 	for _, node in ipairs(self.nodes) do
 		node:set_mark_rgrav(val_begin, val_end)
+	end
+end
+
+function Snippet:populate_args(node)
+	for i, arg in ipairs(node.args) do
+		local argnode = nil
+		-- simple index; references node in this snippet.
+		if type(arg) == "number" then
+			argnode = self.insert_nodes[arg]
+		--parent_indexer: references node outside this snippet, resolve it.
+		else
+			if getmetatable(arg) == Parent_indexer then
+				argnode = arg:resolve(self)
+			end
+		end
+		if argnode then
+			node.args[i] = argnode
+			argnode.dependents[#argnode.dependents+1] = node
+		end
 	end
 end
 
