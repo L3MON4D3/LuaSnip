@@ -1,10 +1,33 @@
 local node_mod = require("luasnip.nodes.node")
 local iNode = require("luasnip.nodes.insertNode")
+local t = require("luasnip.nodes.textNode").T
 local util = require("luasnip.util.util")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
 local Snippet = node_mod.Node:new()
+
+local Parent_indexer = {}
+
+function Parent_indexer:new(o)
+	setmetatable(o, self)
+	self.__index = self
+	return o
+end
+
+-- Returns referred node from parent (or parents' parent).
+function Parent_indexer:resolve(snippet)
+	-- recurse if index is a parent_indexer
+	if getmetatable(self.indx) == Parent_indexer then
+		return self.indx:resolve(snippet.parent)
+	else
+		return snippet.parent.insert_nodes[self.indx]
+	end
+end
+
+local function P(indx)
+	return Parent_indexer:new({indx=indx})
+end
 
 function Snippet:init_nodes()
 	local insert_nodes = {}
@@ -120,6 +143,48 @@ local function SN(pos, nodes)
 		active = false,
 		type = 3,
 	})
+	snip:init_nodes()
+	return snip
+end
+
+local function ISN(pos, nodes, indent_text)
+	local snip = Snippet:new({
+		pos = pos,
+		nodes = wrap_nodes(nodes),
+		insert_nodes = {},
+		current_insert = 0,
+		mark = {},
+		dependents = {},
+		active = false,
+		type = 3,
+	})
+	function snip:indent(parent_indent)
+		Snippet.indent(self, indent_text:gsub("$PARENT_INDENT", parent_indent))
+	end
+	snip:init_nodes()
+	return snip
+end
+
+local function PSN(pos, nodes, prefix)
+	local snip = Snippet:new({
+		pos = pos,
+		nodes = wrap_nodes(nodes),
+		insert_nodes = {},
+		current_insert = 0,
+		mark = {},
+		dependents = {},
+		active = false,
+		type = 3,
+	})
+	function snip:indent(parent_indent)
+		Snippet.indent(self, parent_indent..prefix)
+	end
+
+	-- insert prefix as first node of snippetNode.
+	for i = #snip.nodes, 1, -1 do
+		snip.nodes[i+1] = snip.nodes[i]
+	end
+	snip.nodes[1] = t({prefix})
 	snip:init_nodes()
 	return snip
 end
@@ -591,4 +656,7 @@ return {
 	Snippet = Snippet,
 	S = S,
 	SN = SN,
+	P = P,
+	ISN = ISN,
+	PSN = PSN,
 }
