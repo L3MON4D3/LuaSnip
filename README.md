@@ -16,7 +16,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 - Snippet history (jump back into older snippets)
 
 # Drawbacks
-- Snippets that make use of the entire functionality of this plugin have to be defined in Lua.
+- Snippets that makes use of the entire functionality of this plugin have to be defined in Lua.
 
 # Requirements
 Neovim >= 0.5 (extmarks)
