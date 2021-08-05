@@ -68,11 +68,26 @@ local function simple_tabstop(text, tab_stops)
 	end
 end
 
+local last_text = nil
 local function simple_var(text)
 	if functions.lsp[text] then
 		local f = fNode.F(functions.lsp.var, {})
 		f.user_args = { f, text }
-		return f
+
+		local indent_maybe
+		if last_text ~= nil and #last_text.static_text > 1 then
+			indent_maybe = last_text.static_text[#last_text.static_text]:match("%s+$")
+		end
+		if indent_maybe then
+			-- remove indent-string from last_texts' text, use it to indent the
+			-- variable.
+			last_text.static_text[#last_text.static_text] = last_text.static_text[#last_text.static_text]:gsub(indent_maybe, "")
+			-- TODO: jump into these appropriately.
+			f = snipNode.PSN(nil, f, indent_maybe)
+		end
+
+		-- Don't indent visual.
+		return snipNode.ISN(nil, f, "")
 	end
 	-- if the function is unknown, just insert an empty text-snippet.
 	return tNode.T({ "" })
@@ -259,7 +274,8 @@ parse_snippet = function(context, body, tab_stops, brackets)
 				-- insert text so far as textNode.
 				local plain_text = string.sub(body, text_start, next_node - 1)
 				if plain_text ~= "" then
-					nodes[#nodes + 1] = parse_text(plain_text)
+					last_text = parse_text(plain_text)
+					nodes[#nodes + 1] = last_text
 				end
 
 				-- potentially find matching bracket.

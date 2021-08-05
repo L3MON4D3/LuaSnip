@@ -40,7 +40,7 @@ function Snippet:init_nodes()
 			or node.type == 4
 			or node.type == 5
 		then
-			insert_nodes[node.pos] = node
+			if node.pos then insert_nodes[node.pos] = node end
 		end
 	end
 
