@@ -86,8 +86,12 @@ local function simple_var(text)
 			f = snipNode.PSN(nil, f, indent_maybe)
 		end
 
-		-- Don't indent visual.
-		return snipNode.ISN(nil, f, "")
+		if text == "TM_SELECTED_TEXT" then
+			-- Don't indent visual.
+			return snipNode.ISN(nil, f, "")
+		else
+			return f
+		end
 	end
 	-- if the function is unknown, just insert an empty text-snippet.
 	return tNode.T({ "" })
