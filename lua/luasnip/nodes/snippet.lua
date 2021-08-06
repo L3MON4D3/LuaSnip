@@ -204,7 +204,8 @@ local function pop_env(env)
 	env.TM_FILENAME_BASE = vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
 	env.TM_DIRECTORY = vim.fn.expand("%:p:h")
 	env.TM_FILEPATH = vim.fn.expand("%:p")
-	env.TM_SELECTED_TEXT = util.get_selection()
+
+	env.TM_SELECTED_TEXT, env.SELECT_RAW, env.SELECT_DEDENT = util.get_selection()
 end
 
 function Snippet:remove_from_jumplist()

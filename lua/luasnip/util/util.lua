@@ -203,12 +203,19 @@ local function wrap_value(value)
 	return { value }
 end
 
-local LUASNIP_LAST_SELECTION = "LUASNIP_LAST_SELECTION"
+local SELECT_RAW= "LUASNIP_SELECT_RAW"
+local SELECT_DEDENT = "LUASNIP_SELECT_DEDENT"
+local TM_SELECT = "LUASNIP_TM_SELECT"
 
 local function get_selection()
-	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, LUASNIP_LAST_SELECTION)
-	vim.api.nvim_buf_set_var(0, LUASNIP_LAST_SELECTION, {})
-	return ok and val or {}
+	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, SELECT_RAW)
+	-- if one is set, all are set.
+	if ok then
+		return val, vim.api.nvim_buf_get_var(0, SELECT_DEDENT), vim.api.nvim_buf_get_var(0, TM_SELECT)
+	end
+	-- not ok.
+	return {},{},{}
+end
 end
 
 local function store_selection()
@@ -247,7 +254,11 @@ local function store_selection()
 		table.insert(chunks, lines[#lines]:sub(first_col, end_col))
 	end
 
-	vim.api.nvim_buf_set_var(0, LUASNIP_LAST_SELECTION, chunks)
+	-- init with raw selection.
+	local tm_select, select_dedent = vim.deepcopy(chunks), vim.deepcopy(chunks)
+	vim.api.nvim_buf_set_var(0, SELECT_RAW, chunks)
+	vim.api.nvim_buf_set_var(0, SELECT_DEDENT, select_dedent)
+	vim.api.nvim_buf_set_var(0, TM_SELECT, tm_select)
 end
 
 local function pos_equal(p1, p2)
