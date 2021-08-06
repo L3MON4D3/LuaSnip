@@ -216,6 +216,18 @@ local function get_selection()
 	-- not ok.
 	return {},{},{}
 end
+
+local function get_min_indent(lines)
+	-- "^(%s*)%S": match only lines that actually contain text.
+	local min_indent = lines[1]:match("^(%s*)%S")
+	for i=2, #lines do
+		-- %s* -> at least matches 
+		local line_indent = lines[i]:match("^(%s*)%S")
+		if #line_indent < #min_indent then
+			min_indent = line_indent
+		end
+	end
+	return min_indent
 end
 
 local function store_selection()
@@ -229,12 +241,10 @@ local function store_selection()
 		end_col = end_col - 1
 	end
 
-	local function _vim_line(lnum)
-		return vim.api.nvim_buf_get_lines(0, lnum, lnum + 1, true)[1]
-	end
 	local chunks = {}
+	local lines = vim.api.nvim_buf_get_lines(0, start_line-1, end_line, true)
 	if start_line == end_line then
-		chunks = {vim.api.nvim_buf_get_lines(0, start_line-1, start_line, true)[1]:sub(start_col, end_col)}
+		chunks = {lines[1]:sub(start_col, end_col)}
 	else
 		local first_col = 0
 		local last_col = nil
@@ -242,9 +252,6 @@ local function store_selection()
 			first_col = start_col
 			last_col = end_col
 		end
-		-- 1-indexed vs. 0-indexed.
-		local lines = vim.api.nvim_buf_get_lines(0, start_line-1, end_line, true)
-
 		chunks = { lines[1]:sub(start_col, last_col) }
 
 		-- potentially trim lines (Block).
@@ -256,6 +263,41 @@ local function store_selection()
 
 	-- init with raw selection.
 	local tm_select, select_dedent = vim.deepcopy(chunks), vim.deepcopy(chunks)
+	local min_indent = get_min_indent(lines)
+	-- TM_SELECTED_TEXT contains text from new cursor position(for V the first
+	-- non-whitespace of first line, v and c-v raw) to end of selection.
+	if mode == "V" then
+		tm_select[1] = tm_select[1]:gsub("^%s+", "")
+		-- remove indent from all lines:
+		for i = 1, #select_dedent do
+			select_dedent[i] = select_dedent[i]:gsub("^"..min_indent, "")
+		end
+	elseif mode == "v" then
+		-- if selection starts inside indent, remove indent.
+		if #min_indent > start_col then
+			select_dedent[1] = lines[1]:gsub(min_indent, "")
+		end
+		for i = 2, #select_dedent-1 do
+			select_dedent[i] = select_dedent[i]:gsub(min_indent, "")
+		end
+
+		-- remove as much indent from the last line as possible.
+		if #min_indent > end_col then
+			select_dedent[#select_dedent] = ""
+		else
+			select_dedent[#select_dedent] = select_dedent[#select_dedent]:gsub("^"..min_indent, "")
+		end
+	else
+		-- in block: if indent is in block, remove the part of it that is inside
+		-- it for select_dedent.
+		if #min_indent > start_col then
+			local indent_in_block = min_indent:sub(start_col, #min_indent)
+			for i, line in ipairs(chunks) do
+				select_dedent[i] = line:gsub("^"..indent_in_block, "")
+			end
+		end
+	end
+
 	vim.api.nvim_buf_set_var(0, SELECT_RAW, chunks)
 	vim.api.nvim_buf_set_var(0, SELECT_DEDENT, select_dedent)
 	vim.api.nvim_buf_set_var(0, TM_SELECT, tm_select)
