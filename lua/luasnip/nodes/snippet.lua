@@ -26,7 +26,7 @@ function Parent_indexer:resolve(snippet)
 end
 
 local function P(indx)
-	return Parent_indexer:new({indx=indx})
+	return Parent_indexer:new({ indx = indx })
 end
 
 function Snippet:init_nodes()
@@ -40,7 +40,9 @@ function Snippet:init_nodes()
 			or node.type == 4
 			or node.type == 5
 		then
-			if node.pos then insert_nodes[node.pos] = node end
+			if node.pos then
+				insert_nodes[node.pos] = node
+			end
 		end
 	end
 
@@ -66,7 +68,7 @@ local function wrap_nodes(nodes)
 	-- safe to assume, if nodes has a metatable, it is a single node, not a
 	-- table.
 	if getmetatable(nodes) then
-		return {nodes}
+		return { nodes }
 	else
 		return nodes
 	end
@@ -177,14 +179,14 @@ local function PSN(pos, nodes, prefix)
 		type = 3,
 	})
 	function snip:indent(parent_indent)
-		Snippet.indent(self, parent_indent..prefix)
+		Snippet.indent(self, parent_indent .. prefix)
 	end
 
 	-- insert prefix as first node of snippetNode.
 	for i = #snip.nodes, 1, -1 do
-		snip.nodes[i+1] = snip.nodes[i]
+		snip.nodes[i + 1] = snip.nodes[i]
 	end
-	snip.nodes[1] = t({prefix})
+	snip.nodes[1] = t({ prefix })
 	snip:init_nodes()
 	return snip
 end
@@ -205,7 +207,8 @@ local function pop_env(env)
 	env.TM_DIRECTORY = vim.fn.expand("%:p:h")
 	env.TM_FILEPATH = vim.fn.expand("%:p")
 
-	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT= util.get_selection()
+	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT =
+		util.get_selection()
 end
 
 function Snippet:remove_from_jumplist()
@@ -640,7 +643,7 @@ function Snippet:populate_args(node)
 		-- simple index; references node in this snippet.
 		if type(arg) == "number" then
 			argnode = self.insert_nodes[arg]
-		--parent_indexer: references node outside this snippet, resolve it.
+			--parent_indexer: references node outside this snippet, resolve it.
 		else
 			if getmetatable(arg) == Parent_indexer then
 				argnode = arg:resolve(self)
@@ -648,7 +651,7 @@ function Snippet:populate_args(node)
 		end
 		if argnode then
 			node.args[i] = argnode
-			argnode.dependents[#argnode.dependents+1] = node
+			argnode.dependents[#argnode.dependents + 1] = node
 		end
 	end
 end

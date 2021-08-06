@@ -76,12 +76,18 @@ local function simple_var(text)
 
 		local indent_maybe
 		if last_text ~= nil and #last_text.static_text > 1 then
-			indent_maybe = last_text.static_text[#last_text.static_text]:match("%s+$")
+			indent_maybe = last_text.static_text[#last_text.static_text]:match(
+				"%s+$"
+			)
 		end
 		if indent_maybe then
 			-- remove indent-string from last_texts' text, use it to indent the
 			-- variable.
-			last_text.static_text[#last_text.static_text] = last_text.static_text[#last_text.static_text]:gsub(indent_maybe, "")
+			last_text.static_text[#last_text.static_text] =
+				last_text.static_text[#last_text.static_text]:gsub(
+					indent_maybe,
+					""
+				)
 			-- TODO: jump into these appropriately.
 			f = snipNode.PSN(nil, f, indent_maybe)
 		end
