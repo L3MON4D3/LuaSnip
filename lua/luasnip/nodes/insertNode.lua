@@ -2,6 +2,7 @@ local InsertNode = require("luasnip.nodes.node").Node:new()
 local ExitNode = InsertNode:new()
 local util = require("luasnip.util.util")
 local config = require("luasnip.config")
+local types = require("luasnip.util.types")
 
 local function I(pos, static_text)
 	local static_text = util.wrap_value(static_text)
@@ -11,7 +12,7 @@ local function I(pos, static_text)
 			static_text = static_text,
 			mark = {},
 			dependents = {},
-			type = 1,
+			type = types.insertNode,
 			-- will only be needed for 0-node, -1-node isn't set with this.
 			ext_gravities_active = { false, false },
 		})
@@ -21,7 +22,7 @@ local function I(pos, static_text)
 			static_text = static_text,
 			mark = {},
 			dependents = {},
-			type = 1,
+			type = types.insertNode,
 			inner_active = false,
 		})
 	end

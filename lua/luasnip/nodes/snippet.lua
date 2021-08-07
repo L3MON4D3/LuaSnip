@@ -2,6 +2,7 @@ local node_mod = require("luasnip.nodes.node")
 local iNode = require("luasnip.nodes.insertNode")
 local t = require("luasnip.nodes.textNode").T
 local util = require("luasnip.util.util")
+local types = require("luasnip.util.types")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -35,10 +36,10 @@ function Snippet:init_nodes()
 		node.parent = self
 		node.indx = i
 		if
-			node.type == 1
-			or node.type == 3
-			or node.type == 4
-			or node.type == 5
+			node.type == types.insertNode
+			or node.type == types.snippetNode
+			or node.type == types.choiceNode
+			or node.type == types.dynamicNode
 		then
 			if node.pos then
 				insert_nodes[node.pos] = node
@@ -143,7 +144,7 @@ local function SN(pos, nodes)
 		mark = {},
 		dependents = {},
 		active = false,
-		type = 3,
+		type = types.snippetNode,
 	})
 	snip:init_nodes()
 	return snip
@@ -158,7 +159,7 @@ local function ISN(pos, nodes, indent_text)
 		mark = {},
 		dependents = {},
 		active = false,
-		type = 3,
+		type = types.snippetNode,
 	})
 	function snip:indent(parent_indent)
 		Snippet.indent(self, indent_text:gsub("$PARENT_INDENT", parent_indent))
@@ -176,7 +177,7 @@ local function PSN(pos, nodes, prefix)
 		mark = {},
 		dependents = {},
 		active = false,
-		type = 3,
+		type = types.snippetNode,
 	})
 	function snip:indent(parent_indent)
 		Snippet.indent(self, parent_indent .. prefix)
@@ -470,13 +471,13 @@ function Snippet:is_interactive()
 	for _, node in ipairs(self.nodes) do
 		-- return true if any node depends on another node or is an insertNode.
 		if
-			node.type == 1
-			or ((node.type == 2 or node.type == 5) and #node.args ~= 0)
-			or node.type == 4
+			node.type == types.insertNode
+			or ((node.type == types.functionNode or node.type == types.dynamicNode) and #node.args ~= 0)
+			or node.type == types.choiceNode
 		then
 			return true
 			-- node is snippet, recurse.
-		elseif node.type == 3 then
+		elseif node.type == types.snippetNode then
 			return node:is_interactive()
 		end
 	end
@@ -510,7 +511,7 @@ function Snippet:put_initial(pos)
 		)
 
 		-- set for snippetNodes.
-		if node.type == 3 then
+		if node.type == types.snippetNode then
 			node:indent(self.indentstr)
 			node.env = self.env
 		end
@@ -545,7 +546,7 @@ function Snippet:put_initial(pos)
 	self:set_old_text()
 
 	for _, node in ipairs(self.nodes) do
-		if node.type == 2 or node.type == 5 then
+		if node.type == types.functionNode or node.type == types.dynamicNode then
 			self:populate_args(node)
 		end
 	end

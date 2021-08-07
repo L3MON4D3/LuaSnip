@@ -1,5 +1,6 @@
 local node_mod = require("luasnip.nodes.node")
 local util = require("luasnip.util.util")
+local types = require("luasnip.util.types")
 
 local TextNode = node_mod.Node:new()
 
@@ -7,7 +8,7 @@ local function T(static_text)
 	return TextNode:new({
 		static_text = util.wrap_value(static_text),
 		mark = {},
-		type = 0,
+		type = types.textNode,
 	})
 end
 

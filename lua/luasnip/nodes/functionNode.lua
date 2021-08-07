@@ -1,11 +1,12 @@
 local FunctionNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
+local types = require("luasnip.util.types")
 
 local function F(fn, args, ...)
 	return FunctionNode:new({
 		fn = fn,
 		args = util.wrap_value(args),
-		type = 2,
+		type = types.functionNode,
 		mark = {},
 		user_args = { ... },
 	})

@@ -1,12 +1,13 @@
 local ChoiceNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
+local types = require("luasnip.util.types")
 
 local function C(pos, choices)
 	return ChoiceNode:new({
 		active = false,
 		pos = pos,
 		choices = choices,
-		type = 4,
+		type = types.choiceNode,
 		mark = {},
 		current_choice = 1,
 		dependents = {},
@@ -20,7 +21,7 @@ function ChoiceNode:put_initial(pos)
 		node.next = self
 		node.prev = self
 		node.dependents = self.dependents
-		if node.type == 3 then
+		if node.type == types.snippetNode then
 			node:indent(self.parent.indentstr)
 			node.env = self.parent.env
 		end
@@ -28,7 +29,7 @@ function ChoiceNode:put_initial(pos)
 		node.pos = self.pos
 		-- if function- or dynamicNode, dependents may need to be replaced with
 		-- actual nodes, until here dependents may only contain indices of nodes.
-		if node.type == 2 or node.type == 5 then
+		if node.type == types.functionNode or node.type == types.dynamicNode then
 			self.parent:populate_args(node)
 		end
 	end
@@ -114,7 +115,7 @@ end
 function ChoiceNode:copy()
 	local o = vim.deepcopy(self)
 	for i, node in ipairs(self.choices) do
-		if node.type == 3 or node.type == 4 then
+		if node.type == types.snippetNode or node.type == types.choiceNode then
 			o.choices[i] = node:copy()
 		else
 			setmetatable(o.choices[i], getmetatable(node))

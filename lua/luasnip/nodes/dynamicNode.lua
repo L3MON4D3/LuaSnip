@@ -1,13 +1,14 @@
 local DynamicNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
 local Node = require("luasnip.nodes.node").Node
+local types = require("luasnip.util.types")
 
 local function D(pos, fn, args, ...)
 	return DynamicNode:new({
 		pos = pos,
 		fn = fn,
 		args = util.wrap_value(args),
-		type = 5,
+		type = types.dynamicNode,
 		mark = {},
 		user_args = { ... },
 		dependents = {},
