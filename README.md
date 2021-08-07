@@ -99,6 +99,7 @@ Neovim >= 0.5 (extmarks)
 # Config
 - `history`: If true, Snippets that were exited can still be jumped back into. As Snippets are not removed when their text is deleted, they have to be removed manually via `LuasnipUnlinkCurrent`.
 - `updateevents`: Choose which events trigger an update of the active nodes' dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would update on every change.
+- `store_selection_keys`: Mapping for populating `TM_SELECTED_TEXT` and related variables (not set by default).
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
 
