@@ -307,8 +307,42 @@ eg. 3, it would change to "3\nSample Text\nSample Text\nSample Text". Text
 that was inserted into any of the dynamicNodes insertNodes is kept when
 changing to a bigger number.
 
+# LSP-SNIPPETS
 
+Luasnip is capable of parsing lsp-style snippets using
+`ls.parser.parse_snippet(context, snippet_string)`:
+```lua
+ls.parser.parse_snippet({trig = "lsp"}, "$1 is ${2|hard,easy,challenging|}")
+```
 
+Nested placeholders(`"${1:this is ${2:nested}}"`) will be turned into
+choiceNode's with:  
+	- the given snippet(`"this is ${1:nested}"`) and  
+	- an empty insertNode
+	
+# VARIABLES
+
+All `TM_something`-variables are supported with two additions:
+`SELECT_RAW` and `SELECT_DEDENT`. These were introduced because
+`TM_SELECTED_TEXT` is designed to be compatible with vscodes' behaviour, which
+can be counterintuitive when the snippet can be expanded at places other than
+the point where selection started (or when doing transformations on selected text).
+
+All variables can be used outside of lsp-parsed snippets as their values are
+stored in a snippets' `snip.env`-table:
+```lua
+s("selected_text", {
+	-- the surrounding snippet is passed in args after all argnodes (none,
+	-- in this case).
+	f(function(args) return args[1].env.SELECT_RAW end, {})
+})
+```
+
+To use any `*SELECT*` variable, the `store_selection_keys` must be set via
+`require("luasnip").config.setup({store_selection_keys="<Tab>"})`. In this case,
+hitting `<Tab>` while in Visualmode will populate the `*SELECT*`-vars for the next
+snippet and then clear them.
+ 
 # VSCODE SNIPPETS LOADER
 
 As luasnip is capable of loading the same format of plugins as vscode, it also
