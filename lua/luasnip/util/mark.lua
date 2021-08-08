@@ -1,5 +1,3 @@
-local util = require("util")
-
 local Mark = {}
 
 function Mark:new(o)
@@ -66,12 +64,13 @@ end
 -- opts just like in nvim_buf_set_extmark.
 -- opts as first arg bcs. pos are pretty likely to stay the same.
 function Mark:update(opts, pos_begin, pos_end)
-	local old_pos_begin, old_pos_end = self:pos_begin_end()
+	-- if one is changed, the other is likely as well.
 	if not pos_begin then
+		local old_pos_begin, old_pos_end = self:pos_begin_end()
 		pos_begin = old_pos_begin
-	end
-	if not pos_end then
-		pos_end = old_pos_end
+		if not pos_end then
+			pos_end = old_pos_end
+		end
 	end
 	-- override with new.
 	self.opts = vim.tbl_extend("force", self.opts, opts)
