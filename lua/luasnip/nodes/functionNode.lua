@@ -7,7 +7,7 @@ local function F(fn, args, ...)
 		fn = fn,
 		args = util.wrap_value(args),
 		type = types.functionNode,
-		mark = {},
+		mark = nil,
 		user_args = { ... },
 	})
 end

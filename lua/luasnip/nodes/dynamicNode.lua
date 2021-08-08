@@ -9,7 +9,7 @@ local function D(pos, fn, args, ...)
 		fn = fn,
 		args = util.wrap_value(args),
 		type = types.dynamicNode,
-		mark = {},
+		mark = nil,
 		user_args = { ... },
 		dependents = {},
 	})

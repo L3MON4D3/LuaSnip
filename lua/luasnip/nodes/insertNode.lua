@@ -10,7 +10,7 @@ local function I(pos, static_text)
 		return ExitNode:new({
 			pos = pos,
 			static_text = static_text,
-			mark = {},
+			mark = nil,
 			dependents = {},
 			type = types.insertNode,
 			-- will only be needed for 0-node, -1-node isn't set with this.
@@ -20,7 +20,7 @@ local function I(pos, static_text)
 		return InsertNode:new({
 			pos = pos,
 			static_text = static_text,
-			mark = {},
+			mark = nil,
 			dependents = {},
 			type = types.insertNode,
 			inner_active = false,

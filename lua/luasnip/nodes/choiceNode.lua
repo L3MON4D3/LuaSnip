@@ -9,7 +9,7 @@ local function C(pos, choices)
 		pos = pos,
 		choices = choices,
 		type = types.choiceNode,
-		mark = {},
+		mark = nil,
 		current_choice = 1,
 		dependents = {},
 	})

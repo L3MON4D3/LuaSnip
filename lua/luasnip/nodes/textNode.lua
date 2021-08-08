@@ -7,7 +7,7 @@ local TextNode = node_mod.Node:new()
 local function T(static_text)
 	return TextNode:new({
 		static_text = util.wrap_value(static_text),
-		mark = {},
+		mark = nil,
 		type = types.textNode,
 	})
 end
