@@ -9,8 +9,6 @@ end
 
 -- opts just like in nvim_buf_set_extmark.
 function mark(pos_begin, pos_end, opts)
-	opts.end_line = pos_end[1]
-	opts.end_col = pos_end[2]
 	return Mark:new({
 		id = vim.api.nvim_buf_set_extmark(
 			0, Luasnip_ns_id, pos_begin[1], pos_begin[2],
@@ -76,7 +74,7 @@ function Mark:update(opts, pos_begin, pos_end)
 	self.opts = vim.tbl_extend("force", self.opts, opts)
 	vim.api.nvim_buf_set_extmark(
 		0, Luasnip_ns_id, pos_begin[1], pos_begin[2],
-		vim.tbl_extend("force", opts, {id = self.id, end_line = pos_end[1], end_col = pos_end[2]}))
+		vim.tbl_extend("force", self.opts, {id = self.id, end_line = pos_end[1], end_col = pos_end[2]}))
 end
 
 return {

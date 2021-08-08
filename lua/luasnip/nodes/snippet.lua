@@ -517,8 +517,6 @@ function Snippet:put_initial(pos)
 		node.mark:update({
 			right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
 			end_right_gravity = false,
-			end_line = pos[1],
-			end_col = pos[2],
 		}, old_pos, pos)
 		node:set_old_text()
 	end
