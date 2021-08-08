@@ -126,34 +126,11 @@ function ChoiceNode:copy()
 end
 
 -- val_begin/end may be nil, in this case that gravity won't be changed.
-function ChoiceNode:set_mark_rgrav(val_begin, val_end)
-	local mark_id = self.mark.id
-	local opts = {
-		id = mark_id,
-	}
-
-	if val_begin ~= nil then
-		opts.right_gravity = val_begin
-	end
-
-	if val_end ~= nil then
-		opts.end_right_gravity = val_end
-	end
-
-	-- pos[3] contains old opts-table.
-	local info = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		mark_id,
-		{ details = true }
-	)
-	opts.end_line = info[3].end_row
-	opts.end_col = info[3].end_col
-	opts.hl_group = info[3].hl_group
-	opts.priority = info[3].priority
-
-	vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, info[1], info[2], opts)
-	self.inner:set_mark_rgrav(val_begin, val_end)
+function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
+	self.mark:update({
+		right_gravity = rgrav_beg, right_gravity_end = rgrav_end
+	})
+	self.inner:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
 return {
