@@ -3,6 +3,7 @@ local iNode = require("luasnip.nodes.insertNode")
 local t = require("luasnip.nodes.textNode").T
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
+local mark = require("luasnip.util.mark").mark
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -306,7 +307,7 @@ function Snippet:trigger_expand(current_node)
 	self:update()
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
-	start_node.mark.id = self.nodes[1].mark.id
+	start_node.mark = self.nodes[1].mark
 	start_node.pos = -1
 	start_node.parent = self
 
@@ -502,13 +503,7 @@ function Snippet:put_initial(pos)
 		local old_pos = vim.deepcopy(pos)
 
 		-- get new mark-id here, may be needed in node:put_initial.
-		node.mark.id = vim.api.nvim_buf_set_extmark(
-			0,
-			Luasnip_ns_id,
-			old_pos[1],
-			old_pos[2],
-			{}
-		)
+		node.mark = mark({0,0}, {0,0}, {})
 
 		-- set for snippetNodes.
 		if node.type == types.snippetNode then
@@ -519,30 +514,26 @@ function Snippet:put_initial(pos)
 		node:put_initial(pos)
 
 		-- correctly set extmark for node.
-		vim.api.nvim_buf_set_extmark(0, Luasnip_ns_id, old_pos[1], old_pos[2], {
-			id = node.mark.id,
+		node.mark:update({
 			right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
 			end_right_gravity = false,
 			end_line = pos[1],
 			end_col = pos[2],
-		})
+		}, old_pos, pos)
 		node:set_old_text()
 	end
 
-	self.mark.id = vim.api.nvim_buf_set_extmark(
-		0,
-		Luasnip_ns_id,
-		snip_begin_pos[1],
-		snip_begin_pos[2],
-		{
-			-- may be set already with dynamicNode.
-			id = self.mark.id or nil,
+	if self.mark then
+		self.mark:update({
 			right_gravity = false,
 			end_right_gravity = false,
-			end_line = pos[1],
-			end_col = pos[2],
-		}
-	)
+		}, snip_begin_pos, pos)
+	else
+		self.mark = mark(snip_begin_pos, pos, {
+			right_gravity = false,
+			end_right_gravity = false,
+		})
+	end
 	self:set_old_text()
 
 	for _, node in ipairs(self.nodes) do
