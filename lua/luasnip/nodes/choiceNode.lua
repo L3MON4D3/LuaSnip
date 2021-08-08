@@ -1,4 +1,5 @@
-local ChoiceNode = require("luasnip.nodes.node").Node:new()
+local node = require("luasnip.nodes.node").Node
+local ChoiceNode = node:new()
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
 
@@ -127,9 +128,7 @@ end
 
 -- val_begin/end may be nil, in this case that gravity won't be changed.
 function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
-	self.mark:update({
-		right_gravity = rgrav_beg, right_gravity_end = rgrav_end
-	})
+	node.set_mark_rgrav(self, rgrav_beg, rgrav_end)
 	self.inner:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
