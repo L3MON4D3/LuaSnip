@@ -59,12 +59,22 @@ function Mark:pos_end()
 	return bytecol_to_utfcol({ mark_info[3].end_row, mark_info[3].end_col })
 end
 
+local function mark_pos_raw(id)
+	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
+		0,
+		Luasnip_ns_id,
+		id,
+		{ details = true }
+	)
+	return {mark_info[1], mark_info[2]}, {mark_info[3].end_line, mark_info[3].end_col}
+end
+
 -- opts just like in nvim_buf_set_extmark.
 -- opts as first arg bcs. pos are pretty likely to stay the same.
 function Mark:update(opts, pos_begin, pos_end)
 	-- if one is changed, the other is likely as well.
 	if not pos_begin then
-		local old_pos_begin, old_pos_end = self:pos_begin_end()
+		local old_pos_begin, old_pos_end = mark_pos_raw(self.id)
 		pos_begin = old_pos_begin
 		if not pos_end then
 			pos_end = old_pos_end
