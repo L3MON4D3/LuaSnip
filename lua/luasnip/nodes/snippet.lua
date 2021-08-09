@@ -105,13 +105,14 @@ local function S(context, nodes, condition, ...)
 		context.wordTrig = true
 	end
 
+	nodes = wrap_nodes(nodes)
 	local snip = Snippet:new({
 		trigger = context.trig,
 		dscr = dscr,
 		name = context.name or context.trig,
 		wordTrig = context.wordTrig,
 		regTrig = context.regTrig,
-		nodes = wrap_nodes(nodes),
+		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
 		condition = condition,
@@ -131,7 +132,7 @@ local function S(context, nodes, condition, ...)
 		i0.parent = snip
 		i0.indx = i0_indx
 		snip.insert_nodes[0] = i0
-		nodes[i0_indx] = i0
+		snip.nodes[i0_indx] = i0
 	end
 
 	return snip
