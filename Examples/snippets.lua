@@ -19,6 +19,7 @@ ls.config.set_config({
 	history = true,
 	-- Update more often, :h events for more info.
 	updateevents = "TextChanged,TextChangedI",
+	enable_autosnippets = true,
 })
 
 -- args is a table, where 1 is the text in Placeholder 1, 2 the text in
@@ -334,6 +335,15 @@ ls.snippets = {
 			i(1),
 			d(2, rec_ls, {}),
 			t({ "", "\\end{itemize}" }),
+		}),
+	},
+}
+
+-- autotriggered snippets have to be defined in a separate table, luasnip.autosnippets.
+ls.autosnippets = {
+	all = {
+		s("autotrigger", {
+			t("autosnippet"),
 		}),
 	},
 }
