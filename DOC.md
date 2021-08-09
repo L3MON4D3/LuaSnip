@@ -41,7 +41,7 @@ s({trig="trigger"}, {})
 entries:
 
 - `trig`: string, plain text by default. The only entry that must be given.
-- `namr`: string, can be used by eg. `nvim-compe` to identify the snippet.
+- `name`: string, can be used by eg. `nvim-compe` to identify the snippet.
 - `dscr`: string, textual description of the snippet, \n-separated or table
           for multiple lines.
 - `wordTrig`: boolean, if true, the snippet is only expanded if the word
