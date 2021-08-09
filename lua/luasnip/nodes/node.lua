@@ -61,7 +61,8 @@ end
 
 function Node:set_mark_rgrav(rgrav_beg, rgrav_end)
 	self.mark:update({
-		right_gravity = rgrav_beg, end_right_gravity = rgrav_end
+		right_gravity = rgrav_beg,
+		end_right_gravity = rgrav_end,
 	})
 end
 

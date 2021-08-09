@@ -31,7 +31,10 @@ function ChoiceNode:put_initial(pos)
 		node.pos = self.pos
 		-- if function- or dynamicNode, dependents may need to be replaced with
 		-- actual nodes, until here dependents may only contain indices of nodes.
-		if node.type == types.functionNode or node.type == types.dynamicNode then
+		if
+			node.type == types.functionNode or node.type
+				== types.dynamicNode
+		then
 			self.parent:populate_args(node)
 		end
 	end
@@ -113,7 +116,9 @@ function ChoiceNode:change_choice(val)
 	self.current_choice = tmp
 	self.inner = self.choices[self.current_choice]
 
-	self.inner.mark = self.mark:copy_pos_gravs(vim.deepcopy(self.parent.ext_opts[self.inner.type].passive))
+	self.inner.mark = self.mark:copy_pos_gravs(
+		vim.deepcopy(self.parent.ext_opts[self.inner.type].passive)
+	)
 	self.inner:put_initial(util.get_ext_position_begin(self.mark.id))
 	self.inner:update()
 	self.inner.old_text = self.inner:get_text()

@@ -7,33 +7,33 @@ local defaults = {
 	ext_opts = {
 		[types.textNode] = {
 			active = {},
-			passive = {}
+			passive = {},
 		},
 		[types.insertNode] = {
 			active = {},
-			passive = {}
+			passive = {},
 		},
 		[types.functionNode] = {
 			active = {},
-			passive = {}
+			passive = {},
 		},
 		[types.snippetNode] = {
 			active = {},
-			passive = {}
+			passive = {},
 		},
 		[types.choiceNode] = {
 			active = {},
-			passive = {}
+			passive = {},
 		},
 		[types.dynamicNode] = {
 			active = {},
-			passive = {}
+			passive = {},
 		},
 		[types.snippet] = {
 			active = {},
-			passive = {}
-		}
-	}
+			passive = {},
+		},
+	},
 }
 
 -- declare here to use in set_config.
@@ -45,7 +45,11 @@ c = {
 		local conf = vim.deepcopy(defaults)
 
 		-- overwrite default ext_opts for each type.
-		user_config.ext_opts = vim.tbl_extend("force", conf.ext_opts, user_config.ext_opts or {})
+		user_config.ext_opts = vim.tbl_extend(
+			"force",
+			conf.ext_opts,
+			user_config.ext_opts or {}
+		)
 
 		for k, v in pairs(user_config) do
 			conf[k] = v

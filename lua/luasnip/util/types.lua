@@ -13,6 +13,6 @@ return {
 		"snippetNode",
 		"choiceNode",
 		"dynamicNode",
-		"snippet"
+		"snippet",
 	},
 }

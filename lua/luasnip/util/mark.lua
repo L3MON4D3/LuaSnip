@@ -11,11 +11,19 @@ end
 function mark(pos_begin, pos_end, opts)
 	return Mark:new({
 		id = vim.api.nvim_buf_set_extmark(
-			0, Luasnip_ns_id, pos_begin[1], pos_begin[2],
+			0,
+			Luasnip_ns_id,
+			pos_begin[1],
+			pos_begin[2],
 			-- override end_* in opts.
-			vim.tbl_extend("force", opts, {end_line = pos_end[1], end_col = pos_end[2]})),
+			vim.tbl_extend(
+				"force",
+				opts,
+				{ end_line = pos_end[1], end_col = pos_end[2] }
+			)
+		),
 		-- store opts here, can't be queried using nvim_buf_get_extmark_by_id.
-		opts = opts
+		opts = opts,
 	})
 end
 
@@ -41,8 +49,7 @@ function Mark:pos_begin()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
 		Luasnip_ns_id,
-		self.id
-		{ details = false }
+		self.id({ details = false })
 	)
 
 	return bytecol_to_utfcol({ mark_info[1], mark_info[2] })
@@ -66,7 +73,8 @@ local function mark_pos_raw(id)
 		id,
 		{ details = true }
 	)
-	return {mark_info[1], mark_info[2]}, {mark_info[3].end_row, mark_info[3].end_col}
+	return { mark_info[1], mark_info[2] },
+		{ mark_info[3].end_row, mark_info[3].end_col }
 end
 
 function Mark:copy_pos_gravs(opts)
@@ -90,8 +98,16 @@ function Mark:update(opts, pos_begin, pos_end)
 	-- override with new.
 	self.opts = vim.tbl_extend("force", self.opts, opts)
 	vim.api.nvim_buf_set_extmark(
-		0, Luasnip_ns_id, pos_begin[1], pos_begin[2],
-		vim.tbl_extend("force", self.opts, {id = self.id, end_line = pos_end[1], end_col = pos_end[2]}))
+		0,
+		Luasnip_ns_id,
+		pos_begin[1],
+		pos_begin[2],
+		vim.tbl_extend(
+			"force",
+			self.opts,
+			{ id = self.id, end_line = pos_end[1], end_col = pos_end[2] }
+		)
+	)
 end
 
 function Mark:clear()
@@ -99,5 +115,5 @@ function Mark:clear()
 end
 
 return {
-	mark = mark
+	mark = mark,
 }

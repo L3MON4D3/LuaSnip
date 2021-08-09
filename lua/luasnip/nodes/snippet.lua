@@ -542,7 +542,10 @@ function Snippet:put_initial(pos)
 	self:set_old_text()
 
 	for _, node in ipairs(self.nodes) do
-		if node.type == types.functionNode or node.type == types.dynamicNode then
+		if
+			node.type == types.functionNode or node.type
+				== types.dynamicNode
+		then
 			self:populate_args(node)
 		end
 	end
