@@ -134,6 +134,13 @@ local function bash(_, command)
 	return res
 end
 
+-- Returns a snippet_node wrapped around an insert_node whose initial
+-- text value is set to the current date in the desired format.
+local date_input = function(args, state, fmt)
+    local fmt = fmt or "%Y-%m-%d"
+    return sn(nil, i(1, os.date(fmt)))
+end
+
 ls.snippets = {
 	all = {
 		-- trigger is fn.
@@ -183,6 +190,14 @@ ls.snippets = {
 			i(0),
 			t({ "", "}" }),
 		}),
+                -- Use a dynamic_node to interpolate the output of a
+                -- function (see date_input above) into the initial
+                -- value of an insert_node.
+                s("novel", {
+                    t("It was a dark and stormy night on "),
+                    d(1, date_input, {}, "%A, %B %d of %Y"),
+                    t(" and the clocks were striking thirteen."),
+                }),
 		-- Parsing snippets: First parameter: Snippet-Trigger, Second: Snippet body.
 		-- Placeholders are parsed into choices with 1. the placeholder text(as a snippet) and 2. an empty string.
 		-- This means they are not SELECTed like in other editors/Snippet engines.
