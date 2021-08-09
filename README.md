@@ -11,7 +11,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 - Dynamic Snippet creation
 - Regex-Trigger
 - Autotriggered Snippets
-- Fast, small, simple
+- Fast
 - Parse [LSP-Style](https://microsoft.github.io/language-server-protocol/specification#snippet_syntax) Snippets (Does not, however, support Regex-Transformations)
 - Expand LSP-Snippets with [nvim-compe](https://github.com/hrsh7th/nvim-compe)
 - Snippet history (jump back into older snippets)
