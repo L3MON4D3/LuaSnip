@@ -493,6 +493,7 @@ end
 function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
+		print(node.mark.opts.right_gravity, node.mark.opts.end_right_gravity)
 		local from, to = util.get_ext_positions(node.mark.id)
 		print(from[1], from[2])
 		print(to[1], to[2])
