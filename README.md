@@ -13,7 +13,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 - Autotriggered Snippets
 - Fast
 - Parse [LSP-Style](https://microsoft.github.io/language-server-protocol/specification#snippet_syntax) Snippets (Does not, however, support Regex-Transformations)
-- Expand LSP-Snippets with [nvim-compe](https://github.com/hrsh7th/nvim-compe)
+- Expand LSP-Snippets with [nvim-compe](https://github.com/hrsh7th/nvim-compe) (or its' successor, [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) (requires [cmp_luasnip](https://github.com/saadparwaiz1/cmp_luasnip)))
 - Snippet history (jump back into older snippets)
 
 # Drawbacks
