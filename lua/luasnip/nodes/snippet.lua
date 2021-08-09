@@ -4,6 +4,7 @@ local t = require("luasnip.nodes.textNode").T
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
 local mark = require("luasnip.util.mark").mark
+local conf = require("luasnip.config")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -296,6 +297,10 @@ end
 function Snippet:trigger_expand(current_node)
 	self:indent(util.get_current_line_to_cursor():match("^%s*"))
 
+	-- keep (possibly) user-set opts.
+	if not self.ext_opts then
+		self.ext_opts = vim.deepcopy(conf.config.ext_opts)
+	end
 	pop_env(self.env)
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
@@ -509,15 +514,18 @@ function Snippet:put_initial(pos)
 		if node.type == types.snippetNode then
 			node:indent(self.indentstr)
 			node.env = self.env
+			node.ext_opts = self.ext_opts
 		end
 
 		node:put_initial(pos)
 
 		-- correctly set extmark for node.
-		node.mark:update({
+		-- does not modify ext_opts[node.type].
+		local mark_opts = vim.tbl_extend("keep", {
 			right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
 			end_right_gravity = false,
-		}, old_pos, pos)
+		}, self.ext_opts[node.type].passive)
+		node.mark:update(mark_opts, old_pos, pos)
 		node:set_old_text()
 	end
 

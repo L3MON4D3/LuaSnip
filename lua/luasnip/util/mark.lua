@@ -67,6 +67,11 @@ local function mark_pos_raw(id)
 		{ details = true }
 	)
 	return {mark_info[1], mark_info[2]}, {mark_info[3].end_line, mark_info[3].end_col}
+function Mark:copy_pos_gravs(opts)
+	local pos_beg, pos_end = mark_pos_raw(self.id)
+	opts.right_gravity = self.opts.right_gravity
+	opts.end_right_gravity = self.opts.end_right_gravity
+	return mark(pos_beg, pos_end, opts)
 end
 
 -- opts just like in nvim_buf_set_extmark.

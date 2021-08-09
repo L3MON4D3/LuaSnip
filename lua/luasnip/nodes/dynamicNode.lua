@@ -82,7 +82,8 @@ function DynamicNode:update()
 	tmp.prev = self
 
 	tmp.env = self.parent.env
-	tmp.mark = self.mark
+	tmp.ext_opts = tmp.ext_opts or self.parent.ext_opts
+	tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive))
 	tmp.dependents = self.dependents
 
 	tmp:indent(self.parent.indentstr)

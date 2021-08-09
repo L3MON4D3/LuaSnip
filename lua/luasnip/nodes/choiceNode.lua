@@ -18,13 +18,13 @@ end
 function ChoiceNode:put_initial(pos)
 	for _, node in ipairs(self.choices) do
 		node.parent = self.parent
-		node.mark = self.mark
 		node.next = self
 		node.prev = self
 		node.dependents = self.dependents
 		if node.type == types.snippetNode then
 			node:indent(self.parent.indentstr)
 			node.env = self.parent.env
+			node.ext_opts = self.parent.ext_opts
 		end
 		node.indx = self.indx
 		node.pos = self.pos
@@ -35,7 +35,18 @@ function ChoiceNode:put_initial(pos)
 		end
 	end
 	self.inner = self.choices[self.current_choice]
+
+	self.inner.mark = mark({0,0}, {0,0}, {})
+	local old_pos = vim.deepcopy(pos)
+
 	self.inner:put_initial(pos)
+
+	local mark_opts = vim.tbl_extend("keep", {
+		right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
+		end_right_gravity = false,
+	}, self.parent.ext_opts[self.inner.type].passive)
+
+	self.inner.mark:update(mark_opts, old_pos, pos)
 end
 
 function ChoiceNode:input_enter()
@@ -102,6 +113,7 @@ function ChoiceNode:change_choice(val)
 	self.current_choice = tmp
 	self.inner = self.choices[self.current_choice]
 
+	self.inner.mark = self.mark:copy_pos_gravs(vim.deepcopy(self.parent.ext_opts[self.inner.type].passive))
 	self.inner:put_initial(util.get_ext_position_begin(self.mark.id))
 	self.inner:update()
 	self.inner.old_text = self.inner:get_text()
