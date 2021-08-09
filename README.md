@@ -10,6 +10,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 - Choices
 - Dynamic Snippet creation
 - Regex-Trigger
+- Autotriggered Snippets
 - Fast, small, simple
 - Parse [LSP-Style](https://microsoft.github.io/language-server-protocol/specification#snippet_syntax) Snippets (Does not, however, support Regex-Transformations)
 - Expand LSP-Snippets with [nvim-compe](https://github.com/hrsh7th/nvim-compe)
@@ -100,6 +101,7 @@ Neovim >= 0.5 (extmarks)
 - `history`: If true, Snippets that were exited can still be jumped back into. As Snippets are not removed when their text is deleted, they have to be removed manually via `LuasnipUnlinkCurrent`.
 - `updateevents`: Choose which events trigger an update of the active nodes' dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would update on every change.
 - `store_selection_keys`: Mapping for populating `TM_SELECTED_TEXT` and related variables (not set by default).
+- `enable_autosnippets`: Autosnippets are disabled by default to minimize performance penalty if unused. Set to `true` to enable.
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
 
