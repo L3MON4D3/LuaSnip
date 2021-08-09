@@ -1,7 +1,39 @@
+local types = require("luasnip.util.types")
+
 local defaults = {
 	history = false,
 	updateevents = "InsertLeave",
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
+	ext_opts = {
+		[types.textNode] = {
+			active = {},
+			passive = {}
+		},
+		[types.insertNode] = {
+			active = {},
+			passive = {}
+		},
+		[types.functionNode] = {
+			active = {},
+			passive = {}
+		},
+		[types.snippetNode] = {
+			active = {},
+			passive = {}
+		},
+		[types.choiceNode] = {
+			active = {},
+			passive = {}
+		},
+		[types.dynamicNode] = {
+			active = {},
+			passive = {}
+		},
+		[types.snippet] = {
+			active = {},
+			passive = {}
+		}
+	}
 }
 
 -- declare here to use in set_config.
@@ -11,6 +43,10 @@ c = {
 	config = vim.deepcopy(defaults),
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
+
+		-- overwrite default ext_opts for each type.
+		conf.ext_opts = vim.tbl_extend("force", conf.ext_opts, user_config.ext_opts or {})
+
 		for k, v in pairs(user_config) do
 			conf[k] = v
 		end
