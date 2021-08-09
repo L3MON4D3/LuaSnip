@@ -508,9 +508,6 @@ function Snippet:put_initial(pos)
 		-- save pos to compare to later.
 		local old_pos = vim.deepcopy(pos)
 
-		-- get new mark-id here, may be needed in node:put_initial.
-		node.mark = mark({0,0}, {0,0}, {})
-
 		-- set for snippetNodes.
 		if node.type == types.snippetNode then
 			node:indent(self.indentstr)
@@ -526,7 +523,7 @@ function Snippet:put_initial(pos)
 			right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
 			end_right_gravity = false,
 		}, self.ext_opts[node.type].passive)
-		node.mark:update(mark_opts, old_pos, pos)
+		node.mark = mark(old_pos, pos, mark_opts)
 		node:set_old_text()
 	end
 

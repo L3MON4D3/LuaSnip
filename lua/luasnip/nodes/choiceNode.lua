@@ -2,6 +2,7 @@ local node = require("luasnip.nodes.node").Node
 local ChoiceNode = node:new()
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
+local mark = require("luasnip.util.mark").mark
 
 local function C(pos, choices)
 	return ChoiceNode:new({
@@ -36,7 +37,6 @@ function ChoiceNode:put_initial(pos)
 	end
 	self.inner = self.choices[self.current_choice]
 
-	self.inner.mark = mark({0,0}, {0,0}, {})
 	local old_pos = vim.deepcopy(pos)
 
 	self.inner:put_initial(pos)
@@ -46,7 +46,7 @@ function ChoiceNode:put_initial(pos)
 		end_right_gravity = false,
 	}, self.parent.ext_opts[self.inner.type].passive)
 
-	self.inner.mark:update(mark_opts, old_pos, pos)
+	self.inner.mark = mark(old_pos, pos, mark_opts)
 end
 
 function ChoiceNode:input_enter()
