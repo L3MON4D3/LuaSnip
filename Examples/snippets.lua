@@ -246,6 +246,15 @@ ls.snippets = {
 			-- Lambdas can also apply transforms USING the text of other nodes:
 			l(l._1:gsub("e", l._2), { 1, 2 }),
 		}),
+                -- Set store_selection_keys = "<Tab>" (for example) in your
+                -- luasnip.config.setup() call to access TM_SELECTED_TEXT. In
+                -- this case, select a URL, hit Tab, then expand this snippet.
+                s("link_url", {
+                    t("<a href=\""),
+                    f(function (args) return args[1].env.TM_SELECTED_TEXT[1] end, {}),
+                    t("\">"), i(1),
+                    t("</a>"), i(0),
+                }),
 		-- Shorthand for repeating the text in a given node.
 		s("repeat", { i(1, "text"), t({ "", "" }), r(1) }),
 		-- Directly insert the ouput from a function evaluated at runtime.
