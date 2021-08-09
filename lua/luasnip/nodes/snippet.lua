@@ -623,7 +623,7 @@ end
 
 function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.mark.id)
+		node.mark:clear()
 	end
 end
 

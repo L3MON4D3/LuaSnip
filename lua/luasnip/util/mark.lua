@@ -66,7 +66,9 @@ local function mark_pos_raw(id)
 		id,
 		{ details = true }
 	)
-	return {mark_info[1], mark_info[2]}, {mark_info[3].end_line, mark_info[3].end_col}
+	return {mark_info[1], mark_info[2]}, {mark_info[3].end_row, mark_info[3].end_col}
+end
+
 function Mark:copy_pos_gravs(opts)
 	local pos_beg, pos_end = mark_pos_raw(self.id)
 	opts.right_gravity = self.opts.right_gravity
@@ -90,6 +92,10 @@ function Mark:update(opts, pos_begin, pos_end)
 	vim.api.nvim_buf_set_extmark(
 		0, Luasnip_ns_id, pos_begin[1], pos_begin[2],
 		vim.tbl_extend("force", self.opts, {id = self.id, end_line = pos_end[1], end_col = pos_end[2]}))
+end
+
+function Mark:clear()
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.id)
 end
 
 return {
