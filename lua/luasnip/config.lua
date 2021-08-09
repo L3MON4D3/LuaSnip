@@ -45,7 +45,7 @@ c = {
 		local conf = vim.deepcopy(defaults)
 
 		-- overwrite default ext_opts for each type.
-		conf.ext_opts = vim.tbl_extend("force", conf.ext_opts, user_config.ext_opts or {})
+		user_config.ext_opts = vim.tbl_extend("force", conf.ext_opts, user_config.ext_opts or {})
 
 		for k, v in pairs(user_config) do
 			conf[k] = v
