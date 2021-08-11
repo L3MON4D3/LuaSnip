@@ -89,7 +89,6 @@ end
 function Mark:update(opts, pos_begin, pos_end)
 	-- if one is changed, the other is likely as well.
 	if not pos_begin then
-		local old_pos_begin, old_pos_end = mark_pos_raw(self.id)
 		pos_begin = old_pos_begin
 		if not pos_end then
 			pos_end = old_pos_end
@@ -108,6 +107,39 @@ function Mark:update(opts, pos_begin, pos_end)
 			{ id = self.id, end_line = pos_end[1], end_col = pos_end[2] }
 		)
 	)
+end
+
+function Mark:set_opts(opts)
+	local pos_begin, pos_end = mark_pos_raw(self.id)
+	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.id)
+
+	self.opts = opts
+	-- set new extmark, current behaviour for updating seems inconsistent,
+	-- gravs are reset, deco is kept.
+	self.id = vim.api.nvim_buf_set_extmark(
+		0,
+		Luasnip_ns_id,
+		pos_begin[1],
+		pos_begin[2],
+		vim.tbl_extend(
+			"force",
+			opts,
+			{end_line = pos_end[1], end_col = pos_end[2] }
+		)
+	)
+end
+
+function Mark:change_rgravs(rgrav_beg, rgrav_end)
+	self.opts.right_gravity = rgrav_beg
+	self.opts.end_right_gravity = rgrav_end
+	self:set_opts(self.opts)
+end
+
+-- change all opts except rgravs.
+function Mark:change_opts(opts)
+	opts.right_gravity = self.right_gravity
+	opts.end_right_gravity = self.end_right_gravity
+	self:set_opts(opts)
 end
 
 function Mark:clear()

@@ -60,10 +60,7 @@ function Node:jumpable(dir)
 end
 
 function Node:set_mark_rgrav(rgrav_beg, rgrav_end)
-	self.mark:update({
-		right_gravity = rgrav_beg,
-		end_right_gravity = rgrav_end,
-	})
+	self.mark:change_rgravs(rgrav_beg, rgrav_end)
 end
 
 function Node:get_text()
