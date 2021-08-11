@@ -161,6 +161,7 @@ function InsertNode:exit()
 	self.inner_first = nil
 	self.inner_last = nil
 	self.inner_active = false
+	self.mark:clear()
 end
 
 return {

@@ -89,7 +89,9 @@ function Node:set_old_text()
 	self.old_text = self:get_text()
 end
 
-function Node:exit() end
+function Node:exit()
+	self.mark:clear()
+end
 
 function Node:input_leave() end
 

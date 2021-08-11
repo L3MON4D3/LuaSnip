@@ -619,7 +619,7 @@ end
 
 function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
-		node.mark:clear()
+		node:exit()
 	end
 end
 
