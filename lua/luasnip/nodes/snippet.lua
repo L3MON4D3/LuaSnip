@@ -309,7 +309,17 @@ function Snippet:trigger_expand(current_node)
 
 	local start_node = iNode.I(0)
 
-	self:put_initial(util.get_cursor_0ind())
+	local pos = util.get_cursor_0ind()
+	local old_pos = vim.deepcopy(pos)
+
+	self:put_initial(pos)
+
+	self.mark = mark(old_pos, pos, {
+		right_gravity = false,
+		end_right_gravity = false,
+	})
+	self:set_old_text()
+
 	self:update()
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
@@ -502,8 +512,6 @@ function Snippet:dump()
 end
 
 function Snippet:put_initial(pos)
-	local snip_begin_pos = vim.deepcopy(pos)
-
 	-- i needed for functions.
 	for _, node in ipairs(self.nodes) do
 		-- save pos to compare to later.
@@ -527,19 +535,6 @@ function Snippet:put_initial(pos)
 		node.mark = mark(old_pos, pos, mark_opts)
 		node:set_old_text()
 	end
-
-	if self.mark then
-		self.mark:update({
-			right_gravity = false,
-			end_right_gravity = false,
-		}, snip_begin_pos, pos)
-	else
-		self.mark = mark(snip_begin_pos, pos, {
-			right_gravity = false,
-			end_right_gravity = false,
-		})
-	end
-	self:set_old_text()
 
 	for _, node in ipairs(self.nodes) do
 		if
