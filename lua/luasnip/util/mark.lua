@@ -115,7 +115,7 @@ function Mark:set_opts(opts)
 
 	self.opts = opts
 	-- set new extmark, current behaviour for updating seems inconsistent,
-	-- gravs are reset, deco is kept.
+	-- eg. gravs are reset, deco is kept.
 	self.id = vim.api.nvim_buf_set_extmark(
 		0,
 		Luasnip_ns_id,
@@ -129,16 +129,16 @@ function Mark:set_opts(opts)
 	)
 end
 
-function Mark:change_rgravs(rgrav_beg, rgrav_end)
+function Mark:update_rgravs(rgrav_beg, rgrav_end)
 	self.opts.right_gravity = rgrav_beg
 	self.opts.end_right_gravity = rgrav_end
 	self:set_opts(self.opts)
 end
 
 -- change all opts except rgravs.
-function Mark:change_opts(opts)
-	opts.right_gravity = self.right_gravity
-	opts.end_right_gravity = self.end_right_gravity
+function Mark:update_opts(opts)
+	opts.right_gravity = self.opts.right_gravity
+	opts.end_right_gravity = self.opts.end_right_gravity
 	self:set_opts(opts)
 end
 

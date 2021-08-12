@@ -60,7 +60,7 @@ function Node:jumpable(dir)
 end
 
 function Node:set_mark_rgrav(rgrav_beg, rgrav_end)
-	self.mark:change_rgravs(rgrav_beg, rgrav_end)
+	self.mark:update_rgravs(rgrav_beg, rgrav_end)
 end
 
 function Node:get_text()
