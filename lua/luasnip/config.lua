@@ -1,4 +1,5 @@
 local types = require("luasnip.util.types")
+local util = require("luasnip.util.util")
 
 local defaults = {
 	history = false,
@@ -45,12 +46,7 @@ c = {
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
 
-		-- overwrite default ext_opts for each type.
-		user_config.ext_opts = vim.tbl_extend(
-			"force",
-			conf.ext_opts,
-			user_config.ext_opts or {}
-		)
+		user_config.ext_opts = util.make_valid(user_config.ext_opts, defaults.ext_opts)
 
 		for k, v in pairs(user_config) do
 			conf[k] = v

@@ -312,6 +312,17 @@ local function pos_equal(p1, p2)
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
 
+local function make_valid(user_opts, default_opts)
+	local opts = vim.deepcopy(default_opts)
+	for key, val in pairs(user_opts) do
+		-- for active, add values from passive.
+		val.active = vim.tbl_extend("keep", val.active or {}, val.passive)
+		-- override default-value.
+		opts[key] = val
+	end
+	return opts
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -335,4 +346,5 @@ return {
 	dedent = dedent,
 	indent = indent,
 	expand_tabs = expand_tabs,
+	make_valid = make_valid
 }
