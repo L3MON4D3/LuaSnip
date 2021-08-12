@@ -53,6 +53,7 @@ function ChoiceNode:put_initial(pos)
 end
 
 function ChoiceNode:input_enter()
+	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 	self.parent:enter_node(self.indx)
 
 	self.prev_choice = Luasnip_active_choice
@@ -61,6 +62,7 @@ function ChoiceNode:input_enter()
 end
 
 function ChoiceNode:input_leave()
+	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 	self:update_dependents()
 	Luasnip_active_choice = self.prev_choice
 	self.active = false

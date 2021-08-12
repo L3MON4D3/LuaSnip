@@ -26,7 +26,9 @@ function Node:put_initial(pos)
 	end
 end
 
-function Node:input_enter(no_move) end
+function Node:input_enter(no_move)
+	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+end
 
 function Node:jump_into(dir, no_move)
 	self:input_enter(no_move)
@@ -93,7 +95,9 @@ function Node:exit()
 	self.mark:clear()
 end
 
-function Node:input_leave() end
+function Node:input_leave()
+	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+end
 
 function Node:update_dependents()
 	if not util.multiline_equal(self.old_text, self:get_text()) then

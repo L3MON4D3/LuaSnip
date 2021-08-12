@@ -62,6 +62,7 @@ function ExitNode:jump_into(dir)
 end
 
 function InsertNode:input_enter(no_move)
+	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 	if not no_move then
 		self.parent:enter_node(self.indx)
 
@@ -155,6 +156,7 @@ end
 
 function InsertNode:input_leave()
 	self:update_dependents()
+	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
 function InsertNode:exit()

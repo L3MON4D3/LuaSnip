@@ -591,11 +591,13 @@ end
 
 function Snippet:input_enter()
 	self.active = true
+	self.mark:update_opts(self.ext_opts[self.type].active)
 end
 
 function Snippet:input_leave()
 	self:update_dependents()
 	self.active = false
+	self.mark:update_opts(self.ext_opts[self.type].passive)
 end
 
 function Snippet:jump_into(dir)

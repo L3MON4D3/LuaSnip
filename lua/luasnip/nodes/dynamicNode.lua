@@ -26,11 +26,13 @@ end
 
 function DynamicNode:input_enter()
 	self.active = true
+	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 end
 
 function DynamicNode:input_leave()
 	self:update_dependents()
 	self.active = false
+	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
 function DynamicNode:has_static_text()
