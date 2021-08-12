@@ -106,10 +106,9 @@ function DynamicNode:update()
 end
 
 function DynamicNode:set_mark_rgrav(val_begin, val_end)
+	Node.set_mark_rgrav(self, val_begin, val_end)
 	if self.snip then
 		self.snip:set_mark_rgrav(val_begin, val_end)
-	else
-		Node.set_mark_rgrav(self, val_begin, val_end)
 	end
 end
 

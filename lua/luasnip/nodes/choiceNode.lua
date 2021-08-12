@@ -45,7 +45,7 @@ function ChoiceNode:put_initial(pos)
 	self.inner:put_initial(pos)
 
 	local mark_opts = vim.tbl_extend("keep", {
-		right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
+		right_gravity = false,
 		end_right_gravity = false,
 	}, self.parent.ext_opts[self.inner.type].passive)
 
