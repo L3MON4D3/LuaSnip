@@ -35,6 +35,8 @@ local defaults = {
 			passive = {},
 		},
 	},
+	ext_base_prio = 200,
+	prio_increase = 7,
 	enable_autosnippets = false,
 }
 
@@ -46,7 +48,8 @@ c = {
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
 
-		user_config.ext_opts = util.make_valid(user_config.ext_opts, defaults.ext_opts)
+		user_config.ext_opts = util.make_opts_valid(user_config.ext_opts, defaults.ext_opts)
+		util.increase_ext_prio(user_config.ext_opts, user_config.ext_base_prio or defaults.ext_base_prio)
 
 		for k, v in pairs(user_config) do
 			conf[k] = v

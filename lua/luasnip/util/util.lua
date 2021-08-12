@@ -312,14 +312,26 @@ local function pos_equal(p1, p2)
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
 
-local function make_valid(user_opts, default_opts)
+local function make_opts_valid(user_opts, default_opts, base_prio)
 	local opts = vim.deepcopy(default_opts)
 	for key, val in pairs(user_opts) do
+		-- use raw default for passive if not given.
+		val.passive = val.passive or default_opts[key].passive
 		-- for active, add values from passive.
-		val.active = vim.tbl_extend("keep", val.active or {}, val.passive)
-		-- override default-value.
+		val.active = vim.tbl_extend("keep", val.active or default_opts[key].active, val.passive)
+
+		-- override copied default-value.
 		opts[key] = val
 	end
+	return opts
+end
+
+local function increase_ext_prio(opts, amount)
+	for _, val in pairs(opts) do
+		val.active.priority = (val.active.priority or 0) + amount
+		val.passive.priority = (val.passive.priority or 0) + amount
+	end
+	-- modifies in-place, but utilizing that may be cumbersome.
 	return opts
 end
 
@@ -346,5 +358,6 @@ return {
 	dedent = dedent,
 	indent = indent,
 	expand_tabs = expand_tabs,
-	make_valid = make_valid
+	make_opts_valid = make_opts_valid,
+	increase_ext_prio = increase_ext_prio
 }
