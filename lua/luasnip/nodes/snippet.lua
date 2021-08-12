@@ -121,6 +121,7 @@ local function S(context, nodes, condition, ...)
 		dependents = {},
 		active = false,
 		env = {},
+		type = types.snippet,
 	})
 
 	snip:init_nodes()
@@ -314,10 +315,11 @@ function Snippet:trigger_expand(current_node)
 
 	self:put_initial(pos)
 
-	self.mark = mark(old_pos, pos, {
+	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = false,
-	})
+	}, self.ext_opts[types.snippet].passive)
+	self.mark = mark(old_pos, pos, mark_opts)
 	self:set_old_text()
 
 	self:update()
