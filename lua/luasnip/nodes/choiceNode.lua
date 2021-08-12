@@ -1,6 +1,7 @@
 local node = require("luasnip.nodes.node").Node
 local ChoiceNode = node:new()
 local util = require("luasnip.util.util")
+local conf = require("luasnip.config")
 local types = require("luasnip.util.types")
 local mark = require("luasnip.util.mark").mark
 
@@ -25,7 +26,7 @@ function ChoiceNode:put_initial(pos)
 		if node.type == types.snippetNode then
 			node:indent(self.parent.indentstr)
 			node.env = self.parent.env
-			node.ext_opts = self.parent.ext_opts
+			node.ext_opts = util.increase_ext_prio(vim.deepcopy(self.parent.ext_opts), conf.config.prio_increase)
 		end
 		node.indx = self.indx
 		node.pos = self.pos

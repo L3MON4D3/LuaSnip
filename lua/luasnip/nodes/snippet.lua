@@ -301,7 +301,14 @@ function Snippet:trigger_expand(current_node)
 
 	-- keep (possibly) user-set opts.
 	if not self.ext_opts then
-		self.ext_opts = vim.deepcopy(conf.config.ext_opts)
+		-- if expanded outside another snippet use configs' ext_opts, if inside,
+		-- use those of that snippet and increase priority.
+		-- for now do a check for .indx, TODO: maybe only expand in insertNodes.
+		if current_node and (current_node.indx and current_node.indx > 1) then
+			self.ext_opts = util.increase_ext_prio(vim.deepcopy(current_node.parent.ext_opts), conf.config.prio_increase)
+		else
+			self.ext_opts = vim.deepcopy(conf.config.ext_opts)
+		end
 	end
 	pop_env(self.env)
 
@@ -523,7 +530,7 @@ function Snippet:put_initial(pos)
 		if node.type == types.snippetNode then
 			node:indent(self.indentstr)
 			node.env = self.env
-			node.ext_opts = self.ext_opts
+			node.ext_opts = util.increase_ext_prio(vim.deepcopy(self.ext_opts), conf.config.prio_increase)
 		end
 
 		node:put_initial(pos)
