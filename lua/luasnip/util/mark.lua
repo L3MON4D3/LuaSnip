@@ -141,9 +141,10 @@ end
 
 -- change all opts except rgravs.
 function Mark:update_opts(opts)
-	opts.right_gravity = self.opts.right_gravity
-	opts.end_right_gravity = self.opts.end_right_gravity
-	self:set_opts(opts)
+	local opts_cp = vim.deepcopy(opts)
+	opts_cp.right_gravity = self.opts.right_gravity
+	opts_cp.end_right_gravity = self.opts.end_right_gravity
+	self:set_opts(opts_cp)
 end
 
 function Mark:clear()
