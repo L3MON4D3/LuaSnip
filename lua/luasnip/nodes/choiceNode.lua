@@ -145,6 +145,11 @@ function ChoiceNode:copy()
 	return o
 end
 
+function ChoiceNode:exit()
+	self.mark:clear()
+	self.inner:exit()
+end
+
 -- val_begin/end may be nil, in this case that gravity won't be changed.
 function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
 	node.set_mark_rgrav(self, rgrav_beg, rgrav_end)

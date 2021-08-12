@@ -112,6 +112,12 @@ function DynamicNode:set_mark_rgrav(val_begin, val_end)
 	end
 end
 
+function DynamicNode:exit()
+	self.mark:clear()
+	-- snip should exist if exit is called.
+	self.snip:exit()
+end
+
 return {
 	D = D,
 }
