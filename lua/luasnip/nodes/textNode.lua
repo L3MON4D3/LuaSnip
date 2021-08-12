@@ -12,9 +12,6 @@ local function T(static_text)
 	})
 end
 
--- Don't touch gravities for TextNodes.
-function TextNode:set_mark_rgrav(_, _) end
-
 function TextNode:input_enter()
 	vim.api.nvim_feedkeys(
 		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),

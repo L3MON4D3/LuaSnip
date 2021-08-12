@@ -529,7 +529,7 @@ function Snippet:put_initial(pos)
 		-- correctly set extmark for node.
 		-- does not modify ext_opts[node.type].
 		local mark_opts = vim.tbl_extend("keep", {
-			right_gravity = not (old_pos[1] == pos[1] and old_pos[2] == pos[2]),
+			right_gravity = false,
 			end_right_gravity = false,
 		}, self.ext_opts[node.type].passive)
 		node.mark = mark(old_pos, pos, mark_opts)
