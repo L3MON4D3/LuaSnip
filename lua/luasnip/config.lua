@@ -7,32 +7,32 @@ local defaults = {
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
 	ext_opts = {
 		[types.textNode] = {
-			active = {},
-			passive = {},
+			active = {hl_group = "LuasnipTextNodeActive"},
+			passive = {hl_group = "LuasnipTextNodePassive"},
 		},
 		[types.insertNode] = {
-			active = {},
-			passive = {},
+			active = {hl_group = "LuasnipInsertNodeActive"},
+			passive = {hl_group = "LuasnipInsertNodePassive"},
 		},
 		[types.functionNode] = {
-			active = {},
-			passive = {},
+			active = {hl_group = "LuasnipFunctionNodeActive"},
+			passive = {hl_group = "LuasnipFunctionNodePassive"},
 		},
 		[types.snippetNode] = {
-			active = {},
-			passive = {},
+			active = {hl_group = "LuasnipSnippetNodeActive"},
+			passive = {hl_group = "LuasnipSnippetNodePassive"},
 		},
 		[types.choiceNode] = {
-			active = {},
-			passive = {},
+			active = {hl_group = "LuasnipChoiceNodeActive"},
+			passive = {hl_group = "LuasnipChoiceNodePassive"},
 		},
 		[types.dynamicNode] = {
-			active = {},
-			passive = {},
+			active = {hl_group = "LuasnipDynamicNodeActive"},
+			passive = {hl_group = "LuasnipDynamicNodePassive"},
 		},
 		[types.snippet] = {
-			active = {},
-			passive = {},
+			active = {hl_group = "LuasnipSnippetActive"},
+			passive = {hl_group = "LuasnipSnippetPassive"},
 		},
 	},
 	ext_base_prio = 200,
@@ -48,6 +48,7 @@ c = {
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
 
+		util.clear_invalid(conf.ext_opts)
 		user_config.ext_opts = util.make_opts_valid(
 			user_config.ext_opts or {},
 			defaults.ext_opts

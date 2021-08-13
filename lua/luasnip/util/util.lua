@@ -312,6 +312,14 @@ local function pos_equal(p1, p2)
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
 
+local function clear_invalid(opts)
+	for _, val in pairs(opts) do
+		local act_group, pas_group = val.active.hl_group, val.passive.hl_group
+		val.active.hl_group = (vim.fn.hlexists(act_group or "") and act_group) or nil
+		val.passive.hl_group = (vim.fn.hlexists(pas_group or "") and pas_group) or nil
+	end
+end
+
 local function make_opts_valid(user_opts, default_opts)
 	local opts = vim.deepcopy(default_opts)
 	for key, val in pairs(user_opts) do
@@ -364,4 +372,5 @@ return {
 	expand_tabs = expand_tabs,
 	make_opts_valid = make_opts_valid,
 	increase_ext_prio = increase_ext_prio,
+	clear_invalid = clear_invalid
 }
