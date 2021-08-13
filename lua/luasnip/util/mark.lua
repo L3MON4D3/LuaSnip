@@ -66,11 +66,11 @@ function Mark:pos_end()
 	return bytecol_to_utfcol({ mark_info[3].end_row, mark_info[3].end_col })
 end
 
-local function mark_pos_raw(id)
+function Mark:pos_begin_end_raw(id)
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
 		Luasnip_ns_id,
-		id,
+		self.id,
 		{ details = true }
 	)
 	return { mark_info[1], mark_info[2] },
@@ -78,7 +78,7 @@ local function mark_pos_raw(id)
 end
 
 function Mark:copy_pos_gravs(opts)
-	local pos_beg, pos_end = mark_pos_raw(self.id)
+	local pos_beg, pos_end = self:pos_begin_end_raw()
 	opts.right_gravity = self.opts.right_gravity
 	opts.end_right_gravity = self.opts.end_right_gravity
 	return mark(pos_beg, pos_end, opts)
@@ -110,7 +110,7 @@ function Mark:update(opts, pos_begin, pos_end)
 end
 
 function Mark:set_opts(opts)
-	local pos_begin, pos_end = mark_pos_raw(self.id)
+	local pos_begin, pos_end = self:pos_begin_end_raw()
 	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.id)
 
 	self.opts = opts
