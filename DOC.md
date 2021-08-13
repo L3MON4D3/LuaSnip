@@ -393,7 +393,7 @@ ls.config.setup({
 		},
 	},
 	ext_base_prio = 200,
-	prio_increase = 7,
+	ext_prio_increase = 7,
 })
 ```
 
@@ -401,8 +401,8 @@ This highlights `insertNodes` red and adds virtualText to `choiceNode` while
 it is active. The `active`/`passive`-tables are passed to `nvim_buf_set_extmark`
 as `opts` which means only entries valid there can be used here.
 One notable difference is `priority`, which is interpreted as an offset, not
-an absolute value(`0 <= priority < prio_increase`). The absolute range of
-priorities can still be controlled using `ext_base_prio` and `prio_increase`
+an absolute value(`0 <= priority < ext_prio_increase`). The absolute range of
+priorities can still be controlled using `ext_base_prio` and `ext_prio_increase`
 (all highlights start out with `ext_base_prio`+their own priority, for
 highlights belonging to a nested snippet(Node), `ext_base_prio` is increased
-by `prio_increase`).
+by `ext_prio_increase`).

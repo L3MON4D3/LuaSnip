@@ -88,7 +88,7 @@ function DynamicNode:update()
 	tmp.prev = self
 
 	tmp.env = self.parent.env
-	tmp.ext_opts = tmp.ext_opts or util.increase_ext_prio(vim.deepcopy(self.parent.ext_opts), conf.config.prio_increase)
+	tmp.ext_opts = tmp.ext_opts or util.increase_ext_prio(vim.deepcopy(self.parent.ext_opts), conf.config.ext_prio_increase)
 	tmp.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
 	)

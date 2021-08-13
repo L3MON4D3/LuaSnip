@@ -36,7 +36,7 @@ local defaults = {
 		},
 	},
 	ext_base_prio = 200,
-	prio_increase = 7,
+	ext_prio_increase = 7,
 	enable_autosnippets = false,
 }
 
