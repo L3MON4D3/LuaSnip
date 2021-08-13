@@ -31,19 +31,18 @@ end
 function ExitNode:input_enter()
 	-- Don't enter node for -1-node, it isn't in the node-table.
 	if self.pos == 0 then
-		self.parent:enter_node(self.indx)
-		-- -1-node:
+		InsertNode.input_enter(self)
+	-- -1-node:
 	else
 		self:set_mark_rgrav(true, true)
-	end
 
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-		"n",
-		true
-	)
-	-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-	util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+		vim.api.nvim_feedkeys(
+			vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+			"n",
+			true
+		)
+		util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+	end
 end
 
 function ExitNode:input_leave() end
