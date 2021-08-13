@@ -466,7 +466,7 @@ function Snippet:copy()
 end
 
 function Snippet:set_text(node, text)
-	local node_from, node_to = util.get_ext_positions(node.mark.id)
+	local node_from, node_to = node.mark:pos_begin_end_raw()
 
 	self:enter_node(node.indx)
 	local ok, msg = pcall(
@@ -479,6 +479,9 @@ function Snippet:set_text(node, text)
 		text
 	)
 	if not ok then
+		-- get correct column-indices:
+		node_from = util.bytecol_to_utfcol(node_from)
+		node_to = util.bytecol_to_utfcol(node_to)
 		print(
 			"[LuaSnip Failed]:",
 			node_from[1],
