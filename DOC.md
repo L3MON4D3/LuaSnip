@@ -374,4 +374,35 @@ In this case `opts` only accepts paths (`runtimepath` if any). That will load
 the general snippets (the ones of filetype 'all') and those of the filetype
 of the buffers, you open every time you open a new one (but it won't reload them).
 
+# EXT\_OPTS
 
+`ext_opts` are probably best explained with a short example:
+```lua
+local types = require("luasnip.util.types")
+ls.config.setup({
+	ext_opts = {
+		[types.insertNode] = {
+			passive = {
+				hl_group = "GruvboxRed"
+			}
+		},
+		[types.choiceNode] = {
+			active = {
+				virt_text = {{"choiceNode", "GruvboxOrange"}}
+			}
+		},
+	},
+	ext_base_prio = 200,
+	prio_increase = 7,
+})
+```
+
+This highlights `insertNodes` red and adds virtualText to `choiceNode` while
+it is active. The `active`/`passive`-tables are passed to `nvim_buf_set_extmark`
+as `opts` which means only entries valid there can be used here.
+One notable difference is `priority`, which is interpreted as an offset, not
+an absolute value(`0 <= priority < prio_increase`). The absolute range of
+priorities can still be controlled using `ext_base_prio` and `prio_increase`
+(all highlights start out with `ext_base_prio`+their own priority, for
+highlights belonging to a nested snippet(Node), `ext_base_prio` is increased
+by `prio_increase`).

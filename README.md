@@ -102,6 +102,7 @@ Neovim >= 0.5 (extmarks)
 - `updateevents`: Choose which events trigger an update of the active nodes' dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would update on every change.
 - `store_selection_keys`: Mapping for populating `TM_SELECTED_TEXT` and related variables (not set by default).
 - `enable_autosnippets`: Autosnippets are disabled by default to minimize performance penalty if unused. Set to `true` to enable.
+- `ext_opts`: Additional options passed to extmarks. Can be used to add passive/active highlight on a per-node-basis (more info in DOC.md)
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
 
