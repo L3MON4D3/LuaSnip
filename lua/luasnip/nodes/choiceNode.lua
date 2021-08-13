@@ -26,15 +26,18 @@ function ChoiceNode:put_initial(pos)
 		if node.type == types.snippetNode then
 			node:indent(self.parent.indentstr)
 			node.env = self.parent.env
-			node.ext_opts = util.increase_ext_prio(vim.deepcopy(self.parent.ext_opts), conf.config.ext_prio_increase)
+			node.ext_opts = util.increase_ext_prio(
+				vim.deepcopy(self.parent.ext_opts),
+				conf.config.ext_prio_increase
+			)
 		end
 		node.indx = self.indx
 		node.pos = self.pos
 		-- if function- or dynamicNode, dependents may need to be replaced with
 		-- actual nodes, until here dependents may only contain indices of nodes.
 		if
-			node.type == types.functionNode or node.type
-				== types.dynamicNode
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
 		then
 			self.parent:populate_args(node)
 		end

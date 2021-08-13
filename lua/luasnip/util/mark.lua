@@ -124,15 +124,17 @@ function Mark:set_opts(opts)
 		vim.tbl_extend(
 			"force",
 			opts,
-			{end_line = pos_end[1], end_col = pos_end[2] }
+			{ end_line = pos_end[1], end_col = pos_end[2] }
 		)
 	)
 end
 
 function Mark:update_rgravs(rgrav_beg, rgrav_end)
 	-- don't update if nothing would change.
-	if self.opts.right_gravity ~= rgrav_beg or
-	   self.opts.end_right_gravity ~= rgrav_end then
+	if
+		self.opts.right_gravity ~= rgrav_beg
+		or self.opts.end_right_gravity ~= rgrav_end
+	then
 		self.opts.right_gravity = rgrav_beg
 		self.opts.end_right_gravity = rgrav_end
 		self:set_opts(self.opts)

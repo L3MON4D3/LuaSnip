@@ -23,8 +23,8 @@ ls.config.set_config({
 	ext_opts = {
 		[types.choiceNode] = {
 			active = {
-				virt_text = {{"choiceNode", "Comment"}}
-			}
+				virt_text = { { "choiceNode", "Comment" } },
+			},
 		},
 	},
 	-- treesitter-hl has 100, use something higher (default is 200).
@@ -336,7 +336,7 @@ ls.snippets = {
 		-- Very long example for a java class.
 		s("fn", {
 			d(6, jdocsnip, { 2, 4, 5 }),
-			t({"", ""}),
+			t({ "", "" }),
 			c(1, {
 				t("public "),
 				t("private "),

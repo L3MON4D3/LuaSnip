@@ -318,7 +318,11 @@ local function make_opts_valid(user_opts, default_opts, base_prio)
 		-- use raw default for passive if not given.
 		val.passive = val.passive or default_opts[key].passive
 		-- for active, add values from passive.
-		val.active = vim.tbl_extend("keep", val.active or default_opts[key].active, val.passive)
+		val.active = vim.tbl_extend(
+			"keep",
+			val.active or default_opts[key].active,
+			val.passive
+		)
 
 		-- override copied default-value.
 		opts[key] = val
@@ -359,5 +363,5 @@ return {
 	indent = indent,
 	expand_tabs = expand_tabs,
 	make_opts_valid = make_opts_valid,
-	increase_ext_prio = increase_ext_prio
+	increase_ext_prio = increase_ext_prio,
 }

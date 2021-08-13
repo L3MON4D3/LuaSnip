@@ -305,7 +305,10 @@ function Snippet:trigger_expand(current_node)
 		-- use those of that snippet and increase priority.
 		-- for now do a check for .indx, TODO: maybe only expand in insertNodes.
 		if current_node and (current_node.indx and current_node.indx > 1) then
-			self.ext_opts = util.increase_ext_prio(vim.deepcopy(current_node.parent.ext_opts), conf.config.ext_prio_increase)
+			self.ext_opts = util.increase_ext_prio(
+				vim.deepcopy(current_node.parent.ext_opts),
+				conf.config.ext_prio_increase
+			)
 		else
 			self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 		end
@@ -530,7 +533,10 @@ function Snippet:put_initial(pos)
 		if node.type == types.snippetNode then
 			node:indent(self.indentstr)
 			node.env = self.env
-			node.ext_opts = util.increase_ext_prio(vim.deepcopy(self.ext_opts), conf.config.ext_prio_increase)
+			node.ext_opts = util.increase_ext_prio(
+				vim.deepcopy(self.ext_opts),
+				conf.config.ext_prio_increase
+			)
 		end
 
 		node:put_initial(pos)
@@ -547,8 +553,8 @@ function Snippet:put_initial(pos)
 
 	for _, node in ipairs(self.nodes) do
 		if
-			node.type == types.functionNode or node.type
-				== types.dynamicNode
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
 		then
 			self:populate_args(node)
 		end
