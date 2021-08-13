@@ -312,15 +312,15 @@ local function pos_equal(p1, p2)
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
 
-local function make_opts_valid(user_opts, default_opts, base_prio)
+local function make_opts_valid(user_opts, default_opts)
 	local opts = vim.deepcopy(default_opts)
 	for key, val in pairs(user_opts) do
 		-- use raw default for passive if not given.
-		val.passive = val.passive or default_opts[key].passive
+		val.passive = vim.tbl_extend("keep", val.passive or {}, default_opts[key].passive)
 		-- for active, add values from passive.
 		val.active = vim.tbl_extend(
 			"keep",
-			val.active or default_opts[key].active,
+			vim.tbl_extend("keep", val.active or {}, default_opts[key].active),
 			val.passive
 		)
 
