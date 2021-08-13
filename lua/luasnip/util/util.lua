@@ -186,7 +186,7 @@ local function word_under_cursor(cur, line)
 	return string.sub(line, ind_start, ind_end)
 end
 
--- Put text and update cursor(pos).
+-- Put text and update cursor(pos) where cursor is byte-indexed.
 local function put(text, pos)
 	vim.api.nvim_buf_set_text(0, pos[1], pos[2], pos[1], pos[2], text)
 	-- add rows
