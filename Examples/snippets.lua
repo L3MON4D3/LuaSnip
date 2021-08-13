@@ -13,12 +13,24 @@ local p = require("luasnip.extras").partial
 local m = require("luasnip.extras").match
 local n = require("luasnip.extras").nonempty
 local dl = require("luasnip.extras").dynamic_lambda
+local types = require("luasnip.util.types")
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
 	history = true,
 	-- Update more often, :h events for more info.
 	updateevents = "TextChanged,TextChangedI",
+	ext_opts = {
+		[types.choiceNode] = {
+			active = {
+				virt_text = {{"choiceNode", "Comment"}}
+			}
+		},
+	},
+	-- treesitter-hl has 100, use something higher (default is 200).
+	ext_base_prio = 300,
+	-- minimal increase in priority.
+	ext_prio_increase = 1,
 	enable_autosnippets = true,
 })
 
@@ -324,7 +336,7 @@ ls.snippets = {
 		-- Very long example for a java class.
 		s("fn", {
 			d(6, jdocsnip, { 2, 4, 5 }),
-			t("", ""),
+			t({"", ""}),
 			c(1, {
 				t("public "),
 				t("private "),
