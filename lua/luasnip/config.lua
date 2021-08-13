@@ -49,7 +49,7 @@ c = {
 		local conf = vim.deepcopy(defaults)
 
 		user_config.ext_opts = util.make_opts_valid(
-			user_config.ext_opts,
+			user_config.ext_opts or {},
 			defaults.ext_opts
 		)
 		util.increase_ext_prio(
