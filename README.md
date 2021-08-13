@@ -1,3 +1,4 @@
+[![LuaSnip](https://img.shields.io/matrix/luasnip:matrix.org?label=Matrix&logo=matrix)](https://matrix.to/#/%23luasnip:matrix.org)
 # LuaSnip
 https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-91f7-331893f61fbf.mp4
 
@@ -105,5 +106,3 @@ Neovim >= 0.5 (extmarks)
 - `ext_opts`: Additional options passed to extmarks. Can be used to add passive/active highlight on a per-node-basis (more info in DOC.md)
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
-
-Talk, ask or suggest on [matrix](https://matrix.to/#/%23luasnip:matrix.org)
