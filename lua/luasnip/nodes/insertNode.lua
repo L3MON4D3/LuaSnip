@@ -12,7 +12,7 @@ local function I(pos, static_text)
 			static_text = static_text,
 			mark = nil,
 			dependents = {},
-			type = types.insertNode,
+			type = types.exitNode,
 			-- will only be needed for 0-node, -1-node isn't set with this.
 			ext_gravities_active = { false, false },
 		})

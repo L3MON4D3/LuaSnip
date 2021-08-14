@@ -6,6 +6,7 @@ return {
 	choiceNode = 5,
 	dynamicNode = 6,
 	snippet = 7,
+	exitNode = 8,
 	names = {
 		"textNode",
 		"insertNode",

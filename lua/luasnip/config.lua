@@ -14,6 +14,10 @@ local defaults = {
 			active = { hl_group = "LuasnipInsertNodeActive" },
 			passive = { hl_group = "LuasnipInsertNodePassive" },
 		},
+		[types.exitNode] = {
+			active = { hl_group = "LuasnipExitNodeActive" },
+			passive = { hl_group = "LuasnipExitNodePassive" },
+		},
 		[types.functionNode] = {
 			active = { hl_group = "LuasnipFunctionNodeActive" },
 			passive = { hl_group = "LuasnipFunctionNodePassive" },

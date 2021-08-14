@@ -39,6 +39,7 @@ function Snippet:init_nodes()
 		node.indx = i
 		if
 			node.type == types.insertNode
+			or node.type == types.exitNode
 			or node.type == types.snippetNode
 			or node.type == types.choiceNode
 			or node.type == types.dynamicNode
