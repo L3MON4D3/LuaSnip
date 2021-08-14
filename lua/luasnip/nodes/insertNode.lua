@@ -32,7 +32,7 @@ function ExitNode:input_enter()
 	-- Don't enter node for -1-node, it isn't in the node-table.
 	if self.pos == 0 then
 		InsertNode.input_enter(self)
-	-- -1-node:
+		-- -1-node:
 	else
 		self:set_mark_rgrav(true, true)
 
