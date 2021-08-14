@@ -49,13 +49,14 @@ c = {
 		local conf = vim.deepcopy(defaults)
 
 		util.clear_invalid(conf.ext_opts)
+
 		user_config.ext_opts = util.make_opts_valid(
 			user_config.ext_opts or {},
-			defaults.ext_opts
+			conf.ext_opts
 		)
 		util.increase_ext_prio(
 			user_config.ext_opts,
-			user_config.ext_base_prio or defaults.ext_base_prio
+			user_config.ext_base_prio or conf.ext_base_prio
 		)
 
 		for k, v in pairs(user_config) do

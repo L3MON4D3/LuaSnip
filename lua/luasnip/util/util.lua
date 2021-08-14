@@ -322,18 +322,18 @@ end
 
 local function make_opts_valid(user_opts, default_opts)
 	local opts = vim.deepcopy(default_opts)
-	for key, val in pairs(user_opts) do
-		-- use raw default for passive if not given.
-		val.passive = vim.tbl_extend("keep", val.passive or {}, default_opts[key].passive)
-		-- for active, add values from passive.
+	for key, val in pairs(opts) do
+		-- prevent nil-indexing error.
+		user_opts[key] = user_opts[key] or {}
+
+		-- override defaults with user for passive.
+		val.passive = vim.tbl_extend("force", val.passive, user_opts[key].passive or {})
+		-- override default active with user, then fill in missing values from passive.
 		val.active = vim.tbl_extend(
 			"keep",
-			vim.tbl_extend("keep", val.active or {}, default_opts[key].active),
+			vim.tbl_extend("force", val.active, user_opts[key].active or {}),
 			val.passive
 		)
-
-		-- override copied default-value.
-		opts[key] = val
 	end
 	return opts
 end
