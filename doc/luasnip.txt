@@ -159,10 +159,9 @@ It's possible to have easy-to-overwrite text inside an InsertNode initially:
 
 This initial text is defined the same way as textNodes, eg. can be multiline.
 
-0-th Node can not have placeholder text. So the following is not possible
->
-    	s("trigger", i(0, "Not Valid"))
-<
+`i(0)`s can have placeholder text, but do note that when the SELECTed text is
+replaced, its' replacement won't end up in the `i(0)`, but behind it (for
+reasons, check out Luasnip#110).
 
 ================================================================================
 FUNCTIONNODE                                                *luasnip-functionnode*
