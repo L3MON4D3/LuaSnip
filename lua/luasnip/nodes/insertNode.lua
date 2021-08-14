@@ -45,7 +45,11 @@ function ExitNode:input_enter()
 	end
 end
 
-function ExitNode:input_leave() end
+function ExitNode:input_leave()
+	if self.pos == 0 then
+		InsertNode.input_leave(self)
+	end
+end
 
 function ExitNode:jump_into(dir)
 	if not config.config.history then
