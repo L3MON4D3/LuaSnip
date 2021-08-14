@@ -315,8 +315,12 @@ end
 local function clear_invalid(opts)
 	for key, val in pairs(opts) do
 		local act_group, pas_group = val.active.hl_group, val.passive.hl_group
-		opts[key].passive.hl_group = vim.fn.hlexists(pas_group) == 1 and pas_group or nil
-		opts[key].active.hl_group  = vim.fn.hlexists(act_group) == 1 and act_group or nil
+		opts[key].passive.hl_group = vim.fn.hlexists(pas_group) == 1
+				and pas_group
+			or nil
+		opts[key].active.hl_group = vim.fn.hlexists(act_group) == 1
+				and act_group
+			or nil
 	end
 end
 
@@ -327,7 +331,11 @@ local function make_opts_valid(user_opts, default_opts)
 		user_opts[key] = user_opts[key] or {}
 
 		-- override defaults with user for passive.
-		val.passive = vim.tbl_extend("force", val.passive, user_opts[key].passive or {})
+		val.passive = vim.tbl_extend(
+			"force",
+			val.passive,
+			user_opts[key].passive or {}
+		)
 		-- override default active with user, then fill in missing values from passive.
 		val.active = vim.tbl_extend(
 			"keep",
@@ -372,5 +380,5 @@ return {
 	expand_tabs = expand_tabs,
 	make_opts_valid = make_opts_valid,
 	increase_ext_prio = increase_ext_prio,
-	clear_invalid = clear_invalid
+	clear_invalid = clear_invalid,
 }

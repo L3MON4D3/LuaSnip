@@ -7,32 +7,32 @@ local defaults = {
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
 	ext_opts = {
 		[types.textNode] = {
-			active = {hl_group = "LuasnipTextNodeActive"},
-			passive = {hl_group = "LuasnipTextNodePassive"},
+			active = { hl_group = "LuasnipTextNodeActive" },
+			passive = { hl_group = "LuasnipTextNodePassive" },
 		},
 		[types.insertNode] = {
-			active = {hl_group = "LuasnipInsertNodeActive"},
-			passive = {hl_group = "LuasnipInsertNodePassive"},
+			active = { hl_group = "LuasnipInsertNodeActive" },
+			passive = { hl_group = "LuasnipInsertNodePassive" },
 		},
 		[types.functionNode] = {
-			active = {hl_group = "LuasnipFunctionNodeActive"},
-			passive = {hl_group = "LuasnipFunctionNodePassive"},
+			active = { hl_group = "LuasnipFunctionNodeActive" },
+			passive = { hl_group = "LuasnipFunctionNodePassive" },
 		},
 		[types.snippetNode] = {
-			active = {hl_group = "LuasnipSnippetNodeActive"},
-			passive = {hl_group = "LuasnipSnippetNodePassive"},
+			active = { hl_group = "LuasnipSnippetNodeActive" },
+			passive = { hl_group = "LuasnipSnippetNodePassive" },
 		},
 		[types.choiceNode] = {
-			active = {hl_group = "LuasnipChoiceNodeActive"},
-			passive = {hl_group = "LuasnipChoiceNodePassive"},
+			active = { hl_group = "LuasnipChoiceNodeActive" },
+			passive = { hl_group = "LuasnipChoiceNodePassive" },
 		},
 		[types.dynamicNode] = {
-			active = {hl_group = "LuasnipDynamicNodeActive"},
-			passive = {hl_group = "LuasnipDynamicNodePassive"},
+			active = { hl_group = "LuasnipDynamicNodeActive" },
+			passive = { hl_group = "LuasnipDynamicNodePassive" },
 		},
 		[types.snippet] = {
-			active = {hl_group = "LuasnipSnippetActive"},
-			passive = {hl_group = "LuasnipSnippetPassive"},
+			active = { hl_group = "LuasnipSnippetActive" },
+			passive = { hl_group = "LuasnipSnippetPassive" },
 		},
 	},
 	ext_base_prio = 200,
