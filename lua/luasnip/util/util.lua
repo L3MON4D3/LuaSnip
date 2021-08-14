@@ -313,10 +313,10 @@ local function pos_equal(p1, p2)
 end
 
 local function clear_invalid(opts)
-	for _, val in pairs(opts) do
+	for key, val in pairs(opts) do
 		local act_group, pas_group = val.active.hl_group, val.passive.hl_group
-		val.active.hl_group = (vim.fn.hlexists(act_group or "") and act_group) or nil
-		val.passive.hl_group = (vim.fn.hlexists(pas_group or "") and pas_group) or nil
+		opts[key].passive.hl_group = vim.fn.hlexists(pas_group) == 1 and pas_group or nil
+		opts[key].active.hl_group  = vim.fn.hlexists(act_group) == 1 and act_group or nil
 	end
 end
 
