@@ -205,8 +205,8 @@ local function pop_env(env)
 		false
 	)[1]
 	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
-	env.TM_LINE_INDEX = cur[1]
-	env.TM_LINE_NUMBER = cur[1] + 1
+	env.TM_LINE_INDEX = tostring(cur[1])
+	env.TM_LINE_NUMBER = tostring(cur[1] + 1)
 	env.TM_FILENAME = vim.fn.expand("%:t")
 	env.TM_FILENAME_BASE = vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
 	env.TM_DIRECTORY = vim.fn.expand("%:p:h")
