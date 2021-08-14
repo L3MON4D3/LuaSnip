@@ -117,7 +117,8 @@ local function normal_move_before(new_cur_pos)
 			tostring(new_cur_pos[1] + 1)
 				.. "G0"
 				.. tostring(new_cur_pos[2] - 1)
-				.. "l",
+				-- open folds!
+				.. "lzv",
 			"n",
 			true
 		)
@@ -132,7 +133,8 @@ local function normal_move_on(new_cur_pos)
 			tostring(new_cur_pos[1] + 1)
 				.. "G0"
 				.. tostring(new_cur_pos[2])
-				.. "l",
+				-- open folds!
+				.. "lzv",
 			"n",
 			true
 		)
@@ -144,7 +146,8 @@ end
 local function normal_move_on_insert(new_cur_pos)
 	local keys = vim.api.nvim_replace_termcodes(
 		tostring(new_cur_pos[1] + 1)
-			.. "G0i"
+			-- open folds!
+			.. "G0zvi"
 			.. string.rep("<Right>", new_cur_pos[2]),
 		true,
 		false,
