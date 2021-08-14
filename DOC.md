@@ -379,6 +379,8 @@ of the buffers, you open every time you open a new one (but it won't reload them
 `ext_opts` are probably best explained with a short example:
 ```lua
 local types = require("luasnip.util.types")
+
+vim.api.nvim_command("hi LuasnipChoiceNodePassive cterm=italic")
 ls.config.setup({
 	ext_opts = {
 		[types.insertNode] = {
@@ -397,12 +399,20 @@ ls.config.setup({
 })
 ```
 
-This highlights `insertNodes` red and adds virtualText to `choiceNode` while
-it is active. The `active`/`passive`-tables are passed to `nvim_buf_set_extmark`
-as `opts` which means only entries valid there can be used here.
-One notable difference is `priority`, which is interpreted as an offset, not
-an absolute value(`0 <= priority < ext_prio_increase`). The absolute range of
-priorities can still be controlled using `ext_base_prio` and `ext_prio_increase`
-(all highlights start out with `ext_base_prio`+their own priority, for
-highlights belonging to a nested snippet(Node), `ext_base_prio` is increased
-by `ext_prio_increase`).
+This highlights `insertNodes` red (both when active and passive) and adds
+virtualText and italics to `choiceNode` while it is active (unspecified
+values in `active` are populated with values from `passive`). The `active`/
+`passive`-tables are passed to `nvim_buf_set_extmark` as `opts` which means only
+entries valid there can be used here. `priority`, while still affecting the
+priority of highlighting, is interpreted as a relative value here, not absolute
+(`0 <= priority < ext_prio_increase`).
+The absolute range of priorities can still be somewhat controlled using
+`ext_base_prio` and `ext_prio_increase` (all highlights start out with
+`ext_base_prio`+their own priority, for highlights belonging to a nested
+snippet(Node), `ext_base_prio` is increased by `ext_prio_increase`)).
+
+As a shortcut for setting `hl_group`, the highlight-groups
+`Luasnip*Node{Active,Passive}` may be defined (to be actually used by LuaSnip,
+`ls.config.setup` has to be called after defining). They are overridden by the values
+defined in `ext_opts` directly, but otherwise behave the same (active is
+extended by passive).
