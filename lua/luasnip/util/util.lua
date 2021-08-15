@@ -212,7 +212,6 @@ local TM_SELECT = "LUASNIP_TM_SELECT"
 
 local function get_selection(name)
 	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, name)
-	print(name, ok, val)
 	if ok then
 		vim.api.nvim_buf_del_var(0, name)
 		return val
@@ -380,6 +379,7 @@ local function buffer_comment_chars()
 	_comments_cache[commentstring] = comments
 	return comments
 end
+
 
 return {
 	get_cursor_0ind = get_cursor_0ind,
