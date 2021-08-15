@@ -21,7 +21,8 @@ local function _fill_eager_vars(env)
 	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
 	env.TM_LINE_INDEX = tostring(cur[1])
 	env.TM_LINE_NUMBER = tostring(cur[1] + 1)
-	env.SELECT_RAW , env.SELECT_DEDENT , env.TM_SELECTED_TEXT = util.get_selection()
+	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT =
+		util.get_selection()
 end
 
 local lazy_vars = {}
@@ -60,23 +61,21 @@ function lazy_vars.CLIPBOARD() -- The contents of your clipboard
 	return vim.fn.getreg('"', 1, true)
 end
 
-
-
 local function buf_to_ws_part()
-  local LSP_WORSKPACE_PARTS = "LSP_WORSKPACE_PARTS"
-  local ok, ws_parts = pcall(vim.api.nvim_buf_get_var, 0, LSP_WORSKPACE_PARTS)
+	local LSP_WORSKPACE_PARTS = "LSP_WORSKPACE_PARTS"
+	local ok, ws_parts = pcall(vim.api.nvim_buf_get_var, 0, LSP_WORSKPACE_PARTS)
 	if not ok then
 		local file_path = vim.fn.expand("%:p")
 
 		for _, ws in pairs(vim.lsp.buf.list_workspace_folders()) do
-				if file_path:find(ws, 1, true) == 1 then
-					ws_parts = {ws, file_path:sub(#ws + 2, -1)}
-					break
-				end
+			if file_path:find(ws, 1, true) == 1 then
+				ws_parts = { ws, file_path:sub(#ws + 2, -1) }
+				break
+			end
 		end
 		-- If it can't be extracted from lsp, then we use the file path
 		if not ok and not ws_parts then
-			ws_parts = { vim.fn.expand("%:p:h"), vim.fn.expand("%:p:t")}
+			ws_parts = { vim.fn.expand("%:p:h"), vim.fn.expand("%:p:t") }
 		end
 		vim.api.nvim_buf_set_var(0, LSP_WORSKPACE_PARTS, ws_parts)
 	end

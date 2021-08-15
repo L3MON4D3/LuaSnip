@@ -213,7 +213,11 @@ local TM_SELECT = "LUASNIP_TM_SELECT"
 local function get_selection()
 	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, SELECT_RAW)
 	if ok then
-		local result = {val, vim.api.nvim_buf_get_var(0, SELECT_DEDENT), vim.api.nvim_buf_get_var(0, TM_SELECT)}
+		local result = {
+			val,
+			vim.api.nvim_buf_get_var(0, SELECT_DEDENT),
+			vim.api.nvim_buf_get_var(0, TM_SELECT),
+		}
 
 		vim.api.nvim_buf_del_var(0, SELECT_RAW)
 		vim.api.nvim_buf_del_var(0, SELECT_DEDENT)
@@ -384,7 +388,6 @@ local function buffer_comment_chars()
 	_comments_cache[commentstring] = comments
 	return comments
 end
-
 
 return {
 	get_cursor_0ind = get_cursor_0ind,
