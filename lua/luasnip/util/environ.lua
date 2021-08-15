@@ -5,9 +5,9 @@ local eager_vars = {
 	["TM_CURRENT_WORD"] = true,
 	["TM_LINE_INDEX"] = true,
 	["TM_LINE_NUMBER"] = true,
-  ["SELECT_RAW"] = true, 
-  ["SELECT_DEDENT"] = true, 
-  ["TM_SELECTED_TEXT"] = true
+	["SELECT_RAW"] = true,
+	["SELECT_DEDENT"] = true,
+	["TM_SELECTED_TEXT"] = true,
 }
 -- These are the vars that have to be populated once the snippet starts to avoid any issue
 local function _fill_eager_vars(env)
@@ -22,9 +22,9 @@ local function _fill_eager_vars(env)
 	env.TM_LINE_INDEX = tostring(cur[1])
 	env.TM_LINE_NUMBER = tostring(cur[1] + 1)
 
-  env.SELECT_RAW = util.get_selection(util.SELECT_RAW)
-  env.SELECT_DEDENT = util.get_selection(util.SELECT_DEDENT)
-  env.TM_SELECTED_TEXT= util.get_selection(util.TM_SELECT)
+	env.SELECT_RAW = util.get_selection(util.SELECT_RAW)
+	env.SELECT_DEDENT = util.get_selection(util.SELECT_DEDENT)
+	env.TM_SELECTED_TEXT = util.get_selection(util.TM_SELECT)
 end
 
 local lazy_vars = {}
@@ -56,7 +56,6 @@ end
 function lazy_vars.TM_FILEPATH()
 	return vim.fn.expand("%:p")
 end
-
 
 -- Vscode only
 

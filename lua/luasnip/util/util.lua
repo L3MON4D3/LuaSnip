@@ -408,7 +408,7 @@ return {
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
-SELECT_RAW = SELECT_RAW,
-SELECT_DEDENT=SELECT_DEDENT,
-TM_SELECT = TM_SELECT
+	SELECT_RAW = SELECT_RAW,
+	SELECT_DEDENT = SELECT_DEDENT,
+	TM_SELECT = TM_SELECT,
 }
