@@ -3,6 +3,7 @@ local iNode = require("luasnip.nodes.insertNode")
 local fNode = require("luasnip.nodes.functionNode")
 local cNode = require("luasnip.nodes.choiceNode")
 local snipNode = require("luasnip.nodes.snippet")
+local Environ = require("luasnip.util.environ")
 local functions = require("luasnip.util.functions")
 local util = require("luasnip.util.util")
 
@@ -70,8 +71,8 @@ end
 
 local last_text = nil
 local function simple_var(text)
-	if functions.lsp[text] then
-		local f = fNode.F(functions.lsp.var, {})
+	if Environ.is_valid_var(text) then
+		local f = fNode.F(functions.var, {})
 		f.user_args = { f, text }
 
 		local indent_maybe

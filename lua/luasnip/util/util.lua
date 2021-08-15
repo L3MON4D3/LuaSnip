@@ -212,13 +212,19 @@ local TM_SELECT = "LUASNIP_TM_SELECT"
 
 local function get_selection()
 	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, SELECT_RAW)
-	-- if one is set, all are set.
 	if ok then
-		return val,
+		local result = {
+			val,
 			vim.api.nvim_buf_get_var(0, SELECT_DEDENT),
-			vim.api.nvim_buf_get_var(0, TM_SELECT)
+			vim.api.nvim_buf_get_var(0, TM_SELECT),
+		}
+
+		vim.api.nvim_buf_del_var(0, SELECT_RAW)
+		vim.api.nvim_buf_del_var(0, SELECT_DEDENT)
+		vim.api.nvim_buf_del_var(0, TM_SELECT)
+
+		return unpack(result)
 	end
-	-- not ok.
 	return {}, {}, {}
 end
 
@@ -358,6 +364,31 @@ local function increase_ext_prio(opts, amount)
 	return opts
 end
 
+-- Heuristic to extract the comment style from the commentstring
+local _comments_cache = {}
+local function buffer_comment_chars()
+	local commentstring = vim.bo.commentstring
+	if _comments_cache[commentstring] then
+		return _comments_cache[commentstring]
+	end
+	local comments = { "//", "/*", "*/" }
+	local placeholder = "%s"
+	local index_placeholder = commentstring:find(vim.pesc(placeholder))
+	if index_placeholder then
+		index_placeholder = index_placeholder - 1
+		if index_placeholder + #placeholder == #commentstring then
+			comments[1] = vim.trim(commentstring:sub(1, -#placeholder - 1))
+		else
+			comments[2] = vim.trim(commentstring:sub(1, index_placeholder))
+			comments[3] = vim.trim(
+				commentstring:sub(index_placeholder + #placeholder + 1, -1)
+			)
+		end
+	end
+	_comments_cache[commentstring] = comments
+	return comments
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -384,4 +415,5 @@ return {
 	make_opts_valid = make_opts_valid,
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
+	buffer_comment_chars = buffer_comment_chars,
 }

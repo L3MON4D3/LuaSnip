@@ -4,6 +4,7 @@ local t = require("luasnip.nodes.textNode").T
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
 local mark = require("luasnip.util.mark").mark
+local Environ = require("luasnip.util.environ")
 local conf = require("luasnip.config")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
@@ -197,26 +198,6 @@ local function PSN(pos, nodes, prefix)
 	return snip
 end
 
-local function pop_env(env)
-	local cur = util.get_cursor_0ind()
-	env.TM_CURRENT_LINE = vim.api.nvim_buf_get_lines(
-		0,
-		cur[1],
-		cur[1] + 1,
-		false
-	)[1]
-	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
-	env.TM_LINE_INDEX = tostring(cur[1])
-	env.TM_LINE_NUMBER = tostring(cur[1] + 1)
-	env.TM_FILENAME = vim.fn.expand("%:t")
-	env.TM_FILENAME_BASE = vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
-	env.TM_DIRECTORY = vim.fn.expand("%:p:h")
-	env.TM_FILEPATH = vim.fn.expand("%:p")
-
-	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT =
-		util.get_selection()
-end
-
 function Snippet:remove_from_jumplist()
 	-- Snippet is 'surrounded' by insertNodes.
 	local pre = self.prev.prev
@@ -314,7 +295,7 @@ function Snippet:trigger_expand(current_node)
 			self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 		end
 	end
-	pop_env(self.env)
+	Environ:new(self.env)
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)
@@ -557,8 +538,8 @@ function Snippet:put_initial(pos)
 
 	for _, node in ipairs(self.nodes) do
 		if
-			node.type == types.functionNode
-			or node.type == types.dynamicNode
+			node.type == types.functionNode or node.type
+				== types.dynamicNode
 		then
 			self:populate_args(node)
 		end
