@@ -212,8 +212,9 @@ local TM_SELECT = "LUASNIP_TM_SELECT"
 
 local function get_selection(name)
 	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, name)
-	-- if one is set, all are set.
+	print(name, ok, val)
 	if ok then
+		vim.api.nvim_buf_del_var(0, name)
 		return val
 	end
 	return {}
@@ -407,4 +408,7 @@ return {
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
+SELECT_RAW = SELECT_RAW,
+SELECT_DEDENT=SELECT_DEDENT,
+TM_SELECT = TM_SELECT
 }
