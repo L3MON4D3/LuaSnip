@@ -5,9 +5,9 @@ local eager_vars = {
 	["TM_CURRENT_WORD"] = true,
 	["TM_LINE_INDEX"] = true,
 	["TM_LINE_NUMBER"] = true,
+	["TM_SELECTED_TEXT"] = true,
 	["SELECT_RAW"] = true,
 	["SELECT_DEDENT"] = true,
-	["TM_SELECTED_TEXT"] = true,
 }
 -- These are the vars that have to be populated once the snippet starts to avoid any issue
 local function _fill_eager_vars(env)
@@ -21,10 +21,7 @@ local function _fill_eager_vars(env)
 	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
 	env.TM_LINE_INDEX = tostring(cur[1])
 	env.TM_LINE_NUMBER = tostring(cur[1] + 1)
-
-	env.SELECT_RAW = util.get_selection(util.SELECT_RAW)
-	env.SELECT_DEDENT = util.get_selection(util.SELECT_DEDENT)
-	env.TM_SELECTED_TEXT = util.get_selection(util.TM_SELECT)
+	env.SELECT_RAW , env.SELECT_DEDENT , env.TM_SELECTED_TEXT = util.get_selection()
 end
 
 local lazy_vars = {}
@@ -71,7 +68,7 @@ local function buf_to_ws_part()
 	if not ok then
 		local file_path = vim.fn.expand("%:p")
 
-		for i, ws in pairs(vim.lsp.buf.list_workspace_folders()) do
+		for _, ws in pairs(vim.lsp.buf.list_workspace_folders()) do
 				if file_path:find(ws, 1, true) == 1 then
 					ws_parts = {ws, file_path:sub(#ws + 2, -1)}
 					break

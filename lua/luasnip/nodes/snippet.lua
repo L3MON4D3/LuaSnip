@@ -198,26 +198,6 @@ local function PSN(pos, nodes, prefix)
 	return snip
 end
 
-local function pop_env(env)
-	local cur = util.get_cursor_0ind()
-	env.TM_CURRENT_LINE = vim.api.nvim_buf_get_lines(
-		0,
-		cur[1],
-		cur[1] + 1,
-		false
-	)[1]
-	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
-	env.TM_LINE_INDEX = tostring(cur[1])
-	env.TM_LINE_NUMBER = tostring(cur[1] + 1)
-	env.TM_FILENAME = vim.fn.expand("%:t")
-	env.TM_FILENAME_BASE = vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
-	env.TM_DIRECTORY = vim.fn.expand("%:p:h")
-	env.TM_FILEPATH = vim.fn.expand("%:p")
-
-	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT =
-		util.get_selection()
-end
-
 function Snippet:remove_from_jumplist()
 	-- Snippet is 'surrounded' by insertNodes.
 	local pre = self.prev.prev

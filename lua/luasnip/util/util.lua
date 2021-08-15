@@ -210,13 +210,18 @@ local SELECT_RAW = "LUASNIP_SELECT_RAW"
 local SELECT_DEDENT = "LUASNIP_SELECT_DEDENT"
 local TM_SELECT = "LUASNIP_TM_SELECT"
 
-local function get_selection(name)
-	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, name)
+local function get_selection()
+	local ok, val = pcall(vim.api.nvim_buf_get_var, 0, SELECT_RAW)
 	if ok then
-		vim.api.nvim_buf_del_var(0, name)
-		return val
+		local result = {val, vim.api.nvim_buf_get_var(0, SELECT_DEDENT), vim.api.nvim_buf_get_var(0, TM_SELECT)}
+
+		vim.api.nvim_buf_del_var(0, SELECT_RAW)
+		vim.api.nvim_buf_del_var(0, SELECT_DEDENT)
+		vim.api.nvim_buf_del_var(0, TM_SELECT)
+
+		return unpack(result)
 	end
-	return {}
+	return {}, {}, {}
 end
 
 local function get_min_indent(lines)
@@ -408,7 +413,4 @@ return {
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
-	SELECT_RAW = SELECT_RAW,
-	SELECT_DEDENT = SELECT_DEDENT,
-	TM_SELECT = TM_SELECT,
 }
