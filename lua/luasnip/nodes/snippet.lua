@@ -4,6 +4,7 @@ local t = require("luasnip.nodes.textNode").T
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
 local mark = require("luasnip.util.mark").mark
+local Environ = require("luasnip.util.environ")
 local conf = require("luasnip.config")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
@@ -314,7 +315,7 @@ function Snippet:trigger_expand(current_node)
 			self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 		end
 	end
-	pop_env(self.env)
+	Environ:new(self.env)
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)
@@ -557,8 +558,8 @@ function Snippet:put_initial(pos)
 
 	for _, node in ipairs(self.nodes) do
 		if
-			node.type == types.functionNode
-			or node.type == types.dynamicNode
+			node.type == types.functionNode or node.type
+				== types.dynamicNode
 		then
 			self:populate_args(node)
 		end
