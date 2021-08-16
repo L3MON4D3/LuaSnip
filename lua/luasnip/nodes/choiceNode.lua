@@ -36,8 +36,8 @@ function ChoiceNode:put_initial(pos)
 		-- if function- or dynamicNode, dependents may need to be replaced with
 		-- actual nodes, until here dependents may only contain indices of nodes.
 		if
-			node.type == types.functionNode or node.type
-				== types.dynamicNode
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
 		then
 			self.parent:populate_args(node)
 		end

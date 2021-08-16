@@ -154,7 +154,8 @@ local function unlink_current()
 
 	user_expanded_snip:remove_from_jumplist()
 	-- prefer setting previous/outer insertNode as current node.
-	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = user_expanded_snip.prev.prev or user_expanded_snip.next.next
+	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = user_expanded_snip.prev.prev
+		or user_expanded_snip.next.next
 end
 
 local function active_update_dependents()
