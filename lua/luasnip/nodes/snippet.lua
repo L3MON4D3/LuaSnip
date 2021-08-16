@@ -199,52 +199,58 @@ local function PSN(pos, nodes, prefix)
 end
 
 function Snippet:remove_from_jumplist()
-	-- Snippet is 'surrounded' by insertNodes.
+	-- prev is i(-1)(startNode), prev of that is the outer/previous snippet.
 	local pre = self.prev.prev
+	-- similar for next, self.next is the i(0).
 	local nxt = self.next.next
 
-	-- Only existing Snippet.
-	if not pre and not nxt then
-		vim.api.nvim_buf_clear_namespace(0, Luasnip_ns_id, 0, -1)
-		Luasnip_active_choice = nil
-		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
-	end
+	self:exit()
 
+	-- basically four possibilities: only snippet, between two snippets,
+	-- inside an insertNode (start), inside an insertNode (end).
 	if pre then
-		-- Snippet is linearly behind previous snip.
+		-- Snippet is linearly behind previous snip, the appropriate value
+		-- for nxt.prev is set later.
 		if pre.pos == 0 then
 			pre.next = nxt
 		else
-			-- check if self is only snippet inside insert node.
 			if nxt ~= pre then
-				pre.inner_first = nxt.next
+				-- if not the only snippet inside the insertNode:
+				pre.inner_first = nxt
+				nxt.prev = pre
+				return
 			else
 				pre.inner_first = nil
 				pre.inner_last = nil
+				pre.inner_active = false
 				return
 			end
 		end
 	end
 	if nxt then
-		-- linearly before?
 		if nxt.pos == -1 then
 			nxt.prev = pre
 		else
-			-- case 'only snippet inside iNode' is handled above.
+			-- only possible if this is the last inside an insertNode, only
+			-- snippet in insertNode is handled above
 			nxt.inner_last = pre
+			pre.next = nxt
 		end
 	end
 end
 
 local function insert_into_jumplist(snippet, start_node, current_node)
 	if current_node then
+		-- currently at the endpoint (i(0)) of another snippet, this snippet
+		-- is inserted _behind_ that snippet.
 		if current_node.pos == 0 then
 			if current_node.next then
-				-- next is beginning of another snippet.
 				if current_node.next.pos == -1 then
+					-- next is beginning of another snippet, this snippet is
+					-- inserted before that one.
 					current_node.next.prev = snippet.insert_nodes[0]
-					-- next is outer insertNode.
 				else
+					-- next is outer insertNode.
 					current_node.next.inner_last = snippet.insert_nodes[0]
 				end
 			end
@@ -271,6 +277,7 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 		end
 	end
 
+	-- snippet is between i(-1)(startNode) and i(0).
 	snippet.next = snippet.insert_nodes[0]
 	snippet.prev = start_node
 
