@@ -151,6 +151,7 @@ end
 
 function ChoiceNode:exit()
 	self.mark:clear()
+	Luasnip_active_choice = self.prev_choice
 	self.inner:exit()
 end
 
