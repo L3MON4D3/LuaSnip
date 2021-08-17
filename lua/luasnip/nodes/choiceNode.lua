@@ -88,10 +88,6 @@ function ChoiceNode:set_old_text()
 	self.inner.old_text = self.old_text
 end
 
-function ChoiceNode:has_static_text()
-	return self.choices[1]:has_static_text()
-end
-
 function ChoiceNode:get_static_text()
 	return self.choices[1]:get_static_text()
 end

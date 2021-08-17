@@ -36,10 +36,6 @@ function DynamicNode:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
-function DynamicNode:has_static_text()
-	return false
-end
-
 function DynamicNode:get_static_text()
 	return self.snip:get_static_text()
 end
