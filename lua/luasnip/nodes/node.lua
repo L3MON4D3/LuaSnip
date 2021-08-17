@@ -111,6 +111,8 @@ end
 
 function Node:populate_argnodes() end
 
+function Node:subsnip_init() end
+
 Node.ext_gravities_active = { false, true }
 
 return {

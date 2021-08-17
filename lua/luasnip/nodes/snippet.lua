@@ -67,7 +67,17 @@ function Snippet:init_nodes()
 	end
 
 	self.insert_nodes = insert_nodes
-	self:populate_argnodes()
+end
+
+-- choiceNode's need parent and dependents set before their init_nodes.
+function Snippet:init_choices()
+	for _, node in ipairs(self.nodes) do
+		if node.type == types.choiceNode then
+			node:init_nodes()
+		elseif node.type == types.snippet then
+			node:init_choices()
+		end
+	end
 end
 
 local function wrap_nodes(nodes)
@@ -128,6 +138,8 @@ local function S(context, nodes, condition, ...)
 	})
 
 	snip:init_nodes()
+	snip:populate_argnodes()
+	snip:init_choices()
 
 	if not snip.insert_nodes[0] then
 		-- Generate implied i(0)
@@ -154,6 +166,7 @@ local function SN(pos, nodes)
 		type = types.snippetNode,
 	})
 	snip:init_nodes()
+
 	return snip
 end
 
@@ -308,6 +321,8 @@ function Snippet:trigger_expand(current_node)
 		end
 	end
 	Environ:new(self.env)
+
+	self:subsnip_init()
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)
@@ -521,21 +536,9 @@ function Snippet:dump()
 end
 
 function Snippet:put_initial(pos)
-	-- i needed for functions.
 	for _, node in ipairs(self.nodes) do
 		-- save pos to compare to later.
 		local old_pos = vim.deepcopy(pos)
-
-		-- set for snippetNodes.
-		if node.type == types.snippetNode then
-			node:indent(self.indentstr)
-			node.env = self.env
-			node.ext_opts = util.increase_ext_prio(
-				vim.deepcopy(self.ext_opts),
-				conf.config.ext_prio_increase
-			)
-		end
-
 		node:put_initial(pos)
 
 		-- correctly set extmark for node.
@@ -549,6 +552,9 @@ function Snippet:put_initial(pos)
 	end
 end
 
+-- may only be called if the `insertNodes` of all snippet(Node)s are populated
+-- (the first node may refer to the last+recursion with Parent_indexer's, can't
+-- be done in init_nodes()).
 function Snippet:populate_argnodes()
 	for _, node in ipairs(self.nodes) do
 		if
@@ -597,6 +603,19 @@ end
 function Snippet:expand_tabs(tabwidth)
 	for _, node in ipairs(self.nodes) do
 		node:expand_tabs(tabwidth)
+	end
+end
+
+function Snippet:subsnip_init()
+	for _, node in ipairs(self.nodes) do
+		if node.type == types.snippetNode then
+			node.env = self.env
+			node.ext_opts = util.increase_ext_prio(
+				vim.deepcopy(self.ext_opts),
+				conf.config.ext_prio_increase
+			)
+		end
+		node:subsnip_init()
 	end
 end
 

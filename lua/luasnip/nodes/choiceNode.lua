@@ -27,16 +27,11 @@ local function C(pos, choices)
 		current_choice = 1,
 		dependents = {},
 	})
-	c:init_nodes()
 	return c
 end
 
-function ChoiceNode:put_initial(pos)
+function ChoiceNode:subsnip_init()
 	for _, node in ipairs(self.choices) do
-		node.parent = self.parent
-		node.next = self
-		node.prev = self
-		node.dependents = self.dependents
 		if node.type == types.snippetNode then
 			node.env = self.parent.env
 			node.ext_opts = util.increase_ext_prio(
@@ -44,11 +39,10 @@ function ChoiceNode:put_initial(pos)
 				conf.config.ext_prio_increase
 			)
 		end
-		node.indx = self.indx
-		node.pos = self.pos
 	end
-	self.inner = self.choices[self.current_choice]
+end
 
+function ChoiceNode:put_initial(pos)
 	local old_pos = vim.deepcopy(pos)
 
 	self.inner:put_initial(pos)
