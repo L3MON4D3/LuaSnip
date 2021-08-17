@@ -74,7 +74,7 @@ function Snippet:init_choices()
 	for _, node in ipairs(self.nodes) do
 		if node.type == types.choiceNode then
 			node:init_nodes()
-		elseif node.type == types.snippet then
+		elseif node.type == types.snippetNode then
 			node:init_choices()
 		end
 	end
@@ -581,9 +581,10 @@ function Snippet:fake_expand()
 	self.captures = {}
 	setmetatable(self.captures, {
 		__index = function(_, key)
-			return {"$CAPTURE"..tostring(key)}
+			return "$CAPTURE"..tostring(key)
 		end
 	})
+	self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 
 	if vim.o.expandtab then
 		self:expand_tabs(util.tab_width())

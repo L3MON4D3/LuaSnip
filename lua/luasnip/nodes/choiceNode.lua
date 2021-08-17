@@ -13,6 +13,11 @@ function ChoiceNode:init_nodes()
 		node.dependents = self.dependents
 		node.indx = self.indx
 		node.pos = self.pos
+		if node.type == types.choiceNode then
+			node:init_nodes()
+		elseif node.type == types.snippetNode then
+			node:init_choices()
+		end
 	end
 	self.inner = self.choices[self.current_choice]
 end
