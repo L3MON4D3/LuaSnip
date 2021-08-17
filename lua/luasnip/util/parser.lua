@@ -105,12 +105,12 @@ local function simple_var(text)
 end
 
 -- Inserts a insert(1) before all other nodes, decreases node.pos's as indexing is "wrong".
-local function modify_nodes(snip, num)
+local function modify_nodes(snip)
 	for i = #snip.nodes, 1, -1 do
 		snip.nodes[i + 1] = snip.nodes[i]
 		local node = snip.nodes[i + 1]
 		if node.pos then
-			node.pos = node.pos - num + 1
+			node.pos = node.pos + 1
 		end
 	end
 	snip.nodes[1] = iNode.I(1)
@@ -195,7 +195,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 				tab_stops[pos] = snip
 			else
 				-- move placeholders' indices.
-				modify_nodes(snip, pos)
+				modify_nodes(snip)
 				snip:init_nodes()
 
 				tab_stops[pos] = cNode.C(pos, { snip, iNode.I({ "" }) })
@@ -255,6 +255,34 @@ local function parse_variable(text)
 		return simple_var(match)
 	end
 	return nil
+end
+
+local function fix_node_indices(nodes)
+	print("lel")
+	local highest = 0
+	local used_nodes = {}
+	for _, node in ipairs(nodes) do
+		if node.pos then
+			highest = node.pos > highest and node.pos or highest
+			used_nodes[node.pos] = node
+			print(node.pos)
+			print(node.type)
+		end
+	end
+
+	for i = 1, highest do
+		if not used_nodes[i] then
+			for j = i+1, highest do
+				if used_nodes[j] then
+					used_nodes[j].pos = used_nodes[j].pos - 1
+				end
+			end
+		end
+	end
+	for _, node in pairs(nodes) do
+		if node.pos then print(node.pos) end
+	end
+	return nodes
 end
 
 local parse_functions = {
@@ -353,9 +381,9 @@ parse_snippet = function(context, body, tab_stops, brackets)
 				nodes[#nodes + 1] = parse_text(plain_text)
 			end
 			if type(context) == "number" then
-				return snipNode.SN(context, nodes)
+				return snipNode.SN(context, fix_node_indices(nodes))
 			else
-				return snipNode.S(context, nodes)
+				return snipNode.S(context, fix_node_indices(nodes))
 			end
 		end
 	end
