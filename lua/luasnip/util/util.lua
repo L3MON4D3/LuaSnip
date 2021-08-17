@@ -43,14 +43,31 @@ local function indent(text, indentstring)
 	return text
 end
 
-local function expand_tabs(text)
-	local tab_string = string.rep(
-		" ",
-		vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
-	)
-	for i, str in ipairs(text) do
-		text[i] = string.gsub(str, "\t", tab_string)
+-- in-place expand tabs in leading whitespace.
+local function expand_tabs(text, tabwidth)
+	for i, line in ipairs(text) do
+		local new_line = ""
+		local start_indx = 1
+		while true do
+			local tab_indx = line:find("\t", start_indx, true)
+			-- if no tab found, sub till end (ie. -1).
+			new_line = new_line .. line:sub(start_indx, (tab_indx or 0)-1)
+			if tab_indx then
+				-- #new_line is index of this tab in new_line.
+				new_line = new_line .. string.rep(" ", tabwidth - #new_line%tabwidth)
+			else
+				-- reached end of string.
+				break
+			end
+			start_indx = tab_indx + 1
+		end
+		text[i] = new_line
 	end
+	return text
+end
+
+local function tab_width()
+	return vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
 end
 
 local function mark_pos_equal(m1, m2)
@@ -412,6 +429,7 @@ return {
 	dedent = dedent,
 	indent = indent,
 	expand_tabs = expand_tabs,
+	tab_width = tab_width,
 	make_opts_valid = make_opts_valid,
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
