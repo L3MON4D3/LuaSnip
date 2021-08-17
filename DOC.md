@@ -351,14 +351,18 @@ includes an easy way for loading those automatically. You just have to call:
  	require("luasnip/loaders/from_vscode").load(opts) -- opts can be ommited
 ```
 Where `opts` is a table containing the keys:
-	-  `paths`: List of paths to load as a table or as a single string separated
-	   by a comma, if not set it's `'runtimepath'`, you can start the paths with
-	   `~/` or `./` to indicate that the path is relative to your home or to
-	   the folder where your `$MYVIMRC` resides (useful to add your snippets).
+	-  `paths`: List of paths to load. Can be a table or a single,
+		comma-separated string. If not set, `runtimepath` is used. The paths
+		may begin with `~/` or `./` to indicate that the path is relative to
+		your home or to the folder where your `$MYVIMRC` resides (useful to
+		add your snippets). The directories passed this way must be structured
+		like [`friendly-snippets`](https://github.com/rafamadriz/friendly-snippets)
+		eg. include a `package.json`.
 	-  `exclude`: List of languages to exclude, by default is empty.
 	-  `include`: List of languages to include, by default is not set.
 
-The last two are useful mainly to avoid loading snippets from 3erd parties you don't wanna include.
+The last two are useful mainly to avoid loading snippets from 3erd parties you
+don't wanna include.
 
 Keep in mind that it will extend your `snippets` table, so do it after setting
 your snippets or you will have to extend the table as well.

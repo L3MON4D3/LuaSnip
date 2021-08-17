@@ -51,10 +51,11 @@ local function expand_tabs(text, tabwidth)
 		while true do
 			local tab_indx = line:find("\t", start_indx, true)
 			-- if no tab found, sub till end (ie. -1).
-			new_line = new_line .. line:sub(start_indx, (tab_indx or 0)-1)
+			new_line = new_line .. line:sub(start_indx, (tab_indx or 0) - 1)
 			if tab_indx then
 				-- #new_line is index of this tab in new_line.
-				new_line = new_line .. string.rep(" ", tabwidth - #new_line%tabwidth)
+				new_line = new_line
+					.. string.rep(" ", tabwidth - #new_line % tabwidth)
 			else
 				-- reached end of string.
 				break
