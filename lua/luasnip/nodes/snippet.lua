@@ -286,6 +286,7 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 end
 
 function Snippet:trigger_expand(current_node)
+	self:populate_argnodes()
 	-- expand tabs before indenting to keep indentstring unmodified
 	if vim.o.expandtab then
 		self:expand_tabs(util.tab_width())
@@ -546,13 +547,17 @@ function Snippet:put_initial(pos)
 		node.mark = mark(old_pos, pos, mark_opts)
 		node:set_old_text()
 	end
+end
 
+function Snippet:populate_argnodes()
 	for _, node in ipairs(self.nodes) do
 		if
 			node.type == types.functionNode or node.type
 				== types.dynamicNode
 		then
 			self:populate_args(node)
+		else
+			node:populate_argnodes()
 		end
 	end
 end
@@ -562,6 +567,7 @@ function Snippet:get_static_text()
 		return self.static_text
 	end
 	local text = {""}
+	self:populate_argnodes()
 	for _, node in ipairs(self.nodes) do
 		local node_text = node:get_static_text()
 		-- append first line to last line of text so far.

@@ -109,6 +109,8 @@ function Node:indent(indentstr)
 	util.indent(self.static_text, indentstr)
 end
 
+function Node:populate_argnodes() end
+
 Node.ext_gravities_active = { false, true }
 
 return {

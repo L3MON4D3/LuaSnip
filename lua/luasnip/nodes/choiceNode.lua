@@ -32,14 +32,6 @@ function ChoiceNode:put_initial(pos)
 		end
 		node.indx = self.indx
 		node.pos = self.pos
-		-- if function- or dynamicNode, dependents may need to be replaced with
-		-- actual nodes, until here dependents may only contain indices of nodes.
-		if
-			node.type == types.functionNode
-			or node.type == types.dynamicNode
-		then
-			self.parent:populate_args(node)
-		end
 	end
 	self.inner = self.choices[self.current_choice]
 
@@ -53,6 +45,19 @@ function ChoiceNode:put_initial(pos)
 	}, self.parent.ext_opts[self.inner.type].passive)
 
 	self.inner.mark = mark(old_pos, pos, mark_opts)
+end
+
+function ChoiceNode:populate_argnodes()
+	for _, node in ipairs(self.choices) do
+		-- if function- or dynamicNode, dependents may need to be replaced with
+		-- actual nodes, until here dependents may only contain indices of nodes.
+		if
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
+		then
+			self.parent:populate_args(node)
+		end
+	end
 end
 
 function ChoiceNode:indent(indentstr)
