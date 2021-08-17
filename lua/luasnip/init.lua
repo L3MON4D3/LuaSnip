@@ -193,6 +193,17 @@ local function active_update_dependents()
 	end
 end
 
+-- snippet_table structured like ls.snippets.
+local function generate_snippet_doctext(snippet_table)
+	for ft, snippets in pairs(snippet_table) do
+		for _, snippet in ipairs(snippets) do
+			snippet = snippet:copy()
+			snippet:fake_expand()
+			Insp(snippet:get_static_text())
+		end
+	end
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	jumpable = jumpable,
@@ -208,6 +219,7 @@ ls = {
 	lsp_expand = lsp_expand,
 	active_update_dependents = active_update_dependents,
 	available = available,
+	generate_snippet_doctext = generate_snippet_doctext,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,
