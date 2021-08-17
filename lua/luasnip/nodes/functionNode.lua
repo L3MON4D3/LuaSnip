@@ -43,7 +43,7 @@ end
 function FunctionNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		self.static_text = util:wrap_value(self.fn(self:get_args(), unpack(self.user_args)))
+		self.static_text = util.wrap_value(self.fn(self:get_static_args(), unpack(self.user_args)))
 	end
 	return self.static_text
 end
