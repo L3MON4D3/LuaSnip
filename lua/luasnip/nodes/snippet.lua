@@ -67,6 +67,7 @@ function Snippet:init_nodes()
 	end
 
 	self.insert_nodes = insert_nodes
+	self:populate_argnodes()
 end
 
 local function wrap_nodes(nodes)
@@ -286,7 +287,6 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 end
 
 function Snippet:trigger_expand(current_node)
-	self:populate_argnodes()
 	-- expand tabs before indenting to keep indentstring unmodified
 	if vim.o.expandtab then
 		self:expand_tabs(util.tab_width())
@@ -567,7 +567,6 @@ function Snippet:get_static_text()
 		return self.static_text
 	end
 	local text = {""}
-	self:populate_argnodes()
 	for _, node in ipairs(self.nodes) do
 		local node_text = node:get_static_text()
 		-- append first line to last line of text so far.
