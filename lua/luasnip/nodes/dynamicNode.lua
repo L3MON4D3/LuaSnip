@@ -25,6 +25,15 @@ function DynamicNode:get_args()
 	return args
 end
 
+function DynamicNode:get_args_static()
+	local args = {}
+	for i, node in ipairs(self.args) do
+		args[i] = util.dedent(node:get_static_text(), self.parent.indentstr)
+	end
+	args[#args + 1] = self.parent
+	return args
+end
+
 function DynamicNode:input_enter()
 	self.active = true
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
@@ -37,7 +46,12 @@ function DynamicNode:input_leave()
 end
 
 function DynamicNode:get_static_text()
-	return self.snip:get_static_text()
+	-- cache static_text, no need to recalculate function.
+	if not self.static_text then
+		local tmp = self.fn(self:get_args_static(), nil, unpack(self.user_args))
+		self.static_text = tmp:get_static_text()
+	end
+	return self.static_text
 end
 
 -- DynamicNode's don't have static text, nop these.

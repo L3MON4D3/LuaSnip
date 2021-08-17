@@ -557,6 +557,25 @@ function Snippet:put_initial(pos)
 	end
 end
 
+function Snippet:get_static_text()
+	if self.static_text then
+		return self.static_text
+	end
+	local text = {""}
+	for _, node in ipairs(self.nodes) do
+		local node_text = node:get_static_text()
+		-- append first line to last line of text so far.
+		text[#text] = text[#text]..node_text[1]
+		for i = 2, #node_text do
+			text[#text+1] = node_text[i]
+		end
+	end
+	-- cache computed text, may be called multiple times for
+	-- function/dynamicNodes.
+	self.static_text = text
+	return text
+end
+
 function Snippet:update()
 	for _, node in ipairs(self.nodes) do
 		node:update()
