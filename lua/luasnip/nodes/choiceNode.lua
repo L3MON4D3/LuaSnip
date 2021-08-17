@@ -24,7 +24,6 @@ function ChoiceNode:put_initial(pos)
 		node.prev = self
 		node.dependents = self.dependents
 		if node.type == types.snippetNode then
-			node:indent(self.parent.indentstr)
 			node.env = self.parent.env
 			node.ext_opts = util.increase_ext_prio(
 				vim.deepcopy(self.parent.ext_opts),
@@ -54,6 +53,18 @@ function ChoiceNode:put_initial(pos)
 	}, self.parent.ext_opts[self.inner.type].passive)
 
 	self.inner.mark = mark(old_pos, pos, mark_opts)
+end
+
+function ChoiceNode:indent(indentstr)
+	for _, node in ipairs(self.choices) do
+		node:indent(indentstr)
+	end
+end
+
+function ChoiceNode:expand_tabs(tabwidth)
+	for _, node in ipairs(self.choices) do
+		node:expand_tabs(tabwidth)
+	end
 end
 
 function ChoiceNode:input_enter()

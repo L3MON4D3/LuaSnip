@@ -110,6 +110,14 @@ end
 
 function Node:update() end
 
+function Node:expand_tabs(tabwidth)
+	util.expand_tabs(self.static_text, tabwidth)
+end
+
+function Node:indent(indentstr)
+	util.indent(self.static_text, indentstr)
+end
+
 Node.ext_gravities_active = { false, true }
 
 return {

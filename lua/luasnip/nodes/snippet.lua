@@ -286,6 +286,10 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 end
 
 function Snippet:trigger_expand(current_node)
+	-- expand tabs before indenting to keep indentstring unmodified
+	if vim.o.expandtab then
+		self:expand_tabs(util.tab_width())
+	end
 	self:indent(util.get_current_line_to_cursor():match("^%s*"))
 
 	-- keep (possibly) user-set opts.
@@ -561,36 +565,14 @@ end
 
 function Snippet:indent(prefix)
 	self.indentstr = prefix
-	-- Check once here instead of inside loop.
-	if vim.o.expandtab then
-		local tab_string = string.rep(
-			" ",
-			vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
-		)
-		for _, node in ipairs(self.nodes) do
-			-- put prefix behind newlines.
-			if node:has_static_text() then
-				for i = 2, #node:get_static_text() do
-					-- Note: prefix is not changed but copied.
-					node:get_static_text()[i] = prefix
-						.. string.gsub(
-							node:get_static_text()[i],
-							"\t",
-							tab_string
-						)
-				end
-			end
-		end
-	else
-		for _, node in ipairs(self.nodes) do
-			-- put prefix behind newlines.
-			if node:has_static_text() then
-				for i = 2, #node:get_static_text() do
-					node:get_static_text()[i] = prefix
-						.. node:get_static_text()[i]
-				end
-			end
-		end
+	for _, node in ipairs(self.nodes) do
+		node:indent(prefix)
+	end
+end
+
+function Snippet:expand_tabs(tabwidth)
+	for _, node in ipairs(self.nodes) do
+		node:expand_tabs(tabwidth)
 	end
 end
 

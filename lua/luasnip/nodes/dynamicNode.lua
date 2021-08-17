@@ -44,7 +44,12 @@ function DynamicNode:get_static_text()
 	return self.snip:get_static_text()
 end
 
+-- DynamicNode's don't have static text, nop these.
 function DynamicNode:put_initial(_) end
+
+function DynamicNode:indent(_) end
+
+function DynamicNode:expand_tabs(_) end
 
 function DynamicNode:jump_into(dir)
 	if self.active then
@@ -98,6 +103,9 @@ function DynamicNode:update()
 	)
 	tmp.dependents = self.dependents
 
+	if vim.o.expandtab then
+		tmp:expand_tabs(util.tab_width())
+	end
 	tmp:indent(self.parent.indentstr)
 
 	self.parent:enter_node(self.indx)

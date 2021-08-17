@@ -41,6 +41,13 @@ function FunctionNode:update()
 	self.parent:set_text(self, util.indent(text, self.parent.indentstr))
 end
 
+-- FunctionNode's don't have static text, nop these.
+function FunctionNode:put_initial(_) end
+
+function FunctionNode:indent(_) end
+
+function FunctionNode:expand_tabs(_) end
+
 return {
 	F = F,
 }
