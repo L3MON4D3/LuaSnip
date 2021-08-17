@@ -198,7 +198,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 				modify_nodes(snip)
 				snip:init_nodes()
 
-				tab_stops[pos] = cNode.C(pos, { snip, iNode.I({ "" }) })
+				tab_stops[pos] = cNode.C(pos, { snip, iNode.I(nil, { "" }) })
 			end
 			return tab_stops[pos]
 		end
