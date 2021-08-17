@@ -269,7 +269,7 @@ local function fix_node_indices(nodes)
 
 	for i = 1, highest do
 		if not used_nodes[i] then
-			for j = i+1, highest do
+			for j = i + 1, highest do
 				if used_nodes[j] then
 					used_nodes[j].pos = used_nodes[j].pos - 1
 				end
