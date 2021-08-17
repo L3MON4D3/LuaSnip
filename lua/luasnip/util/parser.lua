@@ -352,9 +352,6 @@ parse_snippet = function(context, body, tab_stops, brackets)
 			if plain_text ~= "" then
 				nodes[#nodes + 1] = parse_text(plain_text)
 			end
-			if outer and not tab_stops[0] then
-				nodes[#nodes + 1] = iNode.I(0)
-			end
 			if type(context) == "number" then
 				return snipNode.SN(context, nodes)
 			else
