@@ -568,6 +568,32 @@ function Snippet:populate_argnodes()
 	end
 end
 
+-- populate env,inden,captures,trigger(regex),... but don't put any text.
+function Snippet:fake_expand()
+	-- set eg. env.TM_SELECTED_TEXT to $TM_SELECTED_TEXT
+	self.env = {}
+	setmetatable(self.env, {
+		__index = function(_, key)
+			return {"$"..key}
+		end
+	})
+
+	self.captures = {}
+	setmetatable(self.captures, {
+		__index = function(_, key)
+			return {"$CAPTURE"..tostring(key)}
+		end
+	})
+
+	if vim.o.expandtab then
+		self:expand_tabs(util.tab_width())
+	end
+	self:indent("")
+	self:subsnip_init()
+end
+
+-- to work correctly, this may require that the snippets' env,indent,captures? are
+-- set.
 function Snippet:get_static_text()
 	if self.static_text then
 		return self.static_text
