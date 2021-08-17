@@ -5,8 +5,20 @@ local conf = require("luasnip.config")
 local types = require("luasnip.util.types")
 local mark = require("luasnip.util.mark").mark
 
+function ChoiceNode:init_nodes()
+	for _, node in ipairs(self.choices) do
+		node.parent = self.parent
+		node.next = self
+		node.prev = self
+		node.dependents = self.dependents
+		node.indx = self.indx
+		node.pos = self.pos
+	end
+	self.inner = self.choices[self.current_choice]
+end
+
 local function C(pos, choices)
-	return ChoiceNode:new({
+	local c = ChoiceNode:new({
 		active = false,
 		pos = pos,
 		choices = choices,
@@ -15,6 +27,8 @@ local function C(pos, choices)
 		current_choice = 1,
 		dependents = {},
 	})
+	c:init_nodes()
+	return c
 end
 
 function ChoiceNode:put_initial(pos)
