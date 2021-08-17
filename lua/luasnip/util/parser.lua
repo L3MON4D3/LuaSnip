@@ -258,15 +258,12 @@ local function parse_variable(text)
 end
 
 local function fix_node_indices(nodes)
-	print("lel")
 	local highest = 0
 	local used_nodes = {}
 	for _, node in ipairs(nodes) do
 		if node.pos then
 			highest = node.pos > highest and node.pos or highest
 			used_nodes[node.pos] = node
-			print(node.pos)
-			print(node.type)
 		end
 	end
 
@@ -278,9 +275,6 @@ local function fix_node_indices(nodes)
 				end
 			end
 		end
-	end
-	for _, node in pairs(nodes) do
-		if node.pos then print(node.pos) end
 	end
 	return nodes
 end
