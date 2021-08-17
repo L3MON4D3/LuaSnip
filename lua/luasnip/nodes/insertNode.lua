@@ -9,7 +9,7 @@ local function I(pos, static_text)
 	if pos == 0 then
 		return ExitNode:new({
 			pos = pos,
-			static_text = static_text or {""},
+			static_text = static_text or { "" },
 			mark = nil,
 			dependents = {},
 			type = types.exitNode,
@@ -19,7 +19,7 @@ local function I(pos, static_text)
 	else
 		return InsertNode:new({
 			pos = pos,
-			static_text = static_text or {""},
+			static_text = static_text or { "" },
 			mark = nil,
 			dependents = {},
 			type = types.insertNode,
