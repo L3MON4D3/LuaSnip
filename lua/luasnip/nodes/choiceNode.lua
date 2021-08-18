@@ -44,6 +44,7 @@ function ChoiceNode:subsnip_init()
 				conf.config.ext_prio_increase
 			)
 		end
+		node:subsnip_init()
 	end
 end
 
