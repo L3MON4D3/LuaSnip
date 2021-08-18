@@ -195,13 +195,15 @@ end
 
 -- snippet_table structured like ls.snippets.
 local function generate_snippet_doctext(snippet_table)
+	local strings = {}
 	for ft, snippets in pairs(snippet_table) do
 		for _, snippet in ipairs(snippets) do
 			snippet = snippet:copy()
 			snippet:fake_expand()
-			Insp(snippet:get_static_text())
+			strings[#strings+1] = snippet:get_docstring()
 		end
 	end
+	return strings
 end
 
 ls = {
