@@ -27,7 +27,7 @@ function FunctionNode:input_enter()
 		"n",
 		true
 	)
-	util.normal_move_on_mark_insert(self.mark.id)
+	util.normal_move_on_insert(self.mark:pos_begin())
 end
 
 function FunctionNode:update()

@@ -49,7 +49,8 @@ function Mark:pos_begin()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
 		Luasnip_ns_id,
-		self.id({ details = false })
+		self.id,
+		{ details = false }
 	)
 
 	return bytecol_to_utfcol({ mark_info[1], mark_info[2] })
