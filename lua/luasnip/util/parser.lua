@@ -146,7 +146,14 @@ local function parse_placeholder(text, tab_stops, brackets)
 			else
 				if not snip:is_interactive() then
 					tab_stops[pos] = dNode.D(pos, function(args)
+						-- properly prepare snippet for get_static_text.
 						snip.env = args[1].env
+						snip.ext_opts = args[1].ext_opts
+						if vim.o.expandtab then
+							snip:expand_tabs(util.tab_width())
+						end
+						snip:indent(args[1].indentstr)
+						snip:subsnip_init()
 						local iText = snip:get_static_text()
 						return snipNode.SN(nil, iNode.I(1, iText))
 					end, {})
