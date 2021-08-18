@@ -384,10 +384,10 @@ end
 
 local function string_wrap(lines, pos)
 	if #lines == 1 and #lines[1] == 0 then
-		return {"$"..(pos and tostring(pos) or "{}")}
+		return { "$" .. (pos and tostring(pos) or "{}") }
 	end
-	lines[1] = "${"..(pos and (tostring(pos)..":") or "")..lines[1]
-	lines[#lines] = lines[#lines].."}"
+	lines[1] = "${" .. (pos and (tostring(pos) .. ":") or "") .. lines[1]
+	lines[#lines] = lines[#lines] .. "}"
 	return lines
 end
 
@@ -444,5 +444,5 @@ return {
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
-	string_wrap = string_wrap
+	string_wrap = string_wrap,
 }

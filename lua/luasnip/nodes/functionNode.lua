@@ -30,7 +30,6 @@ function FunctionNode:get_static_args()
 	return args
 end
 
-
 function FunctionNode:input_enter()
 	vim.api.nvim_feedkeys(
 		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
@@ -43,7 +42,9 @@ end
 function FunctionNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		self.static_text = util.wrap_value(self.fn(self:get_static_args(), unpack(self.user_args)))
+		self.static_text = util.wrap_value(
+			self.fn(self:get_static_args(), unpack(self.user_args))
+		)
 	end
 	return self.static_text
 end

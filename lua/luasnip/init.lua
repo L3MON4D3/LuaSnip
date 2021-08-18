@@ -200,7 +200,7 @@ local function generate_snippet_doctext(snippet_table)
 		for _, snippet in ipairs(snippets) do
 			snippet = snippet:copy()
 			snippet:fake_expand()
-			strings[#strings+1] = snippet:get_docstring()
+			strings[#strings + 1] = snippet:get_docstring()
 		end
 	end
 	return strings

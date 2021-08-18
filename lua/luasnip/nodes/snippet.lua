@@ -558,8 +558,8 @@ end
 function Snippet:populate_argnodes()
 	for _, node in ipairs(self.nodes) do
 		if
-			node.type == types.functionNode or node.type
-				== types.dynamicNode
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
 		then
 			self:populate_args(node)
 		else
@@ -574,15 +574,15 @@ function Snippet:fake_expand()
 	self.env = {}
 	setmetatable(self.env, {
 		__index = function(_, key)
-			return {"$"..key}
-		end
+			return { "$" .. key }
+		end,
 	})
 
 	self.captures = {}
 	setmetatable(self.captures, {
 		__index = function(_, key)
-			return "$CAPTURE"..tostring(key)
-		end
+			return "$CAPTURE" .. tostring(key)
+		end,
 	})
 	self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 
@@ -599,13 +599,13 @@ function Snippet:get_static_text()
 	if self.static_text then
 		return self.static_text
 	end
-	local text = {""}
+	local text = { "" }
 	for _, node in ipairs(self.nodes) do
 		local node_text = node:get_static_text()
 		-- append first line to last line of text so far.
-		text[#text] = text[#text]..node_text[1]
+		text[#text] = text[#text] .. node_text[1]
 		for i = 2, #node_text do
-			text[#text+1] = node_text[i]
+			text[#text + 1] = node_text[i]
 		end
 	end
 	-- cache computed text, may be called multiple times for
@@ -618,13 +618,13 @@ function Snippet:get_docstring()
 	if self.doctext then
 		return self.doctext
 	end
-	local text = {""}
+	local text = { "" }
 	for _, node in ipairs(self.nodes) do
 		local node_text = node:get_docstring()
 		-- append first line to last line of text so far.
-		text[#text] = text[#text]..node_text[1]
+		text[#text] = text[#text] .. node_text[1]
 		for i = 2, #node_text do
-			text[#text+1] = node_text[i]
+			text[#text + 1] = node_text[i]
 		end
 	end
 	-- cache computed text, may be called multiple times for

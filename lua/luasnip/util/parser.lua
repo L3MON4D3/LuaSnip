@@ -142,7 +142,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 			-- SELECT Simple placeholder (static text or evaulated function that is not updated again),
 			-- behaviour mopre similar to eg. vscode.
 			if snip:text_only() then
-				tab_stops[pos] = iNode.I(pos, string.sub(text, stop+1, -1))
+				tab_stops[pos] = iNode.I(pos, string.sub(text, stop + 1, -1))
 			else
 				if not snip:is_interactive() then
 					tab_stops[pos] = dNode.D(pos, function(args)
@@ -162,7 +162,10 @@ local function parse_placeholder(text, tab_stops, brackets)
 					modify_nodes(snip)
 					snip:init_nodes()
 
-					tab_stops[pos] = cNode.C(pos, { snip, iNode.I(nil, { "" }) })
+					tab_stops[pos] = cNode.C(
+						pos,
+						{ snip, iNode.I(nil, { "" }) }
+					)
 				end
 				-- 0-node cannot be dynamic or choice, insert the actual 0-node behind it.
 				if pos == 0 then
@@ -240,7 +243,7 @@ local function fix_node_indices(nodes)
 
 	for i = 1, highest do
 		if not used_nodes[i] then
-			for j = i+1, highest do
+			for j = i + 1, highest do
 				if used_nodes[j] then
 					used_nodes[j].pos = used_nodes[j].pos - 1
 				end
