@@ -48,6 +48,9 @@ function FunctionNode:get_static_text()
 	return self.static_text
 end
 
+-- function-text will not stand out in any way in docstring.
+FunctionNode.get_docstring = FunctionNode.get_static_text
+
 function FunctionNode:update()
 	local text = util.wrap_value(
 		self.fn(self:get_args(), unpack(self.user_args))

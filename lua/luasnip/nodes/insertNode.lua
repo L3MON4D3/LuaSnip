@@ -169,6 +169,10 @@ function InsertNode:exit()
 	self.mark:clear()
 end
 
+function InsertNode:get_docstring()
+	return util.string_wrap(self.static_text, self.pos)
+end
+
 return {
 	I = I,
 }

@@ -54,6 +54,9 @@ function DynamicNode:get_static_text()
 	return self.static_text
 end
 
+-- alias these, snippets' get_docstring handles string_wrap.
+DynamicNode.get_docstring = DynamicNode.get_static_text
+
 -- DynamicNode's don't have static text, nop these.
 function DynamicNode:put_initial(_) end
 

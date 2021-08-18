@@ -382,6 +382,15 @@ local function increase_ext_prio(opts, amount)
 	return opts
 end
 
+local function string_wrap(lines, pos)
+	if #lines == 1 and #lines[1] == 0 then
+		return {"$"..(pos and tostring(pos) or "{}")}
+	end
+	lines[1] = "${"..(pos and (tostring(pos)..":") or "")..lines[1]
+	lines[#lines] = lines[#lines].."}"
+	return lines
+end
+
 -- Heuristic to extract the comment style from the commentstring
 local _comments_cache = {}
 local function buffer_comment_chars()
@@ -435,4 +444,5 @@ return {
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
+	string_wrap = string_wrap
 }

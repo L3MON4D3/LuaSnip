@@ -13,6 +13,10 @@ function Node:get_static_text()
 	return self.static_text
 end
 
+function Node:get_docstring()
+	return self.static_text
+end
+
 function Node:put_initial(pos)
 	util.put(self:get_static_text(), pos)
 end

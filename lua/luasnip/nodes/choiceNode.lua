@@ -111,6 +111,10 @@ function ChoiceNode:get_static_text()
 	return self.choices[1]:get_static_text()
 end
 
+function ChoiceNode:get_docstring()
+	return util.string_wrap(self.choices[1]:get_docstring(), self.pos)
+end
+
 function ChoiceNode:jump_into(dir)
 	if self.active then
 		self:input_leave()
