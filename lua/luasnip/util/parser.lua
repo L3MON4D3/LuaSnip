@@ -159,7 +159,6 @@ local function parse_placeholder(text, tab_stops, brackets)
 				end
 				-- 0-node cannot be dynamic or choice, insert the actual 0-node behind it.
 				if pos == 0 then
-					print("le")
 					-- should be high enough
 					tab_stops[pos].pos = 1000
 					i0_maybe = iNode.I(0)
