@@ -731,6 +731,15 @@ function Snippet:populate_args(node)
 	end
 end
 
+function Snippet:text_only()
+	for _, node in ipairs(self.nodes) do
+		if node.type ~= types.textNode then
+			return false
+		end
+	end
+	return true
+end
+
 return {
 	Snippet = Snippet,
 	S = S,
