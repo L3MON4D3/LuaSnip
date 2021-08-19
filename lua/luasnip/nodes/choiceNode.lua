@@ -34,6 +34,7 @@ function ChoiceNode:put_initial(pos)
 		node.pos = self.pos
 		-- if function- or dynamicNode, dependents may need to be replaced with
 		-- actual nodes, until here dependents may only contain indices of nodes.
+		-- stylua: ignore
 		if
 			node.type == types.functionNode
 			or node.type == types.dynamicNode

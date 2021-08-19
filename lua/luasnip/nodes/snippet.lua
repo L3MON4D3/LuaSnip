@@ -548,9 +548,10 @@ function Snippet:put_initial(pos)
 	end
 
 	for _, node in ipairs(self.nodes) do
+		-- stylua: ignore
 		if
-			node.type == types.functionNode or node.type
-				== types.dynamicNode
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
 		then
 			self:populate_args(node)
 		end
