@@ -197,11 +197,16 @@ end
 local function generate_snippet_docstring(snippet_table)
 	local strings = {}
 	for ft, snippets in pairs(snippet_table) do
+		local ft_snippets = {}
+		strings[ft] = ft_snippets
+
 		for _, snippet in ipairs(snippets) do
 			local snipcop = snippet:copy()
 			snipcop:fake_expand()
-			strings[#strings + 1] = snipcop:get_docstring()
-			snippet.docstring = strings[#strings]
+			local docstring = snipcop:get_docstring()
+
+			ft_snippets[snippet.trigger] = docstring
+			snippet.docstring = docstring
 		end
 	end
 	return strings
