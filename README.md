@@ -94,8 +94,7 @@ Neovim >= 0.5 (extmarks)
     vim.api.nvim_set_keymap("s", "<C-E>", "<Plug>luasnip-next-choice", {})
     ```
   </details>
-- Add Snippets: Snippets have to be added to the `require'luasnip'.snippets`-table.  
-  To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`. 
+- Loding Snippets from luafile: To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`. 
 - Docs: The previously mentioned `Examples/snippets.lua` contains brief descriptions, check `DOC.md` (or `:help luasnip`) for more in-depth explainations.
 
 # Config
