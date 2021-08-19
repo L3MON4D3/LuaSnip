@@ -65,9 +65,10 @@ function ChoiceNode:populate_argnodes()
 	for _, node in ipairs(self.choices) do
 		-- if function- or dynamicNode, dependents may need to be replaced with
 		-- actual nodes, until here dependents may only contain indices of nodes.
+		-- stylua: ignore
 		if
-			node.type == types.functionNode or node.type
-				== types.dynamicNode
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
 		then
 			self.parent:populate_args(node)
 		end

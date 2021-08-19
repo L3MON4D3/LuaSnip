@@ -557,6 +557,7 @@ end
 -- be done in init_nodes()).
 function Snippet:populate_argnodes()
 	for _, node in ipairs(self.nodes) do
+		-- stylua: ignore
 		if
 			node.type == types.functionNode
 			or node.type == types.dynamicNode
