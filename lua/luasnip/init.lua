@@ -252,16 +252,14 @@ local function load_snippet_docstrings(snippet_table)
 
 	for ft, snippets in pairs(snippet_table) do
 		-- skip if fieltype not in cache.
-		if not docstrings[ft] then
-			goto continue
-		end
-		for _, snippet in ipairs(snippets) do
-			-- only set if it hasn't been set already.
-			if not snippet.docstring then
-				snippet.docstring = docstrings[ft][snippet.trigger]
-			end
-		end
-		::continue::
+		if docstrings[ft] then
+            for _, snippet in ipairs(snippets) do
+                -- only set if it hasn't been set already.
+                if not snippet.docstring then
+                    snippet.docstring = docstrings[ft][snippet.trigger]
+                end
+            end
+        end
 	end
 end
 
