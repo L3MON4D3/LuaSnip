@@ -130,7 +130,6 @@ local function S(context, nodes, condition, ...)
 		mark = nil,
 		dependents = {},
 		active = false,
-		env = {},
 		type = types.snippet,
 	})
 
