@@ -54,11 +54,22 @@ function DynamicNode:get_static_text()
 	return self.static_text
 end
 
+local errorstring = [[
+Error while evaluating dynamicNode@%d for snippet '%s':
+%s
+ 
+:h luasnip-docstring for more info]]
 function DynamicNode:get_docstring()
 	-- cache static_text, no need to recalculate function.
 	if not self.docstring then
-		local tmp = self.fn(self:get_args_static(), nil, unpack(self.user_args))
-		self.docstring = util.string_wrap(tmp:get_docstring(), self.pos)
+		local success, tmp = pcall(self.fn, self:get_args_static(), nil, unpack(self.user_args))
+		if not success then
+		    local snip = util.find_outer_snippet(self)
+		    print(errorstring:format(self.indx, snip.name, tmp))
+		    self.docstring = {""}
+		else
+			self.docstring = util.string_wrap(tmp:get_docstring(), self.pos)
+		end
 	end
 	return self.docstring
 end

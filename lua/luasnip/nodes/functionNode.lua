@@ -39,12 +39,26 @@ function FunctionNode:input_enter()
 	util.normal_move_on_insert(self.mark:pos_begin())
 end
 
+local errorstring = [[
+Error while evaluating functionNode@%d for snippet '%s':
+%s
+ 
+:h luasnip-docstring for more info]]
 function FunctionNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		self.static_text = util.wrap_value(
-			self.fn(self:get_static_args(), unpack(self.user_args))
-		)
+        local success, static_text = pcall(
+            self.fn,
+            self:get_static_args(),
+            unpack(self.user_args))
+
+        if not success then
+            local snip = util.find_outer_snippet(self)
+            print(errorstring:format(
+                self.indx, snip.name, static_text))
+            static_text = {""}
+        end
+		self.static_text = util.wrap_value(static_text)
 	end
 	return self.static_text
 end

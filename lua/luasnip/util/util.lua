@@ -431,6 +431,13 @@ local function to_line_table(table_or_string)
 	return line_table
 end
 
+local function find_outer_snippet(node)
+	while node.parent do
+		node = node.parent
+	end
+	return node
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -460,5 +467,6 @@ return {
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
 	string_wrap = string_wrap,
-	to_line_table = to_line_table
+	to_line_table = to_line_table,
+	find_outer_snippet = find_outer_snippet
 }
