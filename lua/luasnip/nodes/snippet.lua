@@ -612,20 +612,28 @@ end
 function Snippet:get_docstring()
 	if self.docstring then
 		return self.docstring
+	elseif not self.env then
+		-- not a snippetNode and not yet initialized
+		local snipcop = self:copy()
+		-- sets env, captures, etc.
+		snipcop:fake_expand()
+		local docstring = snipcop:get_docstring()
+		self.docstring = docstring
+		return docstring
 	end
-	local text = { "" }
+	local docstring = { "" }
 	for _, node in ipairs(self.nodes) do
 		local node_text = node:get_docstring()
 		-- append first line to last line of text so far.
-		text[#text] = text[#text] .. node_text[1]
+		docstring[#docstring] = docstring[#docstring] .. node_text[1]
 		for i = 2, #node_text do
-			text[#text + 1] = node_text[i]
+			docstring[#docstring + 1] = node_text[i]
 		end
 	end
 	-- cache computed text, may be called multiple times for
 	-- function/dynamicNodes.
-	self.docstring = text
-	return text
+	self.docstring = docstring
+	return docstring
 end
 
 function Snippet:update()

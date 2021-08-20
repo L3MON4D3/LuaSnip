@@ -194,18 +194,6 @@ local function active_update_dependents()
 	end
 end
 
--- snippet_table structured like ls.snippets.
-local function generate_snippet_docstrings(snippet_table)
-	for _, snippets in pairs(snippet_table) do
-		for _, snippet in ipairs(snippets) do
-			local snipcop = snippet:copy()
-			snipcop:fake_expand()
-			local docstring = snipcop:get_docstring()
-			snippet.docstring = docstring
-		end
-	end
-end
-
 local function store_snippet_docstrings(snippet_table)
 	-- ensure the directory exists.
 	-- 493 = 0755
@@ -230,7 +218,7 @@ local function store_snippet_docstrings(snippet_table)
 			docstrings[ft] = {}
 		end
 		for _, snippet in ipairs(snippets) do
-			docstrings[ft][snippet.trigger] = snippet.docstring
+			docstrings[ft][snippet.trigger] = snippet:get_docstring()
 		end
 	end
 
