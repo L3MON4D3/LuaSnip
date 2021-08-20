@@ -230,16 +230,15 @@ local function load_snippet_docstrings(snippet_table)
 	-- 493 = 0755
 	vim.loop.fs_mkdir(luasnip_data_dir, 493)
 
-	-- open synchronously,
-	-- fs_open() with w+ creates the file if nonexistent.
-	local exists, docstring_cache_fd = pcall(vim.loop.fs_open,
+	-- fs_open() with "r" returns nil if the file doesn't exist.
+	local docstring_cache_fd = vim.loop.fs_open(
 		luasnip_data_dir.."/docstrings.json",
 		"r",
 		-- 420 = 0644
 		420)
 
-	if not exists then
-		print("Cached docstrings could not be read!")
+	if not docstring_cache_fd then
+		error("Cached docstrings could not be read!")
 		return
 	end
 	-- get size for fs_read()
