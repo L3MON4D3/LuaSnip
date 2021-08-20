@@ -613,8 +613,8 @@ function Snippet:get_static_text()
 end
 
 function Snippet:get_docstring()
-	if self.doctext then
-		return self.doctext
+	if self.docstring then
+		return self.docstring
 	end
 	local text = { "" }
 	for _, node in ipairs(self.nodes) do
