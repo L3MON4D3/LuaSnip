@@ -592,6 +592,14 @@ end
 function Snippet:get_static_text()
 	if self.static_text then
 		return self.static_text
+	elseif not self.env then
+		-- not a snippetNode and not yet initialized
+		local snipcop = self:copy()
+		-- sets env, captures, etc.
+		snipcop:fake_expand()
+		local static_text = snipcop:get_static_text()
+		self.static_text = static_text
+		return static_text
 	end
 	local text = { "" }
 	for _, node in ipairs(self.nodes) do
