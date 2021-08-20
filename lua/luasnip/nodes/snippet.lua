@@ -317,7 +317,8 @@ function Snippet:trigger_expand(current_node)
 			self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 		end
 	end
-	Environ:new(self.env)
+
+	self.env = Environ:new()
 
 	self:subsnip_init()
 
