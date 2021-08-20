@@ -122,6 +122,7 @@ local function S(context, nodes, condition, ...)
 		wordTrig = context.wordTrig,
 		regTrig = context.regTrig,
 		docstring = context.docstring,
+		docTrig = context.docTrig,
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
@@ -581,6 +582,15 @@ function Snippet:fake_expand()
 			return "$CAPTURE" .. tostring(key)
 		end,
 	})
+	if self.docTrig then
+		-- This fills captures[1] with docTrig if no capture groups are defined
+		-- and therefore slightly differs from normal expansion where it won't
+		-- be filled, but that's alright.
+		self.captures = {self.docTrig:match(self.trigger)}
+		self.trigger = self.docTrig
+	else
+		self.trigger = "$TRIGGER"
+	end
 	self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 
 	self:indent("")
