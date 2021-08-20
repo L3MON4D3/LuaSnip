@@ -5,8 +5,25 @@ local conf = require("luasnip.config")
 local types = require("luasnip.util.types")
 local mark = require("luasnip.util.mark").mark
 
+function ChoiceNode:init_nodes()
+	for _, node in ipairs(self.choices) do
+		node.parent = self.parent
+		node.next = self
+		node.prev = self
+		node.dependents = self.dependents
+		node.indx = self.indx
+		node.pos = self.pos
+		if node.type == types.choiceNode then
+			node:init_nodes()
+		elseif node.type == types.snippetNode then
+			node:init_choices()
+		end
+	end
+	self.inner = self.choices[self.current_choice]
+end
+
 local function C(pos, choices)
-	return ChoiceNode:new({
+	local c = ChoiceNode:new({
 		active = false,
 		pos = pos,
 		choices = choices,
@@ -15,14 +32,11 @@ local function C(pos, choices)
 		current_choice = 1,
 		dependents = {},
 	})
+	return c
 end
 
-function ChoiceNode:put_initial(pos)
+function ChoiceNode:subsnip_init()
 	for _, node in ipairs(self.choices) do
-		node.parent = self.parent
-		node.next = self
-		node.prev = self
-		node.dependents = self.dependents
 		if node.type == types.snippetNode then
 			node.env = self.parent.env
 			node.ext_opts = util.increase_ext_prio(
@@ -30,20 +44,11 @@ function ChoiceNode:put_initial(pos)
 				conf.config.ext_prio_increase
 			)
 		end
-		node.indx = self.indx
-		node.pos = self.pos
-		-- if function- or dynamicNode, dependents may need to be replaced with
-		-- actual nodes, until here dependents may only contain indices of nodes.
-		-- stylua: ignore
-		if
-			node.type == types.functionNode
-			or node.type == types.dynamicNode
-		then
-			self.parent:populate_args(node)
-		end
+		node:subsnip_init()
 	end
-	self.inner = self.choices[self.current_choice]
+end
 
+function ChoiceNode:put_initial(pos)
 	local old_pos = vim.deepcopy(pos)
 
 	self.inner:put_initial(pos)
@@ -54,6 +59,20 @@ function ChoiceNode:put_initial(pos)
 	}, self.parent.ext_opts[self.inner.type].passive)
 
 	self.inner.mark = mark(old_pos, pos, mark_opts)
+end
+
+function ChoiceNode:populate_argnodes()
+	for _, node in ipairs(self.choices) do
+		-- if function- or dynamicNode, dependents may need to be replaced with
+		-- actual nodes, until here dependents may only contain indices of nodes.
+		-- stylua: ignore
+		if
+			node.type == types.functionNode
+			or node.type == types.dynamicNode
+		then
+			self.parent:populate_args(node)
+		end
+	end
 end
 
 function ChoiceNode:indent(indentstr)
@@ -89,12 +108,12 @@ function ChoiceNode:set_old_text()
 	self.inner.old_text = self.old_text
 end
 
-function ChoiceNode:has_static_text()
-	return self.choices[1]:has_static_text()
-end
-
 function ChoiceNode:get_static_text()
 	return self.choices[1]:get_static_text()
+end
+
+function ChoiceNode:get_docstring()
+	return util.string_wrap(self.choices[1]:get_docstring(), self.pos)
 end
 
 function ChoiceNode:jump_into(dir)
@@ -162,9 +181,9 @@ function ChoiceNode:copy()
 end
 
 function ChoiceNode:exit()
+	self.inner:exit()
 	self.mark:clear()
 	Luasnip_active_choice = self.prev_choice
-	self.inner:exit()
 end
 
 -- val_begin/end may be nil, in this case that gravity won't be changed.

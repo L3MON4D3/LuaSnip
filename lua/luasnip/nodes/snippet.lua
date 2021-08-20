@@ -69,6 +69,17 @@ function Snippet:init_nodes()
 	self.insert_nodes = insert_nodes
 end
 
+-- choiceNode's need parent and dependents set before their init_nodes.
+function Snippet:init_choices()
+	for _, node in ipairs(self.nodes) do
+		if node.type == types.choiceNode then
+			node:init_nodes()
+		elseif node.type == types.snippetNode then
+			node:init_choices()
+		end
+	end
+end
+
 local function wrap_nodes(nodes)
 	-- safe to assume, if nodes has a metatable, it is a single node, not a
 	-- table.
@@ -92,14 +103,10 @@ local function S(context, nodes, condition, ...)
 
 	-- context.dscr could be nil, string or table.
 	context.dscr = util.wrap_value(context.dscr or context.trig)
+	local dscr = util.to_line_table(context.dscr)
 
-	-- split entries at \n.
-	local dscr = {}
-	for _, str in ipairs(context.dscr) do
-		local split = vim.split(str, "\n", true)
-		for i = 1, #split do
-			dscr[#dscr + 1] = split[i]
-		end
+	if context.docstring then
+		context.docstring = util.to_line_table(context.docstring)
 	end
 
 	-- default: true.
@@ -114,6 +121,8 @@ local function S(context, nodes, condition, ...)
 		name = context.name or context.trig,
 		wordTrig = context.wordTrig,
 		regTrig = context.regTrig,
+		docstring = context.docstring,
+		docTrig = context.docTrig,
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
@@ -122,11 +131,12 @@ local function S(context, nodes, condition, ...)
 		mark = nil,
 		dependents = {},
 		active = false,
-		env = {},
 		type = types.snippet,
 	})
 
 	snip:init_nodes()
+	snip:populate_argnodes()
+	snip:init_choices()
 
 	if not snip.insert_nodes[0] then
 		-- Generate implied i(0)
@@ -153,6 +163,7 @@ local function SN(pos, nodes)
 		type = types.snippetNode,
 	})
 	snip:init_nodes()
+
 	return snip
 end
 
@@ -306,7 +317,10 @@ function Snippet:trigger_expand(current_node)
 			self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 		end
 	end
-	Environ:new(self.env)
+
+	self.env = Environ:new()
+
+	self:subsnip_init()
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)
@@ -520,21 +534,9 @@ function Snippet:dump()
 end
 
 function Snippet:put_initial(pos)
-	-- i needed for functions.
 	for _, node in ipairs(self.nodes) do
 		-- save pos to compare to later.
 		local old_pos = vim.deepcopy(pos)
-
-		-- set for snippetNodes.
-		if node.type == types.snippetNode then
-			node:indent(self.indentstr)
-			node.env = self.env
-			node.ext_opts = util.increase_ext_prio(
-				vim.deepcopy(self.ext_opts),
-				conf.config.ext_prio_increase
-			)
-		end
-
 		node:put_initial(pos)
 
 		-- correctly set extmark for node.
@@ -546,7 +548,12 @@ function Snippet:put_initial(pos)
 		node.mark = mark(old_pos, pos, mark_opts)
 		node:set_old_text()
 	end
+end
 
+-- may only be called if the `insertNodes` of all snippet(Node)s are populated
+-- (the first node may refer to the last+recursion with Parent_indexer's, can't
+-- be done in init_nodes()).
+function Snippet:populate_argnodes()
 	for _, node in ipairs(self.nodes) do
 		-- stylua: ignore
 		if
@@ -554,8 +561,97 @@ function Snippet:put_initial(pos)
 			or node.type == types.dynamicNode
 		then
 			self:populate_args(node)
+		else
+			node:populate_argnodes()
 		end
 	end
+end
+
+-- populate env,inden,captures,trigger(regex),... but don't put any text.
+function Snippet:fake_expand()
+	-- set eg. env.TM_SELECTED_TEXT to $TM_SELECTED_TEXT
+	self.env = {}
+	setmetatable(self.env, {
+		__index = function(_, key)
+			return { "$" .. key }
+		end,
+	})
+
+	self.captures = {}
+	setmetatable(self.captures, {
+		__index = function(_, key)
+			return "$CAPTURE" .. tostring(key)
+		end,
+	})
+	if self.docTrig then
+		-- This fills captures[1] with docTrig if no capture groups are defined
+		-- and therefore slightly differs from normal expansion where it won't
+		-- be filled, but that's alright.
+		self.captures = { self.docTrig:match(self.trigger) }
+		self.trigger = self.docTrig
+	else
+		self.trigger = "$TRIGGER"
+	end
+	self.ext_opts = vim.deepcopy(conf.config.ext_opts)
+
+	self:indent("")
+	self:subsnip_init()
+end
+
+-- to work correctly, this may require that the snippets' env,indent,captures? are
+-- set.
+function Snippet:get_static_text()
+	if self.static_text then
+		return self.static_text
+	elseif not self.env then
+		-- not a snippetNode and not yet initialized
+		local snipcop = self:copy()
+		-- sets env, captures, etc.
+		snipcop:fake_expand()
+		local static_text = snipcop:get_static_text()
+		self.static_text = static_text
+		return static_text
+	end
+	local text = { "" }
+	for _, node in ipairs(self.nodes) do
+		local node_text = node:get_static_text()
+		-- append first line to last line of text so far.
+		text[#text] = text[#text] .. node_text[1]
+		for i = 2, #node_text do
+			text[#text + 1] = node_text[i]
+		end
+	end
+	-- cache computed text, may be called multiple times for
+	-- function/dynamicNodes.
+	self.static_text = text
+	return text
+end
+
+function Snippet:get_docstring()
+	if self.docstring then
+		return self.docstring
+	elseif not self.env then
+		-- not a snippetNode and not yet initialized
+		local snipcop = self:copy()
+		-- sets env, captures, etc.
+		snipcop:fake_expand()
+		local docstring = snipcop:get_docstring()
+		self.docstring = docstring
+		return docstring
+	end
+	local docstring = { "" }
+	for _, node in ipairs(self.nodes) do
+		local node_text = node:get_docstring()
+		-- append first line to last line of text so far.
+		docstring[#docstring] = docstring[#docstring] .. node_text[1]
+		for i = 2, #node_text do
+			docstring[#docstring + 1] = node_text[i]
+		end
+	end
+	-- cache computed text, may be called multiple times for
+	-- function/dynamicNodes.
+	self.docstring = docstring
+	return docstring
 end
 
 function Snippet:update()
@@ -574,6 +670,19 @@ end
 function Snippet:expand_tabs(tabwidth)
 	for _, node in ipairs(self.nodes) do
 		node:expand_tabs(tabwidth)
+	end
+end
+
+function Snippet:subsnip_init()
+	for _, node in ipairs(self.nodes) do
+		if node.type == types.snippetNode then
+			node.env = self.env
+			node.ext_opts = util.increase_ext_prio(
+				vim.deepcopy(self.ext_opts),
+				conf.config.ext_prio_increase
+			)
+		end
+		node:subsnip_init()
 	end
 end
 
@@ -641,6 +750,15 @@ function Snippet:populate_args(node)
 			argnode.dependents[#argnode.dependents + 1] = node
 		end
 	end
+end
+
+function Snippet:text_only()
+	for _, node in ipairs(self.nodes) do
+		if node.type ~= types.textNode then
+			return false
+		end
+	end
+	return true
 end
 
 return {

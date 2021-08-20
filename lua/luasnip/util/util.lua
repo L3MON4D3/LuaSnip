@@ -382,6 +382,15 @@ local function increase_ext_prio(opts, amount)
 	return opts
 end
 
+local function string_wrap(lines, pos)
+	if #lines == 1 and #lines[1] == 0 then
+		return { "$" .. (pos and tostring(pos) or "{}") }
+	end
+	lines[1] = "${" .. (pos and (tostring(pos) .. ":") or "") .. lines[1]
+	lines[#lines] = lines[#lines] .. "}"
+	return lines
+end
+
 -- Heuristic to extract the comment style from the commentstring
 local _comments_cache = {}
 local function buffer_comment_chars()
@@ -405,6 +414,28 @@ local function buffer_comment_chars()
 	end
 	_comments_cache[commentstring] = comments
 	return comments
+end
+
+local function to_line_table(table_or_string)
+	local tbl = wrap_value(table_or_string)
+
+	-- split entries at \n.
+	local line_table = {}
+	for _, str in ipairs(tbl) do
+		local split = vim.split(str, "\n", true)
+		for i = 1, #split do
+			line_table[#line_table + 1] = split[i]
+		end
+	end
+
+	return line_table
+end
+
+local function find_outer_snippet(node)
+	while node.parent do
+		node = node.parent
+	end
+	return node
 end
 
 return {
@@ -435,4 +466,7 @@ return {
 	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
+	string_wrap = string_wrap,
+	to_line_table = to_line_table,
+	find_outer_snippet = find_outer_snippet,
 }

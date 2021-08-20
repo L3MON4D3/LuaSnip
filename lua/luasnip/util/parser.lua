@@ -2,6 +2,7 @@ local tNode = require("luasnip.nodes.textNode")
 local iNode = require("luasnip.nodes.insertNode")
 local fNode = require("luasnip.nodes.functionNode")
 local cNode = require("luasnip.nodes.choiceNode")
+local dNode = require("luasnip.nodes.dynamicNode")
 local snipNode = require("luasnip.nodes.snippet")
 local Environ = require("luasnip.util.environ")
 local functions = require("luasnip.util.functions")
@@ -136,71 +137,44 @@ local function parse_placeholder(text, tab_stops, brackets)
 			tab_stops,
 			brackets_offset(brackets, -stop)
 		)
+		local i0_maybe = nil
 		if snip then
 			-- SELECT Simple placeholder (static text or evaulated function that is not updated again),
 			-- behaviour mopre similar to eg. vscode.
-			if not snip:is_interactive() then
-				-- override snip's jump_into so that text is selected.
-				function snip:jump_into()
-					self.parent:enter_node(self.indx)
-
-					vim.api.nvim_feedkeys(
-						vim.api.nvim_replace_termcodes(
-							"<Esc>",
-							true,
-							false,
-							true
-						),
-						"n",
-						true
-					)
-					-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-					local from_pos, to_pos = util.get_ext_positions(
-						self.mark.id
-					)
-					if not util.pos_equal(from_pos, to_pos) then
-						util.normal_move_on(from_pos)
-						vim.api.nvim_feedkeys(
-							vim.api.nvim_replace_termcodes(
-								"v",
-								true,
-								false,
-								true
-							),
-							"n",
-							true
-						)
-						util.normal_move_before(to_pos)
-						vim.api.nvim_feedkeys(
-							vim.api.nvim_replace_termcodes(
-								"o<C-G>",
-								true,
-								false,
-								true
-							),
-							"n",
-							true
-						)
-					else
-						util.normal_move_on_insert(from_pos)
-					end
-					Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
-				end
-				function snip:is_interactive()
-					return true
-				end
-				-- reinit nodes.
-				snip:init_nodes()
-
-				tab_stops[pos] = snip
+			if snip:text_only() then
+				tab_stops[pos] = iNode.I(pos, string.sub(text, stop + 1, -1))
 			else
-				-- move placeholders' indices.
-				modify_nodes(snip)
-				snip:init_nodes()
+				if not snip:is_interactive() then
+					tab_stops[pos] = dNode.D(pos, function(args)
+						-- properly prepare snippet for get_static_text.
+						snip.env = args[1].env
+						snip.ext_opts = args[1].ext_opts
+						if vim.o.expandtab then
+							snip:expand_tabs(util.tab_width())
+						end
+						snip:indent(args[1].indentstr)
+						snip:subsnip_init()
+						local iText = snip:get_static_text()
+						return snipNode.SN(nil, iNode.I(1, iText))
+					end, {})
+				else
+					-- move placeholders' indices.
+					modify_nodes(snip)
+					snip:init_nodes()
 
-				tab_stops[pos] = cNode.C(pos, { snip, iNode.I(nil, { "" }) })
+					tab_stops[pos] = cNode.C(
+						pos,
+						{ snip, iNode.I(nil, { "" }) }
+					)
+				end
+				-- 0-node cannot be dynamic or choice, insert the actual 0-node behind it.
+				if pos == 0 then
+					-- should be high enough
+					tab_stops[pos].pos = 1000
+					i0_maybe = iNode.I(0)
+				end
 			end
-			return tab_stops[pos]
+			return tab_stops[pos], i0_maybe
 		end
 	end
 	-- Parse transforms as simple copy.
@@ -321,21 +295,22 @@ parse_snippet = function(context, body, tab_stops, brackets)
 						next_node + 2,
 						match_bracket - 1
 					)
-					local node
+					local node1, node2
 					for _, fn in ipairs(parse_functions) do
-						node = fn(
+						node1, node2 = fn(
 							nodestring,
 							tab_stops,
 							brackets_offset(brackets, -(next_node + 1))
 						)
-						if node then
+						if node1 then
 							break
 						end
 					end
-					if not node then
+					if not node1 then
 						error("Unknown Syntax: " .. nodestring)
 					end
-					nodes[#nodes + 1] = node
+					nodes[#nodes + 1] = node1
+					nodes[#nodes + 1] = node2
 					indx = match_bracket + 1
 					-- char after '$' is a number -> tabstop.
 				elseif
@@ -377,7 +352,13 @@ parse_snippet = function(context, body, tab_stops, brackets)
 			if type(context) == "number" then
 				return snipNode.SN(context, fix_node_indices(nodes))
 			else
-				return snipNode.S(context, fix_node_indices(nodes))
+				if type(context) == "string" then
+					context = { trig = context }
+				end
+				return snipNode.S(
+					vim.tbl_extend("keep", context, { docstring = body }),
+					fix_node_indices(nodes)
+				)
 			end
 		end
 	end

@@ -25,6 +25,15 @@ function DynamicNode:get_args()
 	return args
 end
 
+function DynamicNode:get_args_static()
+	local args = {}
+	for i, node in ipairs(self.args) do
+		args[i] = util.dedent(node:get_static_text(), self.parent.indentstr)
+	end
+	args[#args + 1] = self.parent
+	return args
+end
+
 function DynamicNode:input_enter()
 	self.active = true
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
@@ -36,12 +45,38 @@ function DynamicNode:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
-function DynamicNode:has_static_text()
-	return false
+function DynamicNode:get_static_text()
+	-- cache static_text, no need to recalculate function.
+	if not self.static_text then
+		local tmp = self.fn(self:get_args_static(), nil, unpack(self.user_args))
+		self.static_text = tmp:get_static_text()
+	end
+	return self.static_text
 end
 
-function DynamicNode:get_static_text()
-	return self.snip:get_static_text()
+local errorstring = [[
+Error while evaluating dynamicNode@%d for snippet '%s':
+%s
+ 
+:h luasnip-docstring for more info]]
+function DynamicNode:get_docstring()
+	-- cache static_text, no need to recalculate function.
+	if not self.docstring then
+		local success, tmp = pcall(
+			self.fn,
+			self:get_args_static(),
+			nil,
+			unpack(self.user_args)
+		)
+		if not success then
+			local snip = util.find_outer_snippet(self)
+			print(errorstring:format(self.indx, snip.name, tmp))
+			self.docstring = { "" }
+		else
+			self.docstring = util.string_wrap(tmp:get_docstring(), self.pos)
+		end
+	end
+	return self.docstring
 end
 
 -- DynamicNode's don't have static text, nop these.
@@ -102,6 +137,10 @@ function DynamicNode:update()
 		vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
 	)
 	tmp.dependents = self.dependents
+
+	tmp:populate_argnodes()
+	tmp:init_choices()
+	tmp:subsnip_init()
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())

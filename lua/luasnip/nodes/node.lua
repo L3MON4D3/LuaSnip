@@ -9,21 +9,16 @@ function Node:new(o)
 	return o
 end
 
-function Node:has_static_text()
-	return self:get_static_text()
-		and not (
-			self:get_static_text()[1] == "" and #self:get_static_text() == 1
-		)
-end
-
 function Node:get_static_text()
 	return self.static_text
 end
 
+function Node:get_docstring()
+	return self.static_text
+end
+
 function Node:put_initial(pos)
-	if self:has_static_text() then
-		util.put(self:get_static_text(), pos)
-	end
+	util.put(self:get_static_text(), pos)
 end
 
 function Node:input_enter(no_move)
@@ -117,6 +112,10 @@ end
 function Node:indent(indentstr)
 	util.indent(self.static_text, indentstr)
 end
+
+function Node:populate_argnodes() end
+
+function Node:subsnip_init() end
 
 Node.ext_gravities_active = { false, true }
 

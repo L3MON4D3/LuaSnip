@@ -265,7 +265,7 @@ ls.snippets = {
 		s("link_url", {
 			t('<a href="'),
 			f(function(args)
-				return args[1].env.TM_SELECTED_TEXT[1]
+				return args[1].env.TM_SELECTED_TEXT[1] or {}
 			end, {}),
 			t('">'),
 			i(1),

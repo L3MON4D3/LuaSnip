@@ -169,6 +169,11 @@ function InsertNode:exit()
 	self.mark:clear()
 end
 
+function InsertNode:get_docstring()
+	-- copy as to not in-place-modify static text.
+	return util.string_wrap(vim.deepcopy(self.static_text), self.pos)
+end
+
 return {
 	I = I,
 }

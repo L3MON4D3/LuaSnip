@@ -15,6 +15,8 @@ CONTENTS                                                        *luasnip-content
 9. VARIABLES...................................................|luasnip-variables|
 10. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
 11. EXT_OPTS....................................................|luasnip-ext_opts|
+12. DOCSTRING..................................................|luasnip-docstring|
+13. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
 >
                 __                       ____                          
                /\ \                     /\  _`\           __           
@@ -60,13 +62,17 @@ entries:
 
 *   `trig`: string, plain text by default. The only entry that must be given.
 *   `name`: string, can be used by eg. `nvim-compe` to identify the snippet.
-*   `dscr`: string, textual description of the snippet, \n-separated or table
+*   `dscr`: string, description of the snippet, \n-separated or table
           for multiple lines.
 *   `wordTrig`: boolean, if true, the snippet is only expanded if the word
               (`[%w_]+`) before the cursor matches the trigger entirely.
               True by default.
 *   `regTrig`: boolean, whether the trigger should be interpreted as a
              lua pattern. False by default.
+*   `docstring`: string, textual representation of the snippet, specified like
+               `dscr`. Overrides docstrings loaded from json.
+*   `docTrig`: string, for snippets triggered using a lua pattern: define the
+             trigger that is used during docstring-generation.
 
 `s` can also be a single string, in which case it is used instead of `trig`, all
 other values being defaulted:
@@ -431,7 +437,70 @@ snippet(Node), `ext_base_prio` is increased by `ext_prio_increase`)).
 
 As a shortcut for setting `hl_group`, the highlight-groups
 `Luasnip*Node{Active,Passive}` may be defined (to be actually used by LuaSnip,
-`ls.config.setup` has to be called after defining). They are overridden by the values
-defined in `ext_opts` directly, but otherwise behave the same (active is
+`ls.config.setup` has to be called after defining). They are overridden by the
+values defined in `ext_opts` directly, but otherwise behave the same (active is
 extended by passive).
+
+================================================================================
+DOCSTRING                                                      *luasnip-docstring*
+
+Snippet-docstrings can be queried using `snippet:get_docstring()`. The function
+evaluates the snippet as if it was expanded regularly, which can be problematic
+if eg. a dynamicNode in the snippet relies on inputs other than
+the argument-nodes.
+`snip.env` and `snip.captures` are populated with the names of the queried
+variable and the index of the capture respectively
+(`snip.env.TM_SELECTED_TEXT` -> `'$TM_SELECTED_TEXT'`, `snip.captures[1]` ->
+ `'$CAPTURES1'`). Although this leads to more expressive docstrings, it can
+ cause errors in functions that eg. rely on a capture being a number:
+>
+    s({trig = "(%d)", regTrig = true}, {
+    	f(function(args)
+    		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+    	end, {})
+    }),
+<
+
+This snippet works fine because `snippet.captures[1]` is always a number.
+During docstring-generation, however, `snippet.captures[1]` is `'$CAPTURES1'`,
+which will cause an error in the functionNode.
+Issues with `snippet.captures` can be prevented by specifying `docTrig` during
+snippet-definition:
+>
+    s({trig = "(%d)", regTrig = true, docTrig = "3"}, {
+    	f(function(args)
+    		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+    	end, {})
+    }),
+<
+
+`snippet.captures` and `snippet.trigger` will be populated as if actually
+triggered with `3`.
+
+Other issues will have to be handled manually by checking the contents of eg.
+`snip.env` or predefining the docstring for the snippet:
+>
+    s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
+    	f(function(args)
+    		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+    	end, {})
+    }),
+<
+
+================================================================================
+DOCSTRING-CACHE                                          *luasnip-docstring-cache*
+
+Although generation of docstrings is pretty fast, it's preferable to not
+redo it as long as the snippets haven't changed. Using
+`ls.store_snippet_docstrings(ls.snippets)` and its counterpart
+`ls.load_snippet_docstrings(ls.snippets)`, they may be serialized from or
+deserialized into the snippets.
+Both functions accept a table structured like `ls.snippets`, ie.
+`{ft1={snippets}, ft2={snippets}}`.
+`load` should be called before any of the `loader`-functions as snippets loaded
+from vscode-style packages already have their `docstring` set (`docstrings`
+wouldn't be overwritten, but there'd be unnecessary calls).
+
+The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
+`~/.cache/nvim/luasnip/docstrings.json`).
 
