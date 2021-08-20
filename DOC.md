@@ -52,6 +52,8 @@ entries:
              lua pattern. False by default.
 - `docstring`: string, textual representation of the snippet, specified like
                `dscr`. Overrides docstrings loaded from json.
+- `docTrig`: string, for snippets triggered using a lua pattern: define the
+             trigger that is used during docstring-generation.
 
 `s` can also be a single string, in which case it is used instead of `trig`, all
 other values being defaulted:
@@ -418,6 +420,54 @@ snippet(Node), `ext_base_prio` is increased by `ext_prio_increase`)).
 
 As a shortcut for setting `hl_group`, the highlight-groups
 `Luasnip*Node{Active,Passive}` may be defined (to be actually used by LuaSnip,
-`ls.config.setup` has to be called after defining). They are overridden by the values
-defined in `ext_opts` directly, but otherwise behave the same (active is
+`ls.config.setup` has to be called after defining). They are overridden by the
+values defined in `ext_opts` directly, but otherwise behave the same (active is
 extended by passive).
+
+# DOCSTRING
+
+Snippet-docstrings can be queried using `snippet:get_docstring()`. The function
+evaluates the snippet as if it was expanded regularly, which can be problematic
+if eg. a dynamicNode in the snippet relies on inputs other than
+the argument-nodes.
+`snip.env` and `snip.captures` are populated with the names of the queried
+variable and the index of the capture respectively
+(`snip.env.TM_SELECTED_TEXT` -> `'$TM_SELECTED_TEXT'`, `snip.captures[1]` ->
+ `'$CAPTURES1'`). Although this leads to more expressive docstrings, it can
+ cause errors in functions that eg. rely on a capture being a number:
+
+```lua
+s({trig = "(%d)", regTrig = true}, {
+	f(function(args)
+		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+	end, {})
+}),
+```
+
+This snippet works fine because	`snippet.captures[1]` is always a number.
+During docstring-generation, however, `snippet.captures[1]` is `'$CAPTURES1'`,
+which will cause an error in the functionNode.
+Issues with `snippet.captures` can be prevented by specifying `docTrig` during
+snippet-definition:
+
+```lua
+s({trig = "(%d)", regTrig = true, docTrig = "3"}, {
+	f(function(args)
+		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+	end, {})
+}),
+```
+
+`snippet.captures` and `snippet.trigger` will be populated as if actually
+triggered with `3`.
+
+Other issues will have to be handled manually by checking the contents of eg.
+`snip.env` or predefining the docstring for the snippet:
+
+```lua
+s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepatme"}, {
+	f(function(args)
+		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+	end, {})
+}),
+```
