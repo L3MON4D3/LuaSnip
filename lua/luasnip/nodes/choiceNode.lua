@@ -181,9 +181,9 @@ function ChoiceNode:copy()
 end
 
 function ChoiceNode:exit()
+	self.inner:exit()
 	self.mark:clear()
 	Luasnip_active_choice = self.prev_choice
-	self.inner:exit()
 end
 
 -- val_begin/end may be nil, in this case that gravity won't be changed.
