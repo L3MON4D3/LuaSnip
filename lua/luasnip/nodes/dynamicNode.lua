@@ -62,11 +62,16 @@ Error while evaluating dynamicNode@%d for snippet '%s':
 function DynamicNode:get_docstring()
 	-- cache static_text, no need to recalculate function.
 	if not self.docstring then
-		local success, tmp = pcall(self.fn, self:get_args_static(), nil, unpack(self.user_args))
+		local success, tmp = pcall(
+			self.fn,
+			self:get_args_static(),
+			nil,
+			unpack(self.user_args)
+		)
 		if not success then
-		    local snip = util.find_outer_snippet(self)
-		    print(errorstring:format(self.indx, snip.name, tmp))
-		    self.docstring = {""}
+			local snip = util.find_outer_snippet(self)
+			print(errorstring:format(self.indx, snip.name, tmp))
+			self.docstring = { "" }
 		else
 			self.docstring = util.string_wrap(tmp:get_docstring(), self.pos)
 		end

@@ -355,7 +355,10 @@ parse_snippet = function(context, body, tab_stops, brackets)
 				if type(context) == "string" then
 					context = { trig = context }
 				end
-				return snipNode.S(vim.tbl_extend("keep", context, {docstring = body}) , fix_node_indices(nodes))
+				return snipNode.S(
+					vim.tbl_extend("keep", context, { docstring = body }),
+					fix_node_indices(nodes)
+				)
 			end
 		end
 	end

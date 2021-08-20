@@ -3,7 +3,7 @@ local util = require("luasnip.util.util")
 
 local next_expand = nil
 local ls
-local luasnip_data_dir = vim.fn.stdpath("cache").."/luasnip"
+local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
 Luasnip_current_nodes = {}
 
@@ -201,16 +201,18 @@ local function store_snippet_docstrings(snippet_table)
 
 	-- fs_open() with w+ creates the file if nonexistent.
 	local docstring_cache_fd = vim.loop.fs_open(
-		luasnip_data_dir.."/docstrings.json",
+		luasnip_data_dir .. "/docstrings.json",
 		"w+",
 		-- 420 = 0644
-		420)
+		420
+	)
 
 	-- get size for fs_read()
 	local cache_size = vim.loop.fs_fstat(docstring_cache_fd).size
 	local file_could_be_read, docstrings = pcall(
 		vim.fn.json_decode,
-		vim.loop.fs_read(docstring_cache_fd, cache_size))
+		vim.loop.fs_read(docstring_cache_fd, cache_size)
+	)
 	docstrings = file_could_be_read and docstrings or {}
 
 	for ft, snippets in pairs(snippet_table) do
@@ -232,10 +234,11 @@ local function load_snippet_docstrings(snippet_table)
 
 	-- fs_open() with "r" returns nil if the file doesn't exist.
 	local docstring_cache_fd = vim.loop.fs_open(
-		luasnip_data_dir.."/docstrings.json",
+		luasnip_data_dir .. "/docstrings.json",
 		"r",
 		-- 420 = 0644
-		420)
+		420
+	)
 
 	if not docstring_cache_fd then
 		error("Cached docstrings could not be read!")
@@ -243,7 +246,9 @@ local function load_snippet_docstrings(snippet_table)
 	end
 	-- get size for fs_read()
 	local cache_size = vim.loop.fs_fstat(docstring_cache_fd).size
-	local docstrings = vim.fn.json_decode(vim.loop.fs_read(docstring_cache_fd, cache_size))
+	local docstrings = vim.fn.json_decode(
+		vim.loop.fs_read(docstring_cache_fd, cache_size)
+	)
 
 	for ft, snippets in pairs(snippet_table) do
 		-- skip if fieltype not in cache.

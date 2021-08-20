@@ -586,7 +586,7 @@ function Snippet:fake_expand()
 		-- This fills captures[1] with docTrig if no capture groups are defined
 		-- and therefore slightly differs from normal expansion where it won't
 		-- be filled, but that's alright.
-		self.captures = {self.docTrig:match(self.trigger)}
+		self.captures = { self.docTrig:match(self.trigger) }
 		self.trigger = self.docTrig
 	else
 		self.trigger = "$TRIGGER"

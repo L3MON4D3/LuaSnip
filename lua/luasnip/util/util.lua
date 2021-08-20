@@ -468,5 +468,5 @@ return {
 	buffer_comment_chars = buffer_comment_chars,
 	string_wrap = string_wrap,
 	to_line_table = to_line_table,
-	find_outer_snippet = find_outer_snippet
+	find_outer_snippet = find_outer_snippet,
 }
