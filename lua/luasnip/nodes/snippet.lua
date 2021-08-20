@@ -584,9 +584,6 @@ function Snippet:fake_expand()
 	})
 	self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 
-	if vim.o.expandtab then
-		self:expand_tabs(util.tab_width())
-	end
 	self:indent("")
 	self:subsnip_init()
 end
