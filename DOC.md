@@ -43,13 +43,15 @@ entries:
 
 - `trig`: string, plain text by default. The only entry that must be given.
 - `name`: string, can be used by eg. `nvim-compe` to identify the snippet.
-- `dscr`: string, textual description of the snippet, \n-separated or table
+- `dscr`: string, description of the snippet, \n-separated or table
           for multiple lines.
 - `wordTrig`: boolean, if true, the snippet is only expanded if the word
               (`[%w_]+`) before the cursor matches the trigger entirely.
 			  True by default.
 - `regTrig`: boolean, whether the trigger should be interpreted as a
              lua pattern. False by default.
+- `docstring`: string, textual representation of the snippet, specified like
+               `dscr`. Overrides docstrings loaded from json.
 
 `s` can also be a single string, in which case it is used instead of `trig`, all
 other values being defaulted:

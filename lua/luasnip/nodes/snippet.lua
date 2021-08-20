@@ -103,14 +103,10 @@ local function S(context, nodes, condition, ...)
 
 	-- context.dscr could be nil, string or table.
 	context.dscr = util.wrap_value(context.dscr or context.trig)
+	local dscr = util.to_line_table(context.dscr)
 
-	-- split entries at \n.
-	local dscr = {}
-	for _, str in ipairs(context.dscr) do
-		local split = vim.split(str, "\n", true)
-		for i = 1, #split do
-			dscr[#dscr + 1] = split[i]
-		end
+	if context.docstring then
+		context.docstring = util.to_line_table(context.docstring)
 	end
 
 	-- default: true.
@@ -125,6 +121,7 @@ local function S(context, nodes, condition, ...)
 		name = context.name or context.trig,
 		wordTrig = context.wordTrig,
 		regTrig = context.regTrig,
+		docstring = context.docstring,
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,

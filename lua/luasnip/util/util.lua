@@ -416,6 +416,21 @@ local function buffer_comment_chars()
 	return comments
 end
 
+local function to_line_table(table_or_string)
+	local tbl = wrap_value(table_or_string)
+
+	-- split entries at \n.
+	local line_table = {}
+	for _, str in ipairs(tbl) do
+		local split = vim.split(str, "\n", true)
+		for i = 1, #split do
+			line_table[#line_table + 1] = split[i]
+		end
+	end
+
+	return line_table
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -445,4 +460,5 @@ return {
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
 	string_wrap = string_wrap,
+	to_line_table = to_line_table
 }
