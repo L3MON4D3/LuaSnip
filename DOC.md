@@ -465,9 +465,25 @@ Other issues will have to be handled manually by checking the contents of eg.
 `snip.env` or predefining the docstring for the snippet:
 
 ```lua
-s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepatme"}, {
+s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
 	f(function(args)
 		return string.rep("repeatme ", tonumber(args[1].captures[1]))
 	end, {})
 }),
 ```
+
+# DOCSTRING-CACHE
+
+Although generation of docstrings is pretty fast, it's preferable to not
+redo it as long as the snippets haven't changed. Using
+`ls.store_snippet_docstrings(ls.snippets)` and its counterpart
+`ls.load_snippet_docstrings(ls.snippets)`, they may be serialized from or
+deserialized into the snippets.
+Both functions accept a table structured like `ls.snippets`, ie.
+`{ft1={snippets}, ft2={snippets}}`.
+`load` should be called before any of the `loader`-functions as snippets loaded
+from vscode-style packages already have their `docstring` set (`docstrings`
+wouldn't be overwritten, but there'd be unnecessary calls).
+
+The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
+`~/.cache/nvim/luasnip/docstrings.json`).
