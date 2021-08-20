@@ -58,7 +58,7 @@ function DynamicNode:get_docstring()
 	-- cache static_text, no need to recalculate function.
 	if not self.docstring then
 		local tmp = self.fn(self:get_args_static(), nil, unpack(self.user_args))
-		self.docstring = tmp:get_docstring()
+		self.docstring = util.string_wrap(tmp:get_docstring(), self.pos)
 	end
 	return self.docstring
 end
