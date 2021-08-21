@@ -17,7 +17,7 @@ function ChoiceNode:init_nodes()
 		setmetatable(node, {
 			__index = function(node, key)
 				return node_mt[key] or node.choice[key]
-			end
+			end,
 		})
 
 		-- replace nodes' original update_dependents with function that also
