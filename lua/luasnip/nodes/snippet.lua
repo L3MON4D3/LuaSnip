@@ -67,17 +67,7 @@ function Snippet:init_nodes()
 	end
 
 	self.insert_nodes = insert_nodes
-end
-
--- choiceNode's need parent and dependents set before their init_nodes.
-function Snippet:init_choices()
-	for _, node in ipairs(self.nodes) do
-		if node.type == types.choiceNode then
-			node:init_nodes()
-		elseif node.type == types.snippetNode then
-			node:init_choices()
-		end
-	end
+	self:populate_argnodes()
 end
 
 local function wrap_nodes(nodes)
@@ -135,8 +125,6 @@ local function S(context, nodes, condition, ...)
 	})
 
 	snip:init_nodes()
-	snip:populate_argnodes()
-	snip:init_choices()
 
 	if not snip.insert_nodes[0] then
 		-- Generate implied i(0)

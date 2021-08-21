@@ -7,17 +7,17 @@ local mark = require("luasnip.util.mark").mark
 
 function ChoiceNode:init_nodes()
 	for _, node in ipairs(self.choices) do
-		node.parent = self.parent
+		-- cannot pass choice directly to function, snippet:copy doesn't
+		-- catch it there.
+		node.choice = self
+		local node_mt = getmetatable(node)
+		setmetatable(node, {
+			__index = function(node, key)
+				return node_mt[key] or node.choice[key]
+			end
+		})
 		node.next = self
 		node.prev = self
-		node.dependents = self.dependents
-		node.indx = self.indx
-		node.pos = self.pos
-		if node.type == types.choiceNode then
-			node:init_nodes()
-		elseif node.type == types.snippetNode then
-			node:init_choices()
-		end
 	end
 	self.inner = self.choices[self.current_choice]
 end
@@ -32,6 +32,7 @@ local function C(pos, choices)
 		current_choice = 1,
 		dependents = {},
 	})
+	c:init_nodes()
 	return c
 end
 

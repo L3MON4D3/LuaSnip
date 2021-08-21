@@ -139,7 +139,6 @@ function DynamicNode:update()
 	tmp.dependents = self.dependents
 
 	tmp:populate_argnodes()
-	tmp:init_choices()
 	tmp:subsnip_init()
 
 	if vim.o.expandtab then
