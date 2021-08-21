@@ -184,7 +184,10 @@ end
 function ChoiceNode:exit()
 	self.inner:exit()
 	self.mark:clear()
-	Luasnip_active_choice = self.prev_choice
+	if self.active then
+		Luasnip_active_choice = self.prev_choice
+	end
+	self.active = false
 end
 
 -- val_begin/end may be nil, in this case that gravity won't be changed.

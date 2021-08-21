@@ -710,6 +710,7 @@ function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
 		node:exit()
 	end
+	self.active = false
 end
 
 function Snippet:set_mark_rgrav(val_begin, val_end)

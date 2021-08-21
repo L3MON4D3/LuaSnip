@@ -167,6 +167,7 @@ function DynamicNode:exit()
 	self.mark:clear()
 	-- snip should exist if exit is called.
 	self.snip:exit()
+	self.active = false
 end
 
 return {
