@@ -19,6 +19,14 @@ function ChoiceNode:init_nodes()
 				return node_mt[key] or node.choice[key]
 			end
 		})
+
+		-- replace nodes' original update_dependents with function that also
+		-- calls this choiceNodes' update_dependents.
+		local _update_dependents = node.update_dependents
+		node.update_dependents = function(node)
+			_update_dependents(node)
+			node.choice:update_dependents()
+		end
 	end
 	self.inner = self.choices[self.current_choice]
 end

@@ -161,8 +161,9 @@ end
 
 local function active_update_dependents()
 	local active = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
-	-- special case for startNode, still gets triggered somehow, TODO.
-	if active and #active.dependents > 0 then
+	-- special case for startNode, cannot enter_node on those (and they can't
+	-- have dependents)
+	if active and active.pos ~= -1 then
 		-- Save cursor-pos to restore later.
 		local cur = util.get_cursor_0ind()
 		local cur_mark = vim.api.nvim_buf_set_extmark(
@@ -174,12 +175,7 @@ local function active_update_dependents()
 		)
 
 		active:update_dependents()
-		-- update all parent's dependents.
-		local parent = active.parent
-		while parent do
-			parent:update_dependents()
-			parent = parent.parent
-		end
+
 		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
 		active.parent:enter_node(active.indx)
 

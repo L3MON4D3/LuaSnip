@@ -49,6 +49,12 @@ function Snippet:init_nodes()
 				insert_nodes[node.pos] = node
 			end
 		end
+
+		local _update_dependents = node.update_dependents
+		node.update_dependents = function(node)
+			_update_dependents(node)
+			node.parent:update_dependents()
+		end
 	end
 
 	if insert_nodes[1] then
