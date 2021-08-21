@@ -7,8 +7,11 @@ local mark = require("luasnip.util.mark").mark
 
 function ChoiceNode:init_nodes()
 	for _, node in ipairs(self.choices) do
-		-- cannot pass choice directly to function, snippet:copy doesn't
-		-- catch it there.
+		-- setup jumps
+		node.next = self
+		node.prev = self
+
+		-- forward values for unknown keys from choiceNode.
 		node.choice = self
 		local node_mt = getmetatable(node)
 		setmetatable(node, {
@@ -16,8 +19,6 @@ function ChoiceNode:init_nodes()
 				return node_mt[key] or node.choice[key]
 			end
 		})
-		node.next = self
-		node.prev = self
 	end
 	self.inner = self.choices[self.current_choice]
 end
