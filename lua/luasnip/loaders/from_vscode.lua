@@ -177,7 +177,7 @@ end
 
 MYCONFIG_ROOT = MYCONFIG_ROOT:gsub("/[^/]+$", "")
 
-function expand_path(path)
+local function expand_path(path)
 	local expanded = path:gsub("^~", vim.env.HOME):gsub("^[.]", MYCONFIG_ROOT)
 	return uv.fs_realpath(expanded)
 end
