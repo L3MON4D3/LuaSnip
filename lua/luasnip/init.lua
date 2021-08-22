@@ -282,13 +282,14 @@ local function exit_out_of_region(node)
 		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = node
 
 		-- also check next snippet.
-		if node.next then
+		if node and node.next then
 			if exit_out_of_region(node.next) then
 				node:input_leave(1, true)
 			end
 		end
 		return true
 	end
+	return false
 end
 
 
