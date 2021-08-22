@@ -129,6 +129,8 @@ local function S(context, nodes, condition, ...)
 		active = false,
 		type = types.snippet,
 	})
+	-- is propagated to all subsnippets, used to quickly find the outer snippet
+	snip.snippet = snip
 
 	snip:init_nodes()
 
@@ -313,7 +315,6 @@ function Snippet:trigger_expand(current_node)
 	end
 
 	self.env = Environ:new()
-
 	self:subsnip_init()
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
@@ -676,6 +677,7 @@ function Snippet:subsnip_init()
 				vim.deepcopy(self.ext_opts),
 				conf.config.ext_prio_increase
 			)
+			node.snippet = self.snippet
 		end
 		node:subsnip_init()
 	end

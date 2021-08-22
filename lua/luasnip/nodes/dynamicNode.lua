@@ -133,6 +133,7 @@ function DynamicNode:update()
 			vim.deepcopy(self.parent.ext_opts),
 			conf.config.ext_prio_increase
 		)
+	tmp.snippet = self.parent.snippet
 	tmp.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
 	)

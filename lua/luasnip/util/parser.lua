@@ -149,6 +149,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 						-- properly prepare snippet for get_static_text.
 						snip.env = args[1].env
 						snip.ext_opts = args[1].ext_opts
+						snip.snippet = args[1].snippet
 						if vim.o.expandtab then
 							snip:expand_tabs(util.tab_width())
 						end

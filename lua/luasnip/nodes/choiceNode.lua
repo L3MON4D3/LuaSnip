@@ -53,6 +53,7 @@ function ChoiceNode:subsnip_init()
 				vim.deepcopy(self.parent.ext_opts),
 				conf.config.ext_prio_increase
 			)
+			node.snippet = self.parent.snippet
 		end
 		node:subsnip_init()
 	end
