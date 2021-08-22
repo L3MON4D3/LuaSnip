@@ -354,6 +354,7 @@ includes an easy way for loading those automatically. You just have to call:
 ```lua
  	require("luasnip/loaders/from_vscode").load(opts) -- opts can be ommited
 ```
+
 Where `opts` is a table containing the keys:
 	-  `paths`: List of paths to load. Can be a table or a single,
 		comma-separated string. If not set, `runtimepath` is used. The paths
@@ -376,6 +377,8 @@ Another way of using the loader is making it lazily
 ```lua
  	require("luasnip/loaders/from_vscode").lazy_load(opts) -- opts can be ommited
 ```
+
+(Note the `/` as path-delimiter)
 
 In this case `opts` only accepts paths (`runtimepath` if any). That will load
 the general snippets (the ones of filetype 'all') and those of the filetype

@@ -192,13 +192,13 @@ function M.load(opts)
 	opts.exclude = list_to_set(opts.exclude) or {}
 
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
-	if type(opts.paths) ~= "table" and opts.paths ~= nil then
-		opts.paths = vim.split(opts.paths, ",")
-		opts.paths = vim.tbl_map(expand_path, opts.paths) -- Expand before deduping, fake paths will become nil
-	else
+	if not opts.paths then
 		opts.paths = get_snippets_rtp()
+	elseif type(opts.paths) == "string" then
+		opts.paths = vim.split(opts.paths, ",")
 	end
 
+	opts.paths = vim.tbl_map(expand_path, opts.paths) -- Expand before deduping, fake paths will become nil
 	opts.paths = vim.tbl_keys(list_to_set(opts.paths)) -- Remove doppelgänger paths and ditch nil ones
 
 	for _, path in ipairs(opts.paths) do
@@ -222,10 +222,10 @@ function M.lazy_load(opts)
 	opts = opts or {}
 
 	-- We have to do this here too, because we have to store them in lozy_load_paths
-	if type(opts.paths) ~= "table" and opts.paths ~= nil then
-		opts.paths = vim.split(opts.paths, ",")
-	else
+	if not opts.paths then
 		opts.paths = get_snippets_rtp()
+	elseif type(opts.paths) == "string" then
+		opts.paths = vim.split(opts.paths, ",")
 	end
 	vim.list_extend(lazy_load_paths, opts.paths)
 
