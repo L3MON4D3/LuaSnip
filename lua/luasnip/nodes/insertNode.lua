@@ -54,8 +54,12 @@ end
 
 function ExitNode:jump_into(dir, no_move)
 	if not config.config.history then
-		self:input_enter()
+		self:input_enter(no_move)
 		if (dir == 1 and not self.next) or (dir == -1 and not self.prev) then
+			if self.pos == 0 then
+				-- leave instantly, self won't be active snippet.
+				self:input_leave()
+			end
 			return nil
 		else
 			return self
