@@ -694,20 +694,20 @@ function Snippet:input_leave()
 	self.mark:update_opts(self.ext_opts[self.type].passive)
 end
 
-function Snippet:jump_into(dir)
+function Snippet:jump_into(dir, no_move)
 	if self.active then
 		self:input_leave()
 		if dir == 1 then
-			return self.next:jump_into(dir)
+			return self.next:jump_into(dir, no_move)
 		else
-			return self.prev:jump_into(dir)
+			return self.prev:jump_into(dir, no_move)
 		end
 	else
 		self:input_enter()
 		if dir == 1 then
-			return self.inner_first:jump_into(dir)
+			return self.inner_first:jump_into(dir, no_move)
 		else
-			return self.inner_last:jump_into(dir)
+			return self.inner_last:jump_into(dir, no_move)
 		end
 	end
 end

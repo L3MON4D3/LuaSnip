@@ -12,13 +12,15 @@ local function T(static_text)
 	})
 end
 
-function TextNode:input_enter()
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-		"n",
-		true
-	)
-	util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+function TextNode:input_enter(no_move)
+	if not no_move then
+		vim.api.nvim_feedkeys(
+			vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+			"n",
+			true
+		)
+		util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+	end
 end
 
 function TextNode:put_initial(pos)

@@ -86,17 +86,17 @@ function DynamicNode:indent(_) end
 
 function DynamicNode:expand_tabs(_) end
 
-function DynamicNode:jump_into(dir)
+function DynamicNode:jump_into(dir, no_move)
 	if self.active then
 		self:input_leave()
 		if dir == 1 then
-			return self.next:jump_into(dir)
+			return self.next:jump_into(dir, no_move)
 		else
-			return self.prev:jump_into(dir)
+			return self.prev:jump_into(dir, no_move)
 		end
 	else
 		self:input_enter()
-		return self.snip:jump_into(dir)
+		return self.snip:jump_into(dir, no_move)
 	end
 end
 

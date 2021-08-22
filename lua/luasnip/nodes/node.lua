@@ -21,26 +21,26 @@ function Node:put_initial(pos)
 	util.put(self:get_static_text(), pos)
 end
 
-function Node:input_enter(no_move)
+function Node:input_enter(_)
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 end
 
-function Node:jump_into(dir, no_move)
+function Node:jump_into(_, no_move)
 	self:input_enter(no_move)
 	return self
 end
 
-function Node:jump_from(dir)
+function Node:jump_from(dir, no_move)
 	self:input_leave()
 	if dir == 1 then
 		if self.next then
-			return self.next:jump_into(dir)
+			return self.next:jump_into(dir, no_move)
 		else
 			return nil
 		end
 	else
 		if self.prev then
-			return self.prev:jump_into(dir)
+			return self.prev:jump_into(dir, no_move)
 		else
 			return nil
 		end

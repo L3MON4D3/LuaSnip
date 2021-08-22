@@ -28,12 +28,12 @@ local function I(pos, static_text)
 	end
 end
 
-function ExitNode:input_enter()
+function ExitNode:input_enter(no_move)
 	-- Don't enter node for -1-node, it isn't in the node-table.
 	if self.pos == 0 then
-		InsertNode.input_enter(self)
+		InsertNode.input_enter(self, no_move)
 		-- -1-node:
-	else
+	elseif not no_move then
 		self:set_mark_rgrav(true, true)
 
 		vim.api.nvim_feedkeys(
@@ -51,7 +51,7 @@ function ExitNode:input_leave()
 	end
 end
 
-function ExitNode:jump_into(dir)
+function ExitNode:jump_into(dir, no_move)
 	if not config.config.history then
 		self:input_enter()
 		if (dir == 1 and not self.next) or (dir == -1 and not self.prev) then
@@ -60,7 +60,7 @@ function ExitNode:jump_into(dir)
 			return self
 		end
 	else
-		return InsertNode.jump_into(self, dir)
+		return InsertNode.jump_into(self, dir, no_move)
 	end
 end
 
@@ -109,7 +109,7 @@ function InsertNode:jump_into(dir, no_move)
 					self.inner_last = nil
 				end
 				self:input_leave()
-				return self.next:jump_into(dir)
+				return self.next:jump_into(dir, no_move)
 			else
 				return false
 			end
@@ -121,7 +121,7 @@ function InsertNode:jump_into(dir, no_move)
 					self.inner_last = nil
 				end
 				self:input_leave()
-				return self.prev:jump_into(dir)
+				return self.prev:jump_into(dir, no_move)
 			else
 				return false
 			end
@@ -132,25 +132,25 @@ function InsertNode:jump_into(dir, no_move)
 	end
 end
 
-function InsertNode:jump_from(dir)
+function InsertNode:jump_from(dir, no_move)
 	if dir == 1 then
 		if self.inner_first then
 			self.inner_active = true
-			return self.inner_first:jump_into(dir)
+			return self.inner_first:jump_into(dir, no_move)
 		else
 			if self.next then
 				self:input_leave()
-				return self.next:jump_into(dir)
+				return self.next:jump_into(dir, no_move)
 			end
 		end
 	else
 		if self.inner_last then
 			self.inner_active = true
-			return self.inner_last:jump_into(dir)
+			return self.inner_last:jump_into(dir, no_move)
 		else
 			if self.prev then
 				self:input_leave()
-				return self.prev:jump_into(dir)
+				return self.prev:jump_into(dir, no_move)
 			end
 		end
 	end

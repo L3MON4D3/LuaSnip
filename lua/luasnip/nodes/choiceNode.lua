@@ -127,17 +127,17 @@ function ChoiceNode:get_docstring()
 	return util.string_wrap(self.choices[1]:get_docstring(), self.pos)
 end
 
-function ChoiceNode:jump_into(dir)
+function ChoiceNode:jump_into(dir, no_move)
 	if self.active then
 		self:input_leave()
 		if dir == 1 then
-			return self.next:jump_into(dir)
+			return self.next:jump_into(dir, no_move)
 		else
-			return self.prev:jump_into(dir)
+			return self.prev:jump_into(dir, no_move)
 		end
 	else
 		self:input_enter()
-		return self.inner:jump_into(dir)
+		return self.inner:jump_into(dir, no_move)
 	end
 end
 
