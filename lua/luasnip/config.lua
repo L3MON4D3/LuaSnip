@@ -4,6 +4,8 @@ local util = require("luasnip.util.util")
 local defaults = {
 	history = false,
 	updateevents = "InsertLeave",
+	-- see :h User, event should never be triggered(except if it is `doautocmd`'d)
+	region_check_events = "User None",
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
 	ext_opts = {
 		[types.textNode] = {
@@ -75,6 +77,7 @@ c = {
         augroup luasnip
             au!
             autocmd %s * lua require("luasnip").active_update_dependents()
+            autocmd %s * lua require("luasnip").exit_out_of_region_snippet()
 			"Remove buffers' nodes on deletion+wipeout.
 			autocmd BufDelete,BufWipeout * lua if Luasnip_current_nodes then Luasnip_current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
 		]] .. (c.config.enable_autosnippets and [[
@@ -82,7 +85,7 @@ c = {
 			autocmd TextChangedI * lua if Luasnip_just_inserted then require("luasnip").expand_auto() Luasnip_just_inserted=false end
 		]] or "") .. [[
 		augroup END
-		]], c.config.updateevents))
+		]], c.config.updateevents, c.config.region_check_events))
 		if c.config.store_selection_keys then
 			vim.cmd(
 				string.format(
