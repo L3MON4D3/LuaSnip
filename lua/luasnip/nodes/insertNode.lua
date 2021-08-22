@@ -33,15 +33,16 @@ function ExitNode:input_enter(no_move)
 	if self.pos == 0 then
 		InsertNode.input_enter(self, no_move)
 		-- -1-node:
-	elseif not no_move then
+	else
 		self:set_mark_rgrav(true, true)
-
-		vim.api.nvim_feedkeys(
-			vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-			"n",
-			true
-		)
-		util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+		if not no_move then
+			vim.api.nvim_feedkeys(
+				vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+				"n",
+				true
+			)
+			util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+		end
 	end
 end
 
@@ -60,7 +61,8 @@ function ExitNode:jump_into(dir, no_move)
 			return self
 		end
 	else
-		return InsertNode.jump_into(self, dir, no_move)
+		-- if no next node, return self as next current node.
+		return InsertNode.jump_into(self, dir, no_move) or self
 	end
 end
 
@@ -141,6 +143,10 @@ function InsertNode:jump_from(dir, no_move)
 			if self.next then
 				self:input_leave()
 				return self.next:jump_into(dir, no_move)
+			else
+				-- only happens for exitNodes, but easier to include here
+				-- and reuse this impl for them.
+				return self
 			end
 		end
 	else
@@ -151,6 +157,8 @@ function InsertNode:jump_from(dir, no_move)
 			if self.prev then
 				self:input_leave()
 				return self.prev:jump_into(dir, no_move)
+			else
+				return self
 			end
 		end
 	end
