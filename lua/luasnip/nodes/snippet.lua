@@ -345,7 +345,8 @@ function Snippet:trigger_expand(current_node)
 	if current_node and current_node.pos > 0 then
 		current_node.inner_active = true
 	end
-	self:jump_into(1)
+
+	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self:jump_into(1)
 end
 
 -- returns copy of snip if it matches, nil if not.
@@ -695,16 +696,16 @@ function Snippet:jump_into(dir)
 	if self.active then
 		self:input_leave()
 		if dir == 1 then
-			self.next:jump_into(dir)
+			return self.next:jump_into(dir)
 		else
-			self.prev:jump_into(dir)
+			return self.prev:jump_into(dir)
 		end
 	else
 		self:input_enter()
 		if dir == 1 then
-			self.inner_first:jump_into(dir)
+			return self.inner_first:jump_into(dir)
 		else
-			self.inner_last:jump_into(dir)
+			return self.inner_last:jump_into(dir)
 		end
 	end
 end

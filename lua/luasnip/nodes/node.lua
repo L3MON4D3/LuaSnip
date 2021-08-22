@@ -27,25 +27,24 @@ end
 
 function Node:jump_into(dir, no_move)
 	self:input_enter(no_move)
-	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
+	return self
 end
 
 function Node:jump_from(dir)
 	self:input_leave()
 	if dir == 1 then
 		if self.next then
-			self.next:jump_into(dir)
+			return self.next:jump_into(dir)
 		else
-			return false
+			return nil
 		end
 	else
 		if self.prev then
-			self.prev:jump_into(dir)
+			return self.prev:jump_into(dir)
 		else
-			return false
+			return nil
 		end
 	end
-	return true
 end
 
 function Node:jumpable(dir)

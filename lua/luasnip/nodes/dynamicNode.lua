@@ -90,13 +90,13 @@ function DynamicNode:jump_into(dir)
 	if self.active then
 		self:input_leave()
 		if dir == 1 then
-			self.next:jump_into(dir)
+			return self.next:jump_into(dir)
 		else
-			self.prev:jump_into(dir)
+			return self.prev:jump_into(dir)
 		end
 	else
 		self:input_enter()
-		self.snip:jump_into(dir)
+		return self.snip:jump_into(dir)
 	end
 end
 

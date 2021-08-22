@@ -60,10 +60,12 @@ local function available()
 end
 
 local function jump(dir)
-	if Luasnip_current_nodes[vim.api.nvim_get_current_buf()] then
-		return Luasnip_current_nodes[vim.api.nvim_get_current_buf()]:jump_from(
+	local current = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	if current then
+		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = current:jump_from(
 			dir
 		)
+		return true
 	else
 		return false
 	end
@@ -138,7 +140,8 @@ local function choice_active()
 end
 
 local function change_choice(val)
-	return Luasnip_active_choice:change_choice(val)
+	local new_active = Luasnip_active_choice:change_choice(val)
+	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = new_active
 end
 
 local function unlink_current()

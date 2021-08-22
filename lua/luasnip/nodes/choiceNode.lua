@@ -130,13 +130,13 @@ function ChoiceNode:jump_into(dir)
 	if self.active then
 		self:input_leave()
 		if dir == 1 then
-			self.next:jump_into(dir)
+			return self.next:jump_into(dir)
 		else
-			self.prev:jump_into(dir)
+			return self.prev:jump_into(dir)
 		end
 	else
 		self:input_enter()
-		self.inner:jump_into(dir)
+		return self.inner:jump_into(dir)
 	end
 end
 
@@ -174,7 +174,7 @@ function ChoiceNode:change_choice(val)
 
 	-- Another node may have been entered in update_dependents.
 	self.parent:enter_node(self.indx)
-	self.inner:jump_into(1)
+	return self.inner:jump_into(1)
 end
 
 function ChoiceNode:copy()

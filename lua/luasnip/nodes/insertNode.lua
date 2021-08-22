@@ -55,12 +55,12 @@ function ExitNode:jump_into(dir)
 	if not config.config.history then
 		self:input_enter()
 		if (dir == 1 and not self.next) or (dir == -1 and not self.prev) then
-			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = nil
+			return nil
 		else
-			Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
+			return self
 		end
 	else
-		InsertNode.jump_into(self, dir)
+		return InsertNode.jump_into(self, dir)
 	end
 end
 
@@ -109,7 +109,7 @@ function InsertNode:jump_into(dir, no_move)
 					self.inner_last = nil
 				end
 				self:input_leave()
-				self.next:jump_into(dir)
+				return self.next:jump_into(dir)
 			else
 				return false
 			end
@@ -121,37 +121,36 @@ function InsertNode:jump_into(dir, no_move)
 					self.inner_last = nil
 				end
 				self:input_leave()
-				self.prev:jump_into(dir)
+				return self.prev:jump_into(dir)
 			else
 				return false
 			end
 		end
 	else
 		self:input_enter(no_move)
-		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self
+		return self
 	end
-	return true
 end
 
 function InsertNode:jump_from(dir)
 	if dir == 1 then
 		if self.inner_first then
 			self.inner_active = true
-			self.inner_first:jump_into(dir)
+			return self.inner_first:jump_into(dir)
 		else
 			if self.next then
 				self:input_leave()
-				self.next:jump_into(dir)
+				return self.next:jump_into(dir)
 			end
 		end
 	else
 		if self.inner_last then
 			self.inner_active = true
-			self.inner_last:jump_into(dir)
+			return self.inner_last:jump_into(dir)
 		else
 			if self.prev then
 				self:input_leave()
-				self.prev:jump_into(dir)
+				return self.prev:jump_into(dir)
 			end
 		end
 	end
