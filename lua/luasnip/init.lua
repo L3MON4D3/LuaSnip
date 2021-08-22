@@ -262,6 +262,39 @@ local function load_snippet_docstrings(snippet_table)
 	end
 end
 
+local function greater(pos1, pos2)
+	-- same line: col decides.
+	-- stylua: ignore
+	return pos1[1] == pos2[1] and pos1[2] > pos2[2]
+	    or pos1[1]  > pos2[1]
+end
+
+local function less(pos1, pos2)
+	-- same line: col decides.
+	-- stylua: ignore
+	return pos1[1] == pos2[1] and pos1[2] < pos2[2]
+	    or pos1[1]  < pos2[1]
+end
+
+local function exit_out_of_region_snippet()
+	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	if not node then
+		return
+	end
+	local pos = util.get_cursor_0ind()
+	local snippet = node.parent.snippet
+	local snip_begin_pos, snip_end_pos = snippet.mark:pos_begin_end()
+	if greater(pos, snip_end_pos) or less(pos, snip_begin_pos) then
+		-- jump as long as the 0-node of the snippet hasn't been reached.
+		while node ~= snippet.next do
+			-- set no_move.
+			node = node:jump_from(1, true)
+		end
+		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = node
+	end
+end
+
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	jumpable = jumpable,
@@ -278,6 +311,7 @@ ls = {
 	active_update_dependents = active_update_dependents,
 	available = available,
 	generate_snippet_docstrings = generate_snippet_docstrings,
+	exit_out_of_region_snippet = exit_out_of_region_snippet,
 	load_snippet_docstrings = load_snippet_docstrings,
 	store_snippet_docstrings = store_snippet_docstrings,
 	s = snip_mod.S,
