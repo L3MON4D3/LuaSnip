@@ -262,12 +262,12 @@ local function load_snippet_docstrings(snippet_table)
 	end
 end
 
-local function exit_out_of_region_snippet()
-	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+local function exit_out_of_region(node)
 	-- if no active node or already at end of current snippet:
-	if not node or node.pos == 0 then
+	if not node then
 		return
 	end
+
 	local pos = util.get_cursor_0ind()
 	local snippet = node.parent.snippet
 	local snip_begin_pos, snip_end_pos = snippet.mark:pos_begin_end()
@@ -280,6 +280,14 @@ local function exit_out_of_region_snippet()
 			node = node:jump_from(1, true)
 		end
 		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = node
+
+		-- also check next snippet.
+		if node.next then
+			if exit_out_of_region(node.next) then
+				node:input_leave(1, true)
+			end
+		end
+		return true
 	end
 end
 
@@ -299,8 +307,7 @@ ls = {
 	lsp_expand = lsp_expand,
 	active_update_dependents = active_update_dependents,
 	available = available,
-	generate_snippet_docstrings = generate_snippet_docstrings,
-	exit_out_of_region_snippet = exit_out_of_region_snippet,
+	exit_out_of_region = exit_out_of_region,
 	load_snippet_docstrings = load_snippet_docstrings,
 	store_snippet_docstrings = store_snippet_docstrings,
 	s = snip_mod.S,

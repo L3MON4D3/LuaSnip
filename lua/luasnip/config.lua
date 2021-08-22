@@ -77,7 +77,7 @@ c = {
         augroup luasnip
             au!
             autocmd %s * lua require("luasnip").active_update_dependents()
-            autocmd %s * lua require("luasnip").exit_out_of_region_snippet()
+            autocmd %s * lua require("luasnip").exit_out_of_region(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
 			"Remove buffers' nodes on deletion+wipeout.
 			autocmd BufDelete,BufWipeout * lua if Luasnip_current_nodes then Luasnip_current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
 		]] .. (c.config.enable_autosnippets and [[
