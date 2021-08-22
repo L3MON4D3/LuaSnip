@@ -278,7 +278,8 @@ end
 
 local function exit_out_of_region_snippet()
 	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
-	if not node then
+	-- if no active node or already at end of current snippet:
+	if not node or node.pos == 0 then
 		return
 	end
 	local pos = util.get_cursor_0ind()
@@ -286,7 +287,9 @@ local function exit_out_of_region_snippet()
 	local snip_begin_pos, snip_end_pos = snippet.mark:pos_begin_end()
 	if greater(pos, snip_end_pos) or less(pos, snip_begin_pos) then
 		-- jump as long as the 0-node of the snippet hasn't been reached.
-		while node ~= snippet.next do
+		-- check for nil; if history is not set, the jump to snippet.next
+		-- returns nil.
+		while node and node ~= snippet.next do
 			-- set no_move.
 			node = node:jump_from(1, true)
 		end
