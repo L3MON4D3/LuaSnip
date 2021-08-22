@@ -262,20 +262,6 @@ local function load_snippet_docstrings(snippet_table)
 	end
 end
 
-local function greater(pos1, pos2)
-	-- same line: col decides.
-	-- stylua: ignore
-	return pos1[1] == pos2[1] and pos1[2] > pos2[2]
-	    or pos1[1]  > pos2[1]
-end
-
-local function less(pos1, pos2)
-	-- same line: col decides.
-	-- stylua: ignore
-	return pos1[1] == pos2[1] and pos1[2] < pos2[2]
-	    or pos1[1]  < pos2[1]
-end
-
 local function exit_out_of_region_snippet()
 	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
 	-- if no active node or already at end of current snippet:
@@ -285,7 +271,7 @@ local function exit_out_of_region_snippet()
 	local pos = util.get_cursor_0ind()
 	local snippet = node.parent.snippet
 	local snip_begin_pos, snip_end_pos = snippet.mark:pos_begin_end()
-	if greater(pos, snip_end_pos) or less(pos, snip_begin_pos) then
+	if pos[1] < snip_begin_pos[1] or pos[1] > snip_end_pos[1] then
 		-- jump as long as the 0-node of the snippet hasn't been reached.
 		-- check for nil; if history is not set, the jump to snippet.next
 		-- returns nil.

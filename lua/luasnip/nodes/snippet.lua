@@ -343,10 +343,13 @@ function Snippet:trigger_expand(current_node)
 
 	insert_into_jumplist(self, start_node, current_node)
 
-	if current_node and current_node.pos > 0 then
-		current_node.inner_active = true
+	if current_node then
+		if current_node.pos > 0 then
+			current_node.inner_active = true
+		else
+			current_node:input_leave(1)
+		end
 	end
-
 	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self:jump_into(1)
 end
 
