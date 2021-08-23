@@ -63,14 +63,21 @@ local jump_active = false
 local function no_region_check_wrap(fn, ...)
 	jump_active = true
 	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
-	vim.schedule(function() jump_active = false end)
+	vim.schedule(function()
+		jump_active = false
+	end)
 	return fn(...)
 end
 
 local function jump(dir)
 	local current = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
-		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = no_region_check_wrap(current.jump_from, current, dir)
+		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] =
+			no_region_check_wrap(
+				current.jump_from,
+				current,
+				dir
+			)
 		return true
 	else
 		return false
@@ -93,7 +100,11 @@ end
 
 local function expand()
 	if next_expand ~= nil then
-		no_region_check_wrap(next_expand.trigger_expand, next_expand, Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
+		no_region_check_wrap(
+			next_expand.trigger_expand,
+			next_expand,
+			Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+		)
 		next_expand = nil
 		return true
 	else
@@ -102,7 +113,11 @@ local function expand()
 			ls.snippets
 		)
 		if snip then
-			no_region_check_wrap(snip.trigger_expand, snip, Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
+			no_region_check_wrap(
+				snip.trigger_expand,
+				snip,
+				Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+			)
 			return true
 		end
 	end
@@ -142,7 +157,11 @@ local function choice_active()
 end
 
 local function change_choice(val)
-	local new_active = no_region_check_wrap(Luasnip_active_choice.change_choice, Luasnip_active_choice, val)
+	local new_active = no_region_check_wrap(
+		Luasnip_active_choice.change_choice,
+		Luasnip_active_choice,
+		val
+	)
 	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = new_active
 end
 
@@ -293,7 +312,6 @@ local function exit_out_of_region(node)
 	end
 	return false
 end
-
 
 ls = {
 	expand_or_jumpable = expand_or_jumpable,

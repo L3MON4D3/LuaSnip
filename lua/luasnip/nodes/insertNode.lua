@@ -41,7 +41,9 @@ function ExitNode:input_enter(no_move)
 				"n",
 				true
 			)
-			util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+			util.normal_move_on_insert(
+				util.get_ext_position_begin(self.mark.id)
+			)
 		end
 	end
 end
