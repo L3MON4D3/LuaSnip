@@ -1,5 +1,6 @@
 local ls = require("luasnip")
 local uv = vim.loop
+local caches = require("luasnip.loaders._caches")
 
 local function json_decode(data)
 	local status, result = pcall(vim.fn.json_decode, data)
@@ -206,14 +207,12 @@ function M.load(opts)
 	end
 end
 
-local lazy_load_paths = {}
-local lazy_loaded_ft = {}
 
 function M._luasnip_vscode_lazy_load()
 	for _, ft in ipairs({ vim.bo.filetype, "all" }) do
-		if not lazy_loaded_ft[ft] then
-			lazy_loaded_ft[ft] = true
-			M.load({ paths = lazy_load_paths, include = { ft } })
+		if not caches.lazy_loaded_ft[ft] then
+			caches.lazy_loaded_ft[ft] = true
+			M.load({ paths = caches.lazy_load_paths, include = { ft } })
 		end
 	end
 end
@@ -227,9 +226,9 @@ function M.lazy_load(opts)
 	elseif type(opts.paths) == "string" then
 		opts.paths = vim.split(opts.paths, ",")
 	end
-	vim.list_extend(lazy_load_paths, opts.paths)
+	vim.list_extend(caches.lazy_load_paths, opts.paths)
 
-	lazy_load_paths = vim.tbl_keys(list_to_set(lazy_load_paths)) -- Remove doppelgänger paths and ditch nil ones
+	caches.lazy_load_paths = vim.tbl_keys(list_to_set(caches.lazy_load_paths)) -- Remove doppelgänger paths and ditch nil ones
 
 	vim.cmd([[
 		augroup _luasnip_vscode_lazy_load
