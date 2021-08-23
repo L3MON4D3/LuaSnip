@@ -6,7 +6,7 @@ local types = require("luasnip.util.types")
 local mark = require("luasnip.util.mark").mark
 
 function ChoiceNode:init_nodes()
-	for _, node in ipairs(self.choices) do
+	for i, node in ipairs(self.choices) do
 		-- setup jumps
 		node.next = self
 		node.prev = self
@@ -27,8 +27,12 @@ function ChoiceNode:init_nodes()
 			_update_dependents(node)
 			node.choice:update_dependents()
 		end
+
+		node.next_choice = self.choices[i+1]
 	end
-	self.active_choice = self.choices[self.current_choice]
+	self.choices[#self.choices].next_choice = self.choices[1]
+
+	self.active_choice = self.choices[1]
 end
 
 local function C(pos, choices)
@@ -38,7 +42,6 @@ local function C(pos, choices)
 		choices = choices,
 		type = types.choiceNode,
 		mark = nil,
-		current_choice = 1,
 		dependents = {},
 	})
 	c:init_nodes()
@@ -155,14 +158,7 @@ function ChoiceNode:change_choice(val)
 
 	self.active_choice:exit()
 
-	local tmp = self.current_choice + val
-	if tmp < 1 then
-		tmp = #self.choices
-	elseif tmp > #self.choices then
-		tmp = 1
-	end
-	self.current_choice = tmp
-	self.active_choice = self.choices[self.current_choice]
+	self.active_choice = self.active_choice.next_choice
 
 	self.active_choice.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
