@@ -130,9 +130,7 @@ local function expand_auto()
 		ls.autosnippets
 	)
 	if snip then
-		snip:trigger_expand(
-			Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
-		)
+		no_region_check_wrap(snip.trigger_expand, snip, Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
 	end
 end
 
