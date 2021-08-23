@@ -207,7 +207,6 @@ function M.load(opts)
 	end
 end
 
-
 function M._luasnip_vscode_lazy_load()
 	for _, ft in ipairs({ vim.bo.filetype, "all" }) do
 		if not caches.lazy_loaded_ft[ft] then
