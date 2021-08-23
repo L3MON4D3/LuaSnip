@@ -29,8 +29,10 @@ function ChoiceNode:init_nodes()
 		end
 
 		node.next_choice = self.choices[i+1]
+		node.prev_choice = self.choices[i-1]
 	end
 	self.choices[#self.choices].next_choice = self.choices[1]
+	self.choices[1].prev_choice = self.choices[#self.choices]
 
 	self.active_choice = self.choices[1]
 end
@@ -150,7 +152,7 @@ end
 
 function ChoiceNode:setup_choice_jumps() end
 
-function ChoiceNode:change_choice(val)
+function ChoiceNode:change_choice(dir)
 	-- tear down current choice.
 	self.active_choice:input_leave()
 	-- clear text.
@@ -158,7 +160,9 @@ function ChoiceNode:change_choice(val)
 
 	self.active_choice:exit()
 
-	self.active_choice = self.active_choice.next_choice
+	-- stylua: ignore
+	self.active_choice = dir == 1 and self.active_choice.next_choice
+	                               or self.active_choice.prev_choice
 
 	self.active_choice.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
