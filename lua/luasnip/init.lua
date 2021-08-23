@@ -340,7 +340,6 @@ ls = {
 	snippet_node = snip_mod.SN,
 	parent_indexer = snip_mod.P,
 	indent_snippet_node = snip_mod.ISN,
-	prefix_snippet_node = snip_mod.PSN,
 	text_node = require("luasnip.nodes.textNode").T,
 	function_node = require("luasnip.nodes.functionNode").F,
 	insert_node = require("luasnip.nodes.insertNode").I,

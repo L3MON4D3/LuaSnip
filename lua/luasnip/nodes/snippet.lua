@@ -181,30 +181,6 @@ local function ISN(pos, nodes, indent_text)
 	return snip
 end
 
-local function PSN(pos, nodes, prefix)
-	local snip = Snippet:new({
-		pos = pos,
-		nodes = wrap_nodes(nodes),
-		insert_nodes = {},
-		current_insert = 0,
-		mark = nil,
-		dependents = {},
-		active = false,
-		type = types.snippetNode,
-	})
-	function snip:indent(parent_indent)
-		Snippet.indent(self, parent_indent .. prefix)
-	end
-
-	-- insert prefix as first node of snippetNode.
-	for i = #snip.nodes, 1, -1 do
-		snip.nodes[i + 1] = snip.nodes[i]
-	end
-	snip.nodes[1] = t({ prefix })
-	snip:init_nodes()
-	return snip
-end
-
 function Snippet:remove_from_jumplist()
 	-- prev is i(-1)(startNode), prev of that is the outer/previous snippet.
 	local pre = self.prev.prev
@@ -769,5 +745,4 @@ return {
 	SN = SN,
 	P = P,
 	ISN = ISN,
-	PSN = PSN,
 }
