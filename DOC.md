@@ -22,6 +22,7 @@ All code-snippets in this help assume that
 local ls = require"luasnip"
 local s = ls.snippet
 local sn = ls.snippet_node
+local isn = ls.indent_snippet_node
 local t = ls.text_node
 local i = ls.insert_node
 local f = ls.function_node
@@ -234,6 +235,42 @@ Note that snippetNodes don't expect an `i(0)`.
 
 
 
+# INDENTSNIPPETNODE
+
+By default, all nodes are indented at least as deep as the trigger. With these
+nodes it's possible to override that behaviour:
+
+```lua
+s("isn", {
+	isn(1, {
+		t({"This is indented as deep as the trigger",
+		"and this is at the beginning of the next line"})
+	}, "")
+})
+```
+
+(Note the empty string passed to isn).
+
+Indent is only applied after linebreaks, so it's not possible to remove indent
+on the line where the snippet was triggered using `ISN` (That is possible via
+regex-triggers where the entire line before the trigger is matched).
+
+Another nice usecase for `ISN` is inserting text, eg. `//` or some other comment-
+string before the nodes of the snippet:
+
+```lua
+s("isn2", {
+	isn(1, t({"//This is", "A multiline", "comment"}), "$PARENT_INDENT//")
+})
+```
+
+Here the `//` before `This is` is important, once again, because indent is only
+applied after linebreaks.
+To enable such usage, `$PARENT_INDENT` in the indentstring is replaced by the
+parents' indent (duh).
+
+
+
 # DYNAMICNODE
 
 Very similar to functionNode: returns a snippetNode instead of just text,
@@ -311,6 +348,8 @@ eg. 3, it would change to "3\nSample Text\nSample Text\nSample Text". Text
 that was inserted into any of the dynamicNodes insertNodes is kept when
 changing to a bigger number.
 
+
+
 # LSP-SNIPPETS
 
 Luasnip is capable of parsing lsp-style snippets using
@@ -324,6 +363,8 @@ choiceNode's with:
 	- the given snippet(`"this is ${1:nested}"`) and  
 	- an empty insertNode
 	
+
+
 # VARIABLES
 
 All `TM_something`-variables are supported with two additions:
@@ -347,6 +388,8 @@ To use any `*SELECT*` variable, the `store_selection_keys` must be set via
 hitting `<Tab>` while in Visualmode will populate the `*SELECT*`-vars for the next
 snippet and then clear them.
  
+
+
 # VSCODE SNIPPETS LOADER
 
 As luasnip is capable of loading the same format of plugins as vscode, it also
@@ -383,6 +426,8 @@ Another way of using the loader is making it lazily
 In this case `opts` only accepts paths (`runtimepath` if any). That will load
 the general snippets (the ones of filetype 'all') and those of the filetype
 of the buffers, you open every time you open a new one (but it won't reload them).
+
+
 
 # EXT\_OPTS
 
@@ -426,6 +471,8 @@ As a shortcut for setting `hl_group`, the highlight-groups
 `ls.config.setup` has to be called after defining). They are overridden by the
 values defined in `ext_opts` directly, but otherwise behave the same (active is
 extended by passive).
+
+
 
 # DOCSTRING
 
@@ -474,6 +521,8 @@ s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
 	end, {})
 }),
 ```
+
+
 
 # DOCSTRING-CACHE
 
