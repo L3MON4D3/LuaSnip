@@ -10,13 +10,14 @@ CONTENTS                                                        *luasnip-content
 4. FUNCTIONNODE.............................................|luasnip-functionnode|
 5. CHOICENODE.................................................|luasnip-choicenode|
 6. SNIPPETNODE...............................................|luasnip-snippetnode|
-7. DYNAMICNODE...............................................|luasnip-dynamicnode|
-8. LSP-SNIPPETS.............................................|luasnip-lsp-snippets|
-9. VARIABLES...................................................|luasnip-variables|
-10. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
-11. EXT_OPTS....................................................|luasnip-ext_opts|
-12. DOCSTRING..................................................|luasnip-docstring|
-13. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
+7. INDENTSNIPPETNODE...................................|luasnip-indentsnippetnode|
+8. DYNAMICNODE...............................................|luasnip-dynamicnode|
+9. LSP-SNIPPETS.............................................|luasnip-lsp-snippets|
+10. VARIABLES..................................................|luasnip-variables|
+11. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
+12. EXT_OPTS....................................................|luasnip-ext_opts|
+13. DOCSTRING..................................................|luasnip-docstring|
+14. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
 >
                 __                       ____                          
                /\ \                     /\  _`\           __           
@@ -40,6 +41,7 @@ All code-snippets in this help assume that
     local ls = require"luasnip"
     local s = ls.snippet
     local sn = ls.snippet_node
+    local isn = ls.indent_snippet_node
     local t = ls.text_node
     local i = ls.insert_node
     local f = ls.function_node
@@ -250,6 +252,39 @@ number, as they too are jumpable:
 <
 
 Note that snippetNodes don't expect an `i(0)`.
+
+================================================================================
+INDENTSNIPPETNODE                                      *luasnip-indentsnippetnode*
+
+By default, all nodes are indented at least as deep as the trigger. With these
+nodes it's possible to override that behaviour:
+>
+    s("isn", {
+    	isn(1, {
+    		t({"This is indented as deep as the trigger",
+    		"and this is at the beginning of the next line"})
+    	}, "")
+    })
+<
+
+(Note the empty string passed to isn).
+
+Indent is only applied after linebreaks, so it's not possible to remove indent
+on the line where the snippet was triggered using `ISN` (That is possible via
+regex-triggers where the entire line before the trigger is matched).
+
+Another nice usecase for `ISN` is inserting text, eg. `//` or some other comment-
+string before the nodes of the snippet:
+>
+    s("isn2", {
+    	isn(1, t({"//This is", "A multiline", "comment"}), "$PARENT_INDENT//")
+    })
+<
+
+Here the `//` before `This is` is important, once again, because indent is only
+applied after linebreaks.
+To enable such usage, `$PARENT_INDENT` in the indentstring is replaced by the
+parents' indent (duh).
 
 ================================================================================
 DYNAMICNODE                                                  *luasnip-dynamicnode*
