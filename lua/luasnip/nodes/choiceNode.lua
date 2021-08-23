@@ -28,8 +28,8 @@ function ChoiceNode:init_nodes()
 			node.choice:update_dependents()
 		end
 
-		node.next_choice = self.choices[i+1]
-		node.prev_choice = self.choices[i-1]
+		node.next_choice = self.choices[i + 1]
+		node.prev_choice = self.choices[i - 1]
 	end
 	self.choices[#self.choices].next_choice = self.choices[1]
 	self.choices[1].prev_choice = self.choices[#self.choices]

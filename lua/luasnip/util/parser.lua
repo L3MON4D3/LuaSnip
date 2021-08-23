@@ -91,7 +91,11 @@ local function simple_var(text)
 					""
 				)
 			-- TODO: jump into these appropriately.
-			f = snipNode.ISN(nil, {tNode.T({indent_maybe}), f}, "$PARENT_INDENT"..indent_maybe)
+			f = snipNode.ISN(
+				nil,
+				{ tNode.T({ indent_maybe }), f },
+				"$PARENT_INDENT" .. indent_maybe
+			)
 		end
 
 		if text == "TM_SELECTED_TEXT" then
