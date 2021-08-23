@@ -153,13 +153,13 @@ local function lsp_expand(body)
 end
 
 local function choice_active()
-	return Luasnip_active_choice ~= nil
+	return Luasnip_active_choice_node ~= nil
 end
 
 local function change_choice(val)
 	local new_active = no_region_check_wrap(
-		Luasnip_active_choice.change_choice,
-		Luasnip_active_choice,
+		Luasnip_active_choice_node.change_choice,
+		Luasnip_active_choice_node,
 		val
 	)
 	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = new_active

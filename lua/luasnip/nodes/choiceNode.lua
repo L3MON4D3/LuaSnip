@@ -102,15 +102,15 @@ function ChoiceNode:input_enter()
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 	self.parent:enter_node(self.indx)
 
-	self.prev_choice = Luasnip_active_choice
-	Luasnip_active_choice = self
+	self.prev_choice_node = Luasnip_active_choice_node
+	Luasnip_active_choice_node = self
 	self.active = true
 end
 
 function ChoiceNode:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 	self:update_dependents()
-	Luasnip_active_choice = self.prev_choice
+	Luasnip_active_choice_node = self.prev_choice_node
 	self.active = false
 end
 
@@ -195,7 +195,7 @@ function ChoiceNode:exit()
 	self.inner:exit()
 	self.mark:clear()
 	if self.active then
-		Luasnip_active_choice = self.prev_choice
+		Luasnip_active_choice_node = self.prev_choice_node
 	end
 	self.active = false
 end
