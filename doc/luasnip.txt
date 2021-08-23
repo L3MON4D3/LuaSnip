@@ -379,7 +379,7 @@ VARIABLES                                                      *luasnip-variable
 
 All `TM_something`-variables are supported with two additions:
 `SELECT_RAW` and `SELECT_DEDENT`. These were introduced because
-`TM_SELECTED_TEXT` is designed to be compatible with vscodes' behaviour, which
+`TM_SELECTED_TEXT` is designed to be compatible with vscodes' behavior, which
 can be counterintuitive when the snippet can be expanded at places other than
 the point where selection started (or when doing transformations on selected text).
 
@@ -426,10 +426,8 @@ your snippets or you will have to extend the table as well.
 
 Another way of using the loader is making it lazily
 >
-     	require("luasnip/loaders/from_vscode").lazy_load(opts) -- opts can be ommited
+     	require("luasnip.loaders.from_vscode").lazy_load(opts) -- opts can be ommited
 <
-
-(Note the `/` as path-delimiter)
 
 In this case `opts` only accepts paths (`runtimepath` if any). That will load
 the general snippets (the ones of filetype 'all') and those of the filetype
