@@ -722,6 +722,7 @@ function Snippet:exit()
 	for _, node in ipairs(self.nodes) do
 		node:exit()
 	end
+	self.mark:clear()
 	self.active = false
 end
 
