@@ -28,7 +28,7 @@ function ChoiceNode:init_nodes()
 			node.choice:update_dependents()
 		end
 	end
-	self.inner = self.choices[self.current_choice]
+	self.active_choice = self.choices[self.current_choice]
 end
 
 local function C(pos, choices)
@@ -62,14 +62,14 @@ end
 function ChoiceNode:put_initial(pos)
 	local old_pos = vim.deepcopy(pos)
 
-	self.inner:put_initial(pos)
+	self.active_choice:put_initial(pos)
 
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = false,
-	}, self.parent.ext_opts[self.inner.type].passive)
+	}, self.parent.ext_opts[self.active_choice.type].passive)
 
-	self.inner.mark = mark(old_pos, pos, mark_opts)
+	self.active_choice.mark = mark(old_pos, pos, mark_opts)
 end
 
 function ChoiceNode:populate_argnodes()
@@ -116,7 +116,7 @@ end
 
 function ChoiceNode:set_old_text()
 	self.old_text = self:get_text()
-	self.inner.old_text = self.old_text
+	self.active_choice.old_text = self.old_text
 end
 
 function ChoiceNode:get_static_text()
@@ -137,23 +137,23 @@ function ChoiceNode:jump_into(dir, no_move)
 		end
 	else
 		self:input_enter()
-		return self.inner:jump_into(dir, no_move)
+		return self.active_choice:jump_into(dir, no_move)
 	end
 end
 
 function ChoiceNode:update()
-	self.inner:update()
+	self.active_choice:update()
 end
 
 function ChoiceNode:setup_choice_jumps() end
 
 function ChoiceNode:change_choice(val)
 	-- tear down current choice.
-	self.inner:input_leave()
+	self.active_choice:input_leave()
 	-- clear text.
 	self.parent:set_text(self, { "" })
 
-	self.inner:exit()
+	self.active_choice:exit()
 
 	local tmp = self.current_choice + val
 	if tmp < 1 then
@@ -162,20 +162,20 @@ function ChoiceNode:change_choice(val)
 		tmp = 1
 	end
 	self.current_choice = tmp
-	self.inner = self.choices[self.current_choice]
+	self.active_choice = self.choices[self.current_choice]
 
-	self.inner.mark = self.mark:copy_pos_gravs(
-		vim.deepcopy(self.parent.ext_opts[self.inner.type].passive)
+	self.active_choice.mark = self.mark:copy_pos_gravs(
+		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
 	)
-	self.inner:put_initial(util.get_ext_position_begin(self.mark.id))
-	self.inner:update()
-	self.inner.old_text = self.inner:get_text()
+	self.active_choice:put_initial(util.get_ext_position_begin(self.mark.id))
+	self.active_choice:update()
+	self.active_choice.old_text = self.active_choice:get_text()
 
 	self:update_dependents()
 
 	-- Another node may have been entered in update_dependents.
 	self.parent:enter_node(self.indx)
-	return self.inner:jump_into(1)
+	return self.active_choice:jump_into(1)
 end
 
 function ChoiceNode:copy()
@@ -192,7 +192,7 @@ function ChoiceNode:copy()
 end
 
 function ChoiceNode:exit()
-	self.inner:exit()
+	self.active_choice:exit()
 	self.mark:clear()
 	if self.active then
 		Luasnip_active_choice_node = self.prev_choice_node
@@ -203,7 +203,7 @@ end
 -- val_begin/end may be nil, in this case that gravity won't be changed.
 function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
 	node.set_mark_rgrav(self, rgrav_beg, rgrav_end)
-	self.inner:set_mark_rgrav(rgrav_beg, rgrav_end)
+	self.active_choice:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
 return {
