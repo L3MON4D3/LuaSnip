@@ -538,7 +538,7 @@ wouldn't be overwritten, but there'd be unnecessary calls).
 The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 `~/.cache/nvim/luasnip/docstrings.json`).
 
-# AUTOCOMMANDS
+# EVENTS
 
 Upon leaving/entering nodes or changing a choice an event is triggered:
 `User Luasnip<Node>{Enter,Leave}`, where `<Node>` is the name of a node in
