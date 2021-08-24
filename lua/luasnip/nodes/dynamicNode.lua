@@ -108,7 +108,6 @@ end
 function DynamicNode:update()
 	local tmp
 	if self.snip then
-		self.snip:input_leave()
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
 			self:get_args(),
