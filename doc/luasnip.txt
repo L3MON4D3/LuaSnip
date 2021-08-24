@@ -18,7 +18,7 @@ CONTENTS                                                        *luasnip-content
 12. EXT_OPTS....................................................|luasnip-ext_opts|
 13. DOCSTRING..................................................|luasnip-docstring|
 14. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
-15. AUTOCOMMANDS............................................|luasnip-autocommands|
+15. EVENTS........................................................|luasnip-events|
 >
                 __                       ____                          
                /\ \                     /\  _`\           __           
@@ -541,7 +541,7 @@ The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 `~/.cache/nvim/luasnip/docstrings.json`).
 
 ================================================================================
-AUTOCOMMANDS                                                *luasnip-autocommands*
+EVENTS                                                            *luasnip-events*
 
 Upon leaving/entering nodes or changing a choice an event is triggered:
 `User Luasnip<Node>{Enter,Leave}`, where `<Node>` is the name of a node in
