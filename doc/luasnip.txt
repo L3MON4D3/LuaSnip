@@ -18,6 +18,7 @@ CONTENTS                                                        *luasnip-content
 12. EXT_OPTS....................................................|luasnip-ext_opts|
 13. DOCSTRING..................................................|luasnip-docstring|
 14. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
+15. AUTOCOMMANDS............................................|luasnip-autocommands|
 >
                 __                       ____                          
                /\ \                     /\  _`\           __           
@@ -538,4 +539,19 @@ wouldn't be overwritten, but there'd be unnecessary calls).
 
 The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 `~/.cache/nvim/luasnip/docstrings.json`).
+
+================================================================================
+AUTOCOMMANDS                                                *luasnip-autocommands*
+
+Upon leaving/entering nodes or changing a choice an event is triggered:
+`User Luasnip<Node>{Enter,Leave}`, where `<Node>` is the name of a node in
+PascalCase, eg. `InsertNode` or `DynamicNode` or `Snippet`.
+The event triggered when changing the choice in a `choiceNode` is
+`User LuasnipChangeChoice`.
+
+A pretty useless, beyond serving as an example here, application of these would
+be printing some text upon entering a node:
+>
+    au User LuasnipInsertNodeEnter echom "Entered InsertNode"
+<
 
