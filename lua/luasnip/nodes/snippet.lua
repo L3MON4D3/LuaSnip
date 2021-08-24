@@ -667,15 +667,15 @@ function Snippet:input_enter()
 	self.active = true
 	self.mark:update_opts(self.ext_opts[self.type].active)
 
-	util.node_event(self.type, events.enter)
+	util.node_event(self, events.enter)
 end
 
 function Snippet:input_leave()
+	util.node_event(self, events.leave)
+
 	self:update_dependents()
 	self.active = false
 	self.mark:update_opts(self.ext_opts[self.type].passive)
-
-	util.node_event(self.type, events.leave)
 end
 
 function Snippet:jump_into(dir, no_move)

@@ -25,7 +25,7 @@ end
 function Node:input_enter(_)
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 
-	util.node_event(self.type, events.enter)
+	util.node_event(self, events.enter)
 end
 
 function Node:jump_into(_, no_move)
@@ -93,9 +93,9 @@ function Node:exit()
 end
 
 function Node:input_leave()
-	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+	util.node_event(self, events.leave)
 
-	util.node_event(self.type, events.leave)
+	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
 function Node:update_dependents()

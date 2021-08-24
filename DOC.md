@@ -547,8 +547,9 @@ The event triggered when changing the choice in a `choiceNode` is
 `User LuasnipChangeChoice`.
 
 A pretty useless, beyond serving as an example here, application of these would
-be printing some text upon entering a node:
+be printing eg. the nodes' text after entering:
 
 ```vim
-au User LuasnipInsertNodeEnter echom "Entered InsertNode"
+au User LuasnipInsertNodeEnter
+	\lua print(require("luasnip").session.event_node:get_text()[1])
 ```

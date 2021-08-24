@@ -112,16 +112,16 @@ function ChoiceNode:input_enter()
 	Luasnip_active_choice_node = self
 	self.active = true
 
-	util.node_event(self.type, events.enter)
+	util.node_event(self, events.enter)
 end
 
 function ChoiceNode:input_leave()
+	util.node_event(self, events.leave)
+
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 	self:update_dependents()
 	Luasnip_active_choice_node = self.prev_choice_node
 	self.active = false
-
-	util.node_event(self.type, events.leave)
 end
 
 function ChoiceNode:set_old_text()
@@ -180,7 +180,7 @@ function ChoiceNode:change_choice(dir)
 
 	-- Another node may have been entered in update_dependents.
 	self.parent:enter_node(self.indx)
-	util.node_event(self.type, events.change_choice)
+	util.node_event(self, events.change_choice)
 	return self.active_choice:jump_into(1)
 end
 

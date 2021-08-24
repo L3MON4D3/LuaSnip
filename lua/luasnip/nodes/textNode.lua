@@ -23,7 +23,7 @@ function TextNode:input_enter(no_move)
 		util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
 	end
 
-	util.node_event(self.type, events.enter, no_move)
+	util.node_event(self, events.enter, no_move)
 end
 
 function TextNode:put_initial(pos)

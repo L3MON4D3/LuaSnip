@@ -39,7 +39,7 @@ function FunctionNode:input_enter()
 	)
 	util.normal_move_on_insert(self.mark:pos_begin())
 
-	util.node_event(self.type, events.enter)
+	util.node_event(self, events.enter)
 end
 
 local errorstring = [[

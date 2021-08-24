@@ -47,7 +47,7 @@ function ExitNode:input_enter(no_move)
 			)
 		end
 
-		util.node_event(self.type, events.enter)
+		util.node_event(self, events.enter)
 	end
 end
 
@@ -55,7 +55,7 @@ function ExitNode:input_leave()
 	if self.pos == 0 then
 		InsertNode.input_leave(self)
 	else
-		util.node_event(self.type, events.leave)
+		util.node_event(self, events.leave)
 	end
 end
 
@@ -111,7 +111,7 @@ function InsertNode:input_enter(no_move)
 		self.parent:enter_node(self.indx)
 	end
 
-	util.node_event(self.type, events.enter)
+	util.node_event(self, events.enter)
 end
 
 function InsertNode:jump_into(dir, no_move)
@@ -178,10 +178,10 @@ function InsertNode:jump_from(dir, no_move)
 end
 
 function InsertNode:input_leave()
+	util.node_event(self, events.leave)
+
 	self:update_dependents()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
-
-	util.node_event(self.type, events.leave)
 end
 
 function InsertNode:exit()

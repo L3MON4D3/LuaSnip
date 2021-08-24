@@ -374,6 +374,7 @@ ls = {
 	config = require("luasnip.config"),
 	snippets = { all = {} },
 	autosnippets = { all = {} },
+	session = require("luasnip.session")
 }
 
 return ls
