@@ -3,6 +3,7 @@ local iNode = require("luasnip.nodes.insertNode")
 local t = require("luasnip.nodes.textNode").T
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
+local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
 local Environ = require("luasnip.util.environ")
 local conf = require("luasnip.config")
@@ -665,12 +666,16 @@ end
 function Snippet:input_enter()
 	self.active = true
 	self.mark:update_opts(self.ext_opts[self.type].active)
+
+	util.node_event(self.type, events.enter)
 end
 
 function Snippet:input_leave()
 	self:update_dependents()
 	self.active = false
 	self.mark:update_opts(self.ext_opts[self.type].passive)
+
+	util.node_event(self.type, events.leave)
 end
 
 function Snippet:jump_into(dir, no_move)

@@ -1,3 +1,6 @@
+local events = require("luasnip.util.events")
+local types = require("luasnip.util.types")
+
 local function get_cursor_0ind()
 	local c = vim.api.nvim_win_get_cursor(0)
 	c[1] = c[1] - 1
@@ -438,6 +441,10 @@ local function find_outer_snippet(node)
 	return node
 end
 
+local function node_event(node_type, event)
+	vim.cmd("doautocmd User Luasnip"..events.to_string(node_type, event))
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -469,4 +476,5 @@ return {
 	string_wrap = string_wrap,
 	to_line_table = to_line_table,
 	find_outer_snippet = find_outer_snippet,
+	node_event = node_event
 }

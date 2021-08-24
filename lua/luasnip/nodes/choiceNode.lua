@@ -3,6 +3,7 @@ local ChoiceNode = node:new()
 local util = require("luasnip.util.util")
 local conf = require("luasnip.config")
 local types = require("luasnip.util.types")
+local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
 
 function ChoiceNode:init_nodes()
@@ -110,6 +111,8 @@ function ChoiceNode:input_enter()
 	self.prev_choice_node = Luasnip_active_choice_node
 	Luasnip_active_choice_node = self
 	self.active = true
+
+	util.node_event(self.type, events.enter)
 end
 
 function ChoiceNode:input_leave()
@@ -117,6 +120,8 @@ function ChoiceNode:input_leave()
 	self:update_dependents()
 	Luasnip_active_choice_node = self.prev_choice_node
 	self.active = false
+
+	util.node_event(self.type, events.leave)
 end
 
 function ChoiceNode:set_old_text()
@@ -175,6 +180,7 @@ function ChoiceNode:change_choice(dir)
 
 	-- Another node may have been entered in update_dependents.
 	self.parent:enter_node(self.indx)
+	util.node_event(self.type, events.change_choice)
 	return self.active_choice:jump_into(1)
 end
 

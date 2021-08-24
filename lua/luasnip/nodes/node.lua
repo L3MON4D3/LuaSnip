@@ -1,4 +1,5 @@
 local util = require("luasnip.util.util")
+local events = require("luasnip.util.events")
 
 local Node = {}
 
@@ -23,6 +24,8 @@ end
 
 function Node:input_enter(_)
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+
+	util.node_event(self.type, events.enter)
 end
 
 function Node:jump_into(_, no_move)
@@ -91,6 +94,8 @@ end
 
 function Node:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+
+	util.node_event(self.type, events.leave)
 end
 
 function Node:update_dependents()

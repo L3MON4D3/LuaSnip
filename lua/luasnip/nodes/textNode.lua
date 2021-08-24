@@ -1,6 +1,7 @@
 local node_mod = require("luasnip.nodes.node")
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
+local events = require("luasnip.util.events")
 
 local TextNode = node_mod.Node:new()
 
@@ -21,6 +22,8 @@ function TextNode:input_enter(no_move)
 		)
 		util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
 	end
+
+	util.node_event(self.type, events.enter, no_move)
 end
 
 function TextNode:put_initial(pos)

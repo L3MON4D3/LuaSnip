@@ -15,5 +15,16 @@ return {
 		"choiceNode",
 		"dynamicNode",
 		"snippet",
+		"exitNode",
+	},
+	names_pascal_case = {
+		"TextNode",
+		"InsertNode",
+		"FunctionNode",
+		"SnippetNode",
+		"ChoiceNode",
+		"DynamicNode",
+		"Snippet",
+		"ExitNode",
 	},
 }

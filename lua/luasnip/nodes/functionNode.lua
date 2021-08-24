@@ -1,6 +1,7 @@
 local FunctionNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
+local events = require("luasnip.util.events")
 
 local function F(fn, args, ...)
 	return FunctionNode:new({
@@ -37,6 +38,8 @@ function FunctionNode:input_enter()
 		true
 	)
 	util.normal_move_on_insert(self.mark:pos_begin())
+
+	util.node_event(self.type, events.enter)
 end
 
 local errorstring = [[

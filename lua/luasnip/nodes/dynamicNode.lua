@@ -2,6 +2,7 @@ local DynamicNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
 local Node = require("luasnip.nodes.node").Node
 local types = require("luasnip.util.types")
+local events = require("luasnip.util.events")
 local conf = require("luasnip.config")
 
 local function D(pos, fn, args, ...)
@@ -37,12 +38,16 @@ end
 function DynamicNode:input_enter()
 	self.active = true
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+
+	util.node_event(self.type, events.enter)
 end
 
 function DynamicNode:input_leave()
 	self:update_dependents()
 	self.active = false
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+
+	util.node_event(self.type, events.leave)
 end
 
 function DynamicNode:get_static_text()

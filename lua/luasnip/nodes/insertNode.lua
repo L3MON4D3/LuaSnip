@@ -3,6 +3,7 @@ local ExitNode = InsertNode:new()
 local util = require("luasnip.util.util")
 local config = require("luasnip.config")
 local types = require("luasnip.util.types")
+local events = require("luasnip.util.events")
 
 local function I(pos, static_text)
 	static_text = util.wrap_value(static_text)
@@ -45,12 +46,16 @@ function ExitNode:input_enter(no_move)
 				util.get_ext_position_begin(self.mark.id)
 			)
 		end
+
+		util.node_event(self.type, events.enter)
 	end
 end
 
 function ExitNode:input_leave()
 	if self.pos == 0 then
 		InsertNode.input_leave(self)
+	else
+		util.node_event(self.type, events.leave)
 	end
 end
 
@@ -105,6 +110,8 @@ function InsertNode:input_enter(no_move)
 	else
 		self.parent:enter_node(self.indx)
 	end
+
+	util.node_event(self.type, events.enter)
 end
 
 function InsertNode:jump_into(dir, no_move)
@@ -173,6 +180,8 @@ end
 function InsertNode:input_leave()
 	self:update_dependents()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+
+	util.node_event(self.type, events.leave)
 end
 
 function InsertNode:exit()
