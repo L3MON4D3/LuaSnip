@@ -285,6 +285,23 @@ local function load_snippet_docstrings(snippet_table)
 	end
 end
 
+local function unlink_current_if_deleted()
+	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	if not node then
+		return
+	end
+	local snippet = node.parent.snippet
+	local snip_begin_pos, snip_end_pos = snippet.mark:pos_begin_end()
+	-- stylua: ignore
+	-- leave snippet if empty:
+	if snip_begin_pos[1] == snip_end_pos[1] and
+	   snip_begin_pos[2] == snip_end_pos[2] then
+		snippet:remove_from_jumplist()
+		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = snippet.prev.prev
+			or snippet.next.next
+	end
+end
+
 local function exit_out_of_region(node)
 	-- if currently jumping via luasnip or no active node:
 	if jump_active or not node then
@@ -294,7 +311,10 @@ local function exit_out_of_region(node)
 	local pos = util.get_cursor_0ind()
 	local snippet = node.parent.snippet
 	local snip_begin_pos, snip_end_pos = snippet.mark:pos_begin_end()
-	if pos[1] < snip_begin_pos[1] or pos[1] > snip_end_pos[1] then
+	-- stylua: ignore
+	-- leave if curser before or behind snippet
+	if pos[1] < snip_begin_pos[1] or
+	   pos[1] > snip_end_pos[1] then
 		-- jump as long as the 0-node of the snippet hasn't been reached.
 		-- check for nil; if history is not set, the jump to snippet.next
 		-- returns nil.
@@ -333,6 +353,7 @@ ls = {
 	exit_out_of_region = exit_out_of_region,
 	load_snippet_docstrings = load_snippet_docstrings,
 	store_snippet_docstrings = store_snippet_docstrings,
+	unlink_current_if_deleted = unlink_current_if_deleted,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,
