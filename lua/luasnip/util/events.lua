@@ -8,7 +8,8 @@ return {
 		if event_id == 3 then
 			return "ChangeChoice"
 		else
-			return node_names[node_type]..(event_id == 1 and "Enter" or "Leave")
+			return node_names[node_type]
+				.. (event_id == 1 and "Enter" or "Leave")
 		end
-	end
+	end,
 }

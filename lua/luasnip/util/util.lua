@@ -442,7 +442,7 @@ local function find_outer_snippet(node)
 end
 
 local function node_event(node_type, event)
-	vim.cmd("doautocmd User Luasnip"..events.to_string(node_type, event))
+	vim.cmd("doautocmd User Luasnip" .. events.to_string(node_type, event))
 end
 
 return {
@@ -476,5 +476,5 @@ return {
 	string_wrap = string_wrap,
 	to_line_table = to_line_table,
 	find_outer_snippet = find_outer_snippet,
-	node_event = node_event
+	node_event = node_event,
 }
