@@ -87,12 +87,8 @@ local function wrap_nodes(nodes)
 	end
 end
 
-local function S(context, nodes, condition, ...)
-	if not condition then
-		condition = function()
-			return true
-		end
-	end
+local function S(context, nodes, opts)
+	opts = opts or {}
 
 	if type(context) == "string" then
 		context = { trig = context }
@@ -123,8 +119,7 @@ local function S(context, nodes, condition, ...)
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
-		condition = condition,
-		user_args = { ... },
+		condition = opts.condition or function() return true end,
 		mark = nil,
 		dependents = {},
 		active = false,
@@ -362,7 +357,7 @@ function Snippet:matches(line_to_cursor)
 		return nil
 	end
 
-	if not self.condition(unpack(self.user_args)) then
+	if not self.condition() then
 		return nil
 	end
 

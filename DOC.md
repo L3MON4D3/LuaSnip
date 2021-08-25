@@ -67,12 +67,10 @@ The second argument to `s` is a table containing all nodes that belong to the
 snippet. If the table only has a single node, it can be passed directly
 without wrapping it in a table.
 
-The third argument is the condition-function. The snippet will be expanded only
-if it returns true (default is a function that just returns true) (the function
-is called before the text is modified in any way).
-
-The fourth and following args are passed to the condition-function(allows
-reusing condition-functions).
+The third argument is a table with the following valid keys:
+- `cond`: the condition-function. The snippet will be expanded only
+          if it returns true (default is a function that just returns true)
+          (the function is called before the text is modified in any way).
 
 Snippets contain some interesting tables, eg. `snippet.env` contains variables
 used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
