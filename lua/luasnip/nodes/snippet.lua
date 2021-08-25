@@ -667,11 +667,11 @@ function Snippet:input_enter()
 	self.active = true
 	self.mark:update_opts(self.ext_opts[self.type].active)
 
-	util.node_event(self, events.enter)
+	self:event(events.enter)
 end
 
 function Snippet:input_leave()
-	util.node_event(self, events.leave)
+	self:event(events.leave)
 
 	self:update_dependents()
 	self.active = false
