@@ -74,7 +74,9 @@ c = {
 	end,
 
 	_setup = function()
-		vim.cmd(string.format([[
+		vim.cmd(
+			string.format(
+				[[
         augroup luasnip
             au!
             autocmd %s * lua require("luasnip").active_update_dependents()
@@ -82,12 +84,19 @@ c = {
             autocmd %s * lua require("luasnip").unlink_current_if_deleted()
 			"Remove buffers' nodes on deletion+wipeout.
 			autocmd BufDelete,BufWipeout * lua if Luasnip_current_nodes then Luasnip_current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
-		]] .. (c.config.enable_autosnippets and [[
+		]]
+					.. (c.config.enable_autosnippets and [[
 			autocmd InsertCharPre * lua Luasnip_just_inserted = true
 			autocmd TextChangedI * lua if Luasnip_just_inserted then require("luasnip").expand_auto() Luasnip_just_inserted=false end
-		]] or "") .. [[
+		]] or "")
+					.. [[
 		augroup END
-		]], c.config.updateevents, c.config.region_check_events, c.config.delete_check_events))
+		]],
+				c.config.updateevents,
+				c.config.region_check_events,
+				c.config.delete_check_events
+			)
+		)
 		if c.config.store_selection_keys then
 			vim.cmd(
 				string.format(
