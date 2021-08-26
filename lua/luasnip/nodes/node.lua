@@ -123,6 +123,18 @@ function Node:populate_argnodes() end
 function Node:subsnip_init() end
 
 function Node:event(event)
+	if self.pos then
+		-- node needs position to get callback (nodes may not have position if
+		-- defined in a choiceNode, ie. c(1, {
+		--	i(nil, {"works!"})
+		-- }))
+		-- works just fine.
+		local callback = self.parent.callbacks[self.pos][event]
+		if callback then
+			callback(self)
+		end
+	end
+
 	session.event_node = self
 	vim.cmd("doautocmd User Luasnip" .. events.to_string(self.type, event))
 end
