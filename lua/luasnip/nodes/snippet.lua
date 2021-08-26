@@ -95,11 +95,13 @@ local function init_opts(opts)
 	-- return empty table for non-specified callbacks.
 	setmetatable(opts.callbacks, {
 		__index = function(table, key)
-	 		rawset(table, key, {})
-	 		return {}
-		end
+			rawset(table, key, {})
+			return {}
+		end,
 	})
-	opts.condition = opts.condition or function() return true end
+	opts.condition = opts.condition or function()
+		return true
+	end
 	return opts
 end
 
