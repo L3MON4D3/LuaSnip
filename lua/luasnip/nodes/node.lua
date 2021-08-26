@@ -1,3 +1,4 @@
+local session = require("luasnip.session")
 local util = require("luasnip.util.util")
 local events = require("luasnip.util.events")
 
@@ -25,7 +26,7 @@ end
 function Node:input_enter(_)
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 
-	util.node_event(self, events.enter)
+	self:event(events.enter)
 end
 
 function Node:jump_into(_, no_move)
@@ -93,7 +94,7 @@ function Node:exit()
 end
 
 function Node:input_leave()
-	util.node_event(self, events.leave)
+	self:event(events.leave)
 
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
@@ -120,6 +121,23 @@ end
 function Node:populate_argnodes() end
 
 function Node:subsnip_init() end
+
+function Node:event(event)
+	if self.pos then
+		-- node needs position to get callback (nodes may not have position if
+		-- defined in a choiceNode, ie. c(1, {
+		--	i(nil, {"works!"})
+		-- }))
+		-- works just fine.
+		local callback = self.parent.callbacks[self.pos][event]
+		if callback then
+			callback(self)
+		end
+	end
+
+	session.event_node = self
+	vim.cmd("doautocmd User Luasnip" .. events.to_string(self.type, event))
+end
 
 Node.ext_gravities_active = { false, true }
 

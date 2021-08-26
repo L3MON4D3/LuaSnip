@@ -28,6 +28,7 @@ local i = ls.insert_node
 local f = ls.function_node
 local c = ls.choice_node
 local d = ls.dynamic_node
+local events = require("luasnip.util.events")
 ```
 
 # SNIPPETS
@@ -48,7 +49,7 @@ entries:
           for multiple lines.
 - `wordTrig`: boolean, if true, the snippet is only expanded if the word
               (`[%w_]+`) before the cursor matches the trigger entirely.
-			  True by default.
+              True by default.
 - `regTrig`: boolean, whether the trigger should be interpreted as a
              lua pattern. False by default.
 - `docstring`: string, textual representation of the snippet, specified like
@@ -67,12 +68,20 @@ The second argument to `s` is a table containing all nodes that belong to the
 snippet. If the table only has a single node, it can be passed directly
 without wrapping it in a table.
 
-The third argument is the condition-function. The snippet will be expanded only
-if it returns true (default is a function that just returns true) (the function
-is called before the text is modified in any way).
-
-The fourth and following args are passed to the condition-function(allows
-reusing condition-functions).
+The third argument is a table with the following valid keys:
+- `condition`: the condition-function. The snippet will be expanded only
+               if it returns true (default is a function that just returns true)
+               (the function is called before the text is modified in any way).
+- `callbacks`: Contains functions that are called upon enterin/leaving a node.
+               To print text upon entering the second node of a snippet, set
+               `callbacks` should be set as follows:
+               `{ [2] = { [events.enter] = function() print "2!" end } }`.
+               To register a callback for the snippets' events, the key `[-1]`
+               may be used.
+               The callbacks are passed only one argument, the node that
+               triggered it.
+This `opts`-table can also be passed to eg.	`snippetNode` or `indentSnippetNode`,
+`condition` doesn't have any effect there, but `callbacks` are used.
 
 Snippets contain some interesting tables, eg. `snippet.env` contains variables
 used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or

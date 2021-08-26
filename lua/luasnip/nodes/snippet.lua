@@ -7,6 +7,7 @@ local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
 local Environ = require("luasnip.util.environ")
 local conf = require("luasnip.config")
+local session = require("luasnip.session")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -87,13 +88,22 @@ local function wrap_nodes(nodes)
 	end
 end
 
-local function S(context, nodes, condition, ...)
-	if not condition then
-		condition = function()
-			return true
-		end
-	end
+local function init_opts(opts)
+	opts = opts or {}
 
+	opts.callbacks = opts.callbacks or {}
+	-- return empty table for non-specified callbacks.
+	setmetatable(opts.callbacks, {
+		__index = function(table, key)
+	 		rawset(table, key, {})
+	 		return {}
+		end
+	})
+	opts.condition = opts.condition or function() return true end
+	return opts
+end
+
+local function S(context, nodes, opts)
 	if type(context) == "string" then
 		context = { trig = context }
 	end
@@ -111,6 +121,8 @@ local function S(context, nodes, condition, ...)
 		context.wordTrig = true
 	end
 
+	opts = init_opts(opts)
+
 	nodes = wrap_nodes(nodes)
 	local snip = Snippet:new({
 		trigger = context.trig,
@@ -123,8 +135,8 @@ local function S(context, nodes, condition, ...)
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
-		condition = condition,
-		user_args = { ... },
+		condition = opts.condition,
+		callbacks = opts.callbacks,
 		mark = nil,
 		dependents = {},
 		active = false,
@@ -148,12 +160,15 @@ local function S(context, nodes, condition, ...)
 	return snip
 end
 
-local function SN(pos, nodes)
+local function SN(pos, nodes, opts)
+	opts = init_opts(opts)
+
 	local snip = Snippet:new({
 		pos = pos,
 		nodes = wrap_nodes(nodes),
 		insert_nodes = {},
 		current_insert = 0,
+		callbacks = opts.callbacks,
 		mark = nil,
 		dependents = {},
 		active = false,
@@ -164,21 +179,13 @@ local function SN(pos, nodes)
 	return snip
 end
 
-local function ISN(pos, nodes, indent_text)
-	local snip = Snippet:new({
-		pos = pos,
-		nodes = wrap_nodes(nodes),
-		insert_nodes = {},
-		current_insert = 0,
-		mark = nil,
-		dependents = {},
-		active = false,
-		type = types.snippetNode,
-	})
+local function ISN(pos, nodes, indent_text, opts)
+	local snip = SN(pos, nodes, opts)
+
 	function snip:indent(parent_indent)
 		Snippet.indent(self, indent_text:gsub("$PARENT_INDENT", parent_indent))
 	end
-	snip:init_nodes()
+
 	return snip
 end
 
@@ -362,7 +369,7 @@ function Snippet:matches(line_to_cursor)
 		return nil
 	end
 
-	if not self.condition(unpack(self.user_args)) then
+	if not self.condition() then
 		return nil
 	end
 
@@ -667,11 +674,11 @@ function Snippet:input_enter()
 	self.active = true
 	self.mark:update_opts(self.ext_opts[self.type].active)
 
-	util.node_event(self, events.enter)
+	self:event(events.enter)
 end
 
 function Snippet:input_leave()
-	util.node_event(self, events.leave)
+	self:event(events.leave)
 
 	self:update_dependents()
 	self.active = false
@@ -742,6 +749,23 @@ function Snippet:text_only()
 		end
 	end
 	return true
+end
+
+function Snippet:event(event)
+	local callback = self.callbacks[-1][event]
+	if callback then
+		callback(self)
+	end
+	if self.type == types.snippetNode and self.pos then
+		-- if snippetNode, also do callback for position in parent.
+		callback = self.parent.callbacks[self.pos][event]
+		if callback then
+			callback(self)
+		end
+	end
+
+	session.event_node = self
+	vim.cmd("doautocmd User Luasnip" .. events.to_string(self.type, event))
 end
 
 return {
