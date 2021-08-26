@@ -69,12 +69,33 @@ local function no_region_check_wrap(fn, ...)
 	return fn(...)
 end
 
+local function safe_jump(node, dir, no_move)
+	if not node then
+		return nil
+	end
+
+	local ok, res = pcall(node.jump_from, node, dir, no_move)
+	if ok then
+		return res
+	else
+		local snip = node.parent.snippet
+		snip:remove_from_jumplist()
+		-- dir==1: try jumping into next snippet, then prev
+		-- dir==-1: try jumping into prev snippet, then next
+		if dir == 1 then
+			return safe_jump(snip.next.next or snip.prev.prev, snip.next.next and 1 or -1, no_move)
+		else
+			return safe_jump(snip.prev.prev or snip.next.next, snip.prev.prev and -1 or 1, no_move)
+		end
+	end
+end
+
 local function jump(dir)
 	local current = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
 		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] =
 			no_region_check_wrap(
-				current.jump_from,
+				safe_jump,
 				current,
 				dir
 			)
@@ -319,8 +340,15 @@ local function exit_out_of_region(node)
 		-- check for nil; if history is not set, the jump to snippet.next
 		-- returns nil.
 		while node and node ~= snippet.next do
+			local ok
 			-- set no_move.
-			node = node:jump_from(1, true)
+			ok, node = pcall(node.jump_from, node, 1, true)
+			if not ok then
+				snippet:remove_from_jumplist()
+				-- may be nil, checked later.
+				node = snippet.next
+				break
+			end
 		end
 		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = node
 
