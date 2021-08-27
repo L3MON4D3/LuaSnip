@@ -1,6 +1,6 @@
 local node_mod = require("luasnip.nodes.node")
 local iNode = require("luasnip.nodes.insertNode")
-local t = require("luasnip.nodes.textNode").T
+local tNode = require("luasnip.nodes.textNode")
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
@@ -8,6 +8,7 @@ local mark = require("luasnip.util.mark").mark
 local Environ = require("luasnip.util.environ")
 local conf = require("luasnip.config")
 local session = require("luasnip.session")
+local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 
 Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
 
@@ -768,6 +769,63 @@ function Snippet:event(event)
 
 	session.event_node = self
 	vim.cmd("doautocmd User Luasnip" .. events.to_string(self.type, event))
+end
+
+local function nodes_from_pattern(pattern)
+	local nodes = {}
+	local text_active = true
+	local iNode_indx = 1
+	local tokens = pattern_tokenizer.tokenize(pattern)
+	for _, text in ipairs(tokens) do
+		if text_active then
+			nodes[#nodes+1] = tNode.T(text)
+		else
+			nodes[#nodes+1] = iNode.I(iNode_indx, text)
+			iNode_indx = iNode_indx + 1
+		end
+		text_active = not text_active
+	end
+	-- This is done so the user ends up at the end of the snippet either way
+	-- and may use their regular expand-key to expand the snippet.
+	-- Autoexpanding doesn't quite work, if the snippet ends with an
+	-- interactive part and the user overrides whatever is put in there, the
+	-- jump to the i(0) may trigger an expansion, and the helper-snippet could
+	-- not easily be removed, as the snippet the user wants to actually use is
+	-- inside of it.
+	-- Because of that it is easier to let the user do the actual expanding,
+	-- but help them on the way to it (by providing an easy way to override the
+	-- "interactive" parts of the pattern-trigger).
+	--
+	-- if even number of nodes, the last is an insertNode (nodes begins with
+	-- textNode and alternates between the two).
+	if #nodes % 2 == 0 then
+		nodes[#nodes] = iNode.I(0, tokens[#tokens])
+	else
+		nodes[#nodes+1] = iNode.I(0)
+	end
+	return nodes
+end
+
+-- only call on actual snippets, snippetNodes don't have trigger.
+function Snippet:get_pattern_expand_helper()
+	if not self.expand_helper_snippet then
+		local nodes = nodes_from_pattern(self.trigger)
+		self.expand_helper_snippet = S(self.trigger, nodes, {
+			callbacks = {
+				[0] = {
+					[events.enter] = function(_)
+						-- try expanding after entering i(0).
+						vim.schedule(function()
+							-- Remove this helper snippet as soon as the i(0)
+							-- is reached.
+							require("luasnip").unlink_current()
+						end)
+					end
+				}
+			}
+		})
+	end
+	return self.expand_helper_snippet:copy()
 end
 
 return {
