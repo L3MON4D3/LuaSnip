@@ -778,9 +778,9 @@ local function nodes_from_pattern(pattern)
 	local tokens = pattern_tokenizer.tokenize(pattern)
 	for _, text in ipairs(tokens) do
 		if text_active then
-			nodes[#nodes+1] = tNode.T(text)
+			nodes[#nodes + 1] = tNode.T(text)
 		else
-			nodes[#nodes+1] = iNode.I(iNode_indx, text)
+			nodes[#nodes + 1] = iNode.I(iNode_indx, text)
 			iNode_indx = iNode_indx + 1
 		end
 		text_active = not text_active
@@ -801,7 +801,7 @@ local function nodes_from_pattern(pattern)
 	if #nodes % 2 == 0 then
 		nodes[#nodes] = iNode.I(0, tokens[#tokens])
 	else
-		nodes[#nodes+1] = iNode.I(0)
+		nodes[#nodes + 1] = iNode.I(0)
 	end
 	return nodes
 end
@@ -820,9 +820,9 @@ function Snippet:get_pattern_expand_helper()
 							-- is reached.
 							require("luasnip").unlink_current()
 						end)
-					end
-				}
-			}
+					end,
+				},
+			},
 		})
 	end
 	return self.expand_helper_snippet:copy()

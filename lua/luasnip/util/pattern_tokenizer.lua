@@ -19,7 +19,7 @@ local is_class = {
 	U = true,
 	W = true,
 	X = true,
-	Z = true
+	Z = true,
 	-- all others false.
 }
 
@@ -27,7 +27,7 @@ local is_rep_mod = {
 	["+"] = true,
 	["*"] = true,
 	["-"] = true,
-	["?"] = true
+	["?"] = true,
 }
 
 local function is_escaped(text, indx)
@@ -41,7 +41,6 @@ local function is_escaped(text, indx)
 	end
 	return count % 2 == 1
 end
-
 
 local function charset_end_indx(string, start_indx)
 	-- set plain
@@ -70,12 +69,12 @@ return {
 			local repeatable = true
 			local char = pattern:sub(indx, indx)
 			if char == "%" then
-				if pattern:sub(indx+1, indx+1) == "b" then
+				if pattern:sub(indx + 1, indx + 1) == "b" then
 					-- %b seems to consume exactly the next two chars literally.
 					next_is_text = false
-					next_indx = indx+4
+					next_indx = indx + 4
 					repeatable = false
-				elseif is_class[pattern:sub(indx+1, indx+1)] then
+				elseif is_class[pattern:sub(indx + 1, indx + 1)] then
 					next_is_text = false
 					next_indx = indx + 2
 				else
@@ -106,17 +105,17 @@ return {
 			end
 
 			if repeatable and is_rep_mod[pattern:sub(next_indx, next_indx)] then
-				next_indx = next_indx+1
+				next_indx = next_indx + 1
 				next_is_text = false
 			end
 
-			next_text = pattern:sub(indx, next_indx-1)
+			next_text = pattern:sub(indx, next_indx - 1)
 
 			-- check if this token is still the same as the previous.
 			if next_is_text == is_text then
 				current_text = current_text .. next_text
 			else
-				tokens[#tokens+1] = current_text
+				tokens[#tokens + 1] = current_text
 				current_text = next_text
 			end
 
@@ -124,9 +123,8 @@ return {
 			is_text = next_is_text
 		end
 
-
 		-- add last part, would normally be added at the end of the loop.
-		tokens[#tokens+1] = current_text
+		tokens[#tokens + 1] = current_text
 		return tokens
-	end
+	end,
 }
