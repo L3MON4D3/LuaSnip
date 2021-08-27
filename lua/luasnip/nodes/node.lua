@@ -64,25 +64,29 @@ function Node:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
 function Node:get_text()
-	local from_pos, to_pos = util.get_ext_positions(self.mark.id)
+	local ok, text = pcall(function()
+		local from_pos, to_pos = util.get_ext_positions(self.mark.id)
 
-	-- end-exclusive indexing.
-	local lines = vim.api.nvim_buf_get_lines(
-		0,
-		from_pos[1],
-		to_pos[1] + 1,
-		false
-	)
+		-- end-exclusive indexing.
+		local lines = vim.api.nvim_buf_get_lines(
+			0,
+			from_pos[1],
+			to_pos[1] + 1,
+			false
+		)
 
-	if #lines == 1 then
-		lines[1] = string.sub(lines[1], from_pos[2] + 1, to_pos[2])
-	else
-		lines[1] = string.sub(lines[1], from_pos[2] + 1, #lines[1])
+		if #lines == 1 then
+			lines[1] = string.sub(lines[1], from_pos[2] + 1, to_pos[2])
+		else
+			lines[1] = string.sub(lines[1], from_pos[2] + 1, #lines[1])
 
-		-- node-range is end-exclusive.
-		lines[#lines] = string.sub(lines[#lines], 1, to_pos[2])
-	end
-	return lines
+			-- node-range is end-exclusive.
+			lines[#lines] = string.sub(lines[#lines], 1, to_pos[2])
+		end
+		return lines
+	end)
+	-- if deleted.
+	return ok and text or {""}
 end
 
 function Node:set_old_text()
