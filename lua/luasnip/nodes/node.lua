@@ -86,7 +86,7 @@ function Node:get_text()
 		return lines
 	end)
 	-- if deleted.
-	return ok and text or {""}
+	return ok and text or { "" }
 end
 
 function Node:set_old_text()

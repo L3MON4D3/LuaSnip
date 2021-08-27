@@ -83,9 +83,17 @@ local function safe_jump(node, dir, no_move)
 		-- dir==1: try jumping into next snippet, then prev
 		-- dir==-1: try jumping into prev snippet, then next
 		if dir == 1 then
-			return safe_jump(snip.next.next or snip.prev.prev, snip.next.next and 1 or -1, no_move)
+			return safe_jump(
+				snip.next.next or snip.prev.prev,
+				snip.next.next and 1 or -1,
+				no_move
+			)
 		else
-			return safe_jump(snip.prev.prev or snip.next.next, snip.prev.prev and -1 or 1, no_move)
+			return safe_jump(
+				snip.prev.prev or snip.next.next,
+				snip.prev.prev and -1 or 1,
+				no_move
+			)
 		end
 	end
 end
