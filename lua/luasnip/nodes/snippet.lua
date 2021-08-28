@@ -602,9 +602,11 @@ function Snippet:get_static_text()
 	for _, node in ipairs(self.nodes) do
 		local node_text = node:get_static_text()
 		-- append first line to last line of text so far.
-		text[#text] = text[#text] .. node_text[1]
-		for i = 2, #node_text do
-			text[#text + 1] = node_text[i]
+		if #node_text > 0 then
+			text[#text] = text[#text] .. node_text[1]
+			for i = 2, #node_text do
+				text[#text + 1] = node_text[i]
+			end
 		end
 	end
 	-- cache computed text, may be called multiple times for
