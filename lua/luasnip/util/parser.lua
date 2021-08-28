@@ -135,6 +135,12 @@ local function parse_placeholder(text, tab_stops, brackets)
 	local start, stop, match = string.find(text, "(%d+):")
 	if start == 1 then
 		local pos = tonumber(match)
+		-- if pos is already defined, this should copy it.
+		if tab_stops[pos] then
+			local node = fNode.F(functions.copy, { tab_stops[pos] })
+			tab_stops[pos].dependents[#tab_stops[pos].dependents + 1] = node
+			return node
+		end
 		local snip = parse_snippet(
 			pos,
 			string.sub(text, stop + 1, #text),
