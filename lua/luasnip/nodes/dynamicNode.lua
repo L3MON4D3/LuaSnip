@@ -78,7 +78,7 @@ function DynamicNode:get_docstring()
 			print(errorstring:format(self.indx, snip.name, tmp))
 			self.docstring = { "" }
 		else
-			self.docstring = util.string_wrap(tmp:get_docstring(), self.pos)
+			self.docstring = util.string_wrap(tmp:get_docstring(), rawget(self, "pos"))
 		end
 	end
 	return self.docstring

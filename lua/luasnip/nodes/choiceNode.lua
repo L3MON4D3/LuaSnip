@@ -134,7 +134,7 @@ function ChoiceNode:get_static_text()
 end
 
 function ChoiceNode:get_docstring()
-	return util.string_wrap(self.choices[1]:get_docstring(), self.pos)
+	return util.string_wrap(self.choices[1]:get_docstring(), rawget(self, "pos"))
 end
 
 function ChoiceNode:jump_into(dir, no_move)
