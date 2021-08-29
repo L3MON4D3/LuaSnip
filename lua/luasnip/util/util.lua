@@ -254,8 +254,12 @@ local function get_min_indent(lines)
 	for i = 2, #lines do
 		-- %s* -> at least matches
 		local line_indent = lines[i]:match("^(%s*)%S")
-		if #line_indent < #min_indent then
-			min_indent = line_indent
+		-- ignore if not matched.
+		if min_indent then
+			-- if no line until now matched, use line_indent.
+			if not min_indent or #line_indent < #min_indent then
+				min_indent = line_indent
+			end
 		end
 	end
 	return min_indent
@@ -294,7 +298,8 @@ local function store_selection()
 
 	-- init with raw selection.
 	local tm_select, select_dedent = vim.deepcopy(chunks), vim.deepcopy(chunks)
-	local min_indent = get_min_indent(lines)
+	-- may be nil if no indent.
+	local min_indent = get_min_indent(lines) or ""
 	-- TM_SELECTED_TEXT contains text from new cursor position(for V the first
 	-- non-whitespace of first line, v and c-v raw) to end of selection.
 	if mode == "V" then
