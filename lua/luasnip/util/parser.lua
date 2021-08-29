@@ -172,6 +172,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 					-- move placeholders' indices.
 					modify_nodes(snip)
 					snip:init_nodes()
+					snip.pos = nil
 
 					tab_stops[pos] = cNode.C(
 						pos,
