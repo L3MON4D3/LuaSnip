@@ -255,7 +255,7 @@ local function get_min_indent(lines)
 		-- %s* -> at least matches
 		local line_indent = lines[i]:match("^(%s*)%S")
 		-- ignore if not matched.
-		if min_indent then
+		if line_indent then
 			-- if no line until now matched, use line_indent.
 			if not min_indent or #line_indent < #min_indent then
 				min_indent = line_indent
