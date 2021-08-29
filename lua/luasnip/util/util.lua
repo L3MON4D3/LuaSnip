@@ -394,7 +394,9 @@ local function string_wrap(lines, pos)
 	if #new_lines == 1 and #new_lines[1] == 0 then
 		return { "$" .. (pos and tostring(pos) or "{}") }
 	end
-	new_lines[1] = "${" .. (pos and (tostring(pos) .. ":") or "") .. new_lines[1]
+	new_lines[1] = "${"
+		.. (pos and (tostring(pos) .. ":") or "")
+		.. new_lines[1]
 	new_lines[#new_lines] = new_lines[#new_lines] .. "}"
 	return new_lines
 end

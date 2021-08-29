@@ -637,7 +637,8 @@ function Snippet:get_docstring()
 	-- cache computed text, may be called multiple times for
 	-- function/dynamicNodes.
 	-- if not outer snippet, wrap it in ${}.
-	self.docstring = self.type == types.snippet and docstring or util.string_wrap(docstring, rawget(self, "pos"))
+	self.docstring = self.type == types.snippet and docstring
+		or util.string_wrap(docstring, rawget(self, "pos"))
 	return self.docstring
 end
 
