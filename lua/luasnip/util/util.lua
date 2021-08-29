@@ -390,12 +390,13 @@ local function increase_ext_prio(opts, amount)
 end
 
 local function string_wrap(lines, pos)
-	if #lines == 1 and #lines[1] == 0 then
+	local new_lines = vim.deepcopy(lines)
+	if #new_lines == 1 and #new_lines[1] == 0 then
 		return { "$" .. (pos and tostring(pos) or "{}") }
 	end
-	lines[1] = "${" .. (pos and (tostring(pos) .. ":") or "") .. lines[1]
-	lines[#lines] = lines[#lines] .. "}"
-	return lines
+	new_lines[1] = "${" .. (pos and (tostring(pos) .. ":") or "") .. new_lines[1]
+	new_lines[#new_lines] = new_lines[#new_lines] .. "}"
+	return new_lines
 end
 
 -- Heuristic to extract the comment style from the commentstring
