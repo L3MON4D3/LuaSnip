@@ -47,7 +47,7 @@ local defaults = {
 	enable_autosnippets = false,
 	-- default applied in util.parser, requires iNode, cNode
 	-- (Dependency cycle if here).
-	parser_nested_assembler = nil
+	parser_nested_assembler = nil,
 }
 
 -- declare here to use in set_config.

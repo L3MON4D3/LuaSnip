@@ -187,7 +187,10 @@ local function parse_placeholder(text, tab_stops, brackets)
 					end, {})
 				else
 					if config.config.parser_nested_assembler then
-						tab_stops[pos] = config.config.parser_nested_assembler(pos, snip)
+						tab_stops[pos] = config.config.parser_nested_assembler(
+							pos,
+							snip
+						)
 					else
 						-- move placeholders' indices.
 						modify_nodes(snip)
