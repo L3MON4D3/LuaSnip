@@ -38,15 +38,20 @@ local function brckt_lst(text)
 	return final_list
 end
 
+local function un_escape(text)
+	return text
+		:gsub("\\\\", "\\")
+		:gsub("\\{", "{")
+		:gsub("\\}", "}")
+		:gsub("\\,", ",")
+		:gsub("\\|", "|")
+		:gsub("\\%$", "$")
+end
+
 local function parse_text(text)
 	-- Works for now, maybe a bit naive, but gsub behaviour shouldn't change I
 	-- think...
-	text = string.gsub(text, "\\\\", "\\")
-	text = string.gsub(text, "\\{", "{")
-	text = string.gsub(text, "\\}", "}")
-	text = string.gsub(text, "\\,", ",")
-	text = string.gsub(text, "\\|", "|")
-	text = string.gsub(text, "\\%$", "$")
+	text = un_escape(text)
 
 	local text_table = {}
 	for line in vim.gsplit(text, "\n", true) do
@@ -152,7 +157,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 			-- SELECT Simple placeholder (static text or evaulated function that is not updated again),
 			-- behaviour mopre similar to eg. vscode.
 			if snip:text_only() then
-				tab_stops[pos] = iNode.I(pos, string.sub(text, stop + 1, -1))
+				tab_stops[pos] = iNode.I(pos, un_escape(string.sub(text, stop + 1, -1)))
 			else
 				if not snip:is_interactive() then
 					tab_stops[pos] = dNode.D(pos, function(args)
@@ -166,6 +171,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 						snip:indent(args[1].indentstr)
 						snip:subsnip_init()
 						local iText = snip:get_static_text()
+						-- no need to un-escape iText, that was already done.
 						return snipNode.SN(nil, iNode.I(1, iText))
 					end, {})
 				else
