@@ -3,10 +3,10 @@ return {
 		local v = node.parent.env[text]
 		if type(v) == "table" then
 			-- Avoid issues with empty vars
-			if #v == 0 then
-				return { "" }
+			if #v > 0 then
+				return v
 			else
-				return {}
+				return {""}
 			end
 		else
 			return { v }
