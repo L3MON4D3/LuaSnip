@@ -6,7 +6,7 @@ return {
 			if #v > 0 then
 				return v
 			else
-				return {""}
+				return { "" }
 			end
 		else
 			return { v }
