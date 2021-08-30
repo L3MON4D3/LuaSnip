@@ -119,7 +119,7 @@ local function load_snippet_folder(root, opts)
 				end
 				langs = filter_list(langs, opts.exclude, opts.include)
 
-				if #langs then
+				if #langs ~= 0 then
 					load_snippet_file(
 						langs,
 						path_join(root, snippet_entry.path)
