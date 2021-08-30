@@ -7,6 +7,7 @@ local snipNode = require("luasnip.nodes.snippet")
 local Environ = require("luasnip.util.environ")
 local functions = require("luasnip.util.functions")
 local util = require("luasnip.util.util")
+local config = require("luasnip.config")
 
 local function is_escaped(text, indx)
 	local count = 0
@@ -185,15 +186,19 @@ local function parse_placeholder(text, tab_stops, brackets)
 						return snipNode.SN(nil, iNode.I(1, iText))
 					end, {})
 				else
-					-- move placeholders' indices.
-					modify_nodes(snip)
-					snip:init_nodes()
-					snip.pos = nil
+					if config.config.parser_nested_assembler then
+						tab_stops[pos] = config.config.parser_nested_assembler(pos, snip)
+					else
+						-- move placeholders' indices.
+						modify_nodes(snip)
+						snip:init_nodes()
+						snip.pos = nil
 
-					tab_stops[pos] = cNode.C(
-						pos,
-						{ snip, iNode.I(nil, { "" }) }
-					)
+						tab_stops[pos] = cNode.C(
+							pos,
+							{ snip, iNode.I(nil, { "" }) }
+						)
+					end
 				end
 				-- 0-node cannot be dynamic or choice, insert the actual 0-node behind it.
 				if pos == 0 then
