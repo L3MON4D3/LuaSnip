@@ -157,7 +157,10 @@ local function parse_placeholder(text, tab_stops, brackets)
 			-- SELECT Simple placeholder (static text or evaulated function that is not updated again),
 			-- behaviour mopre similar to eg. vscode.
 			if snip:text_only() then
-				tab_stops[pos] = iNode.I(pos, un_escape(string.sub(text, stop + 1, -1)))
+				tab_stops[pos] = iNode.I(
+					pos,
+					un_escape(string.sub(text, stop + 1, -1))
+				)
 			else
 				if not snip:is_interactive() then
 					tab_stops[pos] = dNode.D(pos, function(args)
