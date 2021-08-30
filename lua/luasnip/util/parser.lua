@@ -26,7 +26,7 @@ local function brckt_lst(text)
 	-- brackets.
 	local final_list = {}
 	for i = 1, #text do
-		if string.sub(text, i, i) == "{" and not is_escaped(text, i) then
+		if string.sub(text, i, i) == "{" and string.sub(text, i-1, i-1) == "$" and not is_escaped(text, i-1) then
 			bracket_stack.n = bracket_stack.n + 1
 			bracket_stack[bracket_stack.n] = i
 		elseif string.sub(text, i, i) == "}" and not is_escaped(text, i) then
@@ -41,7 +41,6 @@ end
 local function un_escape(text)
 	return text
 		:gsub("\\\\", "\\")
-		:gsub("\\{", "{")
 		:gsub("\\}", "}")
 		:gsub("\\,", ",")
 		:gsub("\\|", "|")
@@ -157,7 +156,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 			-- SELECT Simple placeholder (static text or evaulated function that is not updated again),
 			-- behaviour mopre similar to eg. vscode.
 			if snip:text_only() then
-				tab_stops[pos] = iNode.I(pos, un_escape(string.sub(text, stop + 1, -1)))
+				tab_stops[pos] = iNode.I(pos, vim.split(un_escape(string.sub(text, stop + 1, -1)), "\n", true))
 			else
 				if not snip:is_interactive() then
 					tab_stops[pos] = dNode.D(pos, function(args)
