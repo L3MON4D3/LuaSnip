@@ -22,7 +22,7 @@ end
 local function match_snippet(line, snippet_table)
 	local match
 	local fts = vim.split(vim.bo.ft, ".", true)
-	fts[#fts + 1] = "all"
+	table.insert(fts, "all")
 
 	-- search filetypes, then "all".
 	for _, ft in ipairs(fts) do
@@ -47,14 +47,16 @@ local function get_context(snip)
 end
 
 local function available()
-	local res = { [vim.bo.ft] = {}, all = {} }
-	if ls.snippets[vim.bo.ft] then
-		for _, snip in ipairs(ls.snippets[vim.bo.ft]) do
-			table.insert(res[vim.bo.ft], get_context(snip))
+	local fts = vim.split(vim.bo.ft, ".", true)
+	table.insert(fts, "all")
+	local res = {}
+	for _, ft in ipairs(fts) do
+		res[ft] = {}
+		if ls.snippets[ft] then
+			for _, snip in ipairs(ls.snippets[ft]) do
+				table.insert(res[ft], get_context(snip))
+			end
 		end
-	end
-	for _, snip in ipairs(ls.snippets["all"]) do
-		table.insert(res.all, get_context(snip))
 	end
 	return res
 end

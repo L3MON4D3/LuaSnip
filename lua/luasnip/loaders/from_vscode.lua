@@ -208,7 +208,9 @@ function M.load(opts)
 end
 
 function M._luasnip_vscode_lazy_load()
-	for _, ft in ipairs({ vim.bo.filetype, "all" }) do
+	local fts = vim.split(vim.bo.filetype, ".", true)
+	table.insert(fts, "all")
+	for _, ft in ipairs(fts) do
 		if not caches.lazy_loaded_ft[ft] then
 			caches.lazy_loaded_ft[ft] = true
 			M.load({ paths = caches.lazy_load_paths, include = { ft } })
