@@ -34,7 +34,11 @@ local function brckt_lst(text)
 		then
 			bracket_stack.n = bracket_stack.n + 1
 			bracket_stack[bracket_stack.n] = i
-		elseif bracket_stack.n > 0 and string.sub(text, i, i) == "}" and not is_escaped(text, i) then
+		elseif
+			bracket_stack.n > 0
+			and string.sub(text, i, i) == "}"
+			and not is_escaped(text, i)
+		then
 			final_list[bracket_stack[bracket_stack.n]] = i
 			bracket_stack.n = bracket_stack.n - 1
 		end
