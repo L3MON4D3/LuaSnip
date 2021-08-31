@@ -314,9 +314,10 @@ function Snippet:trigger_expand(current_node)
 
 	self:put_initial(pos)
 
+	-- update() may insert text, set marks appropriately.
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
-		end_right_gravity = false,
+		end_right_gravity = true,
 	}, self.ext_opts[types.snippet].passive)
 	self.mark = mark(old_pos, pos, mark_opts)
 	self:set_old_text()
