@@ -21,16 +21,16 @@ end
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
 local function match_snippet(line, snippet_table)
 	local match
-	for _, snip in ipairs(snippet_table[vim.bo.ft] or {}) do
-		match = snip:matches(line)
-		if match then
-			return match
-		end
-	end
-	for _, snip in ipairs(snippet_table["all"] or {}) do
-		match = snip:matches(line)
-		if match then
-			return match
+	local fts = vim.split(vim.bo.ft, ".", true)
+	fts[#fts+1] = "all"
+
+	-- search filetypes, then "all".
+	for _, ft in ipairs(fts) do
+		for _, snip in ipairs(snippet_table[ft] or {}) do
+			match = snip:matches(line)
+			if match then
+				return match
+			end
 		end
 	end
 	return nil
