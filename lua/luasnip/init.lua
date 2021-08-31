@@ -22,7 +22,7 @@ end
 local function match_snippet(line, snippet_table)
 	local match
 	local fts = vim.split(vim.bo.ft, ".", true)
-	fts[#fts+1] = "all"
+	fts[#fts + 1] = "all"
 
 	-- search filetypes, then "all".
 	for _, ft in ipairs(fts) do
