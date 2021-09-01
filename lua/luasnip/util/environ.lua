@@ -44,6 +44,10 @@ end
 -- Variables defined in https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variables
 
 -- Inherited from TextMate
+function lazy_vars.TM_FILENAME()
+	return vim.fn.expand("%:t")
+end
+
 function lazy_vars.TM_FILENAME_BASE()
 	return vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
 end
