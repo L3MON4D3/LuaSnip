@@ -53,6 +53,7 @@ rec_ls = function()
 	)
 end
 
+-- complicated function for dynamicNode.
 local function jdocsnip(args, old_state)
 	local nodes = {
 		t({ "/**", " * " }),
@@ -154,6 +155,13 @@ local date_input = function(args, state, fmt)
 end
 
 ls.snippets = {
+	-- When trying to expand a snippet, luasnip first searches the tables for
+	-- each filetype specified in 'filetype' followed by 'all'.
+	-- If ie. the filetype is 'lua.c'
+	--     - luasnip.lua
+	--     - luasnip.c
+	--     - luasnip.all
+	-- are searched in that order.
 	all = {
 		-- trigger is fn.
 		s("fn", {
