@@ -24,8 +24,9 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 Neovim >= 0.5 (extmarks)
 
 # Setup
-- Install using eg. [vim-plug](https://github.com/junegunn/vim-plug)
-- Add maps
+## Install 
+Ie. With [vim-plug](https://github.com/junegunn/vim-plug)
+## Keymaps
   <details>
    <summary>in vimscript</summary>
   
@@ -94,9 +95,13 @@ Neovim >= 0.5 (extmarks)
     vim.api.nvim_set_keymap("s", "<C-E>", "<Plug>luasnip-next-choice", {})
     ```
   </details>
-- Add Snippets: Snippets have to be added to the `require'luasnip'.snippets`-table.  
+
+## Add Snippets
+Snippets have to be added to the `require'luasnip'.snippets`-table.  
   To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`. 
-- Docs: The previously mentioned `Examples/snippets.lua` contains brief descriptions, check `DOC.md` (or `:help luasnip`) for more in-depth explainations.
+
+## Docs
+The previously mentioned `Examples/snippets.lua` contains brief descriptions, check `DOC.md` (or `:help luasnip`) for more in-depth explainations.
 
 # Config
 - `history`: If true, Snippets that were exited can still be jumped back into. As Snippets are not removed when their text is deleted, they have to be removed manually via `LuasnipUnlinkCurrent`.
