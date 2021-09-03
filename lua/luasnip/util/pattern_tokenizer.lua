@@ -90,7 +90,10 @@ return {
 				next_is_text = false
 				-- if not found, just exit loop now, pattern is malformed.
 				next_indx = (charset_end_indx(pattern, indx) or #pattern) + 1
-			elseif char == "(" or char == ")" then
+			elseif char == "(" or char == ")" or (char == "^" and indx == 1) then
+				-- ^ is interpreted literally if not at beginning.
+				-- $ will always be interpreted literally in triggers.
+
 				-- remove ( and ) from text.
 				-- keep text or no-text active.
 				next_is_text = is_text
