@@ -68,8 +68,12 @@ end
 setmetatable(lambda, {
 	__index = function(_, key)
 		-- \\n to be correctly interpreted in `load()`.
-		return P({op="X", repr = "table.concat(snip.env."..key..", \"\\n\")", index = 0})
-	end
+		return P({
+			op = "X",
+			repr = "table.concat(snip.env." .. key .. ', "\\n")',
+			index = 0,
+		})
+	end,
 })
 
 local repr
