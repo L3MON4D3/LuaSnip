@@ -15,6 +15,8 @@ local function expr_to_fn(expr)
 	local fn_code = _lambda.instantiate(expr)
 	local function fn(args)
 		local inputs = vim.tbl_map(_concat, args)
+		-- set snippet raw, no concat here.
+		inputs[#inputs] = args[#args]
 		-- to be sure, lambda may end with a `match` returning nil.
 		local out = fn_code(unpack(inputs)) or ""
 		return vim.split(out, "\n")

@@ -64,6 +64,14 @@ function lambda._(value)
 	return P({ op = "X", repr = value, index = "wrap" })
 end
 
+-- unknown keys are some named variable.
+setmetatable(lambda, {
+	__index = function(_, key)
+		-- \\n to be correctly interpreted in `load()`.
+		return P({op="X", repr = "table.concat(snip.env."..key..", \"\\n\")", index = 0})
+	end
+})
+
 local repr
 
 lambda.Nil = lambda.Var("nil")
@@ -334,6 +342,8 @@ function lambda.instantiate(e)
 	for i = 1, n do
 		append(parms, "_" .. i)
 	end
+	append(parms, "snip")
+
 	consts = concat(consts, ",")
 	parms = concat(parms, ",")
 	rep = repr(e)
