@@ -26,7 +26,7 @@ local function make_lambda_args(node_args)
 				val = snip.captures[tonumber(num)]
 			else
 				-- env may be string or table.
-				if type(snip.env[key] == "table") then
+				if type(snip.env[key]) == "table" then
 					val = _concat(snip.env[key])
 				else
 					val = snip.env[key]
