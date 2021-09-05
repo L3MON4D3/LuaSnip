@@ -76,6 +76,16 @@ setmetatable(lambda, {
 	end,
 })
 
+lambda.captures = {}
+setmetatable(lambda.captures, {
+	__index = function(_, key)
+		local indx = tonumber(key)
+		-- captures are already strings, no multiline.
+		-- empty string for invalid key.
+		return P({op="X", repr = indx and "snip.captures["..indx.."]" or "", index = 0})
+	end
+})
+
 local repr
 
 lambda.Nil = lambda.Var("nil")
