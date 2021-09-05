@@ -267,7 +267,7 @@ ls.snippets = {
 			-- Lambdas can also apply transforms USING the text of other nodes:
 			l(l._1:gsub("e", l._2), { 1, 2 }),
 		}),
-		s({trig = "trafo(%d+)", regTrig = true}, {
+		s({ trig = "trafo(%d+)", regTrig = true }, {
 			-- env-variables and captures can also be used:
 			l(l.CAPTURE1:gsub("1", l.TM_FILENAME), {}),
 		}),
