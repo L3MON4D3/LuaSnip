@@ -34,7 +34,7 @@ local function make_lambda_args(node_args)
 			end
 			rawset(table, key, val)
 			return val
-		end
+		end,
 	})
 	return args
 end
