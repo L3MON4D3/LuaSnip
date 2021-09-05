@@ -15,10 +15,24 @@ local function expr_to_fn(expr)
 	local fn_code = _lambda.instantiate(expr)
 	local function fn(args)
 		local inputs = vim.tbl_map(_concat, args)
-		-- set snippet raw, no concat here.
-		inputs[#inputs] = args[#args]
+		-- last is snippet, makes no sense to contain in there.
+		inputs[#inputs] = nil
+		setmetatable(inputs, {
+			__index = function(table, key)
+				local val
+				-- key may be capture or env-variable.
+				local num = key:match("CAPTURE(%d+)")
+				if num then
+					val = args[#args].captures[tonumber(num)]
+				else
+					val = args[#args].env[key]
+				end
+				rawset(table, key, val)
+				return val
+			end
+		})
 		-- to be sure, lambda may end with a `match` returning nil.
-		local out = fn_code(unpack(inputs)) or ""
+		local out = fn_code(inputs) or ""
 		return vim.split(out, "\n")
 	end
 	return fn
