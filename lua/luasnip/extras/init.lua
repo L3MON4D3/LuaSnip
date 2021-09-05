@@ -71,12 +71,15 @@ local function to_function(val, use_re)
 		end
 	end
 	if type(val) == "string" and use_re then
-		return function(arg)
-			return arg:match(val)
+		return function(args)
+			return _concat(args[1]):match(val)
 		end
 	end
 	if lambda.isPE(val) then
-		return lambda.instantiate(val)
+		local lmb = lambda.instantiate(val)
+		return function(args)
+			return lmb(make_lambda_args(args))
+		end
 	end
 	assert(false, "Can't convert argument to function")
 end
@@ -92,13 +95,12 @@ local function match(index, _match, _then, _else)
 	end)
 	_else = to_function(_else or "")
 
-	local function func(arg)
-		local text = _concat(arg[1])
+	local function func(args)
 		local out = nil
-		if _match(text) then
-			out = _then(text)
+		if _match(args) then
+			out = _then(args)
 		else
-			out = _else(text)
+			out = _else(args)
 		end
 		return vim.split(out, "\n")
 	end
