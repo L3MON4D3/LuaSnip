@@ -97,7 +97,7 @@ vim.api.nvim_set_keymap("s", "<C-E>", "<Plug>luasnip-next-choice", {})
   </details>
 
 ## Add Snippets
-Snippets have to be added to the `require'luasnip'.snippets`-table.  
+Snippets have to be added to the [`require'luasnip'.snippets`-table](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua#L157).  
   To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`. 
 
 ## Docs
