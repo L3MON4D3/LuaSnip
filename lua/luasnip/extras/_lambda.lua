@@ -39,7 +39,7 @@ lambda.isPE = isPE
 
 -- construct a placeholder variable (e.g _1 and _2)
 local function PH(idx)
-	return P({ op = "X", repr = "_" .. idx, index = idx })
+	return P({ op = "X", repr = "args[" .. idx .. "]", index = idx })
 end
 
 -- construct a constant placeholder variable (e.g _C1 and _C2)
@@ -63,6 +63,18 @@ end
 function lambda._(value)
 	return P({ op = "X", repr = value, index = "wrap" })
 end
+
+-- unknown keys are some named variable.
+setmetatable(lambda, {
+	__index = function(_, key)
+		-- \\n to be correctly interpreted in `load()`.
+		return P({
+			op = "X",
+			repr = "args." .. key,
+			index = 0,
+		})
+	end,
+})
 
 local repr
 
@@ -322,7 +334,7 @@ lambda.collect_values = collect_values
 -- @param e a placeholder expression
 -- @return a function
 function lambda.instantiate(e)
-	local consts, values, parms = {}, {}, {}
+	local consts, values = {}, {}
 	local rep, err, fun
 	local n = lambda.collect_values(e, values)
 	for i = 1, #values do
@@ -331,16 +343,13 @@ function lambda.instantiate(e)
 			print(i, values[i])
 		end
 	end
-	for i = 1, n do
-		append(parms, "_" .. i)
-	end
+
 	consts = concat(consts, ",")
-	parms = concat(parms, ",")
 	rep = repr(e)
 	local fstr =
 		(
-			"return function(%s) return function(%s) return %s end end"
-		):format(consts, parms, rep)
+			"return function(%s) return function(args) return %s end end"
+		):format(consts, rep)
 	if _DEBUG then
 		print(fstr)
 	end

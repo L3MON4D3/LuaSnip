@@ -9,14 +9,43 @@ local function _concat(lines)
 	return table.concat(lines, "\n")
 end
 
+local function make_lambda_args(node_args)
+	local snip = node_args[#node_args]
+	-- remove snippet before concatenation.
+	node_args[#node_args] = nil
+	local args = vim.tbl_map(_concat, node_args)
+
+	setmetatable(args, {
+		__index = function(table, key)
+			Insp(key)
+			print(debug.traceback())
+			local val
+			-- key may be capture or env-variable.
+			local num = key:match("CAPTURE(%d+)")
+			if num then
+				val = snip.captures[tonumber(num)]
+			else
+				-- env may be string or table.
+				if type(snip.env[key]) == "table" then
+					val = _concat(snip.env[key])
+				else
+					val = snip.env[key]
+				end
+			end
+			rawset(table, key, val)
+			return val
+		end,
+	})
+	return args
+end
+
 local function expr_to_fn(expr)
 	local _lambda = require("luasnip.extras._lambda")
 
 	local fn_code = _lambda.instantiate(expr)
 	local function fn(args)
-		local inputs = vim.tbl_map(_concat, args)
 		-- to be sure, lambda may end with a `match` returning nil.
-		local out = fn_code(unpack(inputs)) or ""
+		local out = fn_code(make_lambda_args(args)) or ""
 		return vim.split(out, "\n")
 	end
 	return fn
@@ -42,12 +71,15 @@ local function to_function(val, use_re)
 		end
 	end
 	if type(val) == "string" and use_re then
-		return function(arg)
-			return arg:match(val)
+		return function(args)
+			return _concat(args[1]):match(val)
 		end
 	end
 	if lambda.isPE(val) then
-		return lambda.instantiate(val)
+		local lmb = lambda.instantiate(val)
+		return function(args)
+			return lmb(make_lambda_args(args))
+		end
 	end
 	assert(false, "Can't convert argument to function")
 end
@@ -63,13 +95,12 @@ local function match(index, _match, _then, _else)
 	end)
 	_else = to_function(_else or "")
 
-	local function func(arg)
-		local text = _concat(arg[1])
+	local function func(args)
 		local out = nil
-		if _match(text) then
-			out = _then(text)
+		if _match(args) then
+			out = _then(args)
 		else
-			out = _else(text)
+			out = _else(args)
 		end
 		return vim.split(out, "\n")
 	end
@@ -111,11 +142,9 @@ return {
 	end,
 	dynamic_lambda = function(pos, lambd, args_indcs)
 		local insert_preset_text_func = lambda.instantiate(lambd)
-		return D(pos, function(args_text)
-			-- \n-concat lines from each node.
-			local inputs = vim.tbl_map(_concat, args_text)
+		return D(pos, function(args)
 			-- to be sure, lambda may end with a `match` returning nil.
-			local out = insert_preset_text_func(unpack(inputs)) or ""
+			local out = insert_preset_text_func(make_lambda_args(args)) or ""
 			return SN(pos, {
 				I(1, vim.split(out, "\n")),
 			})
