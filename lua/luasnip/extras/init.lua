@@ -29,7 +29,7 @@ local function expr_to_fn(expr)
 				end
 				rawset(table, key, val)
 				return val
-			end
+			end,
 		})
 		-- to be sure, lambda may end with a `match` returning nil.
 		local out = fn_code(inputs) or ""
