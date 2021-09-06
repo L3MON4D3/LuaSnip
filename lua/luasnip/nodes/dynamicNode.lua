@@ -154,7 +154,7 @@ function DynamicNode:update()
 	tmp:indent(self.parent.indentstr)
 
 	self.parent:enter_node(self.indx)
-	tmp:put_initial(util.get_ext_position_begin(self.mark.id))
+	tmp:put_initial(self.mark:pos_begin_raw())
 	-- Update, tbh no idea how that could come in handy, but should be done.
 	tmp:update()
 

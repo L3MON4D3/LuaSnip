@@ -96,40 +96,6 @@ local function bytecol_to_utfcol(pos)
 	return { pos[1], vim.str_utfindex(line[1] or "", pos[2]) }
 end
 
-local function get_ext_positions(id)
-	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		id,
-		{ details = true }
-	)
-
-	return bytecol_to_utfcol({ mark_info[1], mark_info[2] }),
-		bytecol_to_utfcol({ mark_info[3].end_row, mark_info[3].end_col })
-end
-
-local function get_ext_position_begin(mark_id)
-	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		mark_id,
-		{ details = false }
-	)
-
-	return bytecol_to_utfcol({ mark_info[1], mark_info[2] })
-end
-
-local function get_ext_position_end(id)
-	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
-		0,
-		Luasnip_ns_id,
-		id,
-		{ details = true }
-	)
-
-	return bytecol_to_utfcol({ mark_info[3].end_row, mark_info[3].end_col })
-end
-
 local function normal_move_before(new_cur_pos)
 	-- +1: indexing
 	if new_cur_pos[2] - 1 ~= 0 then

@@ -405,7 +405,7 @@ function Snippet:enter_node(node_id)
 	end
 
 	local node = self.nodes[node_id]
-	local node_to = util.get_ext_position_end(node.mark.id)
+	local node_to = node.mark:pos_end()
 	for i = 1, node_id - 1 do
 		-- print(string.format("%d: %s, %s", i, "<", "<"))
 		self.nodes[i]:set_mark_rgrav(false, false)
@@ -420,7 +420,7 @@ function Snippet:enter_node(node_id)
 	)
 	for i = node_id + 1, #self.nodes do
 		local other = self.nodes[i]
-		local other_from, other_to = util.get_ext_positions(other.mark.id)
+		local other_from, other_to = other.mark:pos_begin_end()
 
 		-- print(vim.inspect(other_from), vim.inspect(other_to))
 		-- print(string.format("%d: %s, %s", i,
@@ -514,7 +514,7 @@ function Snippet:dump()
 	for i, node in ipairs(self.nodes) do
 		print(i)
 		print(node.mark.opts.right_gravity, node.mark.opts.end_right_gravity)
-		local from, to = util.get_ext_positions(node.mark.id)
+		local from, to = node.mark:pos_begin_end()
 		print(from[1], from[2])
 		print(to[1], to[2])
 	end

@@ -65,7 +65,7 @@ end
 
 function Node:get_text()
 	local ok, text = pcall(function()
-		local from_pos, to_pos = util.get_ext_positions(self.mark.id)
+		local from_pos, to_pos = self.mark:pos_begin_end_raw()
 
 		-- end-exclusive indexing.
 		local lines = vim.api.nvim_buf_get_lines(

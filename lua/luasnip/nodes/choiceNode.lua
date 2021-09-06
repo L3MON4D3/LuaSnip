@@ -175,7 +175,7 @@ function ChoiceNode:change_choice(dir)
 	self.active_choice.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
 	)
-	self.active_choice:put_initial(util.get_ext_position_begin(self.mark.id))
+	self.active_choice:put_initial(self.mark:pos_begin_raw())
 	self.active_choice:update()
 	self.active_choice.old_text = self.active_choice:get_text()
 

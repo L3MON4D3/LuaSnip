@@ -20,7 +20,7 @@ function TextNode:input_enter(no_move)
 			"n",
 			true
 		)
-		util.normal_move_on_insert(util.get_ext_position_begin(self.mark.id))
+		util.normal_move_on_insert(self.mark:pos_begin())
 	end
 
 	self:event(events.enter, no_move)

@@ -43,7 +43,7 @@ function ExitNode:input_enter(no_move)
 				true
 			)
 			util.normal_move_on_insert(
-				util.get_ext_position_begin(self.mark.id)
+				self.mark:pos_begin()
 			)
 		end
 
@@ -88,9 +88,7 @@ function InsertNode:input_enter(no_move)
 			true
 		)
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-		local mark_begin_pos, mark_end_pos = util.get_ext_positions(
-			self.mark.id
-		)
+		local mark_begin_pos, mark_end_pos = self.mark:pos_begin_end()
 		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
 			util.normal_move_on(mark_begin_pos)
 			vim.api.nvim_feedkeys(
