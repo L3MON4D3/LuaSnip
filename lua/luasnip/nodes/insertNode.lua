@@ -42,9 +42,7 @@ function ExitNode:input_enter(no_move)
 				"n",
 				true
 			)
-			util.normal_move_on_insert(
-				self.mark:pos_begin()
-			)
+			util.normal_move_on_insert(self.mark:pos_begin())
 		end
 
 		self:event(events.enter)
