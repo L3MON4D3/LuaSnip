@@ -21,8 +21,7 @@ end
 -- returns snippet-object where its trigger matches the end of the line, nil if no match.
 local function match_snippet(line, snippet_table)
 	local match
-	local fts = vim.split(vim.bo.ft, ".", true)
-	table.insert(fts, "all")
+	local fts = util.get_snippet_filetypes(vim.bo.filetype)
 
 	-- search filetypes, then "all".
 	for _, ft in ipairs(fts) do
@@ -47,8 +46,7 @@ local function get_context(snip)
 end
 
 local function available()
-	local fts = vim.split(vim.bo.ft, ".", true)
-	table.insert(fts, "all")
+	local fts = util.get_snippet_filetypes(vim.bo.filetype)
 	local res = {}
 	for _, ft in ipairs(fts) do
 		res[ft] = {}

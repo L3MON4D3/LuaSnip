@@ -1,6 +1,7 @@
 local ls = require("luasnip")
 local uv = vim.loop
 local caches = require("luasnip.loaders._caches")
+local util = require("luasnip.util.util")
 
 local function json_decode(data)
 	local status, result = pcall(vim.fn.json_decode, data)
@@ -208,8 +209,7 @@ function M.load(opts)
 end
 
 function M._luasnip_vscode_lazy_load()
-	local fts = vim.split(vim.bo.filetype, ".", true)
-	table.insert(fts, "all")
+	local fts = util.get_snippet_filetypes(vim.bo.filetype)
 	for _, ft in ipairs(fts) do
 		if not caches.lazy_loaded_ft[ft] then
 			caches.lazy_loaded_ft[ft] = true
