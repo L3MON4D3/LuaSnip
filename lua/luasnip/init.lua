@@ -1,5 +1,6 @@
 local snip_mod = require("luasnip.nodes.snippet")
 local util = require("luasnip.util.util")
+local session = require("luasnip.session")
 
 local next_expand = nil
 local ls
@@ -371,6 +372,16 @@ local function exit_out_of_region(node)
 	return false
 end
 
+-- ft, extend_ft strings
+local function filetype_extend(ft, extend_ft)
+	vim.list_extend(session.ft_redirect[ft], extend_ft)
+end
+
+-- ft string, fts table of strings.
+local function filetype_set(ft, fts)
+	session.ft_redirect[ft] = fts
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	jumpable = jumpable,
@@ -390,6 +401,8 @@ ls = {
 	load_snippet_docstrings = load_snippet_docstrings,
 	store_snippet_docstrings = store_snippet_docstrings,
 	unlink_current_if_deleted = unlink_current_if_deleted,
+	filetype_extend = filetype_extend,
+	filetype_set = filetype_set,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,
@@ -410,7 +423,7 @@ ls = {
 	config = require("luasnip.config"),
 	snippets = { all = {} },
 	autosnippets = { all = {} },
-	session = require("luasnip.session"),
+	session = session,
 }
 
 return ls
