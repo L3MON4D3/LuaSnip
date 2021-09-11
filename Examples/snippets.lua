@@ -400,6 +400,12 @@ ls.autosnippets = {
 	},
 }
 
+
+-- in a lua file: search lua-, then c-, then all-snippets.
+ls.filetype_extend("lua", {"c"})
+-- in a cpp file: search c-snippets, then all-snippets only (no cpp-snippets!!).
+ls.filetype_set("cpp", {"c"})
+
 --[[
 -- Beside defining your own snippets you can also load snippets from "vscode-like" packages
 -- that expose snippets in json files, for example <https://github.com/rafamadriz/friendly-snippets>.

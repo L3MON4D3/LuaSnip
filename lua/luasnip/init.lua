@@ -372,7 +372,7 @@ local function exit_out_of_region(node)
 	return false
 end
 
--- ft, extend_ft strings
+-- ft string, extend_ft table of strings.
 local function filetype_extend(ft, extend_ft)
 	vim.list_extend(session.ft_redirect[ft], extend_ft)
 end
