@@ -19,6 +19,7 @@ CONTENTS                                                        *luasnip-content
 13. DOCSTRING..................................................|luasnip-docstring|
 14. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
 15. EVENTS........................................................|luasnip-events|
+16. CLEANUP......................................................|luasnip-cleanup|
 >
                 __                       ____                          
                /\ \                     /\  _`\           __           
@@ -564,4 +565,11 @@ be printing eg. the nodes' text after entering:
     au User LuasnipInsertNodeEnter
     	\lua print(require("luasnip").session.event_node:get_text()[1])
 <
+
+================================================================================
+CLEANUP                                                          *luasnip-cleanup*
+
+The function ls.cleanup()  triggers the `LuasnipCleanup` user-event, that you can listen to do some kind
+of cleaning in your own snippets, by default it will  empty the snippets table and the caches of
+the lazy_load.
 
