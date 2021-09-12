@@ -98,7 +98,6 @@ local function safe_jump(node, dir, no_move)
 		end
 	end
 end
-
 local function jump(dir)
 	local current = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
@@ -382,6 +381,11 @@ local function filetype_set(ft, fts)
 	session.ft_redirect[ft] = fts
 end
 
+local function cleanup()
+	-- Use this to reload luasnip
+	vim.cmd([[doautocmd User LuasnipCleanup]])
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	jumpable = jumpable,
@@ -424,6 +428,7 @@ ls = {
 	snippets = { all = {} },
 	autosnippets = { all = {} },
 	session = session,
+	cleanup = cleanup,
 }
 
 return ls

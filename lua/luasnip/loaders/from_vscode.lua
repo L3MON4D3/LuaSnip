@@ -131,7 +131,7 @@ local function load_snippet_folder(root, opts)
 	)
 end
 
-function filter_list(list, exclude, include)
+local function filter_list(list, exclude, include)
 	local out = {}
 	for _, entry in ipairs(list) do
 		if exclude[entry] then
@@ -146,7 +146,7 @@ function filter_list(list, exclude, include)
 	return out
 end
 
-function list_to_set(list)
+local function list_to_set(list)
 	if not list then
 		return list
 	end
@@ -234,7 +234,8 @@ function M.lazy_load(opts)
 	vim.cmd([[
 		augroup _luasnip_vscode_lazy_load
 		autocmd!
-		au BufEnter * lua require('luasnip/loaders/from_vscode')._luasnip_vscode_lazy_load()
+		au BufEnter * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
+    au User LuasnipCleanup lua require('luasnip.loaders._caches').clean()
 		augroup END
 	]])
 end

@@ -562,3 +562,8 @@ be printing eg. the nodes' text after entering:
 au User LuasnipInsertNodeEnter
 	\lua print(require("luasnip").session.event_node:get_text()[1])
 ```
+
+# CLEANUP
+The function ls.cleanup()  triggers the `LuasnipCleanup` user-event, that you can listen to do some kind
+of cleaning in your own snippets, by default it will  empty the snippets table and the caches of
+the lazy_load.
