@@ -95,6 +95,21 @@ local function load_snippet_file(langs, snippet_set_path)
 	)
 end
 
+local function filter_list(list, exclude, include)
+	local out = {}
+	for _, entry in ipairs(list) do
+		if exclude[entry] then
+			goto continue
+		end
+		-- If include is nil then it's true
+		if include == nil or include[entry] then
+			table.insert(out, entry)
+		end
+		::continue::
+	end
+	return out
+end
+
 local function load_snippet_folder(root, opts)
 	local package = path_join(root, "package.json")
 	async_read_file(
@@ -129,21 +144,6 @@ local function load_snippet_folder(root, opts)
 			end
 		end)
 	)
-end
-
-local function filter_list(list, exclude, include)
-	local out = {}
-	for _, entry in ipairs(list) do
-		if exclude[entry] then
-			goto continue
-		end
-		-- If include is nil then it's true
-		if include == nil or include[entry] then
-			table.insert(out, entry)
-		end
-		::continue::
-	end
-	return out
 end
 
 local function list_to_set(list)
