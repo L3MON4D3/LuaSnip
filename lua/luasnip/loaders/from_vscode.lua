@@ -63,6 +63,10 @@ local function load_snippet_file(langs, snippet_set_path)
 		true,
 		vim.schedule_wrap(function(data)
 			local snippet_set_data = json_decode(data)
+			if snippet_set_data == nil then
+				return
+			end
+
 			for _, lang in pairs(langs) do
 				local lang_snips = ls.snippets[lang] or {}
 
