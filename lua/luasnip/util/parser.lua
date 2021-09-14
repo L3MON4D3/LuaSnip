@@ -379,7 +379,12 @@ parse_snippet = function(context, body, tab_stops, brackets)
 					nodes[#nodes + 1] = simple_var(match)
 					indx = last_char + 1
 				else
-					error("Invalid text after $ at" .. tostring(next_node + 1))
+					-- parsing as placeholder/variable/... failed, append text
+					-- to last_text.
+					local last_static_text = last_text.static_text
+					last_static_text[#last_static_text] = last_static_text[#last_static_text] .. "$"
+					-- next_node is index of unescaped $.
+					indx = next_node + 1
 				end
 				text_start = indx
 			else
