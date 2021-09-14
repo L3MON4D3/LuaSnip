@@ -382,7 +382,8 @@ parse_snippet = function(context, body, tab_stops, brackets)
 					-- parsing as placeholder/variable/... failed, append text
 					-- to last_text.
 					local last_static_text = last_text.static_text
-					last_static_text[#last_static_text] = last_static_text[#last_static_text] .. "$"
+					last_static_text[#last_static_text] = last_static_text[#last_static_text]
+						.. "$"
 					-- next_node is index of unescaped $.
 					indx = next_node + 1
 				end
