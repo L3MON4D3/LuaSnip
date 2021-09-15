@@ -8,7 +8,7 @@ function Mark:new(o)
 end
 
 -- opts just like in nvim_buf_set_extmark.
-function mark(pos_begin, pos_end, opts)
+local function mark(pos_begin, pos_end, opts)
 	return Mark:new({
 		id = vim.api.nvim_buf_set_extmark(
 			0,
