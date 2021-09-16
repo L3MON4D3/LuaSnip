@@ -51,9 +51,11 @@ local function available()
 	local res = {}
 	for _, ft in ipairs(fts) do
 		res[ft] = {}
-		if ls.snippets[ft] then
-			for _, snip in ipairs(ls.snippets[ft]) do
-				table.insert(res[ft], get_context(snip))
+		for _, snippet_table in pairs({ls.snippets, ls.autosnippets}) do
+			if snippet_table[ft] then
+				for _, snip in ipairs(snippet_table[ft]) do
+					table.insert(res[ft], get_context(snip))
+				end
 			end
 		end
 	end
