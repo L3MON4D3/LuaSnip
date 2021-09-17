@@ -357,8 +357,7 @@ parse_snippet = function(context, body, tab_stops, brackets)
 					indx = match_bracket + 1
 					-- char after '$' is a number -> tabstop.
 				elseif
-					string.find(body, "%d", next_node + 1)
-					== next_node + 1
+					string.find(body, "%d", next_node + 1) == next_node + 1
 				then
 					local _, last_char, match = string.find(
 						body,
@@ -369,8 +368,7 @@ parse_snippet = function(context, body, tab_stops, brackets)
 					nodes[#nodes + 1] = simple_tabstop(match, tab_stops)
 					indx = last_char + 1
 				elseif
-					string.find(body, "%w", next_node + 1)
-					== next_node + 1
+					string.find(body, "%w", next_node + 1) == next_node + 1
 				then
 					local _, last_char, match = string.find(
 						body,
