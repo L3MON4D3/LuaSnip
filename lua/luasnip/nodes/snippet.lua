@@ -373,7 +373,7 @@ function Snippet:matches(line_to_cursor)
 		return nil
 	end
 
-	if not self.condition() then
+	if not self.condition(line_to_cursor, match, captures) then
 		return nil
 	end
 

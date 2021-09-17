@@ -72,6 +72,8 @@ The third argument is a table with the following valid keys:
 - `condition`: the condition-function. The snippet will be expanded only
                if it returns true (default is a function that just returns true)
                (the function is called before the text is modified in any way).
+               Some parameters are passed to the function: The line up to the
+               cursor, the matched trigger and the captures (table).
 - `callbacks`: Contains functions that are called upon enterin/leaving a node.
                To print text upon entering the second node of a snippet, set
                `callbacks` should be set as follows:

@@ -234,7 +234,15 @@ ls.snippets = {
 
 		-- When regTrig is set, trig is treated like a pattern, this snippet will expand after any number.
 		ls.parser.parse_snippet({ trig = "%d", regTrig = true }, "A Number!!"),
-
+		-- Using the condition, it's possible to allow expansion only in specific cases.
+		s("cond", {
+			t("will only expand in c-style comments"),
+		}, {
+			condition = function(line_to_cursor, matched_trigger, captures)
+				-- optional whitespace followed by //
+				return line_to_cursor:match("%s*//")
+			end,
+		}),
 		-- The last entry of args passed to the user-function is the surrounding snippet.
 		s(
 			{ trig = "a%d", regTrig = true },
@@ -249,6 +257,13 @@ ls.snippets = {
 				return "Captured Text: " .. args[1].captures[1] .. "."
 			end, {})
 		),
+		s({ trig = "c(%d+)", regTrig = true }, {
+			t("will only expand for even numbers"),
+		}, {
+			condition = function(line_to_cursor, matched_trigger, captures)
+				return tonumber(captures[1]) % 2 == 0
+			end,
+		}),
 		-- Use a function to execute any shell command and print its text.
 		s("bash", f(bash, {}, "ls")),
 		-- Short version for applying String transformations using function nodes.
