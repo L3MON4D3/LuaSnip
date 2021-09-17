@@ -69,7 +69,7 @@ local function load_snippet_file(langs, snippet_set_path)
 
 			for _, lang in pairs(langs) do
 				local lang_snips = ls.snippets[lang] or {}
-
+				local auto_lang_snips = ls.autosnippets[lang] or {}
 				for name, parts in pairs(snippet_set_data) do
 					local body = type(parts.body) == "string" and parts.body
 						or table.concat(parts.body, "\n")
@@ -81,19 +81,25 @@ local function load_snippet_file(langs, snippet_set_path)
 								and parts.prefix
 							or { parts.prefix }
 						for _, prefix in ipairs(prefixes) do
-							table.insert(
-								lang_snips,
-								ls.parser.parse_snippet({
-									trig = prefix,
-									name = name,
-									dscr = parts.description or name,
-									wordTrig = true,
-								}, body)
-							)
+							local ls_conf = parts.luasnip or {}
+
+							local snip = ls.parser.parse_snippet({
+								trig = prefix,
+								name = name,
+								dscr = parts.description or name,
+								wordTrig = true,
+							}, body)
+
+							if ls_conf.autotrigger then
+								table.insert(auto_lang_snips, snip)
+							else
+								table.insert(lang_snips, snip)
+							end
 						end
 					end)
 				end
 				ls.snippets[lang] = lang_snips
+				ls.autosnippets[lang] = auto_lang_snips
 			end
 		end)
 	)
