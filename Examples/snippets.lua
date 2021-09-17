@@ -246,9 +246,9 @@ ls.snippets = {
 		}),
 		-- there's some built-in conditions in "luasnip.extras.conditions".
 		s("cond2", {
-			t("will only expand at the beginning of the line")
+			t("will only expand at the beginning of the line"),
 		}, {
-			condition = conds.line_begin
+			condition = conds.line_begin,
 		}),
 		-- The last entry of args passed to the user-function is the surrounding snippet.
 		s(
