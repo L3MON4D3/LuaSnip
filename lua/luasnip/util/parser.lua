@@ -89,28 +89,20 @@ local function simple_var(text)
 		local f = fNode.F(functions.var, {})
 		f.user_args = { f, text }
 
-		local indent_maybe
+		-- if the variable is preceded by \n<indent>, the indent is applied to
+		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
 		if last_text ~= nil and #last_text.static_text > 1 then
-			indent_maybe = last_text.static_text[#last_text.static_text]:match(
-				"%s+$"
+			local last_line_indent = last_text.static_text[#last_text.static_text]:match(
+				"^%s+$"
 			)
-		end
-		if indent_maybe then
-			-- remove indent-string from last_texts' text, use it to indent the
-			-- variable.
-			last_text.static_text[#last_text.static_text] =
-				last_text.static_text[#last_text.static_text]:gsub(
-					indent_maybe,
-					""
+			if last_line_indent then
+				f = snipNode.ISN(
+					nil,
+					{ f },
+					"$PARENT_INDENT" .. last_line_indent
 				)
-			-- TODO: jump into these appropriately.
-			f = snipNode.ISN(
-				nil,
-				{ tNode.T({ indent_maybe }), f },
-				"$PARENT_INDENT" .. indent_maybe
-			)
+			end
 		end
-
 		if text == "TM_SELECTED_TEXT" then
 			-- Don't indent visual.
 			return snipNode.ISN(nil, f, "")
