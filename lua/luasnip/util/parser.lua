@@ -92,9 +92,10 @@ local function simple_var(text)
 		-- if the variable is preceded by \n<indent>, the indent is applied to
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
 		if last_text ~= nil and #last_text.static_text > 1 then
-			local last_line_indent = last_text.static_text[#last_text.static_text]:match(
-				"^%s+$"
-			)
+			local last_line_indent =
+				last_text.static_text[#last_text.static_text]:match(
+					"^%s+$"
+				)
 			if last_line_indent then
 				f = snipNode.ISN(
 					nil,
