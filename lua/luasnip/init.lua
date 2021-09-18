@@ -190,6 +190,7 @@ local function choice_active()
 end
 
 local function change_choice(val)
+	assert(Luasnip_active_choice_node, "No active choiceNode")
 	local new_active = no_region_check_wrap(
 		Luasnip_active_choice_node.change_choice,
 		Luasnip_active_choice_node,
