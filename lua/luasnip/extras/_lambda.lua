@@ -7,7 +7,7 @@ local map = vim.tbl_map
 
 local _DEBUG = rawget(_G, "_DEBUG")
 
-function assert_arg(n, val, tp, verify, msg, lev)
+local function assert_arg(n, val, tp, verify, msg, lev)
 	if type(val) ~= tp then
 		error(
 			("argument %d expected a '%s', got a '%s'"):format(n, tp, type(val)),

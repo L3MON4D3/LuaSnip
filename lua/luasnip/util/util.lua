@@ -193,6 +193,17 @@ local function wrap_value(value)
 	return { value }
 end
 
+-- Wrap node in a table if it is not one
+local function wrap_nodes(nodes)
+	-- safe to assume, if nodes has a metatable, it is a single node, not a
+	-- table.
+	if getmetatable(nodes) then
+		return { nodes }
+	else
+		return nodes
+	end
+end
+
 local SELECT_RAW = "LUASNIP_SELECT_RAW"
 local SELECT_DEDENT = "LUASNIP_SELECT_DEDENT"
 local TM_SELECT = "LUASNIP_TM_SELECT"
@@ -444,6 +455,7 @@ return {
 	word_under_cursor = word_under_cursor,
 	put = put,
 	wrap_value = wrap_value,
+	wrap_nodes = wrap_nodes,
 	store_selection = store_selection,
 	get_selection = get_selection,
 	pos_equal = pos_equal,

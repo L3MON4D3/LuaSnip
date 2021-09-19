@@ -13,6 +13,8 @@ local p = require("luasnip.extras").partial
 local m = require("luasnip.extras").match
 local n = require("luasnip.extras").nonempty
 local dl = require("luasnip.extras").dynamic_lambda
+local fmt = require("luasnip.extras.fmt").fmt
+local fmta = require("luasnip.extras.fmt").fmta
 local types = require("luasnip.util.types")
 local conds = require("luasnip.extras.conditions")
 
@@ -365,6 +367,40 @@ ls.snippets = {
 			t({ "", "" }),
 			dl(3, l._1:gsub("\n", " linebreak ") .. l._2, { 1, 2 }),
 		}),
+		-- Alternative printf-like notation for defining snippets. It uses format
+		-- string with placeholders similar to the ones used with Python's .format().
+		s("fmt1", fmt("To {title} {} {}.", {
+			i(2, "Name"),
+			i(3, "Surname"),
+			title = c(1, {t("Mr."), t("Ms.")}),
+		})),
+		-- To escape delimiters use double them, e.g. `{}` -> `{{}}`.
+		-- Multi-line format strings by default have empty first/last line removed.
+		-- Indent common to all lines is also removed. Use the third `opts` argument
+		-- to control this behaviour.
+		s("fmt2", fmt([[
+			foo({1}, {3}) {{
+				return {2} * {4}
+			}}
+			]], {
+			i(1, "x"),
+			r(1),
+			i(2, "y"),
+			r(2),
+		})),
+		-- Empty placeholders are numbered automatically starting from 1 or the last
+		-- value of a numbered placeholder. Named placeholders do not affect numbering.
+		s("fmt3", fmt("{} {a} {} {1} {}", {
+			t("1"),
+			t("2"),
+			a = t("A"),
+		})),
+		-- The delimiters can be changed from the default `{}` to something else.
+		s("fmt4", fmt("foo() { return []; }", i(1, "x"), { delimiters = '[]' })),
+		-- `fmta` is a convenient wrapper that uses `<>` instead of `{}`.
+		s("fmt5", fmta("foo() { return <>; }", i(1, "x"))),
+		-- By default all args must be used. Use strict=false to disable the check
+		s("fmt6", fmt("use {} only", { t("this"), t("not this") }, { strict = false })),
 	},
 	java = {
 		-- Very long example for a java class.
