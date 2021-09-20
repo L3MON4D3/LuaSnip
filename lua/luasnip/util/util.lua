@@ -40,7 +40,7 @@ end
 
 -- in-place insert indenstrig before each line.
 local function indent(text, indentstring)
-	for i = 2, #text-1, 1 do
+	for i = 2, #text - 1, 1 do
 		-- only indent if there is actually text.
 		if #text[i] > 0 then
 			text[i] = indentstring .. text[i]
