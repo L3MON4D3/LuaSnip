@@ -177,7 +177,7 @@ user-defined function:
 ```
 The first parameter of `f` is the function. Its parameters are
 	1.: a table of text and the surrounding snippet (ie.
-	`{{line1}, {line1, line2}, snippet}`). the snippet-indent will be removed
+	`{{line1}, {line1, line2}, snippet}`). The snippet-indent will be removed
 	from all lines following the first.
 	The snippet is included here, as it allows access to anything that could be
 	useful in functionNodes (ie.  `snippet.env` or `snippet.captures`, which
@@ -196,7 +196,7 @@ of strings for multiline snippets, here all lines following the first will be
 prepended with the snippets' indentation.
 
 Examples:
-	Use captures from the regex-trigger using a functionNode:
+Use captures from the regex-trigger using a functionNode:
 
 ```lua
  s({trig = "b(%d)", regTrig = true},
@@ -205,6 +205,25 @@ Examples:
  )
 ```
 
+The table passed to functionNode:
+
+```lua
+s("trig", {
+	i(1, "text_of_first"),
+	i(2, {"first_line_of_second", "second_line_of_second"}),
+	-- order is 2,1, not 1,2!!
+	f(function(args) --here end, {2,1} )})
+```
+
+At `--here`, `args` would look as follows (provided no text was changed after
+expansion):
+```lua
+args = {
+	{"first_line_of_second", "second_line_of_second"},
+	{"text_of_first"},
+	<snippet>
+}
+```
 
 # CHOICENODE
 
