@@ -38,10 +38,18 @@ local function dedent(text, indentstring)
 	return text
 end
 
--- in-place insert indenstrig before each
+-- in-place insert indenstrig before each line.
 local function indent(text, indentstring)
-	for i = 2, #text do
-		text[i] = text[i]:gsub("^", indentstring)
+	for i = 2, #text-1, 1 do
+		-- only indent if there is actually text.
+		if #text[i] > 0 then
+			text[i] = indentstring .. text[i]
+		end
+	end
+	-- assuming that the last line should be indented as it is probably
+	-- followed by some other node, therefore isn't an empty line.
+	if #text > 1 then
+		text[#text] = indentstring .. text[#text]
 	end
 	return text
 end
