@@ -169,21 +169,23 @@ user-defined function:
 ```lua
  s("trig", {
  	i(1),
- 	f(function(args, user_arg_1) return args[1][1] .. user_arg_1 end,
+ 	f(function(args, snip, user_arg_1) return args[1][1] .. user_arg_1 end,
  		{1},
  		"Will be appended to text from i(0)"),
  	i(0)
  })
 ```
 The first parameter of `f` is the function. Its parameters are
-	1.: a table of text and the surrounding snippet (ie.
-	`{{line1}, {line1, line2}, snippet}`). The snippet-indent will be removed
-	from all lines following the first.
-	The snippet is included here, as it allows access to anything that could be
-	useful in functionNodes (ie.  `snippet.env` or `snippet.captures`, which
-	contains capture groups of regex-triggered snippets).
+	1.: A table of the text of currently contained in the argnodes.
+	(eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
+	all lines following the first.
 
-	2.: Any parameters passed to `f` behind the second (included to more easily
+	2.: The surrounding snippet. It is included here as it allows access to
+	anything that could be useful in functionNodes (ie. `snippet.env` or
+	`snippet.captures`, which contains capture groups of regex-triggered
+	snippets).
+
+	3.: Any parameters passed to `f` behind the second (included to more easily
 	reuse functions, ie. ternary if based on text in an insertNode).
 
 The second parameter is a table of indizes of jumpable nodes whose text is
@@ -199,10 +201,10 @@ Examples:
 Use captures from the regex-trigger using a functionNode:
 
 ```lua
- s({trig = "b(%d)", regTrig = true},
- 	f(function(args) return
- 		"Captured Text: " .. args[1].captures[1] .. "." end, {})
- )
+s({trig = "b(%d)", regTrig = true},
+	f(function(args, snip) return
+		"Captured Text: " .. snip.captures[1] .. "." end, {})
+)
 ```
 
 The table passed to functionNode:
@@ -212,7 +214,7 @@ s("trig", {
 	i(1, "text_of_first"),
 	i(2, {"first_line_of_second", "second_line_of_second"}),
 	-- order is 2,1, not 1,2!!
-	f(function(args) --here end, {2,1} )})
+	f(function(args, snip) --here end, {2,1} )})
 ```
 
 At `--here`, `args` would look as follows (provided no text was changed after
@@ -220,8 +222,7 @@ expansion):
 ```lua
 args = {
 	{"first_line_of_second", "second_line_of_second"},
-	{"text_of_first"},
-	<snippet>
+	{"text_of_first"}
 }
 ```
 
@@ -309,69 +310,70 @@ which makes them very powerful.
 Parameters:
 1. position (just like all jumpable nodes)
 2. function: Similar to functionNodes' function, first parameter is the
-	`table of text` from nodes the dynamicNode depends on(also without snippet-indent), the second,
-	unlike functionNode, is a user-defined table, `old_state`.
-	This table can contain anything, its main usage is to preserve
-	information from the previous snippetNode:
-	If the dynamicNode depends on another node it may be reconstructed,
-	which means all user input to the dynamicNode is lost. Using
-	`old_state`, the user may pass eg. insertNodes and then get their text
-	upon reconstruction to initialize the new nodes with.
-	The `old_state` table must be stored inside the snippetNode returned by
-	the function.
-	All parameters following the second are user defined.
+   `table of text` from nodes the dynamicNode depends on(also without
+   snippet-indent), the second, unlike functionNode, is a user-defined table,
+   `old_state`. This table can contain anything, its main usage is to preserve
+   information from the previously generated snippetNode:
+   If the dynamicNode depends on another node it may be reconstructed,
+   which means all user input to the dynamicNode is lost. Using
+   `old_state`, the user may pass eg. insertNodes and then get their text via
+   `node:get_text()` or `node.old_text` upon reconstruction to initialize the
+   new nodes with.
+   The `old_state` table must be stored inside the snippetNode returned by
+   the function.
+   All parameters following the second are user defined.
 3. Nodes the dynamicNode depends on: if any of these trigger an update,
-	the dynamicNodes function will be executed and the result inserted at
-	the nodes place. Can be a single node or a table of nodes.
+   the dynamicNodes function will be executed and the result inserted at
+   the nodes place. Can be a single node or a table of nodes.
 4. The fourth and following parameters are user defined, anything passed
-	here will also be passed to the function (arg 2) following its second
-	parameter (easy to reuse similar functions with small changes).
+   here will also be passed to the function (arg 2) following its second
+   parameter (easy to reuse similar functions with small changes).
 
 ```lua
- local function lines(args, old_state, initial_text)
- 	local nodes = {}
- 	if not old_state then old_state = {} end
+local function lines(args, snip, old_state, initial_text)
+	local nodes = {}
+	if not old_state then old_state = {} end
 
- 	-- count is nil for invalid input.
- 	local count = tonumber(args[1][1])
- 	-- Make sure there's a number in args[1].
- 	if count then
- 		for j=1, count do
- 			local iNode
- 			if old_state and old_state[j] then
- 				-- old_text is used internally to determine whether
- 				-- dependents should be updated. It is updated whenever the
- 				-- node is left, but remains valid when the node is no
- 				-- longer 'rendered', whereas get_text() grabs the text
- 				-- directly form the node.
- 				iNode = i(j, old_state[j].old_text)
- 			else
- 			  iNode = i(j, initial_text)
- 			end
- 			nodes[2*j-1] = iNode
+	-- count is nil for invalid input.
+	local count = tonumber(args[1][1])
+	-- Make sure there's a number in args[1].
+	if count then
+		for j=1, count do
+			local iNode
+			if old_state and old_state[j] then
+				-- old_text is used internally to determine whether
+				-- dependents should be updated. It is updated whenever the
+				-- node is left, but remains valid when the node is no
+				-- longer 'rendered', whereas node:get_text() grabs the text
+				-- directly from the node.
+				iNode = i(j, old_state[j].old_text)
+			else
+			  iNode = i(j, initial_text)
+			end
+			nodes[2*j-1] = iNode
 
- 			-- linebreak
- 			nodes[2*j] = t({"",""})
- 			-- Store insertNode in old_state, potentially overwriting older
- 			-- nodes.
- 			old_state[j] = iNode
- 		end
- 	else
- 		nodes[1] = t("Enter a number!")
- 	end
- 	
- 	local snip = sn(nil, nodes)
- 	snip.old_state = old_state
- 	return snip
- end
+			-- linebreak
+			nodes[2*j] = t({"",""})
+			-- Store insertNode in old_state, potentially overwriting older
+			-- nodes.
+			old_state[j] = iNode
+		end
+	else
+		nodes[1] = t("Enter a number!")
+	end
+	
+	local snip = sn(nil, nodes)
+	snip.old_state = old_state
+	return snip
+end
 
- ...
+...
 
- s("trig", {
- 	i(1, "1"),
- 	-- pos, function, nodes, user_arg1
- 	d(2, lines, {1}, "Sample Text")
- })
+s("trig", {
+	i(1, "1"),
+	-- pos, function, argnodes, user_arg1
+	d(2, lines, {1}, "Sample Text")
+})
 ```
 This snippet would start out as "1\nSample Text" and, upon changing the 1 to
 eg. 3, it would change to "3\nSample Text\nSample Text\nSample Text". Text
@@ -409,7 +411,7 @@ stored in a snippets' `snip.env`-table:
 s("selected_text", {
 	-- the surrounding snippet is passed in args after all argnodes (none,
 	-- in this case).
-	f(function(args) return args[1].env.SELECT_RAW end, {})
+	f(function(args, snip) return snip.env.SELECT_RAW end, {})
 })
 ```
 
@@ -518,8 +520,8 @@ variable and the index of the capture respectively
 
 ```lua
 s({trig = "(%d)", regTrig = true}, {
-	f(function(args)
-		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+	f(function(args, snip)
+		return string.rep("repeatme ", tonumber(snip.captures[1]))
 	end, {})
 }),
 ```
@@ -532,8 +534,8 @@ snippet-definition:
 
 ```lua
 s({trig = "(%d)", regTrig = true, docTrig = "3"}, {
-	f(function(args)
-		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+	f(function(args, snip)
+		return string.rep("repeatme ", tonumber(snip.captures[1]))
 	end, {})
 }),
 ```
@@ -546,8 +548,8 @@ Other issues will have to be handled manually by checking the contents of eg.
 
 ```lua
 s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
-	f(function(args)
-		return string.rep("repeatme ", tonumber(args[1].captures[1]))
+	f(function(args, snip)
+		return string.rep("repeatme ", tonumber(snip.captures[1]))
 	end, {})
 }),
 ```

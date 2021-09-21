@@ -57,7 +57,7 @@ rec_ls = function()
 end
 
 -- complicated function for dynamicNode.
-local function jdocsnip(args, old_state)
+local function jdocsnip(args, _, old_state)
 	local nodes = {
 		t({ "/**", " * " }),
 		i(1, "A short Description"),
@@ -141,7 +141,7 @@ local function jdocsnip(args, old_state)
 end
 
 -- Make sure to not pass an invalid command, as io.popen() may write over nvim-text.
-local function bash(_, command)
+local function bash(_, _, command)
 	local file = io.popen(command, "r")
 	local res = {}
 	for line in file:lines() do
@@ -255,15 +255,15 @@ ls.snippets = {
 		-- The last entry of args passed to the user-function is the surrounding snippet.
 		s(
 			{ trig = "a%d", regTrig = true },
-			f(function(args)
-				return "Triggered with " .. args[1].trigger .. "."
+			f(function(_, snip)
+				return "Triggered with " .. snip.trigger .. "."
 			end, {})
 		),
 		-- It's possible to use capture-groups inside regex-triggers.
 		s(
 			{ trig = "b(%d)", regTrig = true },
-			f(function(args)
-				return "Captured Text: " .. args[1].captures[1] .. "."
+			f(function(_, snip)
+				return "Captured Text: " .. snip.captures[1] .. "."
 			end, {})
 		),
 		s({ trig = "c(%d+)", regTrig = true }, {
@@ -300,8 +300,8 @@ ls.snippets = {
 		-- this case, select a URL, hit Tab, then expand this snippet.
 		s("link_url", {
 			t('<a href="'),
-			f(function(args)
-				return args[1].env.TM_SELECTED_TEXT[1] or {}
+			f(function(_, snip)
+				return snip.env.TM_SELECTED_TEXT[1] or {}
 			end, {}),
 			t('">'),
 			i(1),
