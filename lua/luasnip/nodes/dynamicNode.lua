@@ -35,7 +35,12 @@ end
 function DynamicNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		local tmp = self.fn(self:get_static_args(), self.parent, nil, unpack(self.user_args))
+		local tmp = self.fn(
+			self:get_static_args(),
+			self.parent,
+			nil,
+			unpack(self.user_args)
+		)
 		self.static_text = tmp:get_static_text()
 	end
 	return self.static_text

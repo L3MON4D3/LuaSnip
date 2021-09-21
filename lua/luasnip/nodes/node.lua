@@ -149,14 +149,19 @@ local function get_args(node, get_text_func_name)
 	for i, arg_node in ipairs(node.args) do
 		args[i] = util.dedent(
 			arg_node[get_text_func_name](arg_node),
-			node.parent.indentstr)
+			node.parent.indentstr
+		)
 	end
 
 	return args
 end
 
-function Node:get_args() return get_args(self, "get_text") end
-function Node:get_static_args() return get_args(self, "get_static_text") end
+function Node:get_args()
+	return get_args(self, "get_text")
+end
+function Node:get_static_args()
+	return get_args(self, "get_static_text")
+end
 
 Node.ext_gravities_active = { false, true }
 
