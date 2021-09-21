@@ -9,16 +9,11 @@ local function _concat(lines)
 	return table.concat(lines, "\n")
 end
 
-local function make_lambda_args(node_args)
-	local snip = node_args[#node_args]
-	-- remove snippet before concatenation.
-	node_args[#node_args] = nil
+local function make_lambda_args(node_args, snip)
 	local args = vim.tbl_map(_concat, node_args)
 
 	setmetatable(args, {
 		__index = function(table, key)
-			Insp(key)
-			print(debug.traceback())
 			local val
 			-- key may be capture or env-variable.
 			local num = key:match("CAPTURE(%d+)")
@@ -43,9 +38,9 @@ local function expr_to_fn(expr)
 	local _lambda = require("luasnip.extras._lambda")
 
 	local fn_code = _lambda.instantiate(expr)
-	local function fn(args)
+	local function fn(args, snip)
 		-- to be sure, lambda may end with a `match` returning nil.
-		local out = fn_code(make_lambda_args(args)) or ""
+		local out = fn_code(make_lambda_args(args, snip)) or ""
 		return vim.split(out, "\n")
 	end
 	return fn
@@ -77,8 +72,8 @@ local function to_function(val, use_re)
 	end
 	if lambda.isPE(val) then
 		local lmb = lambda.instantiate(val)
-		return function(args)
-			return lmb(make_lambda_args(args))
+		return function(args, snip)
+			return lmb(make_lambda_args(args, snip))
 		end
 	end
 	assert(false, "Can't convert argument to function")
@@ -95,12 +90,12 @@ local function match(index, _match, _then, _else)
 	end)
 	_else = to_function(_else or "")
 
-	local function func(args)
+	local function func(args, snip)
 		local out = nil
-		if _match(args) then
-			out = _then(args)
+		if _match(args, snip) then
+			out = _then(args, snip)
 		else
-			out = _else(args)
+			out = _else(args, snip)
 		end
 		return vim.split(out, "\n")
 	end

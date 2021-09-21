@@ -1,5 +1,5 @@
 return {
-	var = function(_, node, text)
+	var = function(_, _, node, text)
 		local v = node.parent.env[text]
 		if type(v) == "table" then
 			-- Avoid issues with empty vars
