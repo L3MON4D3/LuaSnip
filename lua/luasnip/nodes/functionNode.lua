@@ -35,6 +35,7 @@ function FunctionNode:get_static_text()
 		local success, static_text = pcall(
 			self.fn,
 			self:get_static_args(),
+			self.parent,
 			unpack(self.user_args)
 		)
 
@@ -53,7 +54,7 @@ FunctionNode.get_docstring = FunctionNode.get_static_text
 
 function FunctionNode:update()
 	local text = util.wrap_value(
-		self.fn(self:get_args(), unpack(self.user_args))
+		self.fn(self:get_args(), self.parent, unpack(self.user_args))
 	)
 	if vim.o.expandtab then
 		util.expand_tabs(text, util.tab_width())

@@ -151,7 +151,7 @@ local function get_args(node, get_text_func_name)
 			arg_node[get_text_func_name](arg_node),
 			node.parent.indentstr)
 	end
-	args[#args + 1] = node.parent
+
 	return args
 end
 

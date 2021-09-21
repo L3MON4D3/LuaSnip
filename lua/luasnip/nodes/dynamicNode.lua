@@ -35,7 +35,7 @@ end
 function DynamicNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		local tmp = self.fn(self:get_static_args(), nil, unpack(self.user_args))
+		local tmp = self.fn(self:get_static_args(), self.parent, nil, unpack(self.user_args))
 		self.static_text = tmp:get_static_text()
 	end
 	return self.static_text
@@ -52,6 +52,7 @@ function DynamicNode:get_docstring()
 		local success, tmp = pcall(
 			self.fn,
 			self:get_static_args(),
+			self.parent,
 			nil,
 			unpack(self.user_args)
 		)
@@ -95,6 +96,7 @@ function DynamicNode:update()
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
 			self:get_args(),
+			self.parent,
 			self.snip.old_state,
 			unpack(self.user_args)
 		)
@@ -104,7 +106,7 @@ function DynamicNode:update()
 	else
 		-- also enter node here.
 		self.parent:enter_node(self.indx)
-		tmp = self.fn(self:get_args(), nil, unpack(self.user_args))
+		tmp = self.fn(self:get_args(), self.parent, nil, unpack(self.user_args))
 	end
 	self.snip = nil
 
