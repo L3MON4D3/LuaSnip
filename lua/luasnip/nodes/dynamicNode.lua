@@ -17,15 +17,6 @@ local function D(pos, fn, args, ...)
 	})
 end
 
-function DynamicNode:get_args_static()
-	local args = {}
-	for i, node in ipairs(self.args) do
-		args[i] = util.dedent(node:get_static_text(), self.parent.indentstr)
-	end
-	args[#args + 1] = self.parent
-	return args
-end
-
 function DynamicNode:input_enter()
 	self.active = true
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
@@ -44,7 +35,7 @@ end
 function DynamicNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		local tmp = self.fn(self:get_args_static(), nil, unpack(self.user_args))
+		local tmp = self.fn(self:get_static_args(), nil, unpack(self.user_args))
 		self.static_text = tmp:get_static_text()
 	end
 	return self.static_text
@@ -60,7 +51,7 @@ function DynamicNode:get_docstring()
 	if not self.docstring then
 		local success, tmp = pcall(
 			self.fn,
-			self:get_args_static(),
+			self:get_static_args(),
 			nil,
 			unpack(self.user_args)
 		)
