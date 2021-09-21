@@ -13,15 +13,6 @@ local function F(fn, args, ...)
 	})
 end
 
-function FunctionNode:get_args()
-	local args = {}
-	for i, node in ipairs(self.args) do
-		args[i] = util.dedent(node:get_text(), self.parent.indentstr)
-	end
-	args[#args + 1] = self.parent
-	return args
-end
-
 function FunctionNode:get_static_args()
 	local args = {}
 	for i, node in ipairs(self.args) do
