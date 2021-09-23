@@ -171,6 +171,25 @@ function DynamicNode:set_ext_opts(name)
 	self.snip:set_ext_opts(name)
 end
 
+function DynamicNode:store()
+	self.snip:store()
+end
+
+function DynamicNode:update_restore()
+	-- only restore snippet if arg-values still match.
+	if self.snip and vim.deep_equal(self:get_args(), self.last_args) then
+		self.snip.mark = self.mark:copy_pos_gravs(
+			vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
+		)
+		self.parent:enter_node(self.indx)
+		self.snip:put_initial(self.mark:pos_begin_raw())
+		self.snip:update_restore()
+	else
+		self:update()
+	end
+end
+
+
 return {
 	D = D,
 }

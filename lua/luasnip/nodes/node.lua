@@ -167,6 +167,13 @@ function Node:set_ext_opts(name)
 	self.mark:update_opts(self.parent.ext_opts[self.type][name])
 end
 
+-- for insert,functionNode.
+function Node:store()
+	self.static_text = self:get_text()
+end
+
+function Node:update_restore() end
+
 Node.ext_gravities_active = { false, true }
 
 return {

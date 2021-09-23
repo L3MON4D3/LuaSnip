@@ -63,6 +63,14 @@ function FunctionNode:update()
 	self.parent:set_text(self, util.indent(text, self.parent.indentstr))
 end
 
+function FunctionNode:update_restore()
+	if self.static_text then
+		self.parent.set_text(self.static_text)
+	else
+		self:update()
+	end
+end
+
 -- FunctionNode's don't have static text, nop these.
 function FunctionNode:put_initial(_) end
 
