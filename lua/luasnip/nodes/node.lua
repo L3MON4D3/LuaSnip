@@ -163,6 +163,10 @@ function Node:get_static_args()
 	return get_args(self, "get_static_text")
 end
 
+function Node:set_ext_opts(name)
+	self.mark:update_opts(self.parent.ext_opts[self.type][name])
+end
+
 Node.ext_gravities_active = { false, true }
 
 return {

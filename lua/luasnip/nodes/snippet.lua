@@ -668,6 +668,10 @@ end
 
 function Snippet:input_enter()
 	self.active = true
+
+	if self.type == types.snippet then
+		self:set_ext_opts("passive")
+	end
 	self.mark:update_opts(self.ext_opts[self.type].active)
 
 	self:event(events.enter)
@@ -675,10 +679,20 @@ end
 
 function Snippet:input_leave()
 	self:event(events.leave)
-
 	self:update_dependents()
-	self.active = false
+
 	self.mark:update_opts(self.ext_opts[self.type].passive)
+	if self.type == types.snippet then
+		self:set_ext_opts("snippet_passive")
+	end
+
+	self.active = false
+end
+
+function Snippet:set_ext_opts(opt_name)
+	for _, node in ipairs(self.nodes) do
+		node:set_ext_opts(opt_name)
+	end
 end
 
 function Snippet:jump_into(dir, no_move)

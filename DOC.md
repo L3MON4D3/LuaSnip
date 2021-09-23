@@ -480,29 +480,37 @@ ls.config.setup({
 				virt_text = {{"choiceNode", "GruvboxOrange"}}
 			}
 		},
+		[types.textNode] = {
+			snippet_passive = {
+				hl_group = "GruvboxGreen"
+			}
+		},
 	},
 	ext_base_prio = 200,
-	ext_prio_increase = 7,
+	ext_prio_increase = 3,
 })
 ```
 
 This highlights `insertNodes` red (both when active and passive) and adds
-virtualText and italics to `choiceNode` while it is active (unspecified
-values in `active` are populated with values from `passive`). The `active`/
-`passive`-tables are passed to `nvim_buf_set_extmark` as `opts` which means only
-entries valid there can be used here. `priority`, while still affecting the
-priority of highlighting, is interpreted as a relative value here, not absolute
-(`0 <= priority < ext_prio_increase`).
+virtualText and italics to `choiceNode` while it is active (both only if the
+snippet is active). `textNodes` are highlighted green, even if the snippet is
+no longer active. (unspecified values in `passive` are populated with values
+from `snippet_passive`, those in `active` with those from the new `passive`).
+
+The `active`/ `passive`-tables are passed to `nvim_buf_set_extmark` as `opts`
+which means only entries valid there can be used here. `priority`, while still
+affecting the priority of highlighting, is interpreted as a relative value here,
+not absolute (`0 <= priority < ext_prio_increase`).
 The absolute range of priorities can still be somewhat controlled using
 `ext_base_prio` and `ext_prio_increase` (all highlights start out with
 `ext_base_prio`+their own priority, for highlights belonging to a nested
 snippet(Node), `ext_base_prio` is increased by `ext_prio_increase`)).
 
 As a shortcut for setting `hl_group`, the highlight-groups
-`Luasnip*Node{Active,Passive}` may be defined (to be actually used by LuaSnip,
-`ls.config.setup` has to be called after defining). They are overridden by the
-values defined in `ext_opts` directly, but otherwise behave the same (active is
-extended by passive).
+`Luasnip*Node{Active,Passive,SnippetPassive}` may be defined (to be actually
+used by LuaSnip, `ls.config.setup` has to be called after defining). They are
+overridden by the values defined in `ext_opts` directly, but otherwise behave
+the same (active is extended by passive).
 
 
 

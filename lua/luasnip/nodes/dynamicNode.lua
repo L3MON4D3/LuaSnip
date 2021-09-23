@@ -166,6 +166,11 @@ function DynamicNode:exit()
 	self.active = false
 end
 
+function DynamicNode:set_ext_opts(name)
+	self.mark:update_opts(self.parent.ext_opts[self.type][name])
+	self.snip:set_ext_opts(name)
+end
+
 return {
 	D = D,
 }

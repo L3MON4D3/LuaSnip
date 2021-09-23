@@ -215,6 +215,11 @@ function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
 	self.active_choice:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
+function ChoiceNode:set_ext_opts(name)
+	self.mark:update_opts(self.parent.ext_opts[self.type][name])
+	self.active_choice:set_ext_opts(name)
+end
+
 return {
 	C = C,
 }

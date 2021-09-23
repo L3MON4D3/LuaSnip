@@ -334,7 +334,10 @@ end
 
 local function clear_invalid(opts)
 	for key, val in pairs(opts) do
-		local act_group, pas_group = val.active.hl_group, val.passive.hl_group
+		local act_group, pas_group, snip_pas_group = val.active.hl_group, val.passive.hl_group, val.snippet_passive.hl_group
+		opts[key].snippet_passive.hl_group = vim.fn.hlexists(snip_pas_group) == 1
+				and snip_pas_group
+			or nil
 		opts[key].passive.hl_group = vim.fn.hlexists(pas_group) == 1
 				and pas_group
 			or nil
@@ -346,21 +349,28 @@ end
 
 local function make_opts_valid(user_opts, default_opts)
 	local opts = vim.deepcopy(default_opts)
-	for key, val in pairs(opts) do
+	for key, default_val in pairs(opts) do
 		-- prevent nil-indexing error.
 		user_opts[key] = user_opts[key] or {}
 
-		-- override defaults with user for passive.
-		val.passive = vim.tbl_extend(
+		-- override defaults with user for snippet_passive.
+		default_val.snippet_passive = vim.tbl_extend(
 			"force",
-			val.passive,
-			user_opts[key].passive or {}
+			default_val.snippet_passive,
+			user_opts[key].snippet_passive or {}
 		)
-		-- override default active with user, then fill in missing values from passive.
-		val.active = vim.tbl_extend(
-			"keep",
-			vim.tbl_extend("force", val.active, user_opts[key].active or {}),
-			val.passive
+		-- override default-passive with user, get missing values from default
+		-- snippet_passive
+		default_val.passive = vim.tbl_extend(
+			"force",
+			user_opts[key].snippet_passive or {},
+			vim.tbl_extend("force", default_val.passive, user_opts[key].passive or {})
+		)
+		-- same here, but with passive and active
+		default_val.active = vim.tbl_extend(
+			"force",
+			default_val.passive,
+			vim.tbl_extend("force", default_val.active, user_opts[key].active or {})
 		)
 	end
 	return opts
