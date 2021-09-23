@@ -27,12 +27,16 @@ local defaults = {
 		[types.functionNode] = {
 			active = { hl_group = "LuasnipFunctionNodeActive" },
 			passive = { hl_group = "LuasnipFunctionNodePassive" },
-			snippet_passive = { hl_group = "LuasnipFunctionNodeSnippetPassive" },
+			snippet_passive = {
+				hl_group = "LuasnipFunctionNodeSnippetPassive",
+			},
 		},
 		[types.snippetNode] = {
 			active = { hl_group = "LuasnipSnippetNodeActive" },
 			passive = { hl_group = "LuasnipSnippetNodePassive" },
-			snippet_passive = { hl_group = "LuasnipSnippetNodeSnippetPassive" },
+			snippet_passive = {
+				hl_group = "LuasnipSnippetNodeSnippetPassive",
+			},
 		},
 		[types.choiceNode] = {
 			active = { hl_group = "LuasnipChoiceNodeActive" },
@@ -42,7 +46,9 @@ local defaults = {
 		[types.dynamicNode] = {
 			active = { hl_group = "LuasnipDynamicNodeActive" },
 			passive = { hl_group = "LuasnipDynamicNodePassive" },
-			snippet_passive = { hl_group = "LuasnipDynamicNodeSnippetPassive" },
+			snippet_passive = {
+				hl_group = "LuasnipDynamicNodeSnippetPassive",
+			},
 		},
 		[types.snippet] = {
 			active = { hl_group = "LuasnipSnippetActive" },

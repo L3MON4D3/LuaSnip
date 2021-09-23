@@ -334,8 +334,12 @@ end
 
 local function clear_invalid(opts)
 	for key, val in pairs(opts) do
-		local act_group, pas_group, snip_pas_group = val.active.hl_group, val.passive.hl_group, val.snippet_passive.hl_group
-		opts[key].snippet_passive.hl_group = vim.fn.hlexists(snip_pas_group) == 1
+		local act_group, pas_group, snip_pas_group =
+			val.active.hl_group,
+			val.passive.hl_group,
+			val.snippet_passive.hl_group
+		opts[key].snippet_passive.hl_group = vim.fn.hlexists(snip_pas_group)
+					== 1
 				and snip_pas_group
 			or nil
 		opts[key].passive.hl_group = vim.fn.hlexists(pas_group) == 1
@@ -364,13 +368,21 @@ local function make_opts_valid(user_opts, default_opts)
 		default_val.passive = vim.tbl_extend(
 			"force",
 			user_opts[key].snippet_passive or {},
-			vim.tbl_extend("force", default_val.passive, user_opts[key].passive or {})
+			vim.tbl_extend(
+				"force",
+				default_val.passive,
+				user_opts[key].passive or {}
+			)
 		)
 		-- same here, but with passive and active
 		default_val.active = vim.tbl_extend(
 			"force",
 			default_val.passive,
-			vim.tbl_extend("force", default_val.active, user_opts[key].active or {})
+			vim.tbl_extend(
+				"force",
+				default_val.active,
+				user_opts[key].active or {}
+			)
 		)
 	end
 	return opts
