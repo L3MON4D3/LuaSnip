@@ -53,8 +53,9 @@ end
 FunctionNode.get_docstring = FunctionNode.get_static_text
 
 function FunctionNode:update()
+	self.last_args = self:get_args()
 	local text = util.wrap_value(
-		self.fn(self:get_args(), self.parent, unpack(self.user_args))
+		self.fn(self.last_args, self.parent, unpack(self.user_args))
 	)
 	if vim.o.expandtab then
 		util.expand_tabs(text, util.tab_width())
@@ -64,7 +65,8 @@ function FunctionNode:update()
 end
 
 function FunctionNode:update_restore()
-	if self.static_text then
+	-- only if args still match.
+	if self.static_text and vim.deep_equal(self:get_args(), self.last_args) then
 		self.parent.set_text(self.static_text)
 	else
 		self:update()

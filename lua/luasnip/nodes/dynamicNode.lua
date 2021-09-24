@@ -97,10 +97,11 @@ end
 
 function DynamicNode:update()
 	local tmp
+	self.last_args = self:get_args()
 	if self.snip then
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
-			self:get_args(),
+			self.last_args,
 			self.parent,
 			self.snip.old_state,
 			unpack(self.user_args)
@@ -111,7 +112,7 @@ function DynamicNode:update()
 	else
 		-- also enter node here.
 		self.parent:enter_node(self.indx)
-		tmp = self.fn(self:get_args(), self.parent, nil, unpack(self.user_args))
+		tmp = self.fn(self.last_args, self.parent, nil, unpack(self.user_args))
 	end
 	self.snip = nil
 
