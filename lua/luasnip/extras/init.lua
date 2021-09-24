@@ -114,7 +114,7 @@ return {
 	end,
 	-- Insert the output of a function.
 	partial = function(func, ...)
-		return F(function(_, fn, ...)
+		return F(function(_, _, fn, ...)
 			return fn(...)
 		end, {}, func, ...)
 	end,
