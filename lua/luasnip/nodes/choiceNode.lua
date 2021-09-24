@@ -158,9 +158,14 @@ function ChoiceNode:update()
 	self.active_choice:update()
 end
 
+function ChoiceNode:update_restore()
+	self.active_choice:update_restore()
+end
+
 function ChoiceNode:setup_choice_jumps() end
 
 function ChoiceNode:change_choice(dir)
+	self.active_choice:store()
 	-- tear down current choice.
 	self.active_choice:input_leave()
 	-- clear text.
@@ -176,7 +181,7 @@ function ChoiceNode:change_choice(dir)
 		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
 	)
 	self.active_choice:put_initial(self.mark:pos_begin_raw())
-	self.active_choice:update()
+	self.active_choice:update_restore()
 	self.active_choice.old_text = self.active_choice:get_text()
 
 	self:update_dependents()
@@ -218,6 +223,10 @@ end
 function ChoiceNode:set_ext_opts(name)
 	self.mark:update_opts(self.parent.ext_opts[self.type][name])
 	self.active_choice:set_ext_opts(name)
+end
+
+function ChoiceNode:store()
+	self.active_choice:store()
 end
 
 return {

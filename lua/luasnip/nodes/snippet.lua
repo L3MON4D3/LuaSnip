@@ -639,6 +639,18 @@ function Snippet:update()
 	end
 end
 
+function Snippet:update_restore()
+	for _, node in ipairs(self.nodes) do
+		node:update_restore()
+	end
+end
+
+function Snippet:store()
+	for _, node in ipairs(self.nodes) do
+		node:store()
+	end
+end
+
 function Snippet:indent(prefix)
 	self.indentstr = prefix
 	for _, node in ipairs(self.nodes) do
