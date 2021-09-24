@@ -190,7 +190,6 @@ function DynamicNode:update_restore()
 	end
 end
 
-
 return {
 	D = D,
 }
