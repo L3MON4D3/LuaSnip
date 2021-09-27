@@ -111,6 +111,6 @@ The previously mentioned `Examples/snippets.lua` contains brief descriptions, ch
 - `store_selection_keys`: Mapping for populating `TM_SELECTED_TEXT` and related variables (not set by default).
 - `enable_autosnippets`: Autosnippets are disabled by default to minimize performance penalty if unused. Set to `true` to enable.
 - `ext_opts`: Additional options passed to extmarks. Can be used to add passive/active highlight on a per-node-basis (more info in DOC.md)
-- `parser_nested_assembler`: Override the default behaviour of inserting a `choiceNode` containing the nested snippet and an empty `insertNode` for nested placeholders (`"${1: ${2: this is nested}}"`) (`function(position, snippet)`)
+- `parser_nested_assembler`: Override the default behaviour of inserting a `choiceNode` containing the nested snippet and an empty `insertNode` for nested placeholders (`"${1: ${2: this is nested}}"`). For an example (behaviour more similar to vscode), check [here](https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#imitate-vscodes-behaviour-for-nested-placeholders)
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
