@@ -67,7 +67,7 @@ end
 function FunctionNode:update_restore()
 	-- only if args still match.
 	if self.static_text and vim.deep_equal(self:get_args(), self.last_args) then
-		self.parent.set_text(self.static_text)
+		self.parent:set_text(self, self.static_text)
 	else
 		self:update()
 	end
