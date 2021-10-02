@@ -10,8 +10,6 @@ local conf = require("luasnip.config")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 
-Luasnip_ns_id = vim.api.nvim_create_namespace("Luasnip")
-
 local Snippet = node_mod.Node:new()
 
 local Parent_indexer = {}
@@ -328,7 +326,7 @@ function Snippet:trigger_expand(current_node)
 			current_node:input_leave(1)
 		end
 	end
-	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = self:jump_into(1)
+	session.current_nodes[vim.api.nvim_get_current_buf()] = self:jump_into(1)
 end
 
 -- returns copy of snip if it matches, nil if not.
@@ -479,7 +477,7 @@ end
 
 function Snippet:del_marks()
 	for _, node in ipairs(self.nodes) do
-		vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, node.mark.id)
+		vim.api.nvim_buf_del_extmark(0, session.ns_id, node.mark.id)
 	end
 end
 

@@ -6,10 +6,8 @@ local next_expand = nil
 local ls
 local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
-Luasnip_current_nodes = {}
-
 local function get_active_snip()
-	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
 		return nil
 	end
@@ -101,9 +99,9 @@ local function safe_jump(node, dir, no_move)
 	end
 end
 local function jump(dir)
-	local current = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
-		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] =
+		session.current_nodes[vim.api.nvim_get_current_buf()] =
 			no_region_check_wrap(
 				safe_jump,
 				current,
@@ -116,7 +114,7 @@ local function jump(dir)
 end
 
 local function jumpable(dir)
-	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	return (node ~= nil and node:jumpable(dir))
 end
 
@@ -134,7 +132,7 @@ local function expand()
 		no_region_check_wrap(
 			next_expand.trigger_expand,
 			next_expand,
-			Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+			session.current_nodes[vim.api.nvim_get_current_buf()]
 		)
 		next_expand = nil
 		return true
@@ -147,7 +145,7 @@ local function expand()
 			no_region_check_wrap(
 				snip.trigger_expand,
 				snip,
-				Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+				session.current_nodes[vim.api.nvim_get_current_buf()]
 			)
 			return true
 		end
@@ -164,7 +162,7 @@ local function expand_auto()
 		no_region_check_wrap(
 			snip.trigger_expand,
 			snip,
-			Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+			session.current_nodes[vim.api.nvim_get_current_buf()]
 		)
 	end
 end
@@ -182,25 +180,25 @@ end
 
 local function lsp_expand(body)
 	local snip = ls.parser.parse_snippet({ trig = "" }, body)
-	snip:trigger_expand(Luasnip_current_nodes[vim.api.nvim_get_current_buf()])
+	snip:trigger_expand(session.current_nodes[vim.api.nvim_get_current_buf()])
 end
 
 local function choice_active()
-	return Luasnip_active_choice_node ~= nil
+	return session.active_choice_node ~= nil
 end
 
 local function change_choice(val)
-	assert(Luasnip_active_choice_node, "No active choiceNode")
+	assert(session.active_choice_node, "No active choiceNode")
 	local new_active = no_region_check_wrap(
-		Luasnip_active_choice_node.change_choice,
-		Luasnip_active_choice_node,
+		session.active_choice_node.change_choice,
+		session.active_choice_node,
 		val
 	)
-	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = new_active
+	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 end
 
 local function unlink_current()
-	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
 		print("No active Snippet")
 		return
@@ -213,12 +211,12 @@ local function unlink_current()
 
 	user_expanded_snip:remove_from_jumplist()
 	-- prefer setting previous/outer insertNode as current node.
-	Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = user_expanded_snip.prev.prev
+	session.current_nodes[vim.api.nvim_get_current_buf()] = user_expanded_snip.prev.prev
 		or user_expanded_snip.next.next
 end
 
 local function active_update_dependents()
-	local active = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
 	-- special case for startNode, cannot enter_node on those (and they can't
 	-- have dependents)
 	if active and active.pos ~= -1 then
@@ -226,7 +224,7 @@ local function active_update_dependents()
 		local cur = util.get_cursor_0ind()
 		local cur_mark = vim.api.nvim_buf_set_extmark(
 			0,
-			Luasnip_ns_id,
+			session.ns_id,
 			cur[1],
 			cur[2],
 			{ right_gravity = false }
@@ -240,7 +238,7 @@ local function active_update_dependents()
 		-- Don't account for utf, nvim_win_set_cursor doesn't either.
 		cur = vim.api.nvim_buf_get_extmark_by_id(
 			0,
-			Luasnip_ns_id,
+			session.ns_id,
 			cur_mark,
 			{ details = false }
 		)
@@ -318,7 +316,7 @@ local function load_snippet_docstrings(snippet_table)
 end
 
 local function unlink_current_if_deleted()
-	local node = Luasnip_current_nodes[vim.api.nvim_get_current_buf()]
+	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
 		return
 	end
@@ -329,7 +327,7 @@ local function unlink_current_if_deleted()
 	if snip_begin_pos[1] == snip_end_pos[1] and
 	   snip_begin_pos[2] == snip_end_pos[2] then
 		snippet:remove_from_jumplist()
-		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = snippet.prev.prev
+		session.current_nodes[vim.api.nvim_get_current_buf()] = snippet.prev.prev
 			or snippet.next.next
 	end
 end
@@ -361,7 +359,7 @@ local function exit_out_of_region(node)
 				break
 			end
 		end
-		Luasnip_current_nodes[vim.api.nvim_get_current_buf()] = node
+		session.current_nodes[vim.api.nvim_get_current_buf()] = node
 
 		-- also check next snippet.
 		if node and node.next then

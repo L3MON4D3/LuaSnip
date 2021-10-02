@@ -83,8 +83,8 @@ local function tab_width()
 end
 
 local function mark_pos_equal(m1, m2)
-	local p1 = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, m1, {})
-	local p2 = vim.api.nvim_buf_get_extmark_by_id(0, Luasnip_ns_id, m2, {})
+	local p1 = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, m1, {})
+	local p2 = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, m2, {})
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
 
@@ -92,7 +92,7 @@ local function move_to_mark(id)
 	local new_cur_pos
 	new_cur_pos = vim.api.nvim_buf_get_extmark_by_id(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		id,
 		{ details = false }
 	)

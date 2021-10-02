@@ -5,6 +5,7 @@ local conf = require("luasnip.config")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
+local session = require("luasnip.session")
 
 function ChoiceNode:init_nodes()
 	for i, node in ipairs(self.choices) do
@@ -108,8 +109,8 @@ function ChoiceNode:input_enter()
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 	self.parent:enter_node(self.indx)
 
-	self.prev_choice_node = Luasnip_active_choice_node
-	Luasnip_active_choice_node = self
+	self.prev_choice_node = session.active_choice_node
+	session.active_choice_node = self
 	self.active = true
 
 	self:event(events.enter)
@@ -120,7 +121,7 @@ function ChoiceNode:input_leave()
 
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 	self:update_dependents()
-	Luasnip_active_choice_node = self.prev_choice_node
+	session.active_choice_node = self.prev_choice_node
 	self.active = false
 end
 
@@ -209,7 +210,7 @@ function ChoiceNode:exit()
 	self.active_choice:exit()
 	self.mark:clear()
 	if self.active then
-		Luasnip_active_choice_node = self.prev_choice_node
+		session.active_choice_node = self.prev_choice_node
 	end
 	self.active = false
 end

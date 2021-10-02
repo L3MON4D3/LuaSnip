@@ -1,3 +1,5 @@
+local session = require("luasnip.session")
+
 local Mark = {}
 
 function Mark:new(o)
@@ -12,7 +14,7 @@ local function mark(pos_begin, pos_end, opts)
 	return Mark:new({
 		id = vim.api.nvim_buf_set_extmark(
 			0,
-			Luasnip_ns_id,
+			session.ns_id,
 			pos_begin[1],
 			pos_begin[2],
 			-- override end_* in opts.
@@ -38,7 +40,7 @@ end
 function Mark:pos_begin_end()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		self.id,
 		{ details = true }
 	)
@@ -50,7 +52,7 @@ end
 function Mark:pos_begin()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		self.id,
 		{ details = false }
 	)
@@ -61,7 +63,7 @@ end
 function Mark:pos_end()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		self.id,
 		{ details = true }
 	)
@@ -72,7 +74,7 @@ end
 function Mark:pos_begin_end_raw()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		self.id,
 		{ details = true }
 	)
@@ -83,7 +85,7 @@ end
 function Mark:pos_begin_raw()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		self.id,
 		{ details = false }
 	)
@@ -111,7 +113,7 @@ function Mark:update(opts, pos_begin, pos_end)
 	self.opts = vim.tbl_extend("force", self.opts, opts)
 	vim.api.nvim_buf_set_extmark(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		pos_begin[1],
 		pos_begin[2],
 		vim.tbl_extend(
@@ -124,14 +126,14 @@ end
 
 function Mark:set_opts(opts)
 	local pos_begin, pos_end = self:pos_begin_end_raw()
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.id)
+	vim.api.nvim_buf_del_extmark(0, session.ns_id, self.id)
 
 	self.opts = opts
 	-- set new extmark, current behaviour for updating seems inconsistent,
 	-- eg. gravs are reset, deco is kept.
 	self.id = vim.api.nvim_buf_set_extmark(
 		0,
-		Luasnip_ns_id,
+		session.ns_id,
 		pos_begin[1],
 		pos_begin[2],
 		vim.tbl_extend(
@@ -163,7 +165,7 @@ function Mark:update_opts(opts)
 end
 
 function Mark:clear()
-	vim.api.nvim_buf_del_extmark(0, Luasnip_ns_id, self.id)
+	vim.api.nvim_buf_del_extmark(0, session.ns_id, self.id)
 end
 
 return {
