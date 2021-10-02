@@ -106,7 +106,7 @@ c = {
 		]]
 					.. (c.config.enable_autosnippets and [[
 			autocmd InsertCharPre * lua Luasnip_just_inserted = true
-			autocmd TextChangedI,TextChangedP * lua if Luasnip_just_inserted then require("luasnip").expand_auto() Luasnip_just_inserted=false end
+			autocmd TextChangedI,TextChangedP * lua if Luasnip_just_inserted then require("luasnip").expand_auto() Luasnip_just_inserted=nil end
 		]] or "")
 					.. [[
 		augroup END
