@@ -17,5 +17,4 @@ M.ns_id = vim.api.nvim_create_namespace("Luasnip")
 -- only here for overview.
 M.active_choice_node = nil
 
-
 return M
