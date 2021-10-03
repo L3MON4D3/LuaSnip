@@ -2,6 +2,7 @@ local ls = require("luasnip")
 local uv = vim.loop
 local caches = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
+local session = require("luasnip.session")
 
 local function json_decode(data)
 	local status, result = pcall(vim.fn.json_decode, data)
@@ -224,6 +225,8 @@ function M._luasnip_vscode_lazy_load()
 		if not caches.lazy_loaded_ft[ft] then
 			caches.lazy_loaded_ft[ft] = true
 			M.load({ paths = caches.lazy_load_paths, include = { ft } })
+			session.latest_load_ft = ft
+			vim.cmd("doautocmd User LuasnipSnippetsAdded")
 		end
 	end
 end
