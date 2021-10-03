@@ -461,6 +461,9 @@ Apart from what is stipulated by the start each snippet in the json file can
 contain a "luasnip" field wich is a table for extra parameters for the snippet,
 till now the only valid one is autotrigger.
 
+After snippets were lazy-loaded, the `User LuasnipSnippetsAdded`-event will be
+triggered.
+
 # EXT\_OPTS
 
 `ext_opts` are probably best explained with a short example:
