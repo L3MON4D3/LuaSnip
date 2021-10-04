@@ -101,6 +101,9 @@ local function load_snippet_file(langs, snippet_set_path)
 				end
 				ls.snippets[lang] = lang_snips
 				ls.autosnippets[lang] = auto_lang_snips
+				session.latest_load_ft = lang
+				vim.cmd "doautocmd User LuasnipSnippetsAdded"
+
 			end
 		end)
 	)
@@ -225,8 +228,6 @@ function M._luasnip_vscode_lazy_load()
 		if not caches.lazy_loaded_ft[ft] then
 			caches.lazy_loaded_ft[ft] = true
 			M.load({ paths = caches.lazy_load_paths, include = { ft } })
-			session.latest_load_ft = ft
-			vim.cmd("doautocmd User LuasnipSnippetsAdded")
 		end
 	end
 end
