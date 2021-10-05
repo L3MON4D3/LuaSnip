@@ -468,12 +468,19 @@ local function get_snippet_filetypes(filetype)
 	return snippet_fts
 end
 
+local json_decode
+local json_encode
+if vim.json then
+	json_decode = vim.json.decode
+	json_encode = vim.json.encode
+else
+	json_decode = vim.fn.json_decode
+	json_encode = vim.fn.json_encode
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
-	get_ext_positions = get_ext_positions,
-	get_ext_position_begin = get_ext_position_begin,
-	get_ext_position_end = get_ext_position_end,
 	move_to_mark = move_to_mark,
 	normal_move_before = normal_move_before,
 	normal_move_on = normal_move_on,
@@ -501,4 +508,6 @@ return {
 	to_line_table = to_line_table,
 	find_outer_snippet = find_outer_snippet,
 	get_snippet_filetypes = get_snippet_filetypes,
+	json_encode = json_encode,
+	json_decode = json_decode,
 }
