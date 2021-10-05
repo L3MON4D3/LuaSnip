@@ -5,7 +5,7 @@ local util = require("luasnip.util.util")
 local session = require("luasnip.session")
 
 local function json_decode(data)
-	local status, result = pcall(vim.fn.json_decode, data)
+	local status, result = pcall(util.json_decode, data)
 	if status then
 		return result
 	else
