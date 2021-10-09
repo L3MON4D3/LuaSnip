@@ -603,3 +603,98 @@ au User LuasnipInsertNodeEnter
 The function ls.cleanup()  triggers the `LuasnipCleanup` user-event, that you can listen to do some kind
 of cleaning in your own snippets, by default it will  empty the snippets table and the caches of
 the lazy_load.
+
+# API-REFERENCE
+
+`require("luasnip")`:
+	- `jumpable(direction)`: returns true if the current node has a
+	  next(`direction` = 1) or previous(`direction` = -1), eg. whether it's
+	  possible to jump forward or backward to another node.
+	
+	- `jump(direction)`: returns true if the jump was successful.
+
+	- `expandable()`: true if a snippet can be expanded at the current cursor position.
+	
+	- `expand()`: expands the snippet at(before) the cursor.
+
+	- `expand_or_jumpable()`: returns `expandable() or jumpable(1)` (exists only
+	  because commonly, one key is used to both jump forward and expand).
+
+	- `expand_or_jump`: returns true if jump/expand was succesful.
+
+	- `expand_auto()`: expands the autosnippets before the cursor (not necessary
+	  to call manually, will be called via autocmd if `enable_autosnippet` is set
+	  in the config).
+
+	- `get_active_snip()`: returns the currently active snippet (not node!).
+
+	- `choice_active()`: true if inside a choiceNode.
+
+	- `change_choice(direction)`: changes the choice in the innermost currently
+	  active choiceNode forward (`direction` = 1) or backward (`direction` = -1).
+
+	- `unlink_current()`: removes the current snippet from the jumplist (useful
+	  if luasnip fails to automatically detect eg. deletion of a snippet) and
+	  sets the current node behind the snippet, or, if not possible, before it.
+
+	- `lsp_expand(snip_string)`: expand the lsp-syntax-snippet defined via 
+	  `snip_string` at the cursor.
+
+	- `active_update_dependents()`: update all function/dynamicNodes that have
+	  the current node as their argument (will only actually update them if
+	  the text in any of the argnodes changed).
+
+	- `available()`: return a table of all snippets defined for the current
+	  filetypes(s) (`{ft1={snip1, snip2}, ft2={snip3, snip4}}`).
+
+	- `exit_out_of_region(node)`: checks whether the cursor is still within the
+	  range of the snippet `node` belongs to. If yes, no change occurs, if not,
+	  the snippet is left and following snippets are checked (the next active
+	  node will be the 0-node of the snippet before the one the cursor is
+	  inside. If the cursor isn't inside any snippet, the active node will be
+	  the last node in the jumplist). If a jump causes an error (happens mostly
+	  because a snippet was deleted), the snippet is removed from the jumplist.
+
+	- `store_snippet_docstrings(snippet_table)`: Stores the docstrings of all
+	  snippets in `snippet_table` to a file
+	  (`stdpath("cache")`/luasnip/docstrings.json).
+	  Calling `store_snippet_docstrings(snippet_table)` after adding/modifying
+	  snippets and `load_snippet_docstrings(snippet_table)` on startup
+	  after all snippets have been added to `snippet_table` is a way to avoide
+	  regenerating the (unchanged) docstrings on each startup.
+	  (Depending on when the docstrings are required and how luasnip is loaded,
+	  it may be more sensible to let them load lazily, eg. just before they are
+	  required).
+	  `snippet_table` should be laid out just like `luasnip.snippets` (it will
+	  also most likely always _be_ `luasnip.snippets`).
+
+	- `load_snippet_docstrings(snippet_table)`: Load docstrings for all snippets
+	  in `snippet_table` from `stdpath("cache")`/luasnip/docstrings.json.
+	  The docstrings are stored and restored via trigger, meaning if two
+	  snippets for one filetype have the same(very unlikely to happen in actual
+	  usage), bugs could occur.
+	  `snippet_table` should be laid out like described in
+	  `store_snippet_docstrings`.
+
+	- `unlink_current_if_deleted()`: Checks if the current snippet was deleted,
+	  if so, it is removed from the jumplist. This is not 100% reliable as
+	  luasnip only sees the extmarks and their begin/end may not be on the same
+	  position, even if all the text between them was deleted.
+
+	- `filetype_extend(filetype, extend_filetypes)`: Tells luasnip that for a
+	  buffer with `ft=filetype`, snippets from `extend_filetypes` should be
+	  searched as well. `extend_filetypes` is a lua-array (`{ft1, ft2, ft3}`).
+	  `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand
+	  c-and cpp-snippets for lua-files.
+
+	- `filetype_set(filetyp, replace_filetypes):` Similar to `filetype_extend`,
+	  but where it appended filetypes, this replaces them:
+	  `filetype_set("lua", {"c"})` causes only c-snippets to be expanded in
+	  lua-files, lua-snippets aren't even searched.
+
+	- `cleanup()`: clears all snippets. Not useful for regular usage, only when
+	  authoring and testing snippets.
+
+	Not covered in this section are the various node-constructors exposed by
+	the module, their usage is shown either previously in this file or in
+	`Examples/snippets.lua` (in the repo).
