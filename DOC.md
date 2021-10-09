@@ -620,7 +620,7 @@ the lazy_load.
 - `expand_or_jumpable()`: returns `expandable() or jumpable(1)` (exists only
   because commonly, one key is used to both jump forward and expand).
 
-- `expand_or_jump`: returns true if jump/expand was succesful.
+- `expand_or_jump()`: returns true if jump/expand was succesful.
 
 - `expand_auto()`: expands the autosnippets before the cursor (not necessary
   to call manually, will be called via autocmd if `enable_autosnippet` is set
@@ -687,7 +687,7 @@ the lazy_load.
   `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand
   c-and cpp-snippets for lua-files.
 
-- `filetype_set(filetyp, replace_filetypes):` Similar to `filetype_extend`,
+- `filetype_set(filetype, replace_filetypes):` Similar to `filetype_extend`,
   but where it appended filetypes, this replaces them:
   `filetype_set("lua", {"c"})` causes only c-snippets to be expanded in
   lua-files, lua-snippets aren't even searched.
