@@ -131,7 +131,7 @@ _G.tab_complete = function()
     elseif check_back_space() then
         return t "<Tab>"
     else
-        vim.fn['compe#complete']()
+        return vim.fn['compe#complete']()
     end
     return ""
 end
