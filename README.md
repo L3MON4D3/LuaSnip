@@ -68,7 +68,7 @@ local check_back_space = function()
 end
 
 _G.tab_complete = function()
-    if cmp and cmp.visible() == 1 then
+    if cmp and cmp.visible() then
         cmp.select_next_item()
     elseif luasnip and luasnip.expand_or_jumpable() then
         luasnip.expand_or_jump()
@@ -80,7 +80,7 @@ _G.tab_complete = function()
     return ""
 end
 _G.s_tab_complete = function()
-    if cmp and cmp.visible() == 1 then
+    if cmp and cmp.visible() then
         cmp.select_prev_item()
     elseif luasnip and luasnip.jumpable(-1) then
         luasnip.jump(-1)
