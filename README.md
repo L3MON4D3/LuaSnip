@@ -52,7 +52,7 @@ if (status) then return lib end
 end
 
 local luasnip = prequire('luasnip')
-local cmd = prequire("cmp")
+local cmp = prequire("cmp")
 
 local t = function(str)
     return vim.api.nvim_replace_termcodes(str, true, true, true)
@@ -71,7 +71,7 @@ _G.tab_complete = function()
     if cmp and cmp.visible() == 1 then
         cmp.select_next_item()
     elseif luasnip and luasnip.expand_or_jumpable() then
-        return t "<Plug>luasnip-expand-or-jump"
+        luasnip.expand_or_jump()
     elseif check_back_space() then
         return t "<Tab>"
     else
@@ -80,9 +80,9 @@ _G.tab_complete = function()
 end
 _G.s_tab_complete = function()
     if cmp and cmp.visible() == 1 then
-        return cmp.select_prev_item()
+        cmp.select_prev_item()
     elseif luasnip and luasnip.jumpable(-1) then
-        return t "<Plug>luasnip-jump-prev"
+        luasnip.jump(-1)
     else
         return t "<S-Tab>"
     end
@@ -125,7 +125,7 @@ _G.tab_complete = function()
     if vim.fn.pumvisible() == 1 then
         return t "<C-n>"
     elseif luasnip and luasnip.expand_or_jumpable() then
-        return t "<Plug>luasnip-expand-or-jump"
+        return luasnip.expand_or_jump()
     elseif check_back_space() then
         return t "<Tab>"
     else
@@ -136,7 +136,7 @@ _G.s_tab_complete = function()
     if vim.fn.pumvisible() == 1 then
         return t "<C-p>"
     elseif luasnip and luasnip.jumpable(-1) then
-        return t "<Plug>luasnip-jump-prev"
+        luasnip.jump(-1)
     else
         return t "<S-Tab>"
     end
