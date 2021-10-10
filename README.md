@@ -127,11 +127,11 @@ _G.tab_complete = function()
     if vim.fn.pumvisible() == 1 then
         return t "<C-n>"
     elseif luasnip and luasnip.expand_or_jumpable() then
-        return luasnip.expand_or_jump()
+        luasnip.expand_or_jump()
     elseif check_back_space() then
         return t "<Tab>"
     else
-        return vim.fn['compe#complete']()
+        vim.fn['compe#complete']()
     end
     return ""
 end
