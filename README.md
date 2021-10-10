@@ -133,6 +133,7 @@ _G.tab_complete = function()
     else
         return vim.fn['compe#complete']()
     end
+    return ""
 end
 _G.s_tab_complete = function()
     if vim.fn.pumvisible() == 1 then
@@ -142,6 +143,7 @@ _G.s_tab_complete = function()
     else
         return t "<S-Tab>"
     end
+    return ""
 end
 
 vim.api.nvim_set_keymap("i", "<Tab>", "v:lua.tab_complete()", {expr = true})
