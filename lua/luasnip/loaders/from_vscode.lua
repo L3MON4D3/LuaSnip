@@ -247,7 +247,7 @@ function M.lazy_load(opts)
 	vim.cmd([[
 		augroup _luasnip_vscode_lazy_load
 		autocmd!
-		au BufEnter * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
+		au BufWinEnter,FileType * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
     au User LuasnipCleanup lua require('luasnip.loaders._caches').clean()
 		augroup END
 	]])
