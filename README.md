@@ -71,7 +71,7 @@ _G.tab_complete = function()
     if cmp and cmp.visible() then
         cmp.select_next_item()
     elseif luasnip and luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
+        return t("<Plug>luasnip-expand-or-jump")
     elseif check_back_space() then
         return t "<Tab>"
     else
@@ -83,7 +83,7 @@ _G.s_tab_complete = function()
     if cmp and cmp.visible() then
         cmp.select_prev_item()
     elseif luasnip and luasnip.jumpable(-1) then
-        luasnip.jump(-1)
+        return t("<Plug>luasnip-jump-prev")
     else
         return t "<S-Tab>"
     end
@@ -127,7 +127,7 @@ _G.tab_complete = function()
     if vim.fn.pumvisible() == 1 then
         return t "<C-n>"
     elseif luasnip and luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
+        return t("<Plug>luasnip-expand-or-jump")
     elseif check_back_space() then
         return t "<Tab>"
     else
@@ -139,7 +139,7 @@ _G.s_tab_complete = function()
     if vim.fn.pumvisible() == 1 then
         return t "<C-p>"
     elseif luasnip and luasnip.jumpable(-1) then
-        luasnip.jump(-1)
+        return t("<Plug>luasnip-jump-prev")
     else
         return t "<S-Tab>"
     end
