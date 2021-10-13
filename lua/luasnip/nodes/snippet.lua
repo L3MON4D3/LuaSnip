@@ -132,6 +132,7 @@ local function S(context, nodes, opts)
 		dependents = {},
 		active = false,
 		type = types.snippet,
+		hidden = context.hidden,
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
