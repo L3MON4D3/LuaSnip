@@ -79,6 +79,8 @@ entries:
                `dscr`. Overrides docstrings loaded from json.
 *   `docTrig`: string, for snippets triggered using a lua pattern: define the
              trigger that is used during docstring-generation.
+*   `hidden`: hint for completion-engines, if set, the snippet should not show
+            up when querying snippets.
 
 `s` can also be a single string, in which case it is used instead of `trig`, all
 other values being defaulted:
