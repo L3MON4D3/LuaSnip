@@ -464,7 +464,7 @@ function Snippet:set_text(node, text)
 	-- we can assume that (part of) the snippet was deleted; remove it from
 	-- the jumplist.
 	if not ok then
-		error("[LuaSnip Failed]: ".. vim.inspect(text))
+		error("[LuaSnip Failed]: " .. vim.inspect(text))
 	end
 end
 
