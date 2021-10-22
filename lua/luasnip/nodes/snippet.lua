@@ -463,7 +463,7 @@ function Snippet:set_text(node, text)
 	)
 	if not ok then
 		-- handled higher up (snippet will probably be removed from jumplist)
-		error("[LuaSnip Failed]: ".. vim.inspect(text))
+		error("[LuaSnip Failed]: " .. vim.inspect(text))
 	end
 end
 
