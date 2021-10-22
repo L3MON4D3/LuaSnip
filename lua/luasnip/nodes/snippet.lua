@@ -452,7 +452,7 @@ function Snippet:set_text(node, text)
 	local node_from, node_to = node.mark:pos_begin_end_raw()
 
 	self:enter_node(node.indx)
-	local ok, _ = pcall(
+	local ok, msg = pcall(
 		vim.api.nvim_buf_set_text,
 		0,
 		node_from[1],
@@ -462,8 +462,17 @@ function Snippet:set_text(node, text)
 		text
 	)
 	if not ok then
-		-- handled higher up (snippet will probably be removed from jumplist)
-		error("[LuaSnip Failed]: " .. vim.inspect(text))
+		-- get correct column-indices:
+		node_from = util.bytecol_to_utfcol(node_from)
+		node_to = util.bytecol_to_utfcol(node_to)
+		print(
+			"[LuaSnip Failed]:",
+			node_from[1],
+			node_from[2],
+			node_to[1],
+			node_to[2],
+			vim.inspect(text)
+		)
 	end
 end
 
