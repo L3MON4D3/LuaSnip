@@ -10,7 +10,9 @@ local conf = require("luasnip.config")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 
-local true_func = function() return true end
+local true_func = function()
+	return true
+end
 local callbacks_mt = {
 	__index = function(table, key)
 		rawset(table, key, {})
