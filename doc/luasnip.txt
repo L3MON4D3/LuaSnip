@@ -98,6 +98,14 @@ The third argument is a table with the following valid keys:
                (the function is called before the text is modified in any way).
                Some parameters are passed to the function: The line up to the
                cursor, the matched trigger and the captures (table).
+* `show_condition`: Function with signature `f(line_to_cursor) -> boolean`
+               being a hint for completion-engines indicating when the snippet
+               should be included in current completion candidates. Defaults to
+               a function returning always true. This is different than `condition`
+               because `condition` is evaluated by LuaSnip on snippet expansion
+               (and thus has access to the matched trigger and captures), while
+               `show_condition` is evaluated by the completion-engine when scanning
+               for available snippet candidates.
 - `callbacks`: Contains functions that are called upon enterin/leaving a node.
                To print text upon entering the second node of a snippet, set
                `callbacks` should be set as follows:
@@ -107,7 +115,7 @@ The third argument is a table with the following valid keys:
                The callbacks are passed only one argument, the node that
                triggered it.
 This `opts`-table can also be passed to eg. `snippetNode` or `indentSnippetNode`,
-`condition` doesn't have any effect there, but `callbacks` are used.
+but only `callbacks` is used there.
 
 Snippets contain some interesting tables, eg. `snippet.env` contains variables
 used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
