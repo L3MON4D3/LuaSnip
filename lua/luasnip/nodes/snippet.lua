@@ -10,6 +10,14 @@ local conf = require("luasnip.config")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 
+local true_func = function() return true end
+local callbacks_mt = {
+	__index = function(table, key)
+		rawset(table, key, {})
+		return {}
+	end,
+}
+
 local Snippet = node_mod.Node:new()
 
 local Parent_indexer = {}
@@ -82,18 +90,9 @@ local function init_opts(opts)
 
 	opts.callbacks = opts.callbacks or {}
 	-- return empty table for non-specified callbacks.
-	setmetatable(opts.callbacks, {
-		__index = function(table, key)
-			rawset(table, key, {})
-			return {}
-		end,
-	})
-	opts.condition = opts.condition or function()
-		return true
-	end
-	opts.show_condition = opts.show_condition or function()
-		return true
-	end
+	setmetatable(opts.callbacks, callbacks_mt)
+	opts.condition = opts.condition or true_func
+	opts.show_condition = opts.show_condition or true_func
 	return opts
 end
 
