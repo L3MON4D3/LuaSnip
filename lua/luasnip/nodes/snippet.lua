@@ -91,6 +91,9 @@ local function init_opts(opts)
 	opts.condition = opts.condition or function()
 		return true
 	end
+	opts.show_condition = opts.show_condition or function()
+		return true
+	end
 	return opts
 end
 
@@ -127,6 +130,7 @@ local function S(context, nodes, opts)
 		insert_nodes = {},
 		current_insert = 0,
 		condition = opts.condition,
+		show_condition = opts.show_condition,
 		callbacks = opts.callbacks,
 		mark = nil,
 		dependents = {},
