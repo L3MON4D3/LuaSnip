@@ -16,7 +16,7 @@ local dl = require("luasnip.extras").dynamic_lambda
 local fmt = require("luasnip.extras.fmt").fmt
 local fmta = require("luasnip.extras.fmt").fmta
 local types = require("luasnip.util.types")
-local conds = require("luasnip.extras.conditions")
+local conds = require("luasnip.extras.expand_conditions")
 
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
@@ -246,7 +246,7 @@ ls.snippets = {
 				return line_to_cursor:match("%s*//")
 			end,
 		}),
-		-- there's some built-in conditions in "luasnip.extras.conditions".
+		-- there's some built-in conditions in "luasnip.extras.expand_conditions".
 		s("cond2", {
 			t("will only expand at the beginning of the line"),
 		}, {
