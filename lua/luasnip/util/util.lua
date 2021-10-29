@@ -107,7 +107,7 @@ end
 
 local function normal_move_before(new_cur_pos)
 	-- +1: indexing
-	if new_cur_pos[2] - 1 ~= 0 then
+	if new_cur_pos[2] - 1 > 0 then
 		vim.api.nvim_feedkeys(
 			tostring(new_cur_pos[1] + 1)
 				.. "G0"
@@ -117,8 +117,11 @@ local function normal_move_before(new_cur_pos)
 			"n",
 			true
 		)
+	elseif new_cur_pos[2] - 1 == 0 then
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0zv", "n", true)
 	else
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "n", true)
+		-- column is 0, includes end of previous line. Move there.
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]) .. "G$zv", "n", true)
 	end
 end
 
