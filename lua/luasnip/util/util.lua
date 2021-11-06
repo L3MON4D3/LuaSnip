@@ -260,7 +260,10 @@ local function byte_start_to_byte_end(pos)
 	-- line[1]: get_lines returns table.
 	-- col may be one past the end (for linebreak)
 	-- byteindex rounds toward end of the multibyte-character.
-	return vim.str_byteindex(line[1].." " or "", vim.str_utfindex(line[1].." " or "", pos[2]))
+	return vim.str_byteindex(
+		line[1] .. " " or "",
+		vim.str_utfindex(line[1] .. " " or "", pos[2])
+	)
 end
 
 local function store_selection()
@@ -269,7 +272,7 @@ local function store_selection()
 	local end_line = vim.fn.line("'>")
 	-- col of '>/'< is the first byte, in case of multibyte. As the entire
 	-- multibyte-string has to be in the selection, this needs to be converted.
-	local end_col = byte_start_to_byte_end({end_line-1, vim.fn.col("'>")})
+	local end_col = byte_start_to_byte_end({ end_line - 1, vim.fn.col("'>") })
 
 	local mode = vim.fn.visualmode()
 	if
