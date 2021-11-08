@@ -408,7 +408,10 @@ ls.snippets = {
 			})
 		),
 		-- The delimiters can be changed from the default `{}` to something else.
-		s("fmt4", fmt("foo() { return []; }", i(1, "x"), { delimiters = "[]" })),
+		s(
+			"fmt4",
+			fmt("foo() { return []; }", i(1, "x"), { delimiters = "[]" })
+		),
 		-- `fmta` is a convenient wrapper that uses `<>` instead of `{}`.
 		s("fmt5", fmta("foo() { return <>; }", i(1, "x"))),
 		-- By default all args must be used. Use strict=false to disable the check

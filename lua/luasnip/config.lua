@@ -17,7 +17,9 @@ local defaults = {
 		[types.insertNode] = {
 			active = { hl_group = "LuasnipInsertNodeActive" },
 			passive = { hl_group = "LuasnipInsertNodePassive" },
-			snippet_passive = { hl_group = "LuasnipInsertNodeSnippetPassive" },
+			snippet_passive = {
+				hl_group = "LuasnipInsertNodeSnippetPassive",
+			},
 		},
 		[types.exitNode] = {
 			active = { hl_group = "LuasnipExitNodeActive" },
@@ -41,7 +43,9 @@ local defaults = {
 		[types.choiceNode] = {
 			active = { hl_group = "LuasnipChoiceNodeActive" },
 			passive = { hl_group = "LuasnipChoiceNodePassive" },
-			snippet_passive = { hl_group = "LuasnipChoiceNodeSnippetPassive" },
+			snippet_passive = {
+				hl_group = "LuasnipChoiceNodeSnippetPassive",
+			},
 		},
 		[types.dynamicNode] = {
 			active = { hl_group = "LuasnipDynamicNodeActive" },
