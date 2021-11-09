@@ -26,6 +26,10 @@ function! luasnip#expand_or_jumpable()
 	return luaeval('require("luasnip").expand_or_jumpable()')
 endfunction
 
+function! luasnip#expand_or_locally_jumpable()
+	return luaeval('require("luasnip").expand_or_locally_jumpable()')
+endfunction
+
 function! luasnip#jumpable(direction)
 	return luaeval('require("luasnip").jumpable(_A)', a:direction)
 endfunction
