@@ -630,6 +630,9 @@ the lazy_load.
 - `expand_or_jumpable()`: returns `expandable() or jumpable(1)` (exists only
   because commonly, one key is used to both jump forward and expand).
 
+- `expand_or_locally_jumpable()`: same as `expand_or_jumpable()` except jumpable 
+  is ignored if the cursor is not inside the current snippet.
+
 - `expand_or_jump()`: returns true if jump/expand was succesful.
 
 - `expand_auto()`: expands the autosnippets before the cursor (not necessary
