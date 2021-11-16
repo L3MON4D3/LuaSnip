@@ -1,6 +1,27 @@
 local text_node = require("luasnip.nodes.textNode").T
 local wrap_nodes = require("luasnip.util.util").wrap_nodes
 
+
+-- https://gist.github.com/tylerneylon/81333721109155b2d244
+local function copy3(obj, seen)
+	-- Handle non-tables and previously-seen tables.
+	if type(obj) ~= "table" then
+		return obj
+	end
+	if seen and seen[obj] then
+		return seen[obj]
+	end
+
+	-- New table; mark it as seen an copy recursively.
+	local s = seen or {}
+	local res = {}
+	s[obj] = res
+	for k, v in next, obj do
+		res[copy3(k, s)] = copy3(v, s)
+	end
+	return setmetatable(res, getmetatable(obj))
+end
+
 -- Interpolate elements from `args` into format string with placeholders.
 --
 -- The placeholder syntax for selecting from `args` is similar to fmtlib and
@@ -71,8 +92,15 @@ local function interpolate(fmt, args, opts)
 				fmt
 			)
 		)
-		table.insert(elements, args[key])
-		used_keys[key] = true
+		-- if the node was already used, insert a copy of it.
+		-- The nodes are modified in-place as part of constructing the snippet,
+		-- modifying one node twice will lead to UB.
+		if used_keys[key] then
+			table.insert(elements, copy3(args[key]))
+		else
+			table.insert(elements, args[key])
+			used_keys[key] = true
+		end
 	end
 
 	-- iterate keeping a range from previous match, e.g. (not in_placeholder vs in_placeholder)
