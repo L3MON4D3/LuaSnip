@@ -1,7 +1,6 @@
 local text_node = require("luasnip.nodes.textNode").T
 local wrap_nodes = require("luasnip.util.util").wrap_nodes
 
-
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
 local function copy3(obj, seen)
 	-- Handle non-tables and previously-seen tables.

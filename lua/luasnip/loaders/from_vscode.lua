@@ -173,10 +173,7 @@ end
 local function get_snippets_rtp()
 	return vim.tbl_map(function(itm)
 		return vim.fn.fnamemodify(itm, ":h")
-	end, vim.api.nvim_get_runtime_file(
-		"package.json",
-		true
-	))
+	end, vim.api.nvim_get_runtime_file("package.json", true))
 end
 
 local MYCONFIG_ROOT = vim.env.MYVIMRC

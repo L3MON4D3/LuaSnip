@@ -78,8 +78,10 @@ function Mark:pos_begin_end_raw()
 		self.id,
 		{ details = true }
 	)
-	return { mark_info[1], mark_info[2] },
-		{ mark_info[3].end_row, mark_info[3].end_col }
+	return { mark_info[1], mark_info[2] }, {
+		mark_info[3].end_row,
+		mark_info[3].end_col,
+	}
 end
 
 function Mark:pos_begin_raw()
