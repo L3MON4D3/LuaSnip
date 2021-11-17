@@ -391,6 +391,48 @@ that was inserted into any of the dynamicNodes insertNodes is kept when
 changing to a bigger number.
 
 
+# EXTRAS
+
+The module `"luasnip.extras"` contains nodes that ease writing snippets (This
+is only a short outline, their usage is shown more expansively in
+`Examples/snippets.lua`):
+
+- `lambda`: A shortcut for `functionNode`s that only do very basic string-
+manipulation. For example, to replace all occurences of "a" in the nth insert
+with "e", one could use `lambda(lambda._1:gsub("a", "e"), n)` (signature is
+similar to that of `functionNode`).
+If a node has multiple lines, they will be concatenated using "\n".
+
+- `match`: Can insert text based on whether a given insert matches a pattern or
+a function or lambda returns true.
+The complete signature for the node is `match(index, match, then, else)`, where
+`index` _has_ to be a single number, `match` can be a string (interpreted as lua
+pattern), function, or lambda (useful if string-manipulations have to be
+performed before the string is matched).
+`then` and `else` can also be strings (inserted literally), functions (run with
+the same arguments as a `functionNode`-function), or lambda. The default for
+`else` is the empty string.
+To return "A" if insert n matches "ABC", `match(n, "^ABC$", "A", "")` can be
+used. `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
+"PALINDROME" if the nth insert is a palindrome.
+
+- `rep`: repeats the node with the passed index. `rep(1)` to repeat the content
+of the first insert.
+
+- `partial`: directly inserts the output of a function. Useful for eg.
+`partial(os.date, "%Y")` (arguments passed after the function are passed to it).
+
+- `nonempty`: inserts text if the insert at the given index doesn't contain any
+text. `nonempty(n, "empty!", "not empty!")` inserts "empty!" if insert n is
+empty, "not empty!" it it isn't.
+
+- `dynamic_lambda`: Operates almost exactly like `lambda`, only that it can be
+jumped to and it's contents therfore be easily overridden.
+`dynamic_lambda(2, lambda._1..lambda._1, 1)` will first contain the content of
+insert 1 appended to itself, but the second jump will lead to it, making it
+easy to override the generated text.
+The text will only be changed when a argnode updates it.
+
 
 # LSP-SNIPPETS
 
