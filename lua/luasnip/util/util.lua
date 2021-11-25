@@ -1,6 +1,17 @@
 local events = require("luasnip.util.events")
 local session = require("luasnip.session")
 
+-- Check if treesitter is available
+local ok_parsers, ts_parsers = pcall(require, "nvim-treesitter.parsers")
+if not ok_parsers then
+	ts_parsers = nil
+end
+
+local ok_utils, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
+if not ok_utils then
+	ts_utils = nil
+end
+
 local function get_cursor_0ind()
 	local c = vim.api.nvim_win_get_cursor(0)
 	c[1] = c[1] - 1
@@ -476,13 +487,66 @@ local function find_outer_snippet(node)
 	return node
 end
 
--- filetype: string formatted like `'filetype'`.
-local function get_snippet_filetypes(filetype)
+local get_language_at_cursor = function()
+	if not ts_parsers or not ts_utils then
+		return nil
+	end
+
+	local parser = ts_parsers.get_parser()
+	local current_node = ts_utils.get_node_at_cursor()
+
+	if current_node then
+		return parser:language_for_range({ current_node:range() }):lang()
+	else
+		return nil
+	end
+end
+
+local function get_snippet_filetype_from_cursor()
+	local snippet_fts = {}
+	local snippet_lang_cursor = get_language_at_cursor()
+
+	if
+		snippet_lang_cursor
+		and not vim.tbl_contains(snippet_fts, snippet_lang_cursor)
+	then
+		vim.list_extend(snippet_fts, session.ft_redirect[snippet_lang_cursor])
+	end
+
+	return snippet_fts
+end
+
+local function get_snippet_filetype_from_filetype(filetype)
 	local fts = vim.split(filetype, ".", true)
 	local snippet_fts = {}
 	for _, ft in ipairs(fts) do
 		vim.list_extend(snippet_fts, session.ft_redirect[ft])
 	end
+
+	return snippet_fts
+end
+
+-- filetype: string formatted like `'filetype'`.
+-- from: "both", "cursor", "filetype" (default "cursor")
+local function get_snippet_filetypes(filetype, from)
+	-- default to snippets based on the cursors language, but if treesitter isn't available use filetype
+	from = from or "cursor"
+	if from == "cursor" and not (ts_parsers and ts_utils) then
+		from = "filetype"
+	end
+
+	local snippet_fts = {}
+	if from == "both" then
+		snippet_fts = get_snippet_filetype_from_filetype(filetype)
+		vim.list_extend(snippet_fts, get_snippet_filetype_from_cursor())
+	elseif from == "cursor" then
+		snippet_fts = get_snippet_filetype_from_cursor()
+	elseif from == "filetype" then
+		snippet_fts = get_snippet_filetype_from_filetype(filetype)
+	else
+		error("Cannot deduce snippet filetype from " .. from)
+	end
+
 	-- add all last.
 	table.insert(snippet_fts, "all")
 	return snippet_fts
