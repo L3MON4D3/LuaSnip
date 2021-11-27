@@ -115,7 +115,7 @@ local function init_opts(opts)
 	-- wrap non-snippetNode in snippetNode.
 	for key, node in pairs(opts.stored) do
 		if node.type ~= types.snippetNode then
-			opts.stored[key] = SN(nil, {node})
+			opts.stored[key] = SN(nil, { node })
 		end
 	end
 
