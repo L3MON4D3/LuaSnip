@@ -25,12 +25,11 @@ local SN
 
 local stored_mt = {
 	__index = function(table, key)
-
 		-- default-node is just empty text.
-		local val = SN(nil, {tNode.T({""})})
+		local val = SN(nil, { tNode.T({ "" }) })
 		rawset(table, key, val)
 		return val
-	end
+	end,
 }
 
 local Snippet = node_mod.Node:new()
@@ -154,7 +153,7 @@ local function S(context, nodes, opts)
 		active = false,
 		type = types.snippet,
 		hidden = context.hidden,
-		stored = opts.stored
+		stored = opts.stored,
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip

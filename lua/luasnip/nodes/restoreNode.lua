@@ -28,7 +28,6 @@ function RestoreNode:exit()
 	self.active = false
 end
 
-
 function RestoreNode:input_enter()
 	self.active = true
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
@@ -118,7 +117,8 @@ end
 function RestoreNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		self.static_text = self.parent.snippet.stored[self.key]:get_static_text()
+		self.static_text =
+			self.parent.snippet.stored[self.key]:get_static_text()
 	end
 	return self.static_text
 end
@@ -129,11 +129,10 @@ function RestoreNode:set_mark_rgrav(val_begin, val_end)
 	self.snip:set_mark_rgrav(val_begin, val_end)
 end
 
-
 function RestoreNode:store() end
 
 function RestoreNode:update_restore() end
 
 return {
-	R = R
+	R = R,
 }
