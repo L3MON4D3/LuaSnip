@@ -43,23 +43,8 @@ function RestoreNode:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
--- don't need these, will be done in put_initial.
-function RestoreNode:subsnip_init()
-	local tmp = self.parent.snippet.stored[self.key]:copy()
-
-	-- act as if snip is directly inside parent.
-	tmp.parent = self.parent
-
-	tmp.env = self.parent.env
-	tmp.ext_opts = tmp.ext_opts
-		or util.increase_ext_prio(
-			vim.deepcopy(self.parent.ext_opts),
-			conf.config.ext_prio_increase
-		)
-	tmp.snippet = self.parent.snippet
-
-	tmp:subsnip_init()
-end
+-- don't need these, will be done in put_initial and get_static/docstring.
+function RestoreNode:subsnip_init() end
 
 function RestoreNode:indent(_) end
 
@@ -129,13 +114,36 @@ function RestoreNode:set_ext_opts(name)
 	self.snip:set_ext_opts(name)
 end
 
+local function snip_init(self, snip)
+	snip.parent = self.parent
+	snip.env = self.parent.env
+
+	snip.ext_opts = util.increase_ext_prio(
+		vim.deepcopy(self.parent.ext_opts),
+		conf.config.ext_prio_increase
+	)
+	snip.snippet = self.parent.snippet
+	snip:subsnip_init()
+end
+
 function RestoreNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		self.static_text =
-			self.parent.snippet.stored[self.key]:get_static_text()
+		local tmp = self.parent.snippet.stored[self.key]
+		snip_init(self, tmp)
+		self.static_text = tmp:get_static_text()
 	end
 	return self.static_text
+end
+
+function RestoreNode:get_docstring()
+	if not self.docstring then
+		local tmp = self.parent.snippet.stored[self.key]
+		-- init correctly.
+		snip_init(self, tmp)
+		self.docstring = tmp:get_docstring()
+	end
+	return self.docstring
 end
 
 function RestoreNode:set_mark_rgrav(val_begin, val_end)
