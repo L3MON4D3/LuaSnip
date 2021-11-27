@@ -44,7 +44,22 @@ function RestoreNode:input_leave()
 end
 
 -- don't need these, will be done in put_initial.
-function RestoreNode:subsnip_init() end
+function RestoreNode:subsnip_init()
+	local tmp = self.parent.snippet.stored[self.key]:copy()
+
+	-- act as if snip is directly inside parent.
+	tmp.parent = self.parent
+
+	tmp.env = self.parent.env
+	tmp.ext_opts = tmp.ext_opts
+		or util.increase_ext_prio(
+			vim.deepcopy(self.parent.ext_opts),
+			conf.config.ext_prio_increase
+		)
+	tmp.snippet = self.parent.snippet
+
+	tmp:subsnip_init()
+end
 
 function RestoreNode:indent(_) end
 
