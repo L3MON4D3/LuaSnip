@@ -67,6 +67,7 @@ function Snippet:init_nodes()
 			or node.type == types.snippetNode
 			or node.type == types.choiceNode
 			or node.type == types.dynamicNode
+			or node.type == types.restoreNode
 		then
 			if node.pos then
 				insert_nodes[node.pos] = node
