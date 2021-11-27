@@ -106,15 +106,16 @@ function DynamicNode:update()
 			self.snip.old_state,
 			unpack(self.user_args)
 		)
+		self.snip:exit()
+		self.snip = nil
+
 		-- enters node.
 		self.parent:set_text(self, { "" })
-		self.snip:exit()
 	else
 		-- also enter node here.
 		self.parent:enter_node(self.indx)
 		tmp = self.fn(self.last_args, self.parent, nil, unpack(self.user_args))
 	end
-	self.snip = nil
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
