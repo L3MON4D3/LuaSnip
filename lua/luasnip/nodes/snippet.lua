@@ -110,6 +110,14 @@ local function init_opts(opts)
 
 	-- return sn(t("")) for so-far-undefined keys.
 	opts.stored = setmetatable(opts.stored or {}, stored_mt)
+
+	-- wrap non-snippetNode in snippetNode.
+	for key, node in pairs(opts.stored) do
+		if node.type ~= types.snippetNode then
+			opts.stored[key] = SN(nil, {node})
+		end
+	end
+
 	return opts
 end
 
