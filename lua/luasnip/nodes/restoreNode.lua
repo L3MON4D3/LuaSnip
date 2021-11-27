@@ -13,7 +13,7 @@ local function R(pos, key)
 		pos = pos,
 		key = key,
 		mark = nil,
-		type = types.snippetNode,
+		type = types.restoreNode,
 		dependents = {},
 	})
 end
