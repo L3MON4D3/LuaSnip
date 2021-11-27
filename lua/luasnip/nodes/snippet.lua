@@ -20,6 +20,19 @@ local callbacks_mt = {
 	end,
 }
 
+-- declare SN here, is needed in metatable.
+local SN
+
+local stored_mt = {
+	__index = function(table, key)
+
+		-- default-node is just empty text.
+		local val = SN(nil, {tNode.T({""})})
+		rawset(table, key, val)
+		return val
+	end
+}
+
 local Snippet = node_mod.Node:new()
 
 local Parent_indexer = {}
@@ -95,6 +108,9 @@ local function init_opts(opts)
 	setmetatable(opts.callbacks, callbacks_mt)
 	opts.condition = opts.condition or true_func
 	opts.show_condition = opts.show_condition or true_func
+
+	-- return sn(t("")) for so-far-undefined keys.
+	opts.stored = setmetatable(opts.stored or {}, stored_mt)
 	return opts
 end
 
@@ -138,6 +154,7 @@ local function S(context, nodes, opts)
 		active = false,
 		type = types.snippet,
 		hidden = context.hidden,
+		stored = opts.stored
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
@@ -157,7 +174,7 @@ local function S(context, nodes, opts)
 	return snip
 end
 
-local function SN(pos, nodes, opts)
+function SN(pos, nodes, opts)
 	opts = init_opts(opts)
 
 	local snip = Snippet:new({

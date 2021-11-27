@@ -169,14 +169,20 @@ function ChoiceNode:change_choice(dir)
 	self.active_choice:store()
 	-- tear down current choice.
 	self.active_choice:input_leave()
+	self.active_choice:exit()
+
+	-- store in old_choice, active_choice has to be disabled to prevent reading
+	-- from cleared mark in set_mark_rgrav (which will be called in
+	-- parent:set_text(self,...) a few lines below).
+	local old_choice = self.active_choice
+	self.active_choice = nil
+
 	-- clear text.
 	self.parent:set_text(self, { "" })
 
-	self.active_choice:exit()
-
 	-- stylua: ignore
-	self.active_choice = dir == 1 and self.active_choice.next_choice
-	                               or self.active_choice.prev_choice
+	self.active_choice = dir == 1 and old_choice.next_choice
+	                               or old_choice.prev_choice
 
 	self.active_choice.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
@@ -218,7 +224,10 @@ end
 -- val_begin/end may be nil, in this case that gravity won't be changed.
 function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
 	node.set_mark_rgrav(self, rgrav_beg, rgrav_end)
-	self.active_choice:set_mark_rgrav(rgrav_beg, rgrav_end)
+	-- may be set to temporarily in change_choice.
+	if self.active_choice then
+		self.active_choice:set_mark_rgrav(rgrav_beg, rgrav_end)
+	end
 end
 
 function ChoiceNode:set_ext_opts(name)
