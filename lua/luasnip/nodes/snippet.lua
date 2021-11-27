@@ -26,7 +26,7 @@ local SN
 local stored_mt = {
 	__index = function(table, key)
 		-- default-node is just empty text.
-		local val = SN(nil, { tNode.T({ "" }) })
+		local val = SN(nil, { iNode.I(1) })
 		rawset(table, key, val)
 		return val
 	end,
