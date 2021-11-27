@@ -236,6 +236,9 @@ args = {
 }
 ```
 
+If the function only performs simple operations on text, consider using
+the `lambda` from [`luasnip.extras`](#extras)
+
 # CHOICENODE
 
 ChoiceNodes allow choosing between multiple nodes.

@@ -32,6 +32,18 @@ function DynamicNode:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
+local function snip_init(self, snip)
+	snip.parent = self.parent
+	snip.env = self.parent.env
+
+	snip.ext_opts = util.increase_ext_prio(
+		vim.deepcopy(self.parent.ext_opts),
+		conf.config.ext_prio_increase
+	)
+	snip.snippet = self.parent.snippet
+	snip:subsnip_init()
+end
+
 function DynamicNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
@@ -41,6 +53,7 @@ function DynamicNode:get_static_text()
 			nil,
 			unpack(self.user_args)
 		)
+		snip_init(self, tmp)
 		self.static_text = tmp:get_static_text()
 	end
 	return self.static_text
@@ -67,6 +80,7 @@ function DynamicNode:get_docstring()
 			self.docstring = { "" }
 		else
 			-- set pos for util.string_wrap().
+			snip_init(self, tmp)
 			tmp.pos = self.pos
 			self.docstring = tmp:get_docstring()
 		end
