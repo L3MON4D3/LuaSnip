@@ -27,6 +27,7 @@ local stored_mt = {
 	__index = function(table, key)
 		-- default-node is just empty text.
 		local val = SN(nil, { iNode.I(1) })
+		val.is_default = true
 		rawset(table, key, val)
 		return val
 	end,

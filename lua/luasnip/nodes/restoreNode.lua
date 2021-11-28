@@ -1,6 +1,7 @@
 -- restoreNode is implemented similarly to dynamicNode, only that it gets the snippetNode not from some function, but from self.snip.stored[key].
 
 local Node = require("luasnip.nodes.node").Node
+local sNode = require("luasnip.nodes.snippet").SN
 local RestoreNode = Node:new()
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
@@ -8,11 +9,16 @@ local util = require("luasnip.util.util")
 local conf = require("luasnip.config")
 local mark = require("luasnip.util.mark").mark
 
-local function R(pos, key)
+local function R(pos, key, nodes)
+	-- don't create nested snippetNodes, unnecessary.
+	if nodes and nodes.type ~= types.snippetNode then
+		nodes = sNode(nil, util.wrap_nodes(nodes))
+	end
 	return RestoreNode:new({
 		pos = pos,
 		key = key,
 		mark = nil,
+		snip = nodes,
 		type = types.restoreNode,
 		dependents = {},
 	})
@@ -43,9 +49,17 @@ function RestoreNode:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
--- don't need these, will be done in put_initial and get_static/docstring.
-function RestoreNode:subsnip_init() end
+-- set snippetNode for this key here.
+function RestoreNode:subsnip_init()
+	-- don't overwrite potentially stored snippetNode.
+	-- due to metatable, there will always be a node set, but only those set
+	-- by it (should) have the is_default set to true.
+	if self.parent.snippet.stored[self.key].is_default and self.snip then
+		self.parent.snippet.stored[self.key] = self.snip
+	end
+end
 
+-- don't need these, will be done in put_initial and get_static/docstring.
 function RestoreNode:indent(_) end
 
 function RestoreNode:expand_tabs(_) end
