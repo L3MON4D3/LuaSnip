@@ -103,6 +103,7 @@ function RestoreNode:put_initial(pos)
 	local old_pos = vim.deepcopy(pos)
 	tmp:put_initial(pos)
 	tmp.mark = mark(old_pos, pos, mark_opts)
+
 	tmp:set_old_text()
 
 	self.snip = tmp
@@ -126,6 +127,10 @@ end
 function RestoreNode:set_ext_opts(name)
 	self.mark:update_opts(self.parent.ext_opts[self.type][name])
 	self.snip:set_ext_opts(name)
+end
+
+function RestoreNode:update()
+	self.snip:update()
 end
 
 local function snip_init(self, snip)
