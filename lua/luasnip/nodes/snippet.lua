@@ -323,6 +323,11 @@ function Snippet:trigger_expand(current_node)
 
 	self.env = Environ:new()
 	self:subsnip_init()
+	-- at this point `stored` contains the snippetNodes that will actually
+	-- be used, indent them once here.
+	for _, node in pairs(self.stored) do
+		node:indent(self.indentstr)
+	end
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)

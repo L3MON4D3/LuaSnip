@@ -93,7 +93,6 @@ function RestoreNode:put_initial(pos)
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())
 	end
-	tmp:indent(self.parent.indentstr)
 
 	-- correctly set extmark for node.
 	-- does not modify ext_opts[node.type].
