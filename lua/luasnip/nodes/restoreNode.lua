@@ -21,6 +21,8 @@ local function R(pos, key, nodes)
 		snip = nodes,
 		type = types.restoreNode,
 		dependents = {},
+		-- TODO: find out why it's necessary only for this node.
+		active = false
 	})
 end
 
