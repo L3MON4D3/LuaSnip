@@ -513,7 +513,7 @@ the general snippets (the ones of filetype 'all') and those of the filetype
 of the buffers, you open every time you open a new one (but it won't reload them).
 
 Apart from what is stipulated by the start each snippet in the json file can 
-contain a "luasnip" field wich is a table for extra parameters for the snippet,
+contain a "luasnip" field which is a table for extra parameters for the snippet,
 till now the only valid one is autotrigger.
 
 After snippets were lazy-loaded, the `User LuasnipSnippetsAdded`-event will be
