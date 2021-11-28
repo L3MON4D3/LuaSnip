@@ -175,7 +175,8 @@ end
 
 function RestoreNode:store() end
 
-function RestoreNode:update_restore() end
+-- will be restored through other means.
+RestoreNode.update_restore = RestoreNode.update
 
 return {
 	R = R,
