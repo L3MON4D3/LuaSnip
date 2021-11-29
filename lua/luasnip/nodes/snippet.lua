@@ -897,5 +897,5 @@ return {
 	SN = SN,
 	P = P,
 	ISN = ISN,
-	wrap_nodes_in_snippetNode = wrap_nodes_in_snippetNode
+	wrap_nodes_in_snippetNode = wrap_nodes_in_snippetNode,
 }
