@@ -174,7 +174,9 @@ end
 function RestoreNode:store() end
 
 -- will be restored through other means.
-RestoreNode.update_restore = RestoreNode.update
+function RestoreNode:update_restore()
+	self.snip:update_restore()
+end
 
 return {
 	R = R,
