@@ -101,6 +101,25 @@ function Snippet:init_nodes()
 	self:populate_argnodes()
 end
 
+local function wrap_nodes_in_snippetNode(nodes)
+	if getmetatable(nodes) then
+		-- is a node, not a table.
+		if nodes.type ~= types.snippetNode then
+			-- is not a snippetNode.
+
+			-- pos might have been nil, just set it correctly here.
+			nodes.pos = 1
+			return SN(nil, { nodes })
+		else
+			-- is a snippetNode, wrapping it twice is unnecessary.
+			return nodes
+		end
+	else
+		-- is a table of nodes.
+		return SN(nil, nodes)
+	end
+end
+
 local function init_opts(opts)
 	opts = opts or {}
 
@@ -114,10 +133,8 @@ local function init_opts(opts)
 	opts.stored = setmetatable(opts.stored or {}, stored_mt)
 
 	-- wrap non-snippetNode in snippetNode.
-	for key, node in pairs(opts.stored) do
-		if node.type ~= types.snippetNode then
-			opts.stored[key] = SN(nil, { node })
-		end
+	for key, nodes in pairs(opts.stored) do
+		opts.stored[key] = wrap_nodes_in_snippetNode(nodes)
 	end
 
 	return opts
@@ -880,4 +897,5 @@ return {
 	SN = SN,
 	P = P,
 	ISN = ISN,
+	wrap_nodes_in_snippetNode = wrap_nodes_in_snippetNode
 }

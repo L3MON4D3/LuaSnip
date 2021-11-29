@@ -1,7 +1,7 @@
 -- restoreNode is implemented similarly to dynamicNode, only that it gets the snippetNode not from some function, but from self.snip.stored[key].
 
 local Node = require("luasnip.nodes.node").Node
-local sNode = require("luasnip.nodes.snippet").SN
+local wrap_nodes_in_snippetNode = require("luasnip.nodes.snippet").wrap_nodes_in_snippetNode
 local RestoreNode = Node:new()
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
@@ -11,9 +11,8 @@ local mark = require("luasnip.util.mark").mark
 
 local function R(pos, key, nodes)
 	-- don't create nested snippetNodes, unnecessary.
-	if nodes and nodes.type ~= types.snippetNode then
-		nodes = sNode(nil, util.wrap_nodes(nodes))
-	end
+	nodes = nodes and wrap_nodes_in_snippetNode(nodes)
+
 	return RestoreNode:new({
 		pos = pos,
 		key = key,
