@@ -165,7 +165,6 @@ end
 
 function ChoiceNode:setup_choice_jumps() end
 
-function ChoiceNode:change_choice(dir)
 function ChoiceNode:find_node(predicate)
 	if self.active_choice then
 		if predicate(self.active_choice) then
@@ -176,6 +175,16 @@ function ChoiceNode:find_node(predicate)
 	end
 	return nil
 end
+
+-- used to uniquely identify this change-choice-action.
+local change_choice_id = 0
+
+function ChoiceNode:change_choice(dir, current_node)
+	change_choice_id = change_choice_id + 1
+	-- to uniquely identify this node later (storing the pointer isn't enough
+	-- because this is supposed to work with restoreNodes, which are copied).
+	current_node.change_choice_id = change_choice_id
+
 	self.active_choice:store()
 	-- tear down current choice.
 	self.active_choice:input_leave()
@@ -206,6 +215,30 @@ end
 	-- Another node may have been entered in update_dependents.
 	self.parent:enter_node(self.indx)
 	self:event(events.change_choice)
+
+	local target_node = self:find_node(function(test_node)
+		return test_node.change_choice_id == change_choice_id
+	end)
+
+	if target_node then
+		-- the node that the cursor was in when changeChoice was called exists
+		-- in the active choice! jump_into it!
+		local jump_node = self.active_choice:jump_into(1)
+
+		local jumps = 1
+		while jump_node ~= target_node do
+			jump_node = jump_node:jump_from(1)
+
+			-- just for testing...
+			if jumps > 1000 then
+				print("FAIL! Too many jumps!!")
+				return self.active_choice:jump_into(1)
+			end
+			jumps = jumps + 1
+		end
+		return jump_node
+	end
+
 	return self.active_choice:jump_into(1)
 end
 
