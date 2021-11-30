@@ -166,6 +166,16 @@ end
 function ChoiceNode:setup_choice_jumps() end
 
 function ChoiceNode:change_choice(dir)
+function ChoiceNode:find_node(predicate)
+	if self.active_choice then
+		if predicate(self.active_choice) then
+			return self.active_choice
+		else
+			return self.active_choice:find_node(predicate)
+		end
+	end
+	return nil
+end
 	self.active_choice:store()
 	-- tear down current choice.
 	self.active_choice:input_leave()

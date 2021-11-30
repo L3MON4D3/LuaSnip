@@ -211,6 +211,17 @@ function DynamicNode:update_restore()
 	end
 end
 
+function DynamicNode:find_node(predicate)
+	if self.snip then
+		if predicate(self.snip) then
+			return self.snip
+		else
+			return self.snip:find_node(predicate)
+		end
+	end
+	return nil
+end
+
 return {
 	D = D,
 }

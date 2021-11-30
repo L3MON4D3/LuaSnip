@@ -891,6 +891,20 @@ function Snippet:get_pattern_expand_helper()
 	return self.expand_helper_snippet:copy()
 end
 
+function Snippet:find_node(predicate)
+	for _, node in ipairs(self.nodes) do
+		if predicate(node) then
+			return node
+		else
+			local node_in_child = node:find_node(predicate)
+			if node_in_child then
+				return node_in_child
+			end
+		end
+	end
+	return nil
+end
+
 return {
 	Snippet = Snippet,
 	S = S,
