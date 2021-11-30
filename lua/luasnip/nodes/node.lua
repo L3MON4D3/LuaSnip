@@ -175,7 +175,9 @@ end
 function Node:update_restore() end
 
 -- find_node only needs to check children, self is checked by the parent.
-function Node:find_node() return nil end
+function Node:find_node()
+	return nil
+end
 
 Node.ext_gravities_active = { false, true }
 
