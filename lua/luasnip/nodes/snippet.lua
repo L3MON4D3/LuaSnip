@@ -20,6 +20,19 @@ local callbacks_mt = {
 	end,
 }
 
+-- declare SN here, is needed in metatable.
+local SN
+
+local stored_mt = {
+	__index = function(table, key)
+		-- default-node is just empty text.
+		local val = SN(nil, { iNode.I(1) })
+		val.is_default = true
+		rawset(table, key, val)
+		return val
+	end,
+}
+
 local Snippet = node_mod.Node:new()
 
 local Parent_indexer = {}
@@ -55,6 +68,7 @@ function Snippet:init_nodes()
 			or node.type == types.snippetNode
 			or node.type == types.choiceNode
 			or node.type == types.dynamicNode
+			or node.type == types.restoreNode
 		then
 			if node.pos then
 				insert_nodes[node.pos] = node
@@ -87,6 +101,25 @@ function Snippet:init_nodes()
 	self:populate_argnodes()
 end
 
+local function wrap_nodes_in_snippetNode(nodes)
+	if getmetatable(nodes) then
+		-- is a node, not a table.
+		if nodes.type ~= types.snippetNode then
+			-- is not a snippetNode.
+
+			-- pos might have been nil, just set it correctly here.
+			nodes.pos = 1
+			return SN(nil, { nodes })
+		else
+			-- is a snippetNode, wrapping it twice is unnecessary.
+			return nodes
+		end
+	else
+		-- is a table of nodes.
+		return SN(nil, nodes)
+	end
+end
+
 local function init_opts(opts)
 	opts = opts or {}
 
@@ -95,6 +128,15 @@ local function init_opts(opts)
 	setmetatable(opts.callbacks, callbacks_mt)
 	opts.condition = opts.condition or true_func
 	opts.show_condition = opts.show_condition or true_func
+
+	-- return sn(t("")) for so-far-undefined keys.
+	opts.stored = setmetatable(opts.stored or {}, stored_mt)
+
+	-- wrap non-snippetNode in snippetNode.
+	for key, nodes in pairs(opts.stored) do
+		opts.stored[key] = wrap_nodes_in_snippetNode(nodes)
+	end
+
 	return opts
 end
 
@@ -138,6 +180,7 @@ local function S(context, nodes, opts)
 		active = false,
 		type = types.snippet,
 		hidden = context.hidden,
+		stored = opts.stored,
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
@@ -157,7 +200,7 @@ local function S(context, nodes, opts)
 	return snip
 end
 
-local function SN(pos, nodes, opts)
+function SN(pos, nodes, opts)
 	opts = init_opts(opts)
 
 	local snip = Snippet:new({
@@ -297,6 +340,11 @@ function Snippet:trigger_expand(current_node)
 
 	self.env = Environ:new()
 	self:subsnip_init()
+	-- at this point `stored` contains the snippetNodes that will actually
+	-- be used, indent them once here.
+	for _, node in pairs(self.stored) do
+		node:indent(self.indentstr)
+	end
 
 	-- remove snippet-trigger, Cursor at start of future snippet text.
 	util.remove_n_before_cur(#self.trigger)
@@ -849,4 +897,5 @@ return {
 	SN = SN,
 	P = P,
 	ISN = ISN,
+	wrap_nodes_in_snippetNode = wrap_nodes_in_snippetNode,
 }

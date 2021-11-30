@@ -7,6 +7,7 @@ return {
 	dynamicNode = 6,
 	snippet = 7,
 	exitNode = 8,
+	restoreNode = 9,
 	names = {
 		"textNode",
 		"insertNode",
@@ -16,6 +17,7 @@ return {
 		"dynamicNode",
 		"snippet",
 		"exitNode",
+		"restoreNode",
 	},
 	names_pascal_case = {
 		"TextNode",
@@ -26,5 +28,6 @@ return {
 		"DynamicNode",
 		"Snippet",
 		"ExitNode",
+		"RestoreNode",
 	},
 }

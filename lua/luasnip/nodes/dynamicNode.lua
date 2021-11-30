@@ -120,15 +120,16 @@ function DynamicNode:update()
 			self.snip.old_state,
 			unpack(self.user_args)
 		)
+		self.snip:exit()
+		self.snip = nil
+
 		-- enters node.
 		self.parent:set_text(self, { "" })
-		self.snip:exit()
 	else
 		-- also enter node here.
 		self.parent:enter_node(self.indx)
 		tmp = self.fn(self.last_args, self.parent, nil, unpack(self.user_args))
 	end
-	self.snip = nil
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
@@ -193,12 +194,18 @@ end
 function DynamicNode:update_restore()
 	-- only restore snippet if arg-values still match.
 	if self.snip and vim.deep_equal(self:get_args(), self.last_args) then
-		self.snip.mark = self.mark:copy_pos_gravs(
+		-- prevent entering the uninitialized snip in enter_node in a few lines.
+		local tmp = self.snip
+		self.snip = nil
+
+		tmp.mark = self.mark:copy_pos_gravs(
 			vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
 		)
 		self.parent:enter_node(self.indx)
-		self.snip:put_initial(self.mark:pos_begin_raw())
-		self.snip:update_restore()
+		tmp:put_initial(self.mark:pos_begin_raw())
+		tmp:update_restore()
+
+		self.snip = tmp
 	else
 		self:update()
 	end

@@ -60,6 +60,13 @@ local defaults = {
 			-- not used!
 			snippet_passive = { hl_group = "LuasnipSnippetSnippetPassive" },
 		},
+		[types.restoreNode] = {
+			active = { hl_group = "LuasnipRestoreNodeActive" },
+			passive = { hl_group = "LuasnipRestoreNodePassive" },
+			snippet_passive = {
+				hl_group = "LuasnipRestoreNodeSnippetPassive",
+			},
+		},
 	},
 	ext_base_prio = 200,
 	ext_prio_increase = 7,
