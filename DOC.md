@@ -457,11 +457,7 @@ local function simple_restore(args, _)
 	return sn(nil, {i(1, args[1]), r(2, "dyn", i(nil, "user_text"))})
 end
 
-ss("rest", {
-	i(1, "preset"), t{"",""},
-	d(2, simple_restore, 1)
-}),
-("rest", {
+s("rest", {
 	i(1, "preset"), t{"",""},
 	d(2, simple_restore, 1)
 }),
