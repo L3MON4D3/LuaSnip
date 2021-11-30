@@ -468,6 +468,8 @@ ss("rest", {
 ```
 Now the entered text is stored.
 
+`RestoreNode`s indent is not influenced by `indentSnippetNodes` right now. If
+that really bothers you feel free to open an issue.
 
 # EXTRAS
 
