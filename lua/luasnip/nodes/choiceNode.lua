@@ -187,7 +187,10 @@ function ChoiceNode:change_choice(dir, current_node)
 
 	local insert_pre_cc = vim.fn.mode() == "i"
 	-- is byte-indexed! Doesn't matter here, but important to be aware of.
-	local cursor_pos_pre_relative = util.pos_sub(util.get_cursor_0ind(), current_node.mark:pos_begin_raw())
+	local cursor_pos_pre_relative = util.pos_sub(
+		util.get_cursor_0ind(),
+		current_node.mark:pos_begin_raw()
+	)
 
 	self.active_choice:store()
 	-- tear down current choice.
@@ -244,7 +247,12 @@ function ChoiceNode:change_choice(dir, current_node)
 			jumps = jumps + 1
 		end
 		if insert_pre_cc then
-			util.set_cursor_0ind(util.pos_add(target_node.mark:pos_begin_raw(), cursor_pos_pre_relative))
+			util.set_cursor_0ind(
+				util.pos_add(
+					target_node.mark:pos_begin_raw(),
+					cursor_pos_pre_relative
+				)
+			)
 		end
 		return jump_node
 	end
