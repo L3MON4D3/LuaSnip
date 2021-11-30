@@ -28,6 +28,7 @@ local i = ls.insert_node
 local f = ls.function_node
 local c = ls.choice_node
 local d = ls.dynamic_node
+local r = ls.restore_node
 local events = require("luasnip.util.events")
 ```
 
@@ -392,6 +393,80 @@ This snippet would start out as "1\nSample Text" and, upon changing the 1 to
 eg. 3, it would change to "3\nSample Text\nSample Text\nSample Text". Text
 that was inserted into any of the dynamicNodes insertNodes is kept when
 changing to a bigger number.
+
+# RESTORENODE
+
+This node can store and restore a snippetNode that was modified (changed
+choices, inserted text) by the user. It's usage is best demonstrated by an
+example:
+
+```lua
+s("paren_change", {
+	c(1, {
+		sn(nil, { t("("), r(1, "user_text"), t(")") }),
+		sn(nil, { t("["), r(1, "user_text"), t("]") }),
+		sn(nil, { t("{"), r(1, "user_text"), t("}") }),
+	}),
+}, {
+	stored = {
+		user_text = i(1, "default_text")
+	}
+})
+```
+
+Here the text entered into `user_text` is preserved upon changing choice.
+
+The constructor for the restoreNode, `r`, takes (at most) three parameters:
+- `pos`, when to jump to this node.
+- `key`, the key that identifies which `restoreNode`s should share their
+  content.
+- `nodes`, the contents of the `restoreNode`. Can either be a single node or
+  a table of nodes (both of which will be wrapped inside a `snippetNode`,
+  except if the single node already is a `snippetNode`).
+  The content of a given key may be defined multiple times, but if the
+  contents differ, it's undefined which will actually be used.
+  If a keys content is defined in a `dynamicNode`, it will not be used for
+  `restoreNodes` outside that `dynamicNode`. A way around this limitation is
+  defining the content in the `restoreNode` outside the `dynamicNode`.
+
+The content for a key may also be defined in the `opts`-parameter of the
+snippet-constructor, as seen in the example above. The `stored`-table accepts
+the same values as the `nodes`-parameter passed to `r`.
+If no content is defined for a key, it defaults to the empty `insertNode`.
+
+The `restoreNode` is also useful for storing user-input across updates of a
+`dynamicNode`. Consider this:
+
+```lua
+local function simple_restore(args, _)
+	return sn(nil, {i(1, args[1]), i(2, "user_text")})
+end
+
+s("rest", {
+	i(1, "preset"), t{"",""},
+	d(2, simple_restore, 1)
+}),
+```
+
+Every time the `i(1)` in the outer snippet is changed, the text inside the
+`dynamicNode` is reset to `"user_text"`. This can be prevented by using a
+`restoreNode`:
+
+```lua
+local function simple_restore(args, _)
+	return sn(nil, {i(1, args[1]), r(2, "dyn", i(nil, "user_text"))})
+end
+
+ss("rest", {
+	i(1, "preset"), t{"",""},
+	d(2, simple_restore, 1)
+}),
+("rest", {
+	i(1, "preset"), t{"",""},
+	d(2, simple_restore, 1)
+}),
+```
+Now the entered text is stored.
 
 
 # EXTRAS

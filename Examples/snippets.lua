@@ -7,8 +7,9 @@ local i = ls.insert_node
 local f = ls.function_node
 local c = ls.choice_node
 local d = ls.dynamic_node
+local r = ls.restore_node
 local l = require("luasnip.extras").lambda
-local r = require("luasnip.extras").rep
+local rep = require("luasnip.extras").rep
 local p = require("luasnip.extras").partial
 local m = require("luasnip.extras").match
 local n = require("luasnip.extras").nonempty
@@ -58,6 +59,9 @@ end
 
 -- complicated function for dynamicNode.
 local function jdocsnip(args, _, old_state)
+	-- !!! old_state is used to preserve user-input here. DON'T DO IT THAT WAY!
+	-- Using a restoreNode instead is much easier.
+	-- View this only as an example on how old_state functions.
 	local nodes = {
 		t({ "/**", " * " }),
 		i(1, "A short Description"),
@@ -200,12 +204,15 @@ ls.snippets = {
 				-- Inside Choices, Nodes don't need a position as the choice node is the one being jumped to.
 				sn(nil, {
 					t("extends "),
-					i(1),
+					-- restoreNode: stores and restores nodes.
+					-- pass position, store-key and nodes.
+					r(1, "other_class", i(1)),
 					t(" {"),
 				}),
 				sn(nil, {
 					t("implements "),
-					i(1),
+					-- no need to define the nodes for a given key a second time.
+					r(1, "other_class"),
 					t(" {"),
 				}),
 			}),
@@ -309,7 +316,7 @@ ls.snippets = {
 			i(0),
 		}),
 		-- Shorthand for repeating the text in a given node.
-		s("repeat", { i(1, "text"), t({ "", "" }), r(1) }),
+		s("repeat", { i(1, "text"), t({ "", "" }), rep(1) }),
 		-- Directly insert the ouput from a function evaluated at runtime.
 		s("part", p(os.date, "%Y")),
 		-- use matchNodes to insert text based on a pattern/function/lambda-evaluation.
@@ -391,9 +398,9 @@ ls.snippets = {
 			]],
 				{
 					i(1, "x"),
-					r(1),
+					rep(1),
 					i(2, "y"),
-					r(2),
+					rep(2),
 				}
 			)
 		),
