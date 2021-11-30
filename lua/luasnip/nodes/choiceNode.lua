@@ -185,6 +185,10 @@ function ChoiceNode:change_choice(dir, current_node)
 	-- because this is supposed to work with restoreNodes, which are copied).
 	current_node.change_choice_id = change_choice_id
 
+	local insert_pre_cc = vim.fn.mode() == "i"
+	-- is byte-indexed! Doesn't matter here, but important to be aware of.
+	local cursor_pos_pre_relative = util.pos_sub(util.get_cursor_0ind(), current_node.mark:pos_begin_raw())
+
 	self.active_choice:store()
 	-- tear down current choice.
 	self.active_choice:input_leave()
@@ -223,18 +227,24 @@ function ChoiceNode:change_choice(dir, current_node)
 	if target_node then
 		-- the node that the cursor was in when changeChoice was called exists
 		-- in the active choice! jump_into it!
-		local jump_node = self.active_choice:jump_into(1)
+		--
+		-- if in INSERT before change_choice, don't actually move into the node.
+		-- The new cursor will be set to the actual edit-position later.
+		local jump_node = self.active_choice:jump_into(1, insert_pre_cc)
 
 		local jumps = 1
 		while jump_node ~= target_node do
-			jump_node = jump_node:jump_from(1)
+			jump_node = jump_node:jump_from(1, insert_pre_cc)
 
 			-- just for testing...
 			if jumps > 1000 then
 				print("FAIL! Too many jumps!!")
-				return self.active_choice:jump_into(1)
+				return self.active_choice:jump_into(1, insert_pre_cc)
 			end
 			jumps = jumps + 1
+		end
+		if insert_pre_cc then
+			util.set_cursor_0ind(util.pos_add(target_node.mark:pos_begin_raw(), cursor_pos_pre_relative))
 		end
 		return jump_node
 	end
