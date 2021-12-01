@@ -53,7 +53,7 @@ local function C(pos, choices, opts)
 		mark = nil,
 		dependents = {},
 		-- default to true.
-		restore_cursor = opts.restore_cursor
+		restore_cursor = opts.restore_cursor,
 	})
 	c:init_nodes()
 	return c
@@ -255,7 +255,12 @@ function ChoiceNode:change_choice(dir, current_node)
 				jumps = jumps + 1
 			end
 			if insert_pre_cc then
-				util.set_cursor_0ind(util.pos_add(target_node.mark:pos_begin_raw(), cursor_pos_pre_relative))
+				util.set_cursor_0ind(
+					util.pos_add(
+						target_node.mark:pos_begin_raw(),
+						cursor_pos_pre_relative
+					)
+				)
 			end
 			return jump_node
 		end
