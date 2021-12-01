@@ -279,7 +279,9 @@ ChoiceNodes allow choosing between multiple nodes.
 <
 
 `c()` expects as its first arg, as with any jumpable node, its position in the
-jumplist, and as its second a table with nodes, the choices.
+jumplist, and as its second a table with nodes, the choices. This table can
+either contain a single node or a table of nodes. In the latter case the table
+will be converted into a `snippetNode`.
 The third parameter is a table of options with the following keys:
 - `restore_cursor`: `false` by default. If it is set and the node that was
     being edited also appears in the switched-to choice (can be the case if a
