@@ -39,7 +39,12 @@ function ChoiceNode:init_nodes()
 	self.active_choice = self.choices[1]
 end
 
-local function C(pos, choices)
+local function C(pos, choices, opts)
+	opts = opts or {}
+	if opts.restore_cursor == nil then
+		opts.restore_cursor = true
+	end
+
 	local c = ChoiceNode:new({
 		active = false,
 		pos = pos,
@@ -47,6 +52,8 @@ local function C(pos, choices)
 		type = types.choiceNode,
 		mark = nil,
 		dependents = {},
+		-- default to true.
+		restore_cursor = opts.restore_cursor
 	})
 	c:init_nodes()
 	return c
@@ -223,38 +230,35 @@ function ChoiceNode:change_choice(dir, current_node)
 	self.parent:enter_node(self.indx)
 	self:event(events.change_choice)
 
-	local target_node = self:find_node(function(test_node)
-		return test_node.change_choice_id == change_choice_id
-	end)
+	if self.restore_cursor then
+		local target_node = self:find_node(function(test_node)
+			return test_node.change_choice_id == change_choice_id
+		end)
 
-	if target_node then
-		-- the node that the cursor was in when changeChoice was called exists
-		-- in the active choice! jump_into it!
-		--
-		-- if in INSERT before change_choice, don't actually move into the node.
-		-- The new cursor will be set to the actual edit-position later.
-		local jump_node = self.active_choice:jump_into(1, insert_pre_cc)
+		if target_node then
+			-- the node that the cursor was in when changeChoice was called exists
+			-- in the active choice! jump_into it!
+			--
+			-- if in INSERT before change_choice, don't actually move into the node.
+			-- The new cursor will be set to the actual edit-position later.
+			local jump_node = self.active_choice:jump_into(1, insert_pre_cc)
 
-		local jumps = 1
-		while jump_node ~= target_node do
-			jump_node = jump_node:jump_from(1, insert_pre_cc)
+			local jumps = 1
+			while jump_node ~= target_node do
+				jump_node = jump_node:jump_from(1, insert_pre_cc)
 
-			-- just for testing...
-			if jumps > 1000 then
-				print("FAIL! Too many jumps!!")
-				return self.active_choice:jump_into(1, insert_pre_cc)
+				-- just for testing...
+				if jumps > 1000 then
+					print("FAIL! Too many jumps!!")
+					return self.active_choice:jump_into(1, insert_pre_cc)
+				end
+				jumps = jumps + 1
 			end
-			jumps = jumps + 1
+			if insert_pre_cc then
+				util.set_cursor_0ind(util.pos_add(target_node.mark:pos_begin_raw(), cursor_pos_pre_relative))
+			end
+			return jump_node
 		end
-		if insert_pre_cc then
-			util.set_cursor_0ind(
-				util.pos_add(
-					target_node.mark:pos_begin_raw(),
-					cursor_pos_pre_relative
-				)
-			)
-		end
-		return jump_node
 	end
 
 	return self.active_choice:jump_into(1)
