@@ -6,6 +6,7 @@ local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
 local session = require("luasnip.session")
+local sNode = require("luasnip.nodes.snippet").SN
 
 function ChoiceNode:init_nodes()
 	for i, node in ipairs(self.choices) do
@@ -44,6 +45,15 @@ local function C(pos, choices, opts)
 	if opts.restore_cursor == nil then
 		-- disable by default, can affect performance.
 		opts.restore_cursor = false
+	end
+
+	-- allow passing table of nodes in choices, will be turned into a
+	-- snippetNode.
+	for indx, choice in ipairs(choices) do
+		if not getmetatable(choice) then
+			-- is a normal table, not a node.
+			choices[indx] = sNode(nil, choice)
+		end
 	end
 
 	local c = ChoiceNode:new({
