@@ -187,25 +187,25 @@ user-defined function:
  })
 ```
 The first parameter of `f` is the function. Its parameters are
-	1.: A table of the text of currently contained in the argnodes.
-	(eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
-	all lines following the first.
+- 1.: A table of the text of currently contained in the argnodes.
+      (eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
+      all lines following the first.
 
-	2.: The surrounding snippet. It is included here as it allows access to
-	anything that could be useful in functionNodes (ie. `snippet.env` or
-	`snippet.captures`, which contains capture groups of regex-triggered
-	snippets).
+- 2.: The surrounding snippet. It is included here as it allows access to
+      anything that could be useful in functionNodes (ie. `snippet.env` or
+      `snippet.captures`, which contains capture groups of regex-triggered
+      snippets).
 
-	3.: Any parameters passed to `f` behind the second (included to more easily
-	reuse functions, ie. ternary if based on text in an insertNode).
+- 3.: Any parameters passed to `f` behind the second (included to more easily
+      reuse functions, ie. ternary if based on text in an insertNode).
 
-The second parameter is a table of indizes of jumpable nodes whose text is
+The second parameter is a table of indices of jumpable nodes whose text is
 passed to the function. The table may be empty, in this case the function is
 evaluated once upon snippet-expansion. If the table only has a single node, it
 can be passed directly without wrapping it in a table.
 
 The function shall return a string, which will be inserted as-is, or a table
-of strings for multiline snippets, here all lines following the first will be
+of strings for multiline-string, here all lines following the first will be
 prepended with the snippets' indentation.
 
 Examples:
@@ -225,7 +225,9 @@ s("trig", {
 	i(1, "text_of_first"),
 	i(2, {"first_line_of_second", "second_line_of_second"}),
 	-- order is 2,1, not 1,2!!
-	f(function(args, snip) --here end, {2,1} )})
+	f(function(args, snip)
+		--here
+	end, {2,1} )})
 ```
 
 At `--here`, `args` would look as follows (provided no text was changed after
@@ -342,24 +344,25 @@ which makes them very powerful.
 
 Parameters:
 1. position (just like all jumpable nodes)
-2. function: Similar to functionNodes' function, first parameter is the
-   `table of text` from nodes the dynamicNode depends on(also without
-   snippet-indent), the second, unlike functionNode, is a user-defined table,
-   `old_state`. This table can contain anything, its main usage is to preserve
-   information from the previously generated snippetNode:
-   If the dynamicNode depends on another node it may be reconstructed,
-   which means all user input to the dynamicNode is lost. Using
-   `old_state`, the user may pass eg. insertNodes and then get their text via
-   `node:get_text()` or `node.old_text` upon reconstruction to initialize the
-   new nodes with.
-   The `old_state` table must be stored inside the snippetNode returned by
+2. function: Similar to functionNodes' function, first and second parameters
+   are the `table of text` from nodes the dynamicNode depends on (also without
+   snippet-indent) and the `snippet`.
+   The third, unlike functionNode, is a user-defined table, `old_state`. This
+   table can contain anything, its main usage is to preserve information from
+   the previously generated snippetNode: If the dynamicNode depends on another
+   node it may be reconstructed, which means all user input to the dynamicNode
+   is lost. Using `old_state`, the user may store eg. insertNodes and then get
+   their text via `node:get_text()` or `node.old_text` upon reconstruction to
+   initialize the new nodes with (only an example, this specific usecase is
+   covered much better by `restoreNode`).
+   The `old_state` table must be stored inside the `snippetNode` returned by
    the function.
-   All parameters following the second are user defined.
-3. Nodes the dynamicNode depends on: if any of these trigger an update,
-   the dynamicNodes function will be executed and the result inserted at
-   the nodes place. Can be a single node or a table of nodes.
+   All parameters following the third are user defined.
+3. Indices of nodes the dynamicNode depends on: if any of these trigger an
+   update, the dynamicNodes function will be executed and the result inserted at
+   the nodes place. Can be a single index or a table of indices.
 4. The fourth and following parameters are user defined, anything passed
-   here will also be passed to the function (arg 2) following its second
+   here will also be passed to the function (arg 2) following its third
    parameter (easy to reuse similar functions with small changes).
 
 ```lua
