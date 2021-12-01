@@ -291,9 +291,9 @@ The third parameter is a table of options with the following keys:
     `lua
     local function restore_cursor_choice(pos, choices, opts)
         if opts then
-            opts.restore_cursor = false
+            opts.restore_cursor = true
         else
-            opts = {restore_cursor = false}
+            opts = {restore_cursor = true}
         end
         return c(pos, choices, opts)
     end
