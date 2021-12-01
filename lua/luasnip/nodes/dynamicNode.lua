@@ -179,6 +179,8 @@ function DynamicNode:exit()
 	self.mark:clear()
 	-- snip should exist if exit is called.
 	self.snip:exit()
+	self.stored_snip = self.snip
+	self.snip = nil
 	self.active = false
 end
 
@@ -193,10 +195,9 @@ end
 
 function DynamicNode:update_restore()
 	-- only restore snippet if arg-values still match.
-	if self.snip and vim.deep_equal(self:get_args(), self.last_args) then
+	if self.stored_snip and vim.deep_equal(self:get_args(), self.last_args) then
 		-- prevent entering the uninitialized snip in enter_node in a few lines.
-		local tmp = self.snip
-		self.snip = nil
+		local tmp = self.stored_snip
 
 		tmp.mark = self.mark:copy_pos_gravs(
 			vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
