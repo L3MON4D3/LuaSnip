@@ -252,8 +252,13 @@ ChoiceNodes allow choosing between multiple nodes.
  }))
 ```
 
-`c()` expects as it first arg, as with any jumpable node, its position in the
+`c()` expects as its first arg, as with any jumpable node, its position in the
 jumplist, and as its second a table with nodes, the choices.
+The third parameter is a table of options with the following keys:
+- `restore_cursor`: `false` by default. If it is set and the node that was
+  being edited also appears in the switched-to choice (can be the case if a
+  `restoreNode` is present in both choice) the cursor is restored relative to
+  that node.
 
 Jumpable nodes that normally expect an index as their first parameter don't
 need one inside a choiceNode; their index is the same as the choiceNodes'.
