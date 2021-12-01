@@ -277,8 +277,27 @@ ChoiceNodes allow choosing between multiple nodes.
      }))
 <
 
-`c()` expects as it first arg, as with any jumpable node, its position in the
+`c()` expects as its first arg, as with any jumpable node, its position in the
 jumplist, and as its second a table with nodes, the choices.
+The third parameter is a table of options with the following keys:
+- `restore_cursor`: `false` by default. If it is set and the node that was
+    being edited also appears in the switched-to choice (can be the case if a
+    `restoreNode` is present in both choice) the cursor is restored relative to
+    that node.
+    The default is `false` as enabling might lead to worse performance. It's
+    possible to override the default by wrapping the `choiceNode`-constructor
+    in another function that sets `opts.restore_cursor` to `true` and then using
+    that to construct `choiceNode`s:
+    `lua
+    local function restore_cursor_choice(pos, choices, opts)
+        if opts then
+            opts.restore_cursor = true
+        else
+            opts = {restore_cursor = true}
+        end
+        return c(pos, choices, opts)
+    end
+`
 
 Jumpable nodes that normally expect an index as their first parameter don't
 need one inside a choiceNode; their index is the same as the choiceNodes'.

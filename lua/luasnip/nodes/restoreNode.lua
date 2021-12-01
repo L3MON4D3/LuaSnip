@@ -179,6 +179,17 @@ function RestoreNode:update_restore()
 	self.snip:update_restore()
 end
 
+function RestoreNode:find_node(predicate)
+	if self.snip then
+		if predicate(self.snip) then
+			return self.snip
+		else
+			return self.snip:find_node(predicate)
+		end
+	end
+	return nil
+end
+
 return {
 	R = R,
 }

@@ -498,6 +498,13 @@ else
 	json_encode = vim.fn.json_encode
 end
 
+local function pos_add(p1, p2)
+	return { p1[1] + p2[1], p1[2] + p2[2] }
+end
+local function pos_sub(p1, p2)
+	return { p1[1] - p2[1], p1[2] - p2[2] }
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -530,4 +537,7 @@ return {
 	get_snippet_filetypes = get_snippet_filetypes,
 	json_encode = json_encode,
 	json_decode = json_decode,
+	bytecol_to_utfcol = bytecol_to_utfcol,
+	pos_sub = pos_sub,
+	pos_add = pos_add,
 }

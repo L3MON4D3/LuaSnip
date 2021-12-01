@@ -210,7 +210,8 @@ local function change_choice(val)
 	local new_active = no_region_check_wrap(
 		session.active_choice_node.change_choice,
 		session.active_choice_node,
-		val
+		val,
+		session.current_nodes[vim.api.nvim_get_current_buf()]
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 end
