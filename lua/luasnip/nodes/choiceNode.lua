@@ -42,7 +42,8 @@ end
 local function C(pos, choices, opts)
 	opts = opts or {}
 	if opts.restore_cursor == nil then
-		opts.restore_cursor = true
+		-- disable by default, can affect performance.
+		opts.restore_cursor = false
 	end
 
 	local c = ChoiceNode:new({
