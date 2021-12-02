@@ -75,9 +75,8 @@ function Snippet:init_nodes()
 			end
 		end
 
-		local _update_dependents = node.update_dependents
 		node.update_dependents = function(node)
-			_update_dependents(node)
+			node:_update_dependents()
 			node.parent:update_dependents()
 		end
 	end

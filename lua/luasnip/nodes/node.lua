@@ -103,7 +103,7 @@ function Node:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
-function Node:update_dependents()
+function Node:_update_dependents()
 	if not util.multiline_equal(self.old_text, self:get_text()) then
 		for _, node in ipairs(self.dependents) do
 			node:update()
@@ -111,6 +111,11 @@ function Node:update_dependents()
 	end
 	self.old_text = self:get_text()
 end
+-- _update_dependents is the function to update the nodes' dependents,
+-- update_dependents is what will actually be called.
+-- This allows overriding update_dependents in a parent-node (eg. snippetNode)
+-- while still having access to the original function (for subsequent overrides).
+Node.update_dependents = Node._update_dependents
 
 function Node:update() end
 

@@ -1,5 +1,5 @@
-local node = require("luasnip.nodes.node").Node
-local ChoiceNode = node:new()
+local Node = require("luasnip.nodes.node").Node
+local ChoiceNode = Node:new()
 local util = require("luasnip.util.util")
 local conf = require("luasnip.config")
 local types = require("luasnip.util.types")
@@ -9,15 +9,15 @@ local session = require("luasnip.session")
 local sNode = require("luasnip.nodes.snippet").SN
 
 function ChoiceNode:init_nodes()
-	for i, node in ipairs(self.choices) do
+	for i, choice in ipairs(self.choices) do
 		-- setup jumps
-		node.next = self
-		node.prev = self
+		choice.next = self
+		choice.prev = self
 
 		-- forward values for unknown keys from choiceNode.
-		node.choice = self
-		local node_mt = getmetatable(node)
-		setmetatable(node, {
+		choice.choice = self
+		local node_mt = getmetatable(choice)
+		setmetatable(choice, {
 			__index = function(node, key)
 				return node_mt[key] or node.choice[key]
 			end,
@@ -25,14 +25,18 @@ function ChoiceNode:init_nodes()
 
 		-- replace nodes' original update_dependents with function that also
 		-- calls this choiceNodes' update_dependents.
-		local _update_dependents = node.update_dependents
-		node.update_dependents = function(node)
-			_update_dependents(node)
+		--
+		-- cannot define as `function node:update_dependents()` as _this_
+		-- choiceNode would be `self`.
+		-- Also rely on node.choice, as using `self` there wouldn't be caught
+		-- by copy and the wrong node would be updated.
+		choice.update_dependents = function(node)
+			node:_update_dependents()
 			node.choice:update_dependents()
 		end
 
-		node.next_choice = self.choices[i + 1]
-		node.prev_choice = self.choices[i - 1]
+		choice.next_choice = self.choices[i + 1]
+		choice.prev_choice = self.choices[i - 1]
 	end
 	self.choices[#self.choices].next_choice = self.choices[1]
 	self.choices[1].prev_choice = self.choices[#self.choices]
@@ -304,7 +308,7 @@ end
 
 -- val_begin/end may be nil, in this case that gravity won't be changed.
 function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
-	node.set_mark_rgrav(self, rgrav_beg, rgrav_end)
+	Node.set_mark_rgrav(self, rgrav_beg, rgrav_end)
 	-- may be set to temporarily in change_choice.
 	if self.active_choice then
 		self.active_choice:set_mark_rgrav(rgrav_beg, rgrav_end)

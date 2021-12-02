@@ -148,7 +148,11 @@ function DynamicNode:update()
 	tmp.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
 	)
-	tmp.dependents = self.dependents
+	tmp.dynamicNode = self
+	tmp.update_dependents = function(node)
+		node:_update_dependents()
+		node.dynamicNode:update_dependents()
+	end
 
 	tmp:populate_argnodes()
 	tmp:subsnip_init()
@@ -166,6 +170,7 @@ function DynamicNode:update()
 	tmp:set_old_text()
 
 	self.snip = tmp
+	self:update_dependents()
 end
 
 function DynamicNode:set_mark_rgrav(val_begin, val_end)
