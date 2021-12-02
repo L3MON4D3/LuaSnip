@@ -69,7 +69,7 @@ function RestoreNode:expand_tabs(_) end
 -- will be called when before expansion but after snip.parent was initialized.
 -- Get the actual snippetNode here.
 function RestoreNode:put_initial(pos)
-	local tmp = self.parent.snippet.stored[self.key]:copy()
+	local tmp = self.parent.snippet.stored[self.key]
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
