@@ -473,6 +473,10 @@ snippet-constructor, as seen in the example above. The `stored`-table accepts
 the same values as the `nodes`-parameter passed to `r`.
 If no content is defined for a key, it defaults to the empty `insertNode`.
 
+An important-to-know limitation of `restoreNode` is that, for a given key, only
+one may be visible at a time. See
+this issue (https://github.com/L3MON4D3/LuaSnip/issues/234) for details.
+
 The `restoreNode` is also useful for storing user-input across updates of a
 `dynamicNode`. Consider this:
 >
