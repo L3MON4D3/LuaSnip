@@ -345,9 +345,6 @@ function Snippet:trigger_expand(current_node)
 		node:indent(self.indentstr)
 	end
 
-	-- remove snippet-trigger, Cursor at start of future snippet text.
-	util.remove_n_before_cur(#self.trigger)
-
 	local start_node = iNode.I(0)
 
 	local pos = util.get_cursor_0ind()
@@ -379,7 +376,6 @@ function Snippet:trigger_expand(current_node)
 			current_node:input_leave(1)
 		end
 	end
-	session.current_nodes[vim.api.nvim_get_current_buf()] = self:jump_into(1)
 end
 
 -- returns copy of snip if it matches, nil if not.
@@ -434,10 +430,7 @@ function Snippet:matches(line_to_cursor)
 		return nil
 	end
 
-	local cp = self:copy()
-	cp.trigger = match
-	cp.captures = captures
-	return cp
+	return {trigger = match, captures = captures}
 end
 
 function Snippet:enter_node(node_id)
@@ -876,7 +869,6 @@ function Snippet:get_pattern_expand_helper()
 			callbacks = {
 				[0] = {
 					[events.enter] = function(_)
-						-- try expanding after entering i(0).
 						vim.schedule(function()
 							-- Remove this helper snippet as soon as the i(0)
 							-- is reached.
@@ -887,7 +879,8 @@ function Snippet:get_pattern_expand_helper()
 			},
 		})
 	end
-	return self.expand_helper_snippet:copy()
+	-- will be copied in actual expand.
+	return self.expand_helper_snippet
 end
 
 function Snippet:find_node(predicate)

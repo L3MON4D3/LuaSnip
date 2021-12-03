@@ -3,6 +3,7 @@ local util = require("luasnip.util.util")
 local session = require("luasnip.session")
 
 local next_expand = nil
+local next_expand_params = nil
 local ls
 local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
@@ -17,17 +18,20 @@ local function get_active_snip()
 	return node
 end
 
--- returns snippet-object where its trigger matches the end of the line, nil if no match.
+-- returns matching snippet (needs to be copied before usage!) and its expand-
+-- parameters(trigger and captures). params are returned here because there's
+-- no need to recalculate them.
 local function match_snippet(line, snippet_table)
-	local match
+	local expand_params
 	local fts = util.get_snippet_filetypes(vim.bo.filetype)
 
 	-- search filetypes, then "all".
 	for _, ft in ipairs(fts) do
 		for _, snip in ipairs(snippet_table[ft] or {}) do
-			match = snip:matches(line)
-			if match then
-				return match
+			expand_params = snip:matches(line)
+			if expand_params then
+				-- return matching snippet and table with expand-parameters.
+				return snip, expand_params
 			end
 		end
 	end
@@ -119,7 +123,7 @@ local function jumpable(dir)
 end
 
 local function expandable()
-	next_expand = match_snippet(util.get_current_line_to_cursor(), ls.snippets)
+	next_expand, next_expand_params = match_snippet(util.get_current_line_to_cursor(), ls.snippets)
 	return next_expand ~= nil
 end
 
@@ -145,43 +149,86 @@ local function expand_or_locally_jumpable()
 	return expandable() or (in_snippet() and jumpable())
 end
 
+-- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
+local function snip_expand(snippet, opts)
+	local snip = snippet:copy()
+
+	opts.expand_params = opts.expand_params or {}
+	snip.trigger = opts.expand_params.trigger or snip.trigger
+	snip.captures = opts.expand_params.captures
+
+	snip:trigger_expand(session.current_nodes[vim.api.nvim_get_current_buf()])
+
+	-- optionally clear text. Text has to be cleared befor jumping into the new
+	-- snippet, as the cursor-position can end up in the wrong position (to be
+	-- precise the text will be moved, the cursor will stay at the same position,
+	-- which is just as bad) if text before the cursor, on the same line is cleared.
+	if opts.clear_region then
+		vim.api.nvim_buf_set_text(0,
+			opts.clear_region.from[1],
+			opts.clear_region.from[2],
+			opts.clear_region.to[1],
+			opts.clear_region.to[2],
+			{""})
+	end
+
+	session.current_nodes[vim.api.nvim_get_current_buf()] = no_region_check_wrap(snip.jump_into, snip, 1)
+
+	return snip
+end
+
 local function expand()
+	local expand_params
+	local snip
+	-- find snip via next_expand (set from previous expandable()) or manual matching.
 	if next_expand ~= nil then
-		no_region_check_wrap(
-			next_expand.trigger_expand,
-			next_expand,
-			session.current_nodes[vim.api.nvim_get_current_buf()]
-		)
+		snip = next_expand
+		expand_params = next_expand_params
 		next_expand = nil
-		return true
+		next_expand_params = nil
 	else
-		local snip = match_snippet(
+		snip, expand_params = match_snippet(
 			util.get_current_line_to_cursor(),
 			ls.snippets
 		)
-		if snip then
-			no_region_check_wrap(
-				snip.trigger_expand,
-				snip,
-				session.current_nodes[vim.api.nvim_get_current_buf()]
-			)
-			return true
-		end
+	end
+	if snip then
+		local cursor = util.get_cursor_0ind()
+		-- override snip with expanded copy.
+		snip = snip_expand(snip, {
+			expand_params = expand_params,
+			-- clear trigger-text.
+			clear_region = {
+				from = {
+					cursor[1],
+					cursor[2]-#expand_params.trigger
+				},
+				to = cursor
+			}
+		})
+		return true
 	end
 	return false
 end
 
 local function expand_auto()
-	local snip = match_snippet(
+	local snip, expand_params = match_snippet(
 		util.get_current_line_to_cursor(),
 		ls.autosnippets
 	)
 	if snip then
-		no_region_check_wrap(
-			snip.trigger_expand,
-			snip,
-			session.current_nodes[vim.api.nvim_get_current_buf()]
-		)
+		local cursor = util.get_cursor_0ind()
+		snip = snip_expand(snip, {
+			expand_params = expand_params,
+			-- clear trigger-text.
+			clear_region = {
+				from = {
+					cursor[1],
+					cursor[2]-#expand_params.trigger
+				},
+				to = cursor
+			}
+		})
 	end
 end
 
@@ -416,6 +463,7 @@ ls = {
 	jumpable = jumpable,
 	expandable = expandable,
 	expand = expand,
+	snip_expand = snip_expand,
 	expand_auto = expand_auto,
 	expand_or_jump = expand_or_jump,
 	jump = jump,
