@@ -315,7 +315,7 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 	start_node.next = snippet
 end
 
-function Snippet:trigger_expand(current_node)
+function Snippet:trigger_expand(current_node, pos)
 	-- expand tabs before indenting to keep indentstring unmodified
 	if vim.o.expandtab then
 		self:expand_tabs(util.tab_width())
@@ -337,7 +337,7 @@ function Snippet:trigger_expand(current_node)
 		end
 	end
 
-	self.env = Environ:new()
+	self.env = Environ:new(pos)
 	self:subsnip_init()
 	-- at this point `stored` contains the snippetNodes that will actually
 	-- be used, indent them once here.
@@ -347,9 +347,7 @@ function Snippet:trigger_expand(current_node)
 
 	local start_node = iNode.I(0)
 
-	local pos = util.get_cursor_0ind()
 	local old_pos = vim.deepcopy(pos)
-
 	self:put_initial(pos)
 
 	-- update() may insert text, set marks appropriately.

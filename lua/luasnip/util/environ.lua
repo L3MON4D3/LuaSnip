@@ -10,17 +10,16 @@ local eager_vars = {
 	["SELECT_DEDENT"] = true,
 }
 -- These are the vars that have to be populated once the snippet starts to avoid any issue
-local function _fill_eager_vars(env)
-	local cur = util.get_cursor_0ind()
+local function _fill_eager_vars(env, pos)
 	env.TM_CURRENT_LINE = vim.api.nvim_buf_get_lines(
 		0,
-		cur[1],
-		cur[1] + 1,
+		pos[1],
+		pos[1] + 1,
 		false
 	)[1]
-	env.TM_CURRENT_WORD = util.word_under_cursor(cur, env.TM_CURRENT_LINE)
-	env.TM_LINE_INDEX = tostring(cur[1])
-	env.TM_LINE_NUMBER = tostring(cur[1] + 1)
+	env.TM_CURRENT_WORD = util.word_under_cursor(pos, env.TM_CURRENT_LINE)
+	env.TM_LINE_INDEX = tostring(pos[1])
+	env.TM_LINE_NUMBER = tostring(pos[1] + 1)
 	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT =
 		util.get_selection()
 end
@@ -28,10 +27,10 @@ end
 local lazy_vars = {}
 
 local Environ = {}
-function Environ:new(o)
+function Environ:new(pos, o)
 	o = o or {}
 	setmetatable(o, self)
-	_fill_eager_vars(o)
+	_fill_eager_vars(o, pos)
 	return o
 end
 
