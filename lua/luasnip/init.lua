@@ -164,7 +164,10 @@ local function snip_expand(snippet, opts)
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}
 
-	snip:trigger_expand(session.current_nodes[vim.api.nvim_get_current_buf()], opts.pos)
+	snip:trigger_expand(
+		session.current_nodes[vim.api.nvim_get_current_buf()],
+		opts.pos
+	)
 
 	-- optionally clear text. Text has to be cleared befor jumping into the new
 	-- snippet, as the cursor-position can end up in the wrong position (to be
