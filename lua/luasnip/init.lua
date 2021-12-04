@@ -162,7 +162,7 @@ local function snip_expand(snippet, opts)
 	opts.pos = opts.pos or util.get_cursor_0ind()
 
 	snip.trigger = opts.expand_params.trigger or snip.trigger
-	snip.captures = opts.expand_params.captures
+	snip.captures = opts.expand_params.captures or {}
 
 	snip:trigger_expand(session.current_nodes[vim.api.nvim_get_current_buf()], opts.pos)
 
