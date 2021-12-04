@@ -794,7 +794,7 @@ the lazy_load.
       and clearing after expansion may move the text currently under the cursor
       and have it end up not at the `i(1)`, but a `#trigger` chars to it's right.  
       The actual values used for clearing are `from` and `to`, both (0,0)-indexed
-      positions.  
+      byte-positions.  
       If the variables don't have to be populated with the correct values, it's
       safe to remove the text manually.
     - `expand_params`: table, for overriding the `trigger` used in the snippet
@@ -802,9 +802,10 @@ the lazy_load.
       trigger has to be changed from the pattern to the actual text triggering the
       node).  
       Pass as `trigger` and `captures`.
-    - `pos`: position (`{line, col}`), (0,0)-indexed, where the snippet should be
-      expanded. The snippet will be put between `(line,col-1)` and `(line,col)`.
-      The snippet will be expanded at the current cursor if pos is nil.
+    - `pos`: position (`{line, col}`), (0,0)-indexed (in bytes, as returned by
+      `nvim_win_get_cursor()`), where the snippet should be expanded. The
+      snippet will be put between `(line,col-1)` and `(line,col)`. The snippet
+      will be expanded at the current cursor if pos is nil.
   `opts` and either of its parameter may be nil.
 
 - `get_active_snip()`: returns the currently active snippet (not node!).
