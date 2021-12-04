@@ -818,8 +818,9 @@ the lazy_load.
   if luasnip fails to automatically detect eg. deletion of a snippet) and
   sets the current node behind the snippet, or, if not possible, before it.
 
-- `lsp_expand(snip_string)`: expand the lsp-syntax-snippet defined via 
+- `lsp_expand(snip_string, opts)`: expand the lsp-syntax-snippet defined via 
   `snip_string` at the cursor.
+  `opts` can have the same options as `opts` in `snip_expand`.
 
 - `active_update_dependents()`: update all function/dynamicNodes that have
   the current node as their argument (will only actually update them if
