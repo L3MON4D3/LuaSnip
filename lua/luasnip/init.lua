@@ -153,6 +153,7 @@ end
 local function snip_expand(snippet, opts)
 	local snip = snippet:copy()
 
+	opts = opts or {}
 	opts.expand_params = opts.expand_params or {}
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures
@@ -243,9 +244,8 @@ local function expand_or_jump()
 	return false
 end
 
-local function lsp_expand(body)
-	local snip = ls.parser.parse_snippet({ trig = "" }, body)
-	snip:trigger_expand(session.current_nodes[vim.api.nvim_get_current_buf()])
+local function lsp_expand(body, opts)
+	snip_expand(ls.parser.parse_snippet("", body), opts)
 end
 
 local function choice_active()
