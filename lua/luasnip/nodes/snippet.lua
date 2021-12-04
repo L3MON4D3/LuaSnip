@@ -430,7 +430,7 @@ function Snippet:matches(line_to_cursor)
 		return nil
 	end
 
-	return {trigger = match, captures = captures}
+	return { trigger = match, captures = captures }
 end
 
 function Snippet:enter_node(node_id)

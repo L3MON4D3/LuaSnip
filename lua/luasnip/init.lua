@@ -123,7 +123,10 @@ local function jumpable(dir)
 end
 
 local function expandable()
-	next_expand, next_expand_params = match_snippet(util.get_current_line_to_cursor(), ls.snippets)
+	next_expand, next_expand_params = match_snippet(
+		util.get_current_line_to_cursor(),
+		ls.snippets
+	)
 	return next_expand ~= nil
 end
 
@@ -165,15 +168,22 @@ local function snip_expand(snippet, opts)
 	-- precise the text will be moved, the cursor will stay at the same position,
 	-- which is just as bad) if text before the cursor, on the same line is cleared.
 	if opts.clear_region then
-		vim.api.nvim_buf_set_text(0,
+		vim.api.nvim_buf_set_text(
+			0,
 			opts.clear_region.from[1],
 			opts.clear_region.from[2],
 			opts.clear_region.to[1],
 			opts.clear_region.to[2],
-			{""})
+			{ "" }
+		)
 	end
 
-	session.current_nodes[vim.api.nvim_get_current_buf()] = no_region_check_wrap(snip.jump_into, snip, 1)
+	session.current_nodes[vim.api.nvim_get_current_buf()] =
+		no_region_check_wrap(
+			snip.jump_into,
+			snip,
+			1
+		)
 
 	return snip
 end
@@ -202,10 +212,10 @@ local function expand()
 			clear_region = {
 				from = {
 					cursor[1],
-					cursor[2]-#expand_params.trigger
+					cursor[2] - #expand_params.trigger,
 				},
-				to = cursor
-			}
+				to = cursor,
+			},
 		})
 		return true
 	end
@@ -225,10 +235,10 @@ local function expand_auto()
 			clear_region = {
 				from = {
 					cursor[1],
-					cursor[2]-#expand_params.trigger
+					cursor[2] - #expand_params.trigger,
 				},
-				to = cursor
-			}
+				to = cursor,
+			},
 		})
 	end
 end
