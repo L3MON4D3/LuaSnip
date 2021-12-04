@@ -187,16 +187,16 @@ user-defined function:
  })
 ```
 The first parameter of `f` is the function. Its parameters are
-- 1.: A table of the text of currently contained in the argnodes.
+1. A table of the text of currently contained in the argnodes.
       (eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
       all lines following the first.
 
-- 2.: The surrounding snippet. It is included here as it allows access to
+2. The surrounding snippet. It is included here as it allows access to
       anything that could be useful in functionNodes (ie. `snippet.env` or
       `snippet.captures`, which contains capture groups of regex-triggered
       snippets).
 
-- 3.: Any parameters passed to `f` behind the second (included to more easily
+3. Any parameters passed to `f` behind the second (included to more easily
       reuse functions, ie. ternary if based on text in an insertNode).
 
 The second parameter is a table of indices of jumpable nodes whose text is
