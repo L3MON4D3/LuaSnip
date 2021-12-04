@@ -781,6 +781,22 @@ API-REFERENCE                                              *luasnip-api-referenc
 *   `expand_auto()`: expands the autosnippets before the cursor (not necessary
     to call manually, will be called via autocmd if `enable_autosnippet` is set
     in the config).
+*   `snip_expand(snip, opts)`: expand `snip` at the current cursor position.
+    `opts` may contain the following keys:
+    *   `clear_region`: A region of text to clear after expanding (but before
+        jumping into) snip. It has to be at this point (and therefore passed to
+        this function) as clearing before expansion will populate `TM_CURRENT_LINE`
+        and `TM_CURRENT_WORD` with wrong values (they would miss the snippet trigger)
+        and clearing after expansion may move the text currently under the cursor
+        and have it end up not at the `i(1)`, but a `#trigger` chars to it's right.
+        The actual values used for clearing are `from` and `to`, both (0,0)-indexed
+        positions.
+    *   `expand_params`: table, for overriding the `trigger` used in the snippet
+        and setting the `captures` (useful for pattern-triggered nodes where the
+        trigger has to be changed from the pattern to the actual text triggering the
+        node).
+        Pass as `trigger` and `captures`.
+        `opts` and either of its parameter may be nil.
 *   `get_active_snip()`: returns the currently active snippet (not node!).
 *   `choice_active()`: true if inside a choiceNode.
 *   `change_choice(direction)`: changes the choice in the innermost currently
