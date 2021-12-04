@@ -19,6 +19,9 @@ local fmta = require("luasnip.extras.fmt").fmta
 local types = require("luasnip.util.types")
 local conds = require("luasnip.extras.expand_conditions")
 
+-- If you're reading this file for the first time, best skip to around line 170
+-- where the actual snippet-definitions start.
+
 -- Every unspecified option will be set to the default.
 ls.config.set_config({
 	history = true,
