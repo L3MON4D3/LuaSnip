@@ -214,15 +214,15 @@ user-defined function:
 <
 
 The first parameter of `f` is the function. Its parameters are
-- 1.: A table of the text of currently contained in the argnodes.
+1. A table of the text of currently contained in the argnodes.
       (eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
       all lines following the first.
 
-*   2.: The surrounding snippet. It is included here as it allows access to
+1.  The surrounding snippet. It is included here as it allows access to
       anything that could be useful in functionNodes (ie. `snippet.env` or
       `snippet.captures`, which contains capture groups of regex-triggered
       snippets).
-*   3.: Any parameters passed to `f` behind the second (included to more easily
+2.  Any parameters passed to `f` behind the second (included to more easily
       reuse functions, ie. ternary if based on text in an insertNode).
 
 The second parameter is a table of indices of jumpable nodes whose text is
@@ -790,7 +790,7 @@ API-REFERENCE                                              *luasnip-api-referenc
         and clearing after expansion may move the text currently under the cursor
         and have it end up not at the `i(1)`, but a `#trigger` chars to it's right.
         The actual values used for clearing are `from` and `to`, both (0,0)-indexed
-        positions.
+        byte-positions.
         If the variables don't have to be populated with the correct values, it's
         safe to remove the text manually.
     *   `expand_params`: table, for overriding the `trigger` used in the snippet
@@ -798,9 +798,10 @@ API-REFERENCE                                              *luasnip-api-referenc
         trigger has to be changed from the pattern to the actual text triggering the
         node).
         Pass as `trigger` and `captures`.
-    *   `pos`: position (`{line, col}`), (0,0)-indexed, where the snippet should be
-        expanded. The snippet will be put between `(line,col-1)` and `(line,col)`.
-        The snippet will be expanded at the current cursor if pos is nil.
+    *   `pos`: position (`{line, col}`), (0,0)-indexed (in bytes, as returned by
+        `nvim_win_get_cursor()`), where the snippet should be expanded. The
+        snippet will be put between `(line,col-1)` and `(line,col)`. The snippet
+        will be expanded at the current cursor if pos is nil.
         `opts` and either of its parameter may be nil.
 *   `get_active_snip()`: returns the currently active snippet (not node!).
 *   `choice_active()`: true if inside a choiceNode.
