@@ -161,7 +161,7 @@ from the nvim-cmp wiki.
 
 
 ## Add Snippets
-Snippets have to be added to the [`require'luasnip'.snippets`-table](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua#L157).  
+Snippets have to be added to the [`require'luasnip'.snippets`-table](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua#L167).  
   To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`. 
 
 ## Docs
