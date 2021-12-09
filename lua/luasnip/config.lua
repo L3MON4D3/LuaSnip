@@ -1,5 +1,6 @@
 local types = require("luasnip.util.types")
 local util = require("luasnip.util.util")
+local ft_functions = require("luasnip.extras.filetype_functions")
 
 local defaults = {
 	history = false,
@@ -74,6 +75,8 @@ local defaults = {
 	-- default applied in util.parser, requires iNode, cNode
 	-- (Dependency cycle if here).
 	parser_nested_assembler = nil,
+	-- Function expected to return a list of filetypes (or empty list)
+	ft_func = ft_functions.from_filetype,
 }
 
 -- declare here to use in set_config.

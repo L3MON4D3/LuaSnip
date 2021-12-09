@@ -23,7 +23,7 @@ end
 -- no need to recalculate them.
 local function match_snippet(line, snippet_table)
 	local expand_params
-	local fts = util.get_snippet_filetypes(vim.bo.filetype)
+	local fts = util.get_snippet_filetypes()
 
 	-- search filetypes, then "all".
 	for _, ft in ipairs(fts) do
@@ -49,7 +49,7 @@ local function get_context(snip)
 end
 
 local function available()
-	local fts = util.get_snippet_filetypes(vim.bo.filetype)
+	local fts = util.get_snippet_filetypes()
 	local res = {}
 	for _, ft in ipairs(fts) do
 		res[ft] = {}
