@@ -1,7 +1,6 @@
 local events = require("luasnip.util.events")
 local session = require("luasnip.session")
 
-
 local function get_cursor_0ind()
 	local c = vim.api.nvim_win_get_cursor(0)
 	c[1] = c[1] - 1
@@ -477,12 +476,11 @@ local function find_outer_snippet(node)
 	return node
 end
 
-
 -- filetype: string formatted like `'filetype'`.
 local function get_snippet_filetypes()
-        local config = require("luasnip.config").config
+	local config = require("luasnip.config").config
 	local fts = config.ft_func()
-         
+
 	local snippet_fts = {}
 	for _, ft in ipairs(fts) do
 		vim.list_extend(snippet_fts, session.ft_redirect[ft])
