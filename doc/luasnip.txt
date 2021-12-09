@@ -24,15 +24,15 @@ CONTENTS                                                        *luasnip-content
 18. CLEANUP......................................................|luasnip-cleanup|
 19. API-REFERENCE..........................................|luasnip-api-reference|
 >
-                __                       ____                          
-               /\ \                     /\  _`\           __           
-               \ \ \      __  __     __ \ \,\L\_\    ___ /\_\  _____   
-                \ \ \  __/\ \/\ \  /'__`\\/_\__ \  /' _ `\/\ \/\ '__`\ 
+                __                       ____
+               /\ \                     /\  _`\           __
+               \ \ \      __  __     __ \ \,\L\_\    ___ /\_\  _____
+                \ \ \  __/\ \/\ \  /'__`\\/_\__ \  /' _ `\/\ \/\ '__`\
                  \ \ \L\ \ \ \_\ \/\ \L\.\_/\ \L\ \/\ \/\ \ \ \ \ \L\ \
                   \ \____/\ \____/\ \__/.\_\ `\____\ \_\ \_\ \_\ \ ,__/
-                   \/___/  \/___/  \/__/\/_/\/_____/\/_/\/_/\/_/\ \ \/ 
-                                                                 \ \_\ 
-                                                                  \/_/ 
+                   \/___/  \/___/  \/__/\/_/\/_____/\/_/\/_/\/_/\ \ \/
+                                                                 \ \_\
+                                                                  \/_/
 <
 
 Luasnip is a snippet-engine written entirely in lua. It has some great
@@ -415,7 +415,6 @@ Parameters:
     	else
     		nodes[1] = t("Enter a number!")
     	end
-    	
     	local snip = sn(nil, nodes)
     	snip.old_state = old_state
     	return snip
@@ -624,6 +623,10 @@ till now the only valid one is autotrigger.
 
 After snippets were lazy-loaded, the `User LuasnipSnippetsAdded`-event will be
 triggered.
+
+Note load vscode-style packages using `require("luasnip.loaders.from_vscode").load()`, if
+you've configured luasnip to detect the filetype based on the cursor position. Else the
+snippets won't be available to the `from_cursor_pos` function.
 
 ================================================================================
 EXT_OPTS                                                        *luasnip-ext_opts*
