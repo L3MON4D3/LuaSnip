@@ -219,7 +219,7 @@ function M.load(opts)
 end
 
 function M._luasnip_vscode_lazy_load()
-	local fts = util.get_snippet_filetypes(vim.bo.filetype)
+	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
 		if not caches.lazy_loaded_ft[ft] then
 			caches.lazy_loaded_ft[ft] = true
