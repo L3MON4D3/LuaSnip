@@ -24,21 +24,21 @@ local function from_cursor_pos()
 	end
 end
 
-local from_filetype = function()
+local function from_filetype()
 	return vim.split(vim.bo.filetype, ".", true)
 end
 
-local from_pos_or_filetype = function()
-    local from_cursor = from_cursor_pos()
-    if not vim.tbl_isempty(from_cursor) then
-        return from_cursor
-    else
-        return from_filetype()
-    end
+local function from_pos_or_filetype()
+	local from_cursor = from_cursor_pos()
+	if not vim.tbl_isempty(from_cursor) then
+		return from_cursor
+	else
+		return from_filetype()
+	end
 end
 
 return {
 	from_filetype = from_filetype,
 	from_cursor_pos = from_cursor_pos,
-        from_pos_or_filetype = from_pos_or_filetype,
+	from_pos_or_filetype = from_pos_or_filetype,
 }
