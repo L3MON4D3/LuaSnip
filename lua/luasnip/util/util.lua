@@ -208,7 +208,7 @@ end
 local function wrap_nodes(nodes)
 	-- safe to assume, if nodes has a metatable, it is a single node, not a
 	-- table.
-	if getmetatable(nodes) then
+	if getmetatable(nodes) and nodes.type then
 		return { nodes }
 	else
 		return nodes
