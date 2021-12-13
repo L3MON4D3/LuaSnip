@@ -410,7 +410,10 @@ local function unlink_current_if_deleted()
 		return
 	end
 	local snippet = node.parent.snippet
-	local ok, snip_begin_pos, snip_end_pos = pcall(snippet.mark.pos_begin_end, snippet.mark)
+	local ok, snip_begin_pos, snip_end_pos = pcall(
+		snippet.mark.pos_begin_end,
+		snippet.mark
+	)
 	-- stylua: ignore
 	-- leave snippet if empty:
 	if not ok or
@@ -430,13 +433,15 @@ local function exit_out_of_region(node)
 
 	local pos = util.get_cursor_0ind()
 	local snippet = node.parent.snippet
-	local ok, snip_begin_pos, snip_end_pos = pcall(snippet.mark.pos_begin_end, snippet.mark)
+	local ok, snip_begin_pos, snip_end_pos = pcall(
+		snippet.mark.pos_begin_end,
+		snippet.mark
+	)
 	-- stylua: ignore
 	-- leave if curser before or behind snippet
 	if not ok or
 		pos[1] < snip_begin_pos[1] or
 		pos[1] > snip_end_pos[1] then
-
 		-- jump as long as the 0-node of the snippet hasn't been reached.
 		-- check for nil; if history is not set, the jump to snippet.next
 		-- returns nil.
