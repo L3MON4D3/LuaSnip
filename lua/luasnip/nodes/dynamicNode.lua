@@ -182,8 +182,11 @@ end
 
 function DynamicNode:exit()
 	self.mark:clear()
-	-- snip should exist if exit is called.
-	self.snip:exit()
+	-- check if snip actually exists, may not be the case if
+	-- the surrounding snippet was deleted just before.
+	if self.snip then
+		self.snip:exit()
+	end
 	self.stored_snip = self.snip
 	self.snip = nil
 	self.active = false
