@@ -453,11 +453,8 @@ function Snippet:enter_node(node_id)
 		local other_from, other_to = other.mark:pos_begin_end_raw()
 
 		local end_equal = util.pos_equal(other_to, node_to)
-		other:set_mark_rgrav(
-			util.pos_equal(other_from, node_to),
-			end_equal
-		)
-		i = i+1
+		other:set_mark_rgrav(util.pos_equal(other_from, node_to), end_equal)
+		i = i + 1
 
 		-- As soon as one end-mark wasn't equal, we no longer have to check as the
 		-- marks don't overlap.
@@ -466,11 +463,8 @@ function Snippet:enter_node(node_id)
 		end
 	end
 	while i <= #self.nodes do
-		self.nodes[i]:set_mark_rgrav(
-			false,
-			false
-		)
-		i = i+1
+		self.nodes[i]:set_mark_rgrav(false, false)
+		i = i + 1
 	end
 end
 
@@ -799,14 +793,16 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 		local node_pos_begin, node_pos_end = node.mark:pos_begin_end_raw()
 		-- use false, false as default, this is what most nodes will be set to.
 		local new_rgrav_begin, new_rgrav_end = false, false
-		if (node_pos_begin[1] == snip_pos_begin[1] and
-			node_pos_begin[2] == snip_pos_begin[2]) then
-
+		if
+			node_pos_begin[1] == snip_pos_begin[1]
+			and node_pos_begin[2] == snip_pos_begin[2]
+		then
 			new_rgrav_begin = val_begin
 
-			if (node_pos_end[1] == snip_pos_end[1] and
-				node_pos_end[2] == snip_pos_end[2]) then
-
+			if
+				node_pos_end[1] == snip_pos_end[1]
+				and node_pos_end[2] == snip_pos_end[2]
+			then
 				new_rgrav_end = val_begin
 				-- both marks of this node were on the beginning of the snippet
 				-- so this has to be checked again for the next node.
@@ -831,19 +827,21 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 		node_on_end_mark = false
 		-- use false, false as default, this is what most nodes will be set to.
 		local new_rgrav_begin, new_rgrav_end = false, false
-		if (node_pos_end[1] == snip_pos_end[1] and
-			node_pos_end[2] == snip_pos_end[2]) then
-
+		if
+			node_pos_end[1] == snip_pos_end[1]
+			and node_pos_end[2] == snip_pos_end[2]
+		then
 			new_rgrav_end = val_end
 
-			if (node_pos_begin[1] == snip_pos_begin[1] and
-				node_pos_begin[2] == snip_pos_begin[2]) then
-
+			if
+				node_pos_begin[1] == snip_pos_begin[1]
+				and node_pos_begin[2] == snip_pos_begin[2]
+			then
 				new_rgrav_begin = val_end
 				-- both marks of this node were on the end-mark of the snippet
 				-- so this has to be checked again for the next node.
 				node_on_end_mark = true
-				node_indx = node_indx-1
+				node_indx = node_indx - 1
 			end
 		end
 		node:set_mark_rgrav(new_rgrav_begin, new_rgrav_end)
