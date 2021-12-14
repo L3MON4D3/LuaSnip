@@ -584,7 +584,9 @@ function Snippet:fake_expand()
 	self.env = {}
 	setmetatable(self.env, {
 		__index = function(_, key)
-			return { "$" .. key }
+			return Environ.is_table(key)
+				and { "$" .. key }
+				or "$" .. key
 		end,
 	})
 

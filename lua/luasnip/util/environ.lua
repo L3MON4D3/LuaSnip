@@ -174,4 +174,16 @@ function Environ.is_valid_var(key)
 	return (eager_vars[key] or lazy_vars[key]) and true
 end
 
+local table_env_vars = {
+	TM_SELECTED_TEXT = true,
+	SELECT_RAW = true,
+	SELECT_DEDENT = true,
+}
+-- returns nil, but that should be alright.
+-- If not, use metatable.
+function Environ.is_table(key)
+	return table_env_vars.key
+end
+
+
 return Environ
