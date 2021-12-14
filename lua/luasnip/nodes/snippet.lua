@@ -447,14 +447,30 @@ function Snippet:enter_node(node_id)
 	)
 
 	local _, node_to = node.mark:pos_begin_end_raw()
-	for i = node_id + 1, #self.nodes do
+	local i = node_id + 1
+	while i <= #self.nodes do
 		local other = self.nodes[i]
 		local other_from, other_to = other.mark:pos_begin_end_raw()
 
+		local end_equal = util.pos_equal(other_to, node_to)
 		other:set_mark_rgrav(
 			util.pos_equal(other_from, node_to),
-			util.pos_equal(other_to, node_to)
+			end_equal
 		)
+		i = i+1
+
+		-- As soon as one end-mark wasn't equal, we no longer have to check as the
+		-- marks don't overlap.
+		if end_equal then
+			break
+		end
+	end
+	while i <= #self.nodes do
+		self.nodes[i]:set_mark_rgrav(
+			false,
+			false
+		)
+		i = i+1
 	end
 end
 
