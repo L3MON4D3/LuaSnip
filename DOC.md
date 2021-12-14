@@ -98,9 +98,11 @@ but only `callbacks` is used there.
 
 Snippets contain some interesting tables, eg. `snippet.env` contains variables
 used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
-`snippet.captures`, where capture-groups of regex-triggers are stored. These
-tables are primarily useful in dynamic/functionNodes, where the snippet is
-passed to the generating function.
+`snippet.captures`, where capture-groups of regex-triggers are stored.
+Additionally, the string that was used to trigger the snippet is stored in
+`snippet.trigger`. These variables/tables are primarily useful in
+dynamic/functionNodes, where the snippet can be accessed through the immediate
+parent, which is passed to the function.
 
 Snippets that should be loaded for all files must be put into the
 `ls.snippets.all`-table, those only for a specific filetype `ft` belong in
