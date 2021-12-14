@@ -436,35 +436,26 @@ function Snippet:enter_node(node_id)
 		self.parent:enter_node(self.indx)
 	end
 
-	local node = self.nodes[node_id]
-	local node_to = node.mark:pos_end()
 	for i = 1, node_id - 1 do
-		-- print(string.format("%d: %s, %s", i, "<", "<"))
 		self.nodes[i]:set_mark_rgrav(false, false)
 	end
-	-- print(vim.inspect(node_from), vim.inspect(node_to))
-	-- print(string.format("[crt] %d: %s, %s", node_id,
-	-- 	node.ext_gravities_active[1] and ">" or "<",
-	-- 	node.ext_gravities_active[2] and ">" or "<"))
+
+	local node = self.nodes[node_id]
 	node:set_mark_rgrav(
 		node.ext_gravities_active[1],
 		node.ext_gravities_active[2]
 	)
+
+	local _, node_to = node.mark:pos_begin_end_raw()
 	for i = node_id + 1, #self.nodes do
 		local other = self.nodes[i]
-		local other_from, other_to = other.mark:pos_begin_end()
-
-		-- print(vim.inspect(other_from), vim.inspect(other_to))
-		-- print(string.format("%d: %s, %s", i,
-		-- 	util.pos_equal(other_from, node_to) and ">" or "<",
-		-- 	util.pos_equal(other_to, node_to) and ">" or "<"))
+		local other_from, other_to = other.mark:pos_begin_end_raw()
 
 		other:set_mark_rgrav(
 			util.pos_equal(other_from, node_to),
 			util.pos_equal(other_to, node_to)
 		)
 	end
-	-- print("\n ")
 end
 
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
