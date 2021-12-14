@@ -584,9 +584,7 @@ function Snippet:fake_expand()
 	self.env = {}
 	setmetatable(self.env, {
 		__index = function(_, key)
-			return Environ.is_table(key)
-				and { "$" .. key }
-				or "$" .. key
+			return Environ.is_table(key) and { "$" .. key } or "$" .. key
 		end,
 	})
 
@@ -616,7 +614,7 @@ end
 function Snippet:get_static_text()
 	if self.static_text then
 		return self.static_text
-	-- copy+fake_expand the snippet here instead of in whatever code needs to know the docstring.
+		-- copy+fake_expand the snippet here instead of in whatever code needs to know the docstring.
 	elseif not self.ext_opts then
 		-- not a snippetNode and not yet initialized
 		local snipcop = self:copy()
@@ -644,7 +642,7 @@ end
 function Snippet:get_docstring()
 	if self.docstring then
 		return self.docstring
-	-- copy+fake_expand the snippet here instead of in whatever code needs to know the docstring.
+		-- copy+fake_expand the snippet here instead of in whatever code needs to know the docstring.
 	elseif not self.ext_opts then
 		-- not a snippetNode and not yet initialized
 		local snipcop = self:copy()

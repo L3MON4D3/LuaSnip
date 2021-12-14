@@ -185,5 +185,4 @@ function Environ.is_table(key)
 	return table_env_vars.key
 end
 
-
 return Environ
