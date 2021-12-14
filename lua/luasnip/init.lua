@@ -411,14 +411,20 @@ local function unlink_current_if_deleted()
 	end
 	local snippet = node.parent.snippet
 	local ok, snip_begin_pos, snip_end_pos = pcall(
-		snippet.mark.pos_begin_end,
+		snippet.mark.pos_begin_end_raw,
 		snippet.mark
 	)
 	-- stylua: ignore
 	-- leave snippet if empty:
 	if not ok or
+		-- either exactly the same position...
 		(snip_begin_pos[1] == snip_end_pos[1] and
-		 snip_begin_pos[2] == snip_end_pos[2]) then
+		 snip_begin_pos[2] == snip_end_pos[2]) or
+		-- or the end-mark is one line below and there is no text between them.
+		-- (this can happen when deleting linewise-visual or via `dd`)
+		(snip_begin_pos[1]+1 == snip_end_pos[1] and
+		 snip_end_pos[2] == 0 and
+		 #vim.api.nvim_buf_get_lines(0, snip_begin_pos[1], snip_begin_pos[1]+1, true)[1] == 0) then
 		snippet:remove_from_jumplist()
 		session.current_nodes[vim.api.nvim_get_current_buf()] = snippet.prev.prev
 			or snippet.next.next
