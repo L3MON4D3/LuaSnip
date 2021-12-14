@@ -112,9 +112,9 @@ c = {
         augroup luasnip
             au!
             autocmd User LuasnipCleanup lua require("luasnip").snippets = {}
+            autocmd %s * lua require("luasnip").unlink_current_if_deleted()
             autocmd %s * lua require("luasnip").active_update_dependents()
             autocmd %s * lua require("luasnip").exit_out_of_region(require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()])
-            autocmd %s * lua require("luasnip").unlink_current_if_deleted()
 			"Remove buffers' nodes on deletion+wipeout.
 			autocmd BufDelete,BufWipeout * lua current_nodes = require("luasnip").session.current_nodes if current_nodes then current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
 		]]
@@ -125,9 +125,9 @@ c = {
 					.. [[
 		augroup END
 		]],
+				c.config.delete_check_events,
 				c.config.updateevents,
-				c.config.region_check_events,
-				c.config.delete_check_events
+				c.config.region_check_events
 			)
 		)
 		if c.config.store_selection_keys then
