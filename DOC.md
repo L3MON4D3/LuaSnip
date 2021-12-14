@@ -191,10 +191,13 @@ The first parameter of `f` is the function. Its parameters are
       (eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
       all lines following the first.
 
-2. The surrounding snippet. It is included here as it allows access to
-      anything that could be useful in functionNodes (ie. `snippet.env` or
-      `snippet.captures`, which contains capture groups of regex-triggered
-      snippets).
+2. The immediate parent of the `functionNode`. It is included here as it allows
+      easy access to anything that could be useful in functionNodes (ie.
+      `parent.snippet.env` or `parent.snippet.captures`, which contains capture
+      groups of regex-triggered snippets). In most cases `parent.env` works,
+      but if a `functionNode` is nested within a `snippetNode`, the immediate
+      parent (a `snippetNode`) will contain neither `captures` nor `env`. Those
+      are only stored in the `snippet`, which can be accessed as `parent.snippet`.
 
 3. Any parameters passed to `f` behind the second (included to more easily
       reuse functions, ie. ternary if based on text in an insertNode).
@@ -206,7 +209,7 @@ can be passed directly without wrapping it in a table.
 
 The function shall return a string, which will be inserted as-is, or a table
 of strings for multiline-string, here all lines following the first will be
-prepended with the snippets' indentation.
+prefixed with the snippets' indentation.
 
 Examples:
 Use captures from the regex-trigger using a functionNode:
@@ -348,7 +351,7 @@ Parameters:
 1. position (just like all jumpable nodes)
 2. function: Similar to functionNodes' function, first and second parameters
    are the `table of text` from nodes the dynamicNode depends on (also without
-   snippet-indent) and the `snippet`.
+   snippet-indent) and the `snippet` (immediate parent of the `dynamicNode`).
    The third, unlike functionNode, is a user-defined table, `old_state`. This
    table can contain anything, its main usage is to preserve information from
    the previously generated snippetNode: If the dynamicNode depends on another
