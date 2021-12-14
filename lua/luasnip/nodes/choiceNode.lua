@@ -77,7 +77,6 @@ end
 function ChoiceNode:subsnip_init()
 	for _, node in ipairs(self.choices) do
 		if node.type == types.snippetNode then
-			node.env = self.parent.env
 			node.ext_opts = util.increase_ext_prio(
 				vim.deepcopy(self.parent.ext_opts),
 				conf.config.ext_prio_increase

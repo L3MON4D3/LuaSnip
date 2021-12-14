@@ -173,9 +173,9 @@ local function parse_placeholder(text, tab_stops, brackets)
 						-- gets the same snip.
 						local snip = snip:copy()
 						-- properly prepare snippet for get_static_text.
-						snip.env = runtime_snip.env
 						snip.ext_opts = runtime_snip.ext_opts
 						snip.snippet = runtime_snip.snippet
+						snip.parent = runtime_snip
 						if vim.o.expandtab then
 							snip:expand_tabs(util.tab_width())
 						end

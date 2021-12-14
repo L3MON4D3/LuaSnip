@@ -78,7 +78,6 @@ function RestoreNode:put_initial(pos)
 	tmp.next = self
 	tmp.prev = self
 
-	tmp.env = self.parent.env
 	tmp.ext_opts = tmp.ext_opts
 		or util.increase_ext_prio(
 			vim.deepcopy(self.parent.ext_opts),
@@ -142,7 +141,6 @@ end
 
 local function snip_init(self, snip)
 	snip.parent = self.parent
-	snip.env = self.parent.env
 
 	snip.ext_opts = util.increase_ext_prio(
 		vim.deepcopy(self.parent.ext_opts),

@@ -614,7 +614,8 @@ end
 function Snippet:get_static_text()
 	if self.static_text then
 		return self.static_text
-	elseif not self.env then
+	-- copy+fake_expand the snippet here instead of in whatever code needs to know the docstring.
+	elseif not self.ext_opts then
 		-- not a snippetNode and not yet initialized
 		local snipcop = self:copy()
 		-- sets env, captures, etc.
@@ -641,7 +642,8 @@ end
 function Snippet:get_docstring()
 	if self.docstring then
 		return self.docstring
-	elseif not self.env then
+	-- copy+fake_expand the snippet here instead of in whatever code needs to know the docstring.
+	elseif not self.ext_opts then
 		-- not a snippetNode and not yet initialized
 		local snipcop = self:copy()
 		-- sets env, captures, etc.
@@ -701,7 +703,6 @@ end
 function Snippet:subsnip_init()
 	for _, node in ipairs(self.nodes) do
 		if node.type == types.snippetNode then
-			node.env = self.env
 			node.ext_opts = util.increase_ext_prio(
 				vim.deepcopy(self.ext_opts),
 				conf.config.ext_prio_increase

@@ -9,7 +9,8 @@ local function _concat(lines)
 	return table.concat(lines, "\n")
 end
 
-local function make_lambda_args(node_args, snip)
+local function make_lambda_args(node_args, imm_parent)
+	local snip = imm_parent.snippet
 	local args = vim.tbl_map(_concat, node_args)
 
 	setmetatable(args, {
