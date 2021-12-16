@@ -1,4 +1,3 @@
-local events = require("luasnip.util.events")
 local session = require("luasnip.session")
 
 local function get_cursor_0ind()
@@ -491,6 +490,19 @@ local function get_snippet_filetypes()
 	return snippet_fts
 end
 
+local function deduplicate(list)
+	vim.validate({ list = { list, "table" } })
+	local ret = {}
+	local contains = {}
+	for _, v in ipairs(list) do
+		if not contains[v] then
+			table.insert(ret, v)
+			contains[v] = true
+		end
+	end
+	return ret
+end
+
 local json_decode
 local json_encode
 if vim.json then
@@ -543,4 +555,5 @@ return {
 	bytecol_to_utfcol = bytecol_to_utfcol,
 	pos_sub = pos_sub,
 	pos_add = pos_add,
+	deduplicate = deduplicate,
 }
