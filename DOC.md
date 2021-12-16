@@ -629,6 +629,42 @@ Note load vscode-style packages using `require("luasnip.loaders.from_vscode").lo
 you've configured luasnip to detect the filetype based on the cursor position. Else the
 snippets won't be available to the `from_cursor_pos` function.
 
+# SNIPMATE SNIPPETS LOADER
+
+As luasnip is capable of loading the same format of vim-snipmate, It can be used
+in the same way as `from_vscode`.
+
+```lua
+ 	require("luasnip/loaders/from_snipmate").load(opts) -- opts can be ommited
+```
+
+See `from_vscode` for an explanation of opt.
+If opts.paths be ommited, "snippets" folders in rtp are used
+
+Luasnip is compatible with [honza/vim-snippets](https://github.com/honza/vim-snippets).
+Please use it as a reference for your directory structure.
+
+For example, in honza/vim-snippets, the file with the global snippets is _.snippets, which is stored in `ls.snippets._`.
+So we need to tell lusasnip that `_` is the same as `all`.
+
+```lua
+ls.filetype_extend("all", { "_" })
+```
+
+Lazy loading is also available here.
+
+```lua
+ 	require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
+```
+
+Here is a summary of the differences from the original snipmate format.
+
+- Only `./{ft}.snippets` and `./{ft}/*.snippets` will be used.
+- The file name or folder name will be used as file type.
+- You can use the comment and extends syntax.
+- `${VISUAL}$` will be replaced by `$TM_SELECTED_TEXT$`
+- We do not implement eval using \` (backtick). This may be implemented in the future.
+
 # EXT\_OPTS
 
 `ext_opts` are probably best explained with a short example:

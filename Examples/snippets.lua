@@ -184,6 +184,23 @@ require("luasnip/loaders/from_vscode").load({ paths = { "./my-snippets" } }) -- 
 -- You can also use lazy loading so you only get in memory snippets of languages you use
 require("luasnip/loaders/from_vscode").lazy_load() -- You can pass { paths = "./my-snippets/"} as well
 
+--[
+-- You can also use snippets in snipmate format.
+-- for example <https://github.com/honza/vim-snippets>.
+-- The usage is similar to vscode.
+--]
+
+-- For example, in honza/vim-snippets, the file with the global snippets is _.snippets, which is stored in `ls.snippets._`.
+-- So we need to tell lusasnip that "_" is the same as "all".
+ls.filetype_extend("all", { "_" })
+
+require("luasnip/loaders/from_snipmate").load({ include = { "python" } }) -- Load only python snippets
+
+require("luasnip/loaders/from_snipmate").load({ path = { "./my-snippets" } }) -- Load snippets from my-snippets folder
+-- If path is not specified, luasnip will look for the `snippets` directory from rtp.
+
+require("luasnip/loaders/from_snipmate").lazy_load() -- Lazy loading
+
 ls.snippets = {
 	-- When trying to expand a snippet, luasnip first searches the tables for
 	-- each filetype specified in 'filetype' followed by 'all'.
@@ -438,10 +455,7 @@ ls.snippets = {
 			})
 		),
 		-- The delimiters can be changed from the default `{}` to something else.
-		s(
-			"fmt4",
-			fmt("foo() { return []; }", i(1, "x"), { delimiters = "[]" })
-		),
+		s("fmt4", fmt("foo() { return []; }", i(1, "x"), { delimiters = "[]" })),
 		-- `fmta` is a convenient wrapper that uses `<>` instead of `{}`.
 		s("fmt5", fmta("foo() { return <>; }", i(1, "x"))),
 		-- By default all args must be used. Use strict=false to disable the check
