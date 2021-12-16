@@ -17,12 +17,13 @@ CONTENTS                                                        *luasnip-content
 11. LSP-SNIPPETS............................................|luasnip-lsp-snippets|
 12. VARIABLES..................................................|luasnip-variables|
 13. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
-14. EXT_OPTS....................................................|luasnip-ext_opts|
-15. DOCSTRING..................................................|luasnip-docstring|
-16. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
-17. EVENTS........................................................|luasnip-events|
-18. CLEANUP......................................................|luasnip-cleanup|
-19. API-REFERENCE..........................................|luasnip-api-reference|
+14. SNIPMATE SNIPPETS LOADER....................|luasnip-snipmate_snippets_loader|
+15. EXT_OPTS....................................................|luasnip-ext_opts|
+16. DOCSTRING..................................................|luasnip-docstring|
+17. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
+18. EVENTS........................................................|luasnip-events|
+19. CLEANUP......................................................|luasnip-cleanup|
+20. API-REFERENCE..........................................|luasnip-api-reference|
 >
                 __                       ____
                /\ \                     /\  _`\           __
@@ -632,6 +633,40 @@ triggered.
 Note load vscode-style packages using `require("luasnip.loaders.from_vscode").load()`, if
 you've configured luasnip to detect the filetype based on the cursor position. Else the
 snippets won't be available to the `from_cursor_pos` function.
+
+================================================================================
+SNIPMATE SNIPPETS LOADER                        *luasnip-snipmate_snippets_loader*
+
+As luasnip is capable of loading the same format of vim-snipmate, It can be used
+in the same way as `from_vscode`.
+>
+     	require("luasnip/loaders/from_snipmate").load(opts) -- opts can be ommited
+<
+
+See `from_vscode` for an explanation of opt.
+If opts.paths be ommited, "snippets" folders in rtp are used
+
+Luasnip is compatible with honza/vim-snippets (https://github.com/honza/vim-snippets).
+Please use it as a reference for your directory structure.
+
+For example, in honza/vim-snippets, the file with the global snippets is _.snippets, which is stored in `ls.snippets._`.
+So we need to tell lusasnip that `_` is the same as `all`.
+>
+    ls.filetype_extend("all", { "_" })
+<
+
+Lazy loading is also available here.
+>
+     	require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
+<
+
+Here is a summary of the differences from the original snipmate format.
+
+*   Only `./{ft}.snippets` and `./{ft}/*.snippets` will be used.
+*   The file name or folder name will be used as file type.
+*   You can use the comment and extends syntax.
+*   `${VISUAL}$` will be replaced by `$TM_SELECTED_TEXT$`
+*   We do not implement eval using ` (backtick). This may be implemented in the future.
 
 ================================================================================
 EXT_OPTS                                                        *luasnip-ext_opts*
