@@ -2,6 +2,7 @@ local ls = require("luasnip")
 local uv = vim.loop
 local caches = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
+local loader_util = require("luasnip.loaders.util")
 local session = require("luasnip.session")
 
 local function json_decode(data)
@@ -198,10 +199,10 @@ local M = {}
 function M.load(opts)
 	opts = opts or {}
 	-- nil (unset) to include all languages (default), a list for the ones you wanna include
-	opts.include = list_to_set(opts.include)
+	opts.include = loader_util.filetypelist_to_set(opts.include)
 
 	-- A list for the ones you wanna exclude (empty by default)
-	opts.exclude = list_to_set(opts.exclude) or {}
+	opts.exclude = loader_util.filetypelist_to_set(opts.exclude) or {}
 
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
 	if not opts.paths then
