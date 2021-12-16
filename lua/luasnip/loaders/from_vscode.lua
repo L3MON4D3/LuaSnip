@@ -82,7 +82,7 @@ local function filter_list(list, exclude, include)
 end
 
 local function load_snippet_folder(package, opts)
-    local root = vim.fn.fnamemodify(package, ":h")
+	local root = vim.fn.fnamemodify(package, ":h")
 	Path.async_read_file(
 		package,
 		vim.schedule_wrap(function(data)
