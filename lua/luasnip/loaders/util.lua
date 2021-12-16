@@ -15,5 +15,5 @@ local function filetypelist_to_set(list)
 end
 
 return {
-	filetypelist_to_set = filetypelist_to_set
+	filetypelist_to_set = filetypelist_to_set,
 }
