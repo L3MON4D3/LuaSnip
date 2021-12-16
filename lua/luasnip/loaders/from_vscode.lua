@@ -144,7 +144,7 @@ function M.load(opts)
 	end
 
 	opts.paths = vim.tbl_map(Path.expand, opts.paths) -- Expand before deduping, fake paths will become nil
-	opts.paths = vim.tbl_keys(list_to_set(opts.paths)) -- Remove doppelgänger paths and ditch nil ones
+	opts.paths = util.deduplicate(opts.paths) -- Remove doppelgänger paths and ditch nil ones
 
 	for _, path in ipairs(opts.paths) do
 		load_snippet_folder(path, opts)
@@ -172,7 +172,7 @@ function M.lazy_load(opts)
 	end
 	vim.list_extend(caches.lazy_load_paths, opts.paths)
 
-	caches.lazy_load_paths = vim.tbl_keys(list_to_set(caches.lazy_load_paths)) -- Remove doppelgänger paths and ditch nil ones
+	caches.lazy_load_paths = util.deduplicate(caches.lazy_load_paths) -- Remove doppelgänger paths and ditch nil ones
 
 	vim.cmd([[
 		augroup _luasnip_vscode_lazy_load
