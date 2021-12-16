@@ -594,7 +594,7 @@ VSCODE SNIPPETS LOADER                            *luasnip-vscode_snippets_loade
 As luasnip is capable of loading the same format of plugins as vscode, it also
 includes an easy way for loading those automatically. You just have to call:
 >
-     	require("luasnip/loaders/from_vscode").load(opts) -- opts can be ommited
+     	require("luasnip.loaders.from_vscode").load(opts) -- opts can be ommited
 <
 
 Where `opts` is a table containing the keys:
@@ -637,35 +637,40 @@ snippets won't be available to the `from_cursor_pos` function.
 ================================================================================
 SNIPMATE SNIPPETS LOADER                        *luasnip-snipmate_snippets_loader*
 
-As luasnip is capable of loading the same format of vim-snipmate, It can be used
-in the same way as `from_vscode`.
+As the snipmate snippet format is fundamentally the same as vscode, it can also
+be loaded.
 >
-     	require("luasnip/loaders/from_snipmate").load(opts) -- opts can be ommited
+     	require("luasnip.loaders.from_snipmate").load(opts) -- opts can be ommited
 <
 
-See `from_vscode` for an explanation of opt.
-If opts.paths be ommited, "snippets" folders in rtp are used
+See `from_vscode` for an explanation of opts.
+If `opts.paths` is ommited, snippets are loaded from any directory named
+`snippets` located in the `runtimepath`.
 
-Luasnip is compatible with honza/vim-snippets (https://github.com/honza/vim-snippets).
+Luasnip is compatible with
+honza/vim-snippets (https://github.com/honza/vim-snippets).
 Please use it as a reference for your directory structure.
 
-For example, in honza/vim-snippets, the file with the global snippets is _.snippets, which is stored in `ls.snippets._`.
-So we need to tell lusasnip that `_` is the same as `all`.
+When using `honza/vim-snippets`, the file with the global snippets is
+`_.snippets`, So we need to tell luasnip that `_` also contains global snippets:
 >
     ls.filetype_extend("all", { "_" })
 <
 
-Lazy loading is also available here.
+Something similar may have to be done for other snippet-repos as well.
+
+Lazy loading is also available with the snipmate-loader.
 >
      	require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
 <
 
 Here is a summary of the differences from the original snipmate format.
 
-*   Only `./{ft}.snippets` and `./{ft}/*.snippets` will be used.
+*   Only `./{ft}.snippets` and `./{ft}/*.snippets` will be loaded.
 *   The file name or folder name will be used as file type.
 *   You can use the comment and extends syntax.
-*   `${VISUAL}$` will be replaced by `$TM_SELECTED_TEXT$`
+*   `${VISUAL}` will be replaced by `$TM_SELECTED_TEXT` to make the snippets
+    compatible with luasnip
 *   We do not implement eval using ` (backtick). This may be implemented in the future.
 
 ================================================================================
