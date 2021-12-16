@@ -480,14 +480,14 @@ end
 local function get_snippet_filetypes()
 	local config = require("luasnip.config").config
 	local fts = config.ft_func()
+	-- add all last.
+	table.insert(fts, "all")
 
 	local snippet_fts = {}
 	for _, ft in ipairs(fts) do
 		vim.list_extend(snippet_fts, session.ft_redirect[ft])
 	end
 
-	-- add all last.
-	table.insert(snippet_fts, "all")
 	return snippet_fts
 end
 
