@@ -1,6 +1,7 @@
 local session = require("luasnip.session")
 
 local function filetypelist_to_set(list)
+	vim.validate({ list = { list, "table", true } })
 	if not list then
 		return list
 	end
