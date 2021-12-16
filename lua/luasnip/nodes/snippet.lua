@@ -778,6 +778,14 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 
 	local snip_pos_begin, snip_pos_end = self.mark:pos_begin_end_raw()
 
+	if snip_pos_begin[1] == snip_pos_end[1] and
+	   snip_pos_begin[2] == snip_pos_end[2] then
+		for _, node in ipairs(self.nodes) do
+			node:set_mark_rgrav(val_begin, val_end)
+		end
+		return
+	end
+
 	local node_indx = 1
 	-- the first node starts at begin-mark.
 	local node_on_begin_mark = true
@@ -792,7 +800,7 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 		end
 		local node_pos_begin, node_pos_end = node.mark:pos_begin_end_raw()
 		-- use false, false as default, this is what most nodes will be set to.
-		local new_rgrav_begin, new_rgrav_end = false, false
+		local new_rgrav_begin, new_rgrav_end = node.mark.opts.right_gravity, node.mark.opts.end_right_gravity
 		if
 			node_pos_begin[1] == snip_pos_begin[1]
 			and node_pos_begin[2] == snip_pos_begin[2]
@@ -800,8 +808,8 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 			new_rgrav_begin = val_begin
 
 			if
-				node_pos_end[1] == snip_pos_end[1]
-				and node_pos_end[2] == snip_pos_end[2]
+				node_pos_end[1] == snip_pos_begin[1]
+				and node_pos_end[2] == snip_pos_begin[2]
 			then
 				new_rgrav_end = val_begin
 				-- both marks of this node were on the beginning of the snippet
@@ -826,7 +834,7 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 		-- will be set later if the next node has to be updated as well.
 		node_on_end_mark = false
 		-- use false, false as default, this is what most nodes will be set to.
-		local new_rgrav_begin, new_rgrav_end = false, false
+		local new_rgrav_begin, new_rgrav_end = node.mark.opts.right_gravity, node.mark.opts.end_right_gravity
 		if
 			node_pos_end[1] == snip_pos_end[1]
 			and node_pos_end[2] == snip_pos_end[2]
@@ -834,8 +842,8 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 			new_rgrav_end = val_end
 
 			if
-				node_pos_begin[1] == snip_pos_begin[1]
-				and node_pos_begin[2] == snip_pos_begin[2]
+				node_pos_begin[1] == snip_pos_end[1]
+				and node_pos_begin[2] == snip_pos_end[2]
 			then
 				new_rgrav_begin = val_end
 				-- both marks of this node were on the end-mark of the snippet
