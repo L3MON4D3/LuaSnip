@@ -492,7 +492,7 @@ end
 
 local function refresh_notify(ft)
 	vim.validate({
-		filetype={ft, "string"}
+		filetype = { ft, "string" },
 	})
 	session.latest_load_ft = ft
 	vim.cmd([[doautocmd User LuasnipSnippetsAdded]])
@@ -545,7 +545,7 @@ ls = {
 	autosnippets = { all = {} },
 	session = session,
 	cleanup = cleanup,
-	refresh_notify = refresh_notify
+	refresh_notify = refresh_notify,
 }
 
 return ls
