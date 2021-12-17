@@ -10,7 +10,5 @@ let b:undo_ftplugin = "setl et< sts< cms< fdm< fde<"
 " Use hard tabs
 setlocal noexpandtab softtabstop=0
 
-setlocal foldmethod=expr foldexpr=getline(v:lnum)!~'^\\t\\\\|^$'?'>1':1
-
 setlocal commentstring=#\ %s
 setlocal nospell
