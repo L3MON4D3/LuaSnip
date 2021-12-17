@@ -930,6 +930,10 @@ the lazy_load.
 - `cleanup()`: clears all snippets. Not useful for regular usage, only when
   authoring and testing snippets.
 
+- `refresh_notify(ft)`: Triggers an autocmd that other plugins can hook into to
+  perform various cleanup for the refreshed filetype.
+  Useful for signaling that new snippets were added for the filetype `ft`.
+
 Not covered in this section are the various node-constructors exposed by
 the module, their usage is shown either previously in this file or in
 `Examples/snippets.lua` (in the repo).

@@ -59,8 +59,7 @@ local function load_snippet_file(langs, snippet_set_path)
 				end
 				ls.snippets[lang] = lang_snips
 				ls.autosnippets[lang] = auto_lang_snips
-				session.latest_load_ft = lang
-				vim.cmd("doautocmd User LuasnipSnippetsAdded")
+				ls.refresh_notify(lang)
 			end
 		end)
 	)
