@@ -81,8 +81,8 @@ local function filter_list(list, exclude, include)
 	return out
 end
 
-local function load_snippet_folder(package, opts)
-	local root = vim.fn.fnamemodify(package, ":h")
+local function load_snippet_folder(root, opts)
+	local package = Path.join(root, "package.json")
 	Path.async_read_file(
 		package,
 		vim.schedule_wrap(function(data)
@@ -116,15 +116,10 @@ local function load_snippet_folder(package, opts)
 	)
 end
 
-local function list_to_set(list)
-	if not list then
-		return list
-	end
-	local out = {}
-	for _, item in ipairs(list) do
-		out[item] = true
-	end
-	return out
+local function get_snippet_rtp()
+    return vim.tbl_map(function(itm)
+        return vim.fn.fnamemodify(itm, ":h")
+    end, vim.api.nvim_get_runtime_file("package.json", true))
 end
 
 local M = {}
@@ -138,7 +133,7 @@ function M.load(opts)
 
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
 	if not opts.paths then
-		opts.paths = vim.api.nvim_get_runtime_file("package.json", true)
+		opts.paths = get_snippet_rtp()
 	elseif type(opts.paths) == "string" then
 		opts.paths = vim.split(opts.paths, ",")
 	end
@@ -166,7 +161,7 @@ function M.lazy_load(opts)
 
 	-- We have to do this here too, because we have to store them in lozy_load_paths
 	if not opts.paths then
-		opts.paths = vim.api.nvim_get_runtime_file("package.json", true)
+		opts.paths = get_snippet_rtp()
 	elseif type(opts.paths) == "string" then
 		opts.paths = vim.split(opts.paths, ",")
 	end
@@ -175,11 +170,11 @@ function M.lazy_load(opts)
 	caches.lazy_load_paths = util.deduplicate(caches.lazy_load_paths) -- Remove doppelgänger paths and ditch nil ones
 
 	vim.cmd([[
-		augroup _luasnip_vscode_lazy_load
-		autocmd!
-		au BufWinEnter,FileType * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
-    au User LuasnipCleanup lua require('luasnip.loaders._caches').clean()
-		augroup END
+    augroup _luasnip_vscode_lazy_load
+        autocmd!
+        au BufWinEnter,FileType * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
+        au User LuasnipCleanup lua require('luasnip.loaders._caches').clean()
+    augroup END
 	]])
 end
 

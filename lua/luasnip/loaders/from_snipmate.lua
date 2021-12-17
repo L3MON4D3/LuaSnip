@@ -1,4 +1,3 @@
----@diagnostic disable: redefined-local
 local ls = require("luasnip")
 local caches = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
