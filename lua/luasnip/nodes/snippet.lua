@@ -458,7 +458,7 @@ function Snippet:enter_node(node_id)
 
 		-- As soon as one end-mark wasn't equal, we no longer have to check as the
 		-- marks don't overlap.
-		if end_equal then
+		if not end_equal then
 			break
 		end
 	end
