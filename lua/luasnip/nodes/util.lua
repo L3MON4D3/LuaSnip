@@ -3,9 +3,8 @@ local types = require("luasnip.util.types")
 local conf = require("luasnip.config")
 
 local function subsnip_init_children(node, parent, children, position_so_far)
-	local pos_depth = #position_so_far + 1
-	position_so_far[pos_depth] = -1
 	node.absolute_position = vim.deepcopy(position_so_far)
+	local pos_depth = #position_so_far + 1
 
 	for indx, child in ipairs(children) do
 		if child.type == types.snippetNode then
