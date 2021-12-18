@@ -130,8 +130,14 @@ end
 
 function Node:populate_argnodes() end
 
-function Node:subsnip_init(position_so_far)
+function Node:subsnip_init() end
+
+function Node:init_positions(position_so_far)
 	self.absolute_position = vim.deepcopy(position_so_far)
+end
+
+function Node:init_insert_positions(position_so_far)
+	self.absolute_insert_position = vim.deepcopy(position_so_far)
 end
 
 function Node:event(event)

@@ -53,8 +53,7 @@ function RestoreNode:input_leave()
 end
 
 -- set snippetNode for this key here.
-function RestoreNode:subsnip_init(position_so_far)
-	Node.subsnip_init(self, position_so_far)
+function RestoreNode:subsnip_init()
 	-- don't overwrite potentially stored snippetNode.
 	-- due to metatable, there will always be a node set, but only those set
 	-- by it (should) have the is_default set to true.
@@ -95,7 +94,9 @@ function RestoreNode:put_initial(pos)
 	end
 
 	tmp:populate_argnodes()
-	tmp:subsnip_init(vim.deepcopy(self.absolute_position))
+	tmp:subsnip_init()
+	tmp:init_positions(self.absolute_position)
+	tmp:init_insert_positions(self.absolute_insert_position)
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())
@@ -149,7 +150,9 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
-	snip:subsnip_init(vim.deepcopy(self.absolute_position))
+	snip:subsnip_init()
+	snip:init_positions(self.absolute_position)
+	snip:init_insert_positions(self.absolute_insert_position)
 end
 
 function RestoreNode:get_static_text()

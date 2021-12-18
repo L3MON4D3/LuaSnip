@@ -339,7 +339,9 @@ function Snippet:trigger_expand(current_node, pos)
 	end
 
 	self.env = Environ:new(pos)
-	self:subsnip_init({})
+	self:subsnip_init()
+	self:init_positions({})
+	self:init_insert_positions({})
 	-- at this point `stored` contains the snippetNodes that will actually
 	-- be used, indent them once here.
 	for _, node in pairs(self.stored) do
@@ -702,10 +704,12 @@ function Snippet:expand_tabs(tabwidth)
 	end
 end
 
-function Snippet:subsnip_init(position_so_far)
-	node_util.subsnip_init_children(self, self, self.nodes, position_so_far)
+function Snippet:subsnip_init()
+	node_util.subsnip_init_children(self, self.nodes)
 end
 
+Snippet.init_positions = node_util.init_child_positions_func("absolute_position", "nodes", "init_positions")
+Snippet.init_insert_positions = node_util.init_child_positions_func("absolute_insert_position", "insert_nodes", "init_insert_positions")
 function Snippet:input_enter()
 	self.active = true
 

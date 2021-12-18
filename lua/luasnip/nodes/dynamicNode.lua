@@ -41,7 +41,7 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
-	snip:subsnip_init(vim.deepcopy(self.absolute_position))
+	snip:subsnip_init()
 end
 
 function DynamicNode:get_static_text()
@@ -154,7 +154,9 @@ function DynamicNode:update()
 	end
 
 	tmp:populate_argnodes()
-	tmp:subsnip_init(vim.deepcopy(self.absolute_position))
+	tmp:subsnip_init()
+	tmp:init_positions(self.absolute_position)
+	tmp:init_insert_positions(self.absolute_insert_position)
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())

@@ -74,9 +74,12 @@ local function C(pos, choices, opts)
 	return c
 end
 
-function ChoiceNode:subsnip_init(position_so_far)
-	node_util.subsnip_init_children(self, self.parent, self.choices, position_so_far)
+function ChoiceNode:subsnip_init()
+	node_util.subsnip_init_children(self.parent, self.choices)
 end
+
+ChoiceNode.init_positions = node_util.init_child_positions_func("absolute_position", "choices", "init_positions")
+ChoiceNode.init_insert_positions = node_util.init_child_positions_func("absolute_insert_position", "choices", "init_insert_positions")
 
 function ChoiceNode:put_initial(pos)
 	local old_pos = vim.deepcopy(pos)
