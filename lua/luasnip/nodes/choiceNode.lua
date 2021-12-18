@@ -1,7 +1,7 @@
 local Node = require("luasnip.nodes.node").Node
 local ChoiceNode = Node:new()
 local util = require("luasnip.util.util")
-local conf = require("luasnip.config")
+local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
@@ -74,17 +74,8 @@ local function C(pos, choices, opts)
 	return c
 end
 
-function ChoiceNode:subsnip_init()
-	for _, node in ipairs(self.choices) do
-		if node.type == types.snippetNode then
-			node.ext_opts = util.increase_ext_prio(
-				vim.deepcopy(self.parent.ext_opts),
-				conf.config.ext_prio_increase
-			)
-			node.snippet = self.parent.snippet
-		end
-		node:subsnip_init()
-	end
+function ChoiceNode:subsnip_init(position_so_far)
+	node_util.subsnip_init_children(self, self.parent, self.choices, position_so_far)
 end
 
 function ChoiceNode:put_initial(pos)

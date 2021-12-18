@@ -1,5 +1,6 @@
 local DynamicNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local Node = require("luasnip.nodes.node").Node
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
@@ -40,7 +41,7 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
-	snip:subsnip_init()
+	snip:subsnip_init(vim.deepcopy(self.absolute_position))
 end
 
 function DynamicNode:get_static_text()
@@ -153,7 +154,7 @@ function DynamicNode:update()
 	end
 
 	tmp:populate_argnodes()
-	tmp:subsnip_init()
+	tmp:subsnip_init(vim.deepcopy(self.absolute_position))
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())

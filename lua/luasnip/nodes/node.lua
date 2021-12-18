@@ -1,5 +1,6 @@
 local session = require("luasnip.session")
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local events = require("luasnip.util.events")
 
 local Node = {}
@@ -129,7 +130,9 @@ end
 
 function Node:populate_argnodes() end
 
-function Node:subsnip_init() end
+function Node:subsnip_init(position_so_far)
+	self.absolute_position = vim.deepcopy(position_so_far)
+end
 
 function Node:event(event)
 	if self.pos then

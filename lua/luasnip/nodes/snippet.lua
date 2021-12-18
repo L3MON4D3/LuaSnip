@@ -2,6 +2,7 @@ local node_mod = require("luasnip.nodes.node")
 local iNode = require("luasnip.nodes.insertNode")
 local tNode = require("luasnip.nodes.textNode")
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
@@ -338,7 +339,7 @@ function Snippet:trigger_expand(current_node, pos)
 	end
 
 	self.env = Environ:new(pos)
-	self:subsnip_init()
+	self:subsnip_init({})
 	-- at this point `stored` contains the snippetNodes that will actually
 	-- be used, indent them once here.
 	for _, node in pairs(self.stored) do
@@ -701,17 +702,8 @@ function Snippet:expand_tabs(tabwidth)
 	end
 end
 
-function Snippet:subsnip_init()
-	for _, node in ipairs(self.nodes) do
-		if node.type == types.snippetNode then
-			node.ext_opts = util.increase_ext_prio(
-				vim.deepcopy(self.ext_opts),
-				conf.config.ext_prio_increase
-			)
-			node.snippet = self.snippet
-		end
-		node:subsnip_init()
-	end
+function Snippet:subsnip_init(position_so_far)
+	node_util.subsnip_init_children(self, self, self.nodes, position_so_far)
 end
 
 function Snippet:input_enter()
