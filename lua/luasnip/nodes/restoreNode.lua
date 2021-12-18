@@ -33,6 +33,7 @@ function RestoreNode:exit()
 	-- will be copied on restore, no need to copy here too.
 	self.parent.snippet.stored[self.key] = self.snip
 	self.snip:exit()
+	self.snip = nil
 	self.active = false
 end
 
@@ -193,6 +194,14 @@ function RestoreNode:find_node(predicate)
 		end
 	end
 	return nil
+end
+
+function RestoreNode:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	-- nil if not yet available.
+	return self.snip and self.snip:insert_to_node_absolute(position)
 end
 
 return {

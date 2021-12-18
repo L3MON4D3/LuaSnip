@@ -230,6 +230,15 @@ function DynamicNode:find_node(predicate)
 	return nil
 end
 
+function DynamicNode:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	-- return nil if the absolute index cannot yet be found.
+	return self.snip and self.snip:insert_to_node_absolute(position)
+end
+
+
 return {
 	D = D,
 }

@@ -314,6 +314,14 @@ function ChoiceNode:store()
 	self.active_choice:store()
 end
 
+function ChoiceNode:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	local front = util.pop_front(position)
+	return self.choices[front]:insert_to_node_absolute(position)
+end
+
 return {
 	C = C,
 }

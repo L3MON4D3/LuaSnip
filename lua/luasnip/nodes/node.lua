@@ -189,6 +189,11 @@ end
 
 Node.ext_gravities_active = { false, true }
 
+function Node:insert_to_node_absolute(position)
+	-- this node is a leaf, just return its position
+	return self.absolute_position
+end
+
 return {
 	Node = Node,
 }

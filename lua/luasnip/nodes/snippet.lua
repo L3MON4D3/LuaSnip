@@ -968,6 +968,14 @@ function Snippet:find_node(predicate)
 	return nil
 end
 
+function Snippet:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	local insert_indx = util.pop_front(position)
+	return self.insert_nodes[insert_indx]:insert_to_node_absolute(position)
+end
+
 return {
 	Snippet = Snippet,
 	S = S,
