@@ -5,6 +5,7 @@ local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local conf = require("luasnip.config")
 local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
+local SnippetNode = require("luasnip.nodes.snippet").SN
 
 local function D(pos, fn, args, ...)
 	return DynamicNode:new({
@@ -128,18 +129,22 @@ function DynamicNode:jump_into(dir, no_move)
 end
 
 function DynamicNode:update()
-	local tmp
-	self.last_args = self:get_args()
+	local args = self:get_args()
+	if vim.deep_equal(self.last_args, args) then
+		-- no update, the args still match.
+		return
+	end
 
+	local tmp
 	if self.snip then
-		if not self.last_args then
+		if not args then
 			-- a snippet exists, don't delete it.
 			return
 		end
 
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
-			self.last_args,
+			args,
 			self.parent,
 			self.snip.old_state,
 			unpack(self.user_args)
@@ -151,12 +156,12 @@ function DynamicNode:update()
 		self.parent:set_text(self, { "" })
 	else
 		self.parent:enter_node(self.indx)
-		if not self.last_args then
+		if not args then
 			-- no snippet exists, set an empty one.
-			tmp = sn(nil, {})
+			tmp = SnippetNode(nil, {})
 		else
 			-- also enter node here.
-			tmp = self.fn(self.last_args, self.parent, nil, unpack(self.user_args))
+			tmp = self.fn(args, self.parent, nil, unpack(self.user_args))
 		end
 	end
 
@@ -197,10 +202,13 @@ function DynamicNode:update()
 
 	self.parent:enter_node(self.indx)
 	tmp:put_initial(self.mark:pos_begin_raw())
-	-- Update, tbh no idea how that could come in handy, but should be done.
-	tmp:update()
 
-	tmp:set_old_text()
+	-- Update, tbh no idea how that could come in handy, but should be done.
+	-- Both are needed, becaus
+	-- - a node could only depend on nodes outside of tmp
+	-- - a node outside of tmp could depend on one inside of tmp
+	tmp:update()
+	tmp:update_all_dependents()
 
 	self.snip = tmp
 	self:update_dependents()

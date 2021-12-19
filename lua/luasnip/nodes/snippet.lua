@@ -369,7 +369,6 @@ function Snippet:trigger_expand(current_node, pos)
 		end_right_gravity = true,
 	}, self.ext_opts[types.snippet].passive)
 	self.mark = mark(old_pos, pos, mark_opts)
-	self:set_old_text()
 
 	self:update_all_dependents()
 
@@ -571,7 +570,6 @@ function Snippet:put_initial(pos)
 			end_right_gravity = false,
 		}, self.ext_opts[node.type].passive)
 		node.mark = mark(old_pos, pos, mark_opts)
-		node:set_old_text()
 	end
 	self.visible = true
 end

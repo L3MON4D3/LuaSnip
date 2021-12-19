@@ -231,9 +231,8 @@ function ChoiceNode:change_choice(dir, current_node)
 		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
 	)
 	self.active_choice:put_initial(self.mark:pos_begin_raw())
-	self.active_choice:update_restore()
-	self.active_choice.old_text = self.active_choice:get_text()
 
+	self.active_choice:update_restore()
 	self.active_choice:update_all_dependents()
 
 	-- Another node may have been entered in update_dependents.

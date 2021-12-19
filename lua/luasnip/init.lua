@@ -312,13 +312,11 @@ local function active_update_dependents()
 			{ right_gravity = false }
 		)
 
-		-- local ok = pcall(active.update_dependents, active)
-		-- if not ok then
-		-- 	unlink_current()
-		-- 	print("error")
-		-- 	return
-		-- end
-		active:update_dependents()
+		local ok = pcall(active.update_dependents, active)
+		if not ok then
+			unlink_current()
+			return
+		end
 
 		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
 		if not pcall(active.parent.enter_node, active.parent, active.indx) then

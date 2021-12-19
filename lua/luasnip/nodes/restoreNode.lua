@@ -117,8 +117,6 @@ function RestoreNode:put_initial(pos)
 	tmp:put_initial(pos)
 	tmp.mark = mark(old_pos, pos, mark_opts)
 
-	tmp:set_old_text()
-
 	-- no need to call update here, will be done by function calling put_initial.
 
 	self.snip = tmp
@@ -214,6 +212,11 @@ function RestoreNode:insert_to_node_absolute(position)
 	end
 	-- nil if not yet available.
 	return self.snip and self.snip:insert_to_node_absolute(position)
+end
+
+function RestoreNode:update_all_dependents()
+	self:_update_dependents()
+	self.snip:_update_dependents()
 end
 
 return {

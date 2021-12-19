@@ -10,6 +10,7 @@ function Node:new(o)
 	setmetatable(o, self)
 	self.__index = self
 	o.visible = false
+	o.old_text = {}
 	return o
 end
 
@@ -109,8 +110,11 @@ end
 
 function Node:_update_dependents()
 	if self.visible and not util.multiline_equal(self.old_text, self:get_text()) then
+
 		self.absolute_insert_position[#self.absolute_insert_position+1] = "dependents"
 		local dependent_nodes = self.parent.snippet.dependents_dict:find_all(self.absolute_insert_position, "dependent")
+		self.absolute_insert_position[#self.absolute_insert_position] = nil
+
 		if not dependent_nodes then
 			goto skip
 		end
@@ -119,7 +123,6 @@ function Node:_update_dependents()
 				node:update()
 			end
 		end
-		self.absolute_insert_position[#self.absolute_insert_position] = nil
 
 
 		::skip::
