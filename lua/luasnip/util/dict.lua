@@ -32,8 +32,8 @@ end
 
 function Dictionary:find_all(path, key)
 	local res = {}
-	local to_search = self:get(path)
-	if not to_search then
+	local to_search = {self:get(path)}
+	if not to_search[1] then
 		return nil
 	end
 

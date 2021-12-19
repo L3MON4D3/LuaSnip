@@ -55,6 +55,7 @@ end
 FunctionNode.get_docstring = FunctionNode.get_static_text
 
 function FunctionNode:update()
+	print("updating")
 	self.last_args = self:get_args()
 	local text = util.wrap_value(
 		self.fn(self.last_args, self.parent, unpack(self.user_args))
@@ -84,7 +85,11 @@ function FunctionNode:expand_tabs(_) end
 
 function FunctionNode:init_insert_positions(position_so_far)
 	Node.init_insert_positions(self, position_so_far)
-	node_util.make_args_absolute(self.args, position_so_far)
+end
+
+function FunctionNode:make_args_absolute(position_so_far)
+	self.args_absolute = {}
+	node_util.make_args_absolute(self.args, position_so_far, self.args_absolute)
 end
 
 function FunctionNode:set_dependents()
@@ -92,7 +97,7 @@ function FunctionNode:set_dependents()
 	local append_list = vim.list_extend({"dependents"}, self.absolute_position)
 	append_list[#append_list + 1] = "dependent"
 
-	for _, arg in ipairs(self.args) do
+	for _, arg in ipairs(self.args_absolute) do
 		-- mutates arg! Contains key for dict and this node, from now on.
 		dict:set(vim.list_extend(vim.deepcopy(arg), append_list), self)
 	end

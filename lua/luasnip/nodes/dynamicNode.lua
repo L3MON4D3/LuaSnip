@@ -236,11 +236,11 @@ function DynamicNode:insert_to_node_absolute(position)
 	if #position == 0 then
 		return self.absolute_position
 	end
-	-- return nil if the absolute index cannot yet be found.
 	return self.snip and self.snip:insert_to_node_absolute(position)
 end
 
 DynamicNode.init_insert_positions = FunctionNode.init_insert_positions
+DynamicNode.make_args_absolute = FunctionNode.make_args_absolute
 DynamicNode.set_dependents = FunctionNode.set_dependents
 
 return {

@@ -719,7 +719,23 @@ function Snippet:subsnip_init()
 end
 
 Snippet.init_positions = node_util.init_child_positions_func("absolute_position", "nodes", "init_positions")
-Snippet.init_insert_positions = node_util.init_child_positions_func("absolute_insert_position", "insert_nodes", "init_insert_positions")
+
+function Snippet:init_insert_positions(position_so_far)
+	self.absolute_insert_position = vim.deepcopy(position_so_far)
+	local pos_depth = #position_so_far + 1
+
+	for indx, child in ipairs(self.insert_nodes) do
+		position_so_far[pos_depth] = indx
+		child:init_insert_positions(position_so_far)
+	end
+
+	for _, node in ipairs(self.nodes) do
+		node:make_args_absolute(position_so_far)
+	end
+
+	-- undo changes to position_so_far.
+	position_so_far[pos_depth] = nil
+end
 
 function Snippet:input_enter()
 	self.active = true

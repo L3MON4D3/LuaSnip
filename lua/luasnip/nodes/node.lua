@@ -109,13 +109,16 @@ function Node:_update_dependents()
 		self.absolute_insert_position[#self.absolute_insert_position+1] = "dependents"
 		local dependent_nodes = self.parent.snippet.dependents_dict:find_all(self.absolute_insert_position, "dependent")
 		if not dependent_nodes then
-			return
+			goto skip
 		end
 		for _, node in ipairs(dependent_nodes) do
 			node:update()
 		end
 		self.absolute_insert_position[#self.absolute_insert_position] = nil
 
+
+		::skip::
+		-- prevent future updates without changed text.
 		self.old_text = self:get_text()
 	end
 end
@@ -169,7 +172,7 @@ local function get_args(node, get_text_func_name)
 	local args = {}
 
 	-- Insp(node.parent.snippet.dependents_dict)
-	for _, arg in ipairs(node.args) do
+	for _, arg in ipairs(node.args_absolute) do
 		-- Insp(arg)
 		local arg_node = node.parent.snippet.dependents_dict:get(arg).node
 		args[#args+1] = arg_node[get_text_func_name](arg_node)
@@ -212,6 +215,7 @@ function Node:set_dependents() end
 
 function Node:set_argnodes(dict)
 	if self.absolute_insert_position then
+		print("yep")
 		local value = dict:get(self.absolute_insert_position)
 
 		if value and value.dependents then
@@ -219,6 +223,8 @@ function Node:set_argnodes(dict)
 		end
 	end
 end
+
+function Node:make_args_absolute() end
 
 return {
 	Node = Node,

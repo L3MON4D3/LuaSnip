@@ -31,19 +31,23 @@ local function init_child_positions_func(key, node_children_key, child_func_name
 	end
 end
 
-local function make_args_absolute(args, node_insert_position)
+local function make_args_absolute(args, node_insert_position, target)
 	for i, arg in ipairs(args) do
 		if type(arg) == "number" then
 			-- the arg is a number, should be interpreted relative to direct
 			-- parent.
 			node_insert_position[#node_insert_position] = arg
-			args[i] = vim.deepcopy(node_insert_position)
+			target[i] = vim.deepcopy(node_insert_position)
+		else
+			-- arg-position is absolute.
+			target[i] = arg.absolute_position
 		end
 	end
 end
 
 local function wrap_args(args)
-	if type(args) == "table" and getmetatable(args) then
+	if type(args) ~= "table" or
+	   (type(args) == "table" and args.absolute_position) then
 		-- args is one single arg, wrap it.
 		return {args}
 	else
