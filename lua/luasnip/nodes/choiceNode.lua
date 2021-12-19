@@ -346,9 +346,7 @@ function ChoiceNode:update_all_dependents()
 	-- call the version that only updates this node.
 	self:_update_dependents()
 
-	for _, node in ipairs(self.choices) do
-		node:update_all_dependents()
-	end
+	self.active_choice:update_all_dependents()
 end
 
 return {
