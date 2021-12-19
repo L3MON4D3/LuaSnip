@@ -26,10 +26,6 @@ function TextNode:input_enter(no_move)
 	self:event(events.enter, no_move)
 end
 
-function TextNode:put_initial(pos)
-	util.put(self:get_static_text(), pos)
-end
-
 return {
 	T = T,
 }

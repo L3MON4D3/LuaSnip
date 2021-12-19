@@ -27,6 +27,7 @@ local function R(pos, key, nodes)
 end
 
 function RestoreNode:exit()
+	self.visible = false
 	self.mark:clear()
 	-- snip should exist if exit is called.
 	self.snip:store()
@@ -118,6 +119,7 @@ function RestoreNode:put_initial(pos)
 	-- no need to call update here, will be done by function calling put_initial.
 
 	self.snip = tmp
+	self.visible = true
 end
 
 -- the same as DynamicNode.

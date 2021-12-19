@@ -573,6 +573,7 @@ function Snippet:put_initial(pos)
 		node.mark = mark(old_pos, pos, mark_opts)
 		node:set_old_text()
 	end
+	self.visible = true
 end
 
 -- may only be called if the `insertNodes` of all snippet(Node)s are populated
@@ -788,6 +789,7 @@ end
 -- used in LSP-Placeholders.
 
 function Snippet:exit()
+	self.visible = false
 	for _, node in ipairs(self.nodes) do
 		node:exit()
 	end

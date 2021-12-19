@@ -9,6 +9,7 @@ function Node:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
+	o.visible = false
 	return o
 end
 
@@ -22,6 +23,7 @@ end
 
 function Node:put_initial(pos)
 	util.put(self:get_static_text(), pos)
+	self.visible = true
 end
 
 function Node:input_enter(_)
@@ -95,6 +97,7 @@ function Node:set_old_text()
 end
 
 function Node:exit()
+	self.visible = false
 	self.mark:clear()
 end
 
@@ -112,7 +115,9 @@ function Node:_update_dependents()
 			goto skip
 		end
 		for _, node in ipairs(dependent_nodes) do
-			node:update()
+			if node.visible then
+				node:update()
+			end
 		end
 		self.absolute_insert_position[#self.absolute_insert_position] = nil
 
@@ -175,6 +180,9 @@ local function get_args(node, get_text_func_name)
 	for _, arg in ipairs(node.args_absolute) do
 		-- Insp(arg)
 		local arg_node = node.parent.snippet.dependents_dict:get(arg).node
+		if not arg_node.visible then
+			return nil
+		end
 		args[#args+1] = arg_node[get_text_func_name](arg_node)
 	end
 

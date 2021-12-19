@@ -34,9 +34,14 @@ Error while evaluating functionNode@%d for snippet '%s':
 function FunctionNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
+		local args = self:get_static_args()
+		-- an argnode couldn't be found.
+		if not args then
+			return {""}
+		end
 		local success, static_text = pcall(
 			self.fn,
-			self:get_static_args(),
+			args,
 			self.parent,
 			unpack(self.user_args)
 		)
@@ -55,8 +60,10 @@ end
 FunctionNode.get_docstring = FunctionNode.get_static_text
 
 function FunctionNode:update()
-	print("updating")
 	self.last_args = self:get_args()
+	if not self.last_args then
+		return
+	end
 	local text = util.wrap_value(
 		self.fn(self.last_args, self.parent, unpack(self.user_args))
 	)
@@ -77,7 +84,9 @@ function FunctionNode:update_restore()
 end
 
 -- FunctionNode's don't have static text, nop these.
-function FunctionNode:put_initial(_) end
+function FunctionNode:put_initial(_)
+	self.visible = true
+end
 
 function FunctionNode:indent(_) end
 

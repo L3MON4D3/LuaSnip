@@ -88,6 +88,7 @@ function ChoiceNode:init_insert_positions(position_so_far)
 		position_so_far[pos_depth] = indx
 		choice:init_insert_positions(position_so_far)
 		position_so_far[pos_depth] = nil
+		-- relative to choiceNode!!
 		choice:make_args_absolute(position_so_far)
 	end
 
@@ -106,6 +107,7 @@ function ChoiceNode:put_initial(pos)
 	}, self.parent.ext_opts[self.active_choice.type].passive)
 
 	self.active_choice.mark = mark(old_pos, pos, mark_opts)
+	self.visible = true
 end
 
 function ChoiceNode:populate_argnodes()
@@ -305,6 +307,7 @@ function ChoiceNode:copy()
 end
 
 function ChoiceNode:exit()
+	self.visible = false
 	self.active_choice:exit()
 	self.mark:clear()
 	if self.active then

@@ -41,14 +41,25 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
+
 	snip:subsnip_init()
+	snip:init_positions(self.absolute_position)
+	snip:init_insert_positions(self.absolute_insert_position)
+
+	snip:set_dependents()
+	snip:set_argnodes(self.parent.snippet.dependents_dict)
 end
 
 function DynamicNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
+		local args = self:get_static_args()
+		-- not all argnodes are visible.
+		if not args then
+			return
+		end
 		local tmp = self.fn(
-			self:get_static_args(),
+			args,
 			self.parent,
 			nil,
 			unpack(self.user_args)
@@ -89,7 +100,9 @@ function DynamicNode:get_docstring()
 end
 
 -- DynamicNode's don't have static text, nop these.
-function DynamicNode:put_initial(_) end
+function DynamicNode:put_initial(_)
+	self.visible = true
+end
 
 function DynamicNode:indent(_) end
 
@@ -153,10 +166,13 @@ function DynamicNode:update()
 		node.dynamicNode:update_dependents()
 	end
 
-	tmp:populate_argnodes()
 	tmp:subsnip_init()
+
 	tmp:init_positions(self.absolute_position)
 	tmp:init_insert_positions(self.absolute_insert_position)
+
+	tmp:set_dependents()
+	tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())
@@ -182,6 +198,7 @@ function DynamicNode:set_mark_rgrav(val_begin, val_end)
 end
 
 function DynamicNode:exit()
+	self.visible = false
 	self.mark:clear()
 	-- check if snip actually exists, may not be the case if
 	-- the surrounding snippet was deleted just before.
