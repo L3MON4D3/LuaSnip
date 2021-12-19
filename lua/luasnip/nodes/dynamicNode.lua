@@ -130,7 +130,13 @@ end
 function DynamicNode:update()
 	local tmp
 	self.last_args = self:get_args()
+
 	if self.snip then
+		if not self.last_args then
+			-- a snippet exists, don't delete it.
+			return
+		end
+
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
 			self.last_args,
@@ -144,9 +150,14 @@ function DynamicNode:update()
 		-- enters node.
 		self.parent:set_text(self, { "" })
 	else
-		-- also enter node here.
 		self.parent:enter_node(self.indx)
-		tmp = self.fn(self.last_args, self.parent, nil, unpack(self.user_args))
+		if not self.last_args then
+			-- no snippet exists, set an empty one.
+			tmp = sn(nil, {})
+		else
+			-- also enter node here.
+			tmp = self.fn(self.last_args, self.parent, nil, unpack(self.user_args))
+		end
 	end
 
 	-- act as if snip is directly inside parent.
