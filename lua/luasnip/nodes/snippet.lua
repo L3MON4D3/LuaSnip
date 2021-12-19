@@ -186,6 +186,9 @@ local function S(context, nodes, opts)
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
+	-- the snippet may not have dependents.
+	snip._update_dependents = function() end
+	snip.update_dependents = snip._update_dependents
 
 	snip:init_nodes()
 

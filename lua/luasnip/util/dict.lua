@@ -1,7 +1,7 @@
 local Dictionary = {}
 
-local function new()
-	return setmetatable({}, {
+local function new(o)
+	return setmetatable(o or {}, {
 		__index = Dictionary
 	})
 end
@@ -28,6 +28,32 @@ function Dictionary:get(path)
 	end
 	-- may not be a table.
 	return current_table
+end
+
+function Dictionary:find_all(path, key)
+	local res = {}
+	local to_search = self:get(path)
+	if not to_search then
+		return nil
+	end
+
+	-- weird hybrid of depth- and breadth-first search for key, collect values in res.
+	local search_index = 1
+	local search_size = 1
+	while search_size > 0 do
+		for k, v in pairs(to_search[search_index]) do
+			if k == key then
+				res[#res+1] = v
+			else
+				to_search[search_index + search_size] = v
+				search_size = search_size + 1
+			end
+		end
+		search_index = search_index + 1
+		search_size = search_size - 1
+	end
+
+	return res
 end
 
 return {

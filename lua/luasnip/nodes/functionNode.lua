@@ -90,6 +90,7 @@ end
 function FunctionNode:set_dependents()
 	local dict = self.parent.snippet.dependents_dict
 	local append_list = vim.list_extend({"dependents"}, self.absolute_position)
+	append_list[#append_list + 1] = "dependent"
 
 	for _, arg in ipairs(self.args) do
 		-- mutates arg! Contains key for dict and this node, from now on.

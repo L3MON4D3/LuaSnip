@@ -106,12 +106,20 @@ end
 
 function Node:_update_dependents()
 	if not util.multiline_equal(self.old_text, self:get_text()) then
-		for _, node in ipairs(self.dependents) do
+		self.absolute_insert_position[#self.absolute_insert_position+1] = "dependents"
+		local dependent_nodes = self.parent.snippet.dependents_dict:find_all(self.absolute_insert_position, "dependent")
+		if not dependent_nodes then
+			return
+		end
+		for _, node in ipairs(dependent_nodes) do
 			node:update()
 		end
+		self.absolute_insert_position[#self.absolute_insert_position] = nil
+
+		self.old_text = self:get_text()
 	end
-	self.old_text = self:get_text()
 end
+
 -- _update_dependents is the function to update the nodes' dependents,
 -- update_dependents is what will actually be called.
 -- This allows overriding update_dependents in a parent-node (eg. snippetNode)
