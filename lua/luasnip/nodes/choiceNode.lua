@@ -234,7 +234,7 @@ function ChoiceNode:change_choice(dir, current_node)
 	self.active_choice:update_restore()
 	self.active_choice.old_text = self.active_choice:get_text()
 
-	self:update_dependents()
+	self.active_choice:update_all_dependents()
 
 	-- Another node may have been entered in update_dependents.
 	self.parent:enter_node(self.indx)
@@ -342,6 +342,14 @@ function ChoiceNode:set_argnodes(dict)
 	end
 end
 
+function ChoiceNode:update_all_dependents()
+	-- call the version that only updates this node.
+	self:_update_dependents()
+
+	for _, node in ipairs(self.choices) do
+		node:update_all_dependents()
+	end
+end
 
 return {
 	C = C,

@@ -108,7 +108,7 @@ function Node:input_leave()
 end
 
 function Node:_update_dependents()
-	if not util.multiline_equal(self.old_text, self:get_text()) then
+	if self.visible and not util.multiline_equal(self.old_text, self:get_text()) then
 		self.absolute_insert_position[#self.absolute_insert_position+1] = "dependents"
 		local dependent_nodes = self.parent.snippet.dependents_dict:find_all(self.absolute_insert_position, "dependent")
 		if not dependent_nodes then
@@ -133,6 +133,7 @@ end
 -- This allows overriding update_dependents in a parent-node (eg. snippetNode)
 -- while still having access to the original function (for subsequent overrides).
 Node.update_dependents = Node._update_dependents
+Node.update_all_dependents = Node._update_dependents
 
 function Node:update() end
 
@@ -178,7 +179,7 @@ local function get_args(node, get_text_func_name)
 	for _, arg in ipairs(node.args_absolute) do
 		-- Insp(arg)
 		local arg_node = node.parent.snippet.dependents_dict:get(arg).node
-		if not arg_node.visible then
+		if not arg_node or not arg_node.visible then
 			return nil
 		end
 		args[#args+1] = arg_node[get_text_func_name](arg_node)

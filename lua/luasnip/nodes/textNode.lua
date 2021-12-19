@@ -26,6 +26,8 @@ function TextNode:input_enter(no_move)
 	self:event(events.enter, no_move)
 end
 
+function TextNode:update_all_dependents() end
+
 return {
 	T = T,
 }

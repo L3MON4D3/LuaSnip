@@ -185,6 +185,7 @@ local function S(context, nodes, opts)
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
+
 	-- the snippet may not have dependents.
 	snip._update_dependents = function() end
 	snip.update_dependents = snip._update_dependents
@@ -370,7 +371,7 @@ function Snippet:trigger_expand(current_node, pos)
 	self.mark = mark(old_pos, pos, mark_opts)
 	self:set_old_text()
 
-	self:update()
+	self:update_all_dependents()
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
 	start_node.mark = self.nodes[1].mark
@@ -988,6 +989,15 @@ function Snippet:set_argnodes(dict)
 	node_mod.Node.set_argnodes(self, dict)
 	for _, node in ipairs(self.nodes) do
 		node:set_argnodes(dict)
+	end
+end
+
+function Snippet:update_all_dependents()
+	-- call the version that only updates this node.
+	self:_update_dependents()
+	-- only for insertnodes, others will not have dependents.
+	for _, node in ipairs(self.insert_nodes) do
+		node:update_all_dependents()
 	end
 end
 
