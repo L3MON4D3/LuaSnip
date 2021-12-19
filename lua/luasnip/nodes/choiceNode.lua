@@ -234,6 +234,7 @@ function ChoiceNode:change_choice(dir, current_node)
 
 	self.active_choice:update_restore()
 	self.active_choice:update_all_dependents()
+	self:update_dependents()
 
 	-- Another node may have been entered in update_dependents.
 	self.parent:enter_node(self.indx)

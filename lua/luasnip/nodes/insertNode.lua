@@ -75,6 +75,10 @@ function ExitNode:jump_into(dir, no_move)
 	end
 end
 
+function ExitNode:_update_dependents() end
+function ExitNode:update_dependents() end
+function ExitNode:update_all_dependents() end
+
 function InsertNode:input_enter(no_move)
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 	if not no_move then

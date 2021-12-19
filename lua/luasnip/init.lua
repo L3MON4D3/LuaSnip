@@ -302,7 +302,7 @@ local function active_update_dependents()
 	-- special case for startNode, cannot enter_node on those (and they can't
 	-- have dependents)
 	-- don't update if a jump/change_choice is in progress.
-	if not jump_active and active and active.pos ~= -1 then
+	if not jump_active and active and active.pos > 0 then
 		-- Save cursor-pos to restore later.
 		local cur = util.get_cursor_0ind()
 		local cur_mark = vim.api.nvim_buf_set_extmark(
