@@ -94,10 +94,13 @@ function RestoreNode:put_initial(pos)
 		node.restore_node:update_dependents()
 	end
 
-	tmp:populate_argnodes()
 	tmp:subsnip_init()
+
 	tmp:init_positions(self.absolute_position)
 	tmp:init_insert_positions(self.absolute_insert_position)
+
+	self:set_dependents()
+	self:set_argnodes(self.parent.snippet.dependents_dict)
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())

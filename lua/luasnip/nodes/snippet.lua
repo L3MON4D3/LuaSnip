@@ -99,7 +99,6 @@ function Snippet:init_nodes()
 	end
 
 	self.insert_nodes = insert_nodes
-	-- self:populate_argnodes()
 end
 
 local function wrap_nodes_in_snippetNode(nodes)
@@ -576,23 +575,6 @@ function Snippet:put_initial(pos)
 	self.visible = true
 end
 
--- may only be called if the `insertNodes` of all snippet(Node)s are populated
--- (the first node may refer to the last+recursion with Parent_indexer's, can't
--- be done in init_nodes()).
-function Snippet:populate_argnodes()
-	for _, node in ipairs(self.nodes) do
-		-- stylua: ignore
-		if
-			node.type == types.functionNode
-			or node.type == types.dynamicNode
-		then
-			self:populate_args(node)
-		else
-			node:populate_argnodes()
-		end
-	end
-end
-
 -- populate env,inden,captures,trigger(regex),... but don't put any text.
 function Snippet:fake_expand()
 	-- set eg. env.TM_SELECTED_TEXT to $TM_SELECTED_TEXT
@@ -622,6 +604,12 @@ function Snippet:fake_expand()
 
 	self:indent("")
 	self:subsnip_init()
+
+	self:init_positions({})
+	self:init_insert_positions({})
+
+	self:set_dependents()
+	self:set_argnodes(self.dependents_dict)
 end
 
 -- to work correctly, this may require that the snippets' env,indent,captures? are
@@ -882,25 +870,6 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 			end
 		end
 		node:set_mark_rgrav(new_rgrav_begin, new_rgrav_end)
-	end
-end
-
-function Snippet:populate_args(node)
-	for i, arg in ipairs(node.args) do
-		local argnode = nil
-		-- simple index; references node in this snippet.
-		if type(arg) == "number" then
-			argnode = self.insert_nodes[arg]
-			--parent_indexer: references node outside this snippet, resolve it.
-		else
-			if getmetatable(arg) == Parent_indexer then
-				argnode = arg:resolve(self)
-			end
-		end
-		if argnode then
-			node.args[i] = argnode
-			argnode.dependents[#argnode.dependents + 1] = node
-		end
 	end
 end
 

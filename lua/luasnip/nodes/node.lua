@@ -144,8 +144,6 @@ function Node:indent(indentstr)
 	util.indent(self.static_text, indentstr)
 end
 
-function Node:populate_argnodes() end
-
 function Node:subsnip_init() end
 
 function Node:init_positions(position_so_far)
