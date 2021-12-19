@@ -223,7 +223,6 @@ function Node:set_dependents() end
 
 function Node:set_argnodes(dict)
 	if self.absolute_insert_position then
-		print("yep")
 		local value = dict:get(self.absolute_insert_position)
 
 		if value and value.dependents then

@@ -35,6 +35,7 @@ end
 
 local function snip_init(self, snip)
 	snip.parent = self.parent
+	snip.pos = self.pos
 
 	snip.ext_opts = util.increase_ext_prio(
 		vim.deepcopy(self.parent.ext_opts),
@@ -50,50 +51,54 @@ local function snip_init(self, snip)
 	snip:set_argnodes(self.parent.snippet.dependents_dict)
 end
 
-function DynamicNode:get_static_text()
-	-- cache static_text, no need to recalculate function.
-	if not self.static_text then
-		local args = self:get_static_args()
-		-- not all argnodes are visible.
-		if not args then
-			return
-		end
-		local tmp = self.fn(
-			args,
-			self.parent,
-			nil,
-			unpack(self.user_args)
-		)
-		snip_init(self, tmp)
-		self.static_text = tmp:get_static_text()
-	end
-	return self.static_text
-end
-
 local errorstring = [[
 Error while evaluating dynamicNode@%d for snippet '%s':
 %s
  
 :h luasnip-docstring for more info]]
-function DynamicNode:get_docstring()
-	-- cache static_text, no need to recalculate function.
-	if not self.docstring then
-		local success, tmp = pcall(
-			self.fn,
-			self:get_static_args(),
-			self.parent,
-			nil,
-			unpack(self.user_args)
-		)
-		if not success then
-			local snip = util.find_outer_snippet(self)
-			print(errorstring:format(self.indx, snip.name, tmp))
-			self.docstring = { "" }
+local function _static_update(self)
+	local args = self:get_static_args()
+	if not args then
+		-- no error because it may no be fixable, so it would be just annoying.
+		return nil
+	end
+	local success, tmp = pcall(
+		self.fn,
+		args,
+		self.parent,
+		nil,
+		unpack(self.user_args)
+	)
+	if not success then
+		local snip = self.parent.snippet
+		print(errorstring:format(self.indx, snip.name, tmp))
+		return nil
+	else
+		-- set pos for util.string_wrap().
+		snip_init(self, tmp)
+		return tmp
+	end
+end
+
+function DynamicNode:get_static_text()
+	if not self.static_text then
+		local snip = _static_update(self)
+		if snip then
+			self.static_text = snip:get_static_text()
 		else
-			-- set pos for util.string_wrap().
-			snip_init(self, tmp)
-			tmp.pos = self.pos
-			self.docstring = tmp:get_docstring()
+			self.static_text = {""}
+		end
+	end
+	return self.static_text
+end
+
+function DynamicNode:get_docstring()
+	if not self.docstring then
+		local snip = _static_update(self)
+		if snip then
+			self.docstring = snip:get_docstring()
+		else
+			self.docstring = {""}
 		end
 	end
 	return self.docstring
