@@ -325,6 +325,21 @@ function ChoiceNode:insert_to_node_absolute(position)
 	return self.choices[front]:insert_to_node_absolute(position)
 end
 
+function ChoiceNode:set_dependents()
+	for _, node in ipairs(self.choices) do
+		node:set_dependents()
+	end
+end
+
+function ChoiceNode:set_argnodes(dict)
+	Node.set_argnodes(self, dict)
+
+	for _, node in ipairs(self.choices) do
+		node:set_argnodes(dict)
+	end
+end
+
+
 return {
 	C = C,
 }

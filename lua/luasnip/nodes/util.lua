@@ -25,16 +25,35 @@ local function init_child_positions_func(key, node_children_key, child_func_name
 		for indx, child in ipairs(node[node_children_key]) do
 			position_so_far[pos_depth] = indx
 			child[child_func_name](child, position_so_far)
-
-			-- nil entries for set key in this loop.
-			position_so_far[pos_depth] = nil
 		end
 		-- undo changes to position_so_far.
 		position_so_far[pos_depth] = nil
 	end
 end
 
+local function make_args_absolute(args, node_insert_position)
+	for i, arg in ipairs(args) do
+		if type(arg) == "number" then
+			-- the arg is a number, should be interpreted relative to direct
+			-- parent.
+			node_insert_position[#node_insert_position] = arg
+			args[i] = vim.deepcopy(node_insert_position)
+		end
+	end
+end
+
+local function wrap_args(args)
+	if type(args) == "table" and getmetatable(args) then
+		-- args is one single arg, wrap it.
+		return {args}
+	else
+		return args
+	end
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
-	init_child_positions_func = init_child_positions_func
+	init_child_positions_func = init_child_positions_func,
+	make_args_absolute = make_args_absolute,
+	wrap_args = wrap_args
 }

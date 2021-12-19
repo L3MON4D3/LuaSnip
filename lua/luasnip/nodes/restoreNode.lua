@@ -115,6 +115,8 @@ function RestoreNode:put_initial(pos)
 
 	tmp:set_old_text()
 
+	-- no need to call update here, will be done by function calling put_initial.
+
 	self.snip = tmp
 end
 
@@ -153,6 +155,8 @@ local function snip_init(self, snip)
 	snip:subsnip_init()
 	snip:init_positions(self.absolute_position)
 	snip:init_insert_positions(self.absolute_insert_position)
+
+	snip:set_dependents()
 end
 
 function RestoreNode:get_static_text()

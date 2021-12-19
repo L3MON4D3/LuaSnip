@@ -1,12 +1,14 @@
-local FunctionNode = require("luasnip.nodes.node").Node:new()
+local Node = require("luasnip.nodes.node").Node
+local FunctionNode = Node:new()
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 
 local function F(fn, args, ...)
 	return FunctionNode:new({
 		fn = fn,
-		args = util.wrap_value(args),
+		args = node_util.wrap_args(args),
 		type = types.functionNode,
 		mark = nil,
 		user_args = { ... },
@@ -80,6 +82,24 @@ function FunctionNode:indent(_) end
 
 function FunctionNode:expand_tabs(_) end
 
+function FunctionNode:init_insert_positions(position_so_far)
+	Node.init_insert_positions(self, position_so_far)
+	node_util.make_args_absolute(self.args, position_so_far)
+end
+
+function FunctionNode:set_dependents()
+	local dict = self.parent.snippet.dependents_dict
+	local append_list = vim.list_extend({"dependents"}, self.absolute_position)
+
+	for _, arg in ipairs(self.args) do
+		-- mutates arg! Contains key for dict and this node, from now on.
+		dict:set(vim.list_extend(vim.deepcopy(arg), append_list), self)
+	end
+end
+
+
+
 return {
 	F = F,
+	FunctionNode = FunctionNode
 }

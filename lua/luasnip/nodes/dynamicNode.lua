@@ -1,10 +1,10 @@
 local DynamicNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
-local node_util = require("luasnip.nodes.util")
 local Node = require("luasnip.nodes.node").Node
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local conf = require("luasnip.config")
+local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
 
 local function D(pos, fn, args, ...)
 	return DynamicNode:new({
@@ -240,6 +240,8 @@ function DynamicNode:insert_to_node_absolute(position)
 	return self.snip and self.snip:insert_to_node_absolute(position)
 end
 
+DynamicNode.init_insert_positions = FunctionNode.init_insert_positions
+DynamicNode.set_dependents = FunctionNode.set_dependents
 
 return {
 	D = D,

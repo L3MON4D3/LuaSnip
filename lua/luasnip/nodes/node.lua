@@ -160,11 +160,11 @@ end
 local function get_args(node, get_text_func_name)
 	local args = {}
 
-	for i, arg_node in ipairs(node.args) do
-		args[i] = util.dedent(
-			arg_node[get_text_func_name](arg_node),
-			node.parent.indentstr
-		)
+	-- Insp(node.parent.snippet.dependents_dict)
+	for _, arg in ipairs(node.args) do
+		-- Insp(arg)
+		local arg_node = node.parent.snippet.dependents_dict:get(arg).node
+		args[#args+1] = arg_node[get_text_func_name](arg_node)
 	end
 
 	return args
@@ -198,6 +198,18 @@ Node.ext_gravities_active = { false, true }
 function Node:insert_to_node_absolute(position)
 	-- this node is a leaf, just return its position
 	return self.absolute_position
+end
+
+function Node:set_dependents() end
+
+function Node:set_argnodes(dict)
+	if self.absolute_insert_position then
+		local value = dict:get(self.absolute_insert_position)
+
+		if value and value.dependents then
+			value.node = self
+		end
+	end
 end
 
 return {

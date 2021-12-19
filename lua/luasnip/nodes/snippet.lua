@@ -10,6 +10,7 @@ local Environ = require("luasnip.util.environ")
 local conf = require("luasnip.config")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
+local dict = require("luasnip.util.dict")
 
 local true_func = function()
 	return true
@@ -98,7 +99,7 @@ function Snippet:init_nodes()
 	end
 
 	self.insert_nodes = insert_nodes
-	self:populate_argnodes()
+	-- self:populate_argnodes()
 end
 
 local function wrap_nodes_in_snippetNode(nodes)
@@ -181,6 +182,7 @@ local function S(context, nodes, opts)
 		type = types.snippet,
 		hidden = context.hidden,
 		stored = opts.stored,
+		dependents_dict = dict.new()
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
@@ -340,8 +342,13 @@ function Snippet:trigger_expand(current_node, pos)
 
 	self.env = Environ:new(pos)
 	self:subsnip_init()
+
 	self:init_positions({})
 	self:init_insert_positions({})
+
+	self:set_dependents()
+	self:set_argnodes(self.dependents_dict)
+
 	-- at this point `stored` contains the snippetNodes that will actually
 	-- be used, indent them once here.
 	for _, node in pairs(self.stored) do
@@ -710,6 +717,7 @@ end
 
 Snippet.init_positions = node_util.init_child_positions_func("absolute_position", "nodes", "init_positions")
 Snippet.init_insert_positions = node_util.init_child_positions_func("absolute_insert_position", "insert_nodes", "init_insert_positions")
+
 function Snippet:input_enter()
 	self.active = true
 
@@ -978,6 +986,19 @@ function Snippet:insert_to_node_absolute(position)
 	end
 	local insert_indx = util.pop_front(position)
 	return self.insert_nodes[insert_indx]:insert_to_node_absolute(position)
+end
+
+function Snippet:set_dependents()
+	for _, node in ipairs(self.nodes) do
+		node:set_dependents()
+	end
+end
+
+function Snippet:set_argnodes(dict)
+	node_mod.Node.set_argnodes(self, dict)
+	for _, node in ipairs(self.nodes) do
+		node:set_argnodes(dict)
+	end
 end
 
 return {
