@@ -107,6 +107,18 @@ local function select_node(node)
 	)
 end
 
+local function print_dict(dict)
+	print(vim.inspect(dict, {
+		process = function(item, path)
+			if path[#path] == "node" or path[#path] == "dependent" then
+				return "node@"..vim.inspect(item.absolute_position)
+			elseif path[#path] ~= vim.inspect.METATABLE then
+				return item
+			end
+		end
+	}))
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -115,5 +127,6 @@ return {
 	get_nodes_between = get_nodes_between,
 	leave_nodes_between = leave_nodes_between,
 	enter_nodes_between = enter_nodes_between,
-	select_node = select_node
+	select_node = select_node,
+	print_dict = print_dict
 }

@@ -127,6 +127,8 @@ function Node:_update_dependents()
 
 		::skip::
 		-- prevent future updates without changed text.
+		-- if skipped, the node is missing an argnode, it will be updated from that node as soon as it becomes
+		-- available.
 		self.old_text = self:get_text()
 	end
 end
