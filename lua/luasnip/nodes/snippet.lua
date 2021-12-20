@@ -999,6 +999,10 @@ function Snippet:update_all_dependents()
 	end
 end
 
+function Snippet:resolve_position(position)
+	return self.nodes[position]
+end
+
 return {
 	Snippet = Snippet,
 	S = S,

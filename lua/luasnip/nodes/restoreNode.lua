@@ -233,6 +233,12 @@ function RestoreNode:init_positions(position_so_far)
 	self.snip_absolute_position[#self.snip_absolute_position+1] = 0
 end
 
+function RestoreNode:resolve_position(position)
+	-- position must be 0, there are no other options.
+	return self.snip
+end
+
+
 return {
 	R = R,
 }

@@ -55,9 +55,25 @@ local function wrap_args(args)
 	end
 end
 
+local function get_nodes_between(parent, child_pos)
+	local nodes = {}
+
+	local indx = #parent.absolute_position + 1
+	local prev = parent
+	while child_pos[indx] do
+		local next = prev:resolve_position(child_pos[indx])
+		nodes[#nodes + 1] = next
+		prev = next
+		indx = indx + 1
+	end
+
+	return nodes
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
 	make_args_absolute = make_args_absolute,
-	wrap_args = wrap_args
+	wrap_args = wrap_args,
+	get_nodes_between = get_nodes_between
 }

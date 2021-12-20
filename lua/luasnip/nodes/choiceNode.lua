@@ -349,6 +349,10 @@ function ChoiceNode:update_all_dependents()
 	self.active_choice:update_all_dependents()
 end
 
+function ChoiceNode:resolve_position(position)
+	return self.choices[position]
+end
+
 return {
 	C = C,
 }

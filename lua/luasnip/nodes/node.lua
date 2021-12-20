@@ -235,6 +235,11 @@ end
 
 function Node:make_args_absolute() end
 
+function Node:resolve_position(position)
+	error(string.format("invalid resolve_position(%d) on node at %s",
+		position, vim.inspect(self.absolute_position) ))
+end
+
 return {
 	Node = Node,
 }

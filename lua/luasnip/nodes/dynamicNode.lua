@@ -298,6 +298,11 @@ end
 DynamicNode.make_args_absolute = FunctionNode.make_args_absolute
 DynamicNode.set_dependents = FunctionNode.set_dependents
 
+function DynamicNode:resolve_position(position)
+	-- position must be 0, there are no other options.
+	return self.snip
+end
+
 return {
 	D = D,
 }
