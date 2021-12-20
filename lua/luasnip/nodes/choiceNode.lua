@@ -210,8 +210,11 @@ function ChoiceNode:change_choice(dir, current_node)
 	)
 
 	self.active_choice:store()
+
 	-- tear down current choice.
-	self.active_choice:input_leave()
+	-- leave all so the choice (could be a snippet) is in the correct state for the next enter.
+	node_util.leave_nodes_between(self.active_choice, current_node)
+
 	self.active_choice:exit()
 
 	-- store in old_choice, active_choice has to be disabled to prevent reading
@@ -247,23 +250,10 @@ function ChoiceNode:change_choice(dir, current_node)
 
 		if target_node then
 			-- the node that the cursor was in when changeChoice was called exists
-			-- in the active choice! jump_into it!
-			--
-			-- if in INSERT before change_choice, don't actually move into the node.
-			-- The new cursor will be set to the actual edit-position later.
-			local jump_node = self.active_choice:jump_into(1, insert_pre_cc)
+			-- in the active choice! Enter it and all nodes between it and this choiceNode,
+			-- then set the cursor.
+			node_util.enter_nodes_between(self, target_node)
 
-			local jumps = 1
-			while jump_node ~= target_node do
-				jump_node = jump_node:jump_from(1, insert_pre_cc)
-
-				-- just for testing...
-				if jumps > 1000 then
-					print("FAIL! Too many jumps!!")
-					return self.active_choice:jump_into(1, insert_pre_cc)
-				end
-				jumps = jumps + 1
-			end
 			if insert_pre_cc then
 				util.set_cursor_0ind(
 					util.pos_add(
@@ -271,8 +261,10 @@ function ChoiceNode:change_choice(dir, current_node)
 						cursor_pos_pre_relative
 					)
 				)
+			else
+				node_util.select_node(target_node)
 			end
-			return jump_node
+			return target_node
 		end
 	end
 

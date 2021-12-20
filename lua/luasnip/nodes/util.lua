@@ -70,10 +70,50 @@ local function get_nodes_between(parent, child_pos)
 	return nodes
 end
 
+local function leave_nodes_between(parent, child)
+	local nodes = get_nodes_between(parent, child.absolute_position)
+	-- reverse order, leave child first.
+	for i = #nodes, 1, -1 do
+		nodes[i]:input_leave()
+	end
+end
+
+local function enter_nodes_between(parent, child)
+	local nodes = get_nodes_between(parent, child.absolute_position)
+	for _, node in ipairs(nodes) do
+		node:input_enter()
+	end
+end
+
+local function select_node(node)
+	vim.api.nvim_feedkeys(
+		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+		"n",
+		true
+	)
+	-- columns in screencolumns.
+	local node_begin, node_end = node.mark:pos_begin_end()
+	util.normal_move_on(node_begin)
+	vim.api.nvim_feedkeys(
+		vim.api.nvim_replace_termcodes("v", true, false, true),
+		"n",
+		true
+	)
+	util.normal_move_before(node_end)
+	vim.api.nvim_feedkeys(
+		vim.api.nvim_replace_termcodes("o<C-G>", true, false, true),
+		"n",
+		true
+	)
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
 	make_args_absolute = make_args_absolute,
 	wrap_args = wrap_args,
-	get_nodes_between = get_nodes_between
+	get_nodes_between = get_nodes_between,
+	leave_nodes_between = leave_nodes_between,
+	enter_nodes_between = enter_nodes_between,
+	select_node = select_node
 }
