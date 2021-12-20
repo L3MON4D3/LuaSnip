@@ -164,6 +164,7 @@ function DynamicNode:update()
 			tmp = self.fn(args, self.parent, nil, unpack(self.user_args))
 		end
 	end
+	self.last_args = args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
