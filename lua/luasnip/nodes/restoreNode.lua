@@ -96,8 +96,8 @@ function RestoreNode:put_initial(pos)
 
 	tmp:subsnip_init()
 
-	tmp:init_positions(self.absolute_position)
-	tmp:init_insert_positions(self.absolute_insert_position)
+	tmp:init_positions(self.snip_absolute_position)
+	tmp:init_insert_positions(self.snip_absolute_insert_position)
 
 	self:set_dependents()
 	self:set_argnodes(self.parent.snippet.dependents_dict)
@@ -156,8 +156,8 @@ local function snip_init(self, snip)
 	)
 	snip.snippet = self.parent.snippet
 	snip:subsnip_init()
-	snip:init_positions(self.absolute_position)
-	snip:init_insert_positions(self.absolute_insert_position)
+	snip:init_positions(self.snip_absolute_position)
+	snip:init_insert_positions(self.snip_absolute_insert_position)
 
 	snip:set_dependents()
 end
@@ -217,6 +217,20 @@ end
 function RestoreNode:update_all_dependents()
 	self:_update_dependents()
 	self.snip:_update_dependents()
+end
+
+function RestoreNode:init_insert_positions(position_so_far)
+	Node.init_insert_positions(self, position_so_far)
+	self.snip_absolute_insert_position = vim.deepcopy(self.absolute_insert_position)
+	-- nodes of current snippet should have a 0 before.
+	self.snip_absolute_insert_position[#self.snip_absolute_insert_position+1] = 0
+end
+
+function RestoreNode:init_positions(position_so_far)
+	Node.init_positions(self, position_so_far)
+	self.snip_absolute_position = vim.deepcopy(self.absolute_position)
+	-- Reach current snippet as snip_absolute_position..0.
+	self.snip_absolute_position[#self.snip_absolute_position+1] = 0
 end
 
 return {
