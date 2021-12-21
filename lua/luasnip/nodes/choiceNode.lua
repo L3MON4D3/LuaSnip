@@ -79,21 +79,13 @@ function ChoiceNode:subsnip_init()
 end
 
 ChoiceNode.init_positions = node_util.init_child_positions_func("absolute_position", "choices", "init_positions")
+ChoiceNode.init_insert_positions = node_util.init_child_positions_func("absolute_insert_position", "choices", "init_insert_positions")
 
-function ChoiceNode:init_insert_positions(position_so_far)
-	self.absolute_insert_position = vim.deepcopy(position_so_far)
-	local pos_depth = #position_so_far + 1
-
-	for indx, choice in ipairs(self.choices) do
-		position_so_far[pos_depth] = indx
-		choice:init_insert_positions(position_so_far)
-		position_so_far[pos_depth] = nil
+function ChoiceNode:make_args_absolute()
+	for _, choice in ipairs(self.choices) do
 		-- relative to choiceNode!!
-		choice:make_args_absolute(position_so_far)
+		choice:make_args_absolute(self.absolute_insert_position)
 	end
-
-	-- undo changes to position_so_far.
-	position_so_far[pos_depth] = nil
 end
 
 function ChoiceNode:put_initial(pos)

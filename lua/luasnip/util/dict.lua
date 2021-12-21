@@ -7,6 +7,8 @@ local function new(o)
 end
 
 function Dictionary:set(path, value)
+	-- Insp(path)
+	-- print("val: ", value)
 	local current_table = self
 	for i = 1, #path-1 do
 		local crt_key = path[i]

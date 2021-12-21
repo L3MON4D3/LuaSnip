@@ -143,8 +143,8 @@ local function parse_placeholder(text, tab_stops, brackets)
 		local pos = tonumber(match)
 		-- if pos is already defined, this should copy it.
 		if tab_stops[pos] then
+			-- args accepts node.
 			local node = fNode.F(functions.copy, { tab_stops[pos] })
-			tab_stops[pos].dependents[#tab_stops[pos].dependents + 1] = node
 			return node
 		end
 		local snip = parse_snippet(
