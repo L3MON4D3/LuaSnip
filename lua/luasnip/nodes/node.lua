@@ -109,27 +109,17 @@ function Node:input_leave()
 end
 
 function Node:_update_dependents()
-	if self.visible and not util.multiline_equal(self.old_text, self:get_text()) then
+	self.absolute_insert_position[#self.absolute_insert_position+1] = "dependents"
+	local dependent_nodes = self.parent.snippet.dependents_dict:find_all(self.absolute_insert_position, "dependent")
+	self.absolute_insert_position[#self.absolute_insert_position] = nil
 
-		self.absolute_insert_position[#self.absolute_insert_position+1] = "dependents"
-		local dependent_nodes = self.parent.snippet.dependents_dict:find_all(self.absolute_insert_position, "dependent")
-		self.absolute_insert_position[#self.absolute_insert_position] = nil
-
-		if not dependent_nodes then
-			goto skip
+	if not dependent_nodes then
+		return
+	end
+	for _, node in ipairs(dependent_nodes) do
+		if node.visible then
+			node:update()
 		end
-		for _, node in ipairs(dependent_nodes) do
-			if node.visible then
-				node:update()
-			end
-		end
-
-
-		::skip::
-		-- prevent future updates without changed text.
-		-- if skipped, the node is missing an argnode, it will be updated from that node as soon as it becomes
-		-- available.
-		self.old_text = self:get_text()
 	end
 end
 
