@@ -221,23 +221,25 @@ end
 
 function RestoreNode:init_insert_positions(position_so_far)
 	Node.init_insert_positions(self, position_so_far)
-	self.snip_absolute_insert_position = vim.deepcopy(self.absolute_insert_position)
+	self.snip_absolute_insert_position = vim.deepcopy(
+		self.absolute_insert_position
+	)
 	-- nodes of current snippet should have a 0 before.
-	self.snip_absolute_insert_position[#self.snip_absolute_insert_position+1] = 0
+	self.snip_absolute_insert_position[#self.snip_absolute_insert_position + 1] =
+		0
 end
 
 function RestoreNode:init_positions(position_so_far)
 	Node.init_positions(self, position_so_far)
 	self.snip_absolute_position = vim.deepcopy(self.absolute_position)
 	-- Reach current snippet as snip_absolute_position..0.
-	self.snip_absolute_position[#self.snip_absolute_position+1] = 0
+	self.snip_absolute_position[#self.snip_absolute_position + 1] = 0
 end
 
 function RestoreNode:resolve_position(position)
 	-- position must be 0, there are no other options.
 	return self.snip
 end
-
 
 return {
 	R = R,

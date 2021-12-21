@@ -88,7 +88,7 @@ function DynamicNode:get_static_text()
 		if snip then
 			self.static_text = snip:get_static_text()
 		else
-			self.static_text = {""}
+			self.static_text = { "" }
 		end
 	end
 	return self.static_text
@@ -100,7 +100,7 @@ function DynamicNode:get_docstring()
 		if snip then
 			self.docstring = snip:get_docstring()
 		else
-			self.docstring = {""}
+			self.docstring = { "" }
 		end
 	end
 	return self.docstring
@@ -284,16 +284,19 @@ end
 
 function DynamicNode:init_insert_positions(position_so_far)
 	Node.init_insert_positions(self, position_so_far)
-	self.snip_absolute_insert_position = vim.deepcopy(self.absolute_insert_position)
+	self.snip_absolute_insert_position = vim.deepcopy(
+		self.absolute_insert_position
+	)
 	-- nodes of current snippet should have a 0 before.
-	self.snip_absolute_insert_position[#self.snip_absolute_insert_position+1] = 0
+	self.snip_absolute_insert_position[#self.snip_absolute_insert_position + 1] =
+		0
 end
 
 function DynamicNode:init_positions(position_so_far)
 	Node.init_positions(self, position_so_far)
 	self.snip_absolute_position = vim.deepcopy(self.absolute_position)
 	-- Reach current snippet as snip_absolute_position..0.
-	self.snip_absolute_position[#self.snip_absolute_position+1] = 0
+	self.snip_absolute_position[#self.snip_absolute_position + 1] = 0
 end
 
 DynamicNode.make_args_absolute = FunctionNode.make_args_absolute

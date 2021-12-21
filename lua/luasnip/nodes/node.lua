@@ -109,8 +109,12 @@ function Node:input_leave()
 end
 
 function Node:_update_dependents()
-	self.absolute_insert_position[#self.absolute_insert_position+1] = "dependents"
-	local dependent_nodes = self.parent.snippet.dependents_dict:find_all(self.absolute_insert_position, "dependent")
+	self.absolute_insert_position[#self.absolute_insert_position + 1] =
+		"dependents"
+	local dependent_nodes = self.parent.snippet.dependents_dict:find_all(
+		self.absolute_insert_position,
+		"dependent"
+	)
 	self.absolute_insert_position[#self.absolute_insert_position] = nil
 
 	if not dependent_nodes then
@@ -177,7 +181,7 @@ local function get_args(node, get_text_func_name)
 		if not arg_node or not arg_node.visible then
 			return nil
 		end
-		args[#args+1] = arg_node[get_text_func_name](arg_node)
+		args[#args + 1] = arg_node[get_text_func_name](arg_node)
 	end
 
 	return args
@@ -228,8 +232,13 @@ end
 function Node:make_args_absolute() end
 
 function Node:resolve_position(position)
-	error(string.format("invalid resolve_position(%d) on node at %s",
-		position, vim.inspect(self.absolute_position) ))
+	error(
+		string.format(
+			"invalid resolve_position(%d) on node at %s",
+			position,
+			vim.inspect(self.absolute_position)
+		)
+	)
 end
 
 return {

@@ -37,7 +37,7 @@ function FunctionNode:get_static_text()
 		local args = self:get_static_args()
 		-- an argnode couldn't be found.
 		if not args then
-			return {""}
+			return { "" }
 		end
 		local success, static_text = pcall(
 			self.fn,
@@ -99,7 +99,10 @@ end
 
 function FunctionNode:set_dependents()
 	local dict = self.parent.snippet.dependents_dict
-	local append_list = vim.list_extend({"dependents"}, self.absolute_position)
+	local append_list = vim.list_extend(
+		{ "dependents" },
+		self.absolute_position
+	)
 	append_list[#append_list + 1] = "dependent"
 
 	for _, arg in ipairs(self.args_absolute) do
@@ -108,9 +111,7 @@ function FunctionNode:set_dependents()
 	end
 end
 
-
-
 return {
 	F = F,
-	FunctionNode = FunctionNode
+	FunctionNode = FunctionNode,
 }

@@ -16,7 +16,11 @@ local function subsnip_init_children(parent, children)
 	end
 end
 
-local function init_child_positions_func(key, node_children_key, child_func_name)
+local function init_child_positions_func(
+	key,
+	node_children_key,
+	child_func_name
+)
 	-- maybe via load()?
 	return function(node, position_so_far)
 		node[key] = vim.deepcopy(position_so_far)
@@ -37,7 +41,7 @@ local function make_args_absolute(args, parent_insert_position, target)
 			-- the arg is a number, should be interpreted relative to direct
 			-- parent.
 			target[i] = vim.deepcopy(parent_insert_position)
-			target[i][#target[i]+1] = arg
+			target[i][#target[i] + 1] = arg
 		else
 			-- arg-position is absolute.
 			-- copy because arg could be a node (whose absolute_insert_position _may_ change).
@@ -47,10 +51,12 @@ local function make_args_absolute(args, parent_insert_position, target)
 end
 
 local function wrap_args(args)
-	if type(args) ~= "table" or
-	   (type(args) == "table" and args.absolute_position) then
+	if
+		type(args) ~= "table"
+		or (type(args) == "table" and args.absolute_position)
+	then
 		-- args is one single arg, wrap it.
-		return {args}
+		return { args }
 	else
 		return args
 	end
@@ -112,11 +118,11 @@ local function print_dict(dict)
 	print(vim.inspect(dict, {
 		process = function(item, path)
 			if path[#path] == "node" or path[#path] == "dependent" then
-				return "node@"..vim.inspect(item.absolute_position)
+				return "node@" .. vim.inspect(item.absolute_position)
 			elseif path[#path] ~= vim.inspect.METATABLE then
 				return item
 			end
-		end
+		end,
 	}))
 end
 
@@ -129,5 +135,5 @@ return {
 	leave_nodes_between = leave_nodes_between,
 	enter_nodes_between = enter_nodes_between,
 	select_node = select_node,
-	print_dict = print_dict
+	print_dict = print_dict,
 }

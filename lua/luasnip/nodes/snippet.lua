@@ -181,7 +181,7 @@ local function S(context, nodes, opts)
 		type = types.snippet,
 		hidden = context.hidden,
 		stored = opts.stored,
-		dependents_dict = dict.new()
+		dependents_dict = dict.new(),
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
@@ -708,8 +708,16 @@ function Snippet:subsnip_init()
 	node_util.subsnip_init_children(self, self.nodes)
 end
 
-Snippet.init_positions = node_util.init_child_positions_func("absolute_position", "nodes", "init_positions")
-Snippet.init_insert_positions = node_util.init_child_positions_func("absolute_insert_position", "insert_nodes", "init_insert_positions")
+Snippet.init_positions = node_util.init_child_positions_func(
+	"absolute_position",
+	"nodes",
+	"init_positions"
+)
+Snippet.init_insert_positions = node_util.init_child_positions_func(
+	"absolute_insert_position",
+	"insert_nodes",
+	"init_insert_positions"
+)
 
 function Snippet:make_args_absolute()
 	for _, node in ipairs(self.nodes) do

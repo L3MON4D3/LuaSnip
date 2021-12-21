@@ -523,7 +523,7 @@ end
 local function pop_front(list)
 	local front = list[1]
 	for i = 2, #list do
-		list[i-1] = list[i]
+		list[i - 1] = list[i]
 	end
 	list[#list] = nil
 	return front
@@ -565,5 +565,5 @@ return {
 	pos_sub = pos_sub,
 	pos_add = pos_add,
 	deduplicate = deduplicate,
-	pop_front = pop_front
+	pop_front = pop_front,
 }
