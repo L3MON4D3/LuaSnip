@@ -90,10 +90,18 @@ ChoiceNode.init_insert_positions = node_util.init_child_positions_func(
 )
 
 function ChoiceNode:make_args_absolute()
+	-- relative indices are relative to the parent of the choiceNode,
+	-- temporarily remove last component of position
+	local last_indx = #self.absolute_insert_position
+	local last = self.absolute_insert_position[last_indx]
+	self.absolute_insert_position[#self.absolute_insert_position] = nil
+
 	for _, choice in ipairs(self.choices) do
 		-- relative to choiceNode!!
 		choice:make_args_absolute(self.absolute_insert_position)
 	end
+
+	self.absolute_insert_position[last_indx] = last
 end
 
 function ChoiceNode:put_initial(pos)
