@@ -51,10 +51,10 @@ local function make_args_absolute(args, parent_insert_position, target)
 end
 
 local function wrap_args(args)
-	if
-		type(args) ~= "table"
-		or (type(args) == "table" and args.absolute_position)
-	then
+	-- stylua: ignore
+	if type(args) ~= "table" or
+	  (type(args) == "table" and args.absolute_insert_position) then
+
 		-- args is one single arg, wrap it.
 		return { args }
 	else
