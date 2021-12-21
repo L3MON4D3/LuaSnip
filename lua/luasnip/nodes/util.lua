@@ -54,7 +54,6 @@ local function wrap_args(args)
 	-- stylua: ignore
 	if type(args) ~= "table" or
 	  (type(args) == "table" and args.absolute_insert_position) then
-
 		-- args is one single arg, wrap it.
 		return { args }
 	else
