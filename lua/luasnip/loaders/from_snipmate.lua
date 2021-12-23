@@ -11,6 +11,7 @@ local function parse_snipmate(buffer, filename)
 
 	---@type string[]
 	local lines = vim.split(buffer, "\n")
+	lines[#lines] = nil
 	local i = 1
 
 	local function _parse()
