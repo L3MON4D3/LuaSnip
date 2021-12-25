@@ -6,9 +6,14 @@ local works = function(msg, fmt, args, expected, opts)
 		-- fails if number- and string-keys are mixed ({1,2} works fine, {1, b=2} fails).
 		-- So we limit ourselves to just passing strings, which are then turned into tables
 		-- while load()ing the function.
-		local result = helpers.exec_lua(string.format(
-			"return require(\"luasnip.extras.fmt\").interpolate(\"%s\", %s, %s)",
-			fmt, args, opts))
+		local result = helpers.exec_lua(
+			string.format(
+				'return require("luasnip.extras.fmt").interpolate("%s", %s, %s)',
+				fmt,
+				args,
+				opts
+			)
+		)
 		assert.are.same(expected, table.concat(result))
 	end)
 end
@@ -16,9 +21,14 @@ end
 local fails = function(msg, fmt, args, opts)
 	it(msg, function()
 		assert.has_error(function()
-			helpers.exec_lua(string.format(
-				"return require(\"luasnip.extras.fmt\").interpolate(\"%s\", %s, %s)",
-				fmt, args, opts))
+			helpers.exec_lua(
+				string.format(
+					'return require("luasnip.extras.fmt").interpolate("%s", %s, %s)',
+					fmt,
+					args,
+					opts
+				)
+			)
 		end)
 	end)
 end
@@ -27,7 +37,7 @@ describe("fmt.interpolate", function()
 	-- apparently clear() needs to run before anything else...
 	helpers.clear()
 	-- set in makefile.
-	helpers.exec("set rtp+="..os.getenv("LUASNIP_SOURCE"))
+	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	works("expands with no numbers", "a{}b{}c{}d", "{ 4, 5, 6 }", "a4b5c6d")
 
@@ -80,7 +90,7 @@ describe("fmt.interpolate", function()
 	works(
 		"do not trim placeholders with whitespace",
 		"a{ something}b{}c",
-		"{ 2, [\" something\"] = 1 }",
+		'{ 2, [" something"] = 1 }',
 		"a1b2c"
 	)
 
@@ -109,7 +119,7 @@ describe("fmt.interpolate", function()
 		"foo() { return <>; };",
 		"{ 10 }",
 		"foo() { return 10; };",
-		"{ delimiters = \"<>\" }"
+		'{ delimiters = "<>" }'
 	)
 
 	local delimiters = { "()", "[]", "<>", "%$", "#@", "?!" }
@@ -121,7 +131,7 @@ describe("fmt.interpolate", function()
 				string.format("{ return %s%s; };", left, right),
 				"{ 10 }",
 				"{ return 10; };",
-				string.format("{ delimiters = \"%s\" }", delims)
+				string.format('{ delimiters = "%s" }', delims)
 			)
 		end)
 	end
@@ -131,7 +141,7 @@ describe("fmt.interpolate", function()
 		"foo((x)) { return x + (); };",
 		"{ 10 }",
 		"foo(x) { return x + 10; };",
-		"{ delimiters = \"()\" }"
+		'{ delimiters = "()" }'
 	)
 
 	works(
@@ -139,7 +149,7 @@ describe("fmt.interpolate", function()
 		"foo(x) { return x + [y]; };",
 		"{ y = 10 }",
 		"foo(x) { return x + 10; };",
-		"{ delimiters = \"[]\" }"
+		'{ delimiters = "[]" }'
 	)
 
 	fails("dissallows unused list args", "a {} b {} c", "{ 1, 2, 3 }")
