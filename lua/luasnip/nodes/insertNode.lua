@@ -98,7 +98,13 @@ function InsertNode:input_enter(no_move)
 				"n",
 				true
 			)
-			util.normal_move_before(mark_end_pos)
+			-- with `exclusive` set, visual won't include the last cursor-position.
+			-- The cursor has to be moved one column further to account for that.
+			if vim.o.selection == "exclusive" then
+				util.normal_move_on(mark_end_pos)
+			else
+				util.normal_move_before(mark_end_pos)
+			end
 			vim.api.nvim_feedkeys(
 				vim.api.nvim_replace_termcodes("o<C-G>", true, false, true),
 				"n",
