@@ -1,7 +1,7 @@
 local helpers = require("test.functional.helpers")(after_each)
 local exec_lua, feed = helpers.exec_lua, helpers.feed
 local ls_helpers = require("helpers")
-local Screen = require('test.functional.ui.screen')
+local Screen = require("test.functional.ui.screen")
 
 describe("snippets_basic", function()
 	local screen
@@ -13,9 +13,9 @@ describe("snippets_basic", function()
 		screen = Screen.new(50, 3)
 		screen:attach()
 		screen:set_default_attr_ids({
-			[0] = {bold=true, foreground=Screen.colors.Blue},
-			[1] = {bold=true, foreground=Screen.colors.Brown},
-			[2] = {bold=true}
+			[0] = { bold = true, foreground = Screen.colors.Blue },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
 		})
 	end)
 
@@ -32,11 +32,13 @@ describe("snippets_basic", function()
 		]])
 
 		-- screen already is in correct state, set `unchanged`.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			the snippet expands^                               |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-			unchanged=true }
+			unchanged = true,
+		})
 	end)
 
 	it("Can expand Snippets from `all` via <Plug>", function()
@@ -50,10 +52,12 @@ describe("snippets_basic", function()
 			}
 		]])
 		feed("isnip<Plug>luasnip-expand-or-jump")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			the snippet expands^                               |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Can jump around in simple snippets.", function()
@@ -63,32 +67,40 @@ describe("snippets_basic", function()
 					t"text", i(1), t"text again", i(2), t"and again"
 				}) )
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			text^text againand again                           |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua([[
 			ls.jump(1)
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 		  texttext again^and again                           |
 		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]]}
+		  {2:-- INSERT --}                                      |]],
+		})
 		exec_lua([[
 			ls.jump(-1)
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 		  text^text againand again                           |
 		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]]}
+		  {2:-- INSERT --}                                      |]],
+		})
 		exec_lua([[
 			ls.jump(1)
 			ls.jump(1)
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 		  texttext againand again^                           |
 		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]]}
+		  {2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Can jump around in simple snippets via <Plug>.", function()
@@ -98,24 +110,32 @@ describe("snippets_basic", function()
 					t"text", i(1), t"text again", i(2), t"and again"
 				}) )
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			text^text againand again                           |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("<Plug>luasnip-jump-next")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 		  texttext again^and again                           |
 		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]]}
+		  {2:-- INSERT --}                                      |]],
+		})
 		feed("<Plug>luasnip-jump-prev")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 		  text^text againand again                           |
 		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]]}
+		  {2:-- INSERT --}                                      |]],
+		})
 		feed("<Plug>luasnip-jump-next<Plug>luasnip-jump-next")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 		  texttext againand again^                           |
 		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]]}
+		  {2:-- INSERT --}                                      |]],
+		})
 	end)
 end)

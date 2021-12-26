@@ -3,10 +3,13 @@ local helpers = require("test.functional.helpers")(after_each)
 local M = {}
 
 function M.session_setup_luasnip()
-	helpers.exec("set rtp+="..os.getenv("LUASNIP_SOURCE"))
-	helpers.exec(string.format(
-		"source %s/plugin/luasnip.vim",
-		os.getenv("LUASNIP_SOURCE")))
+	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	helpers.exec(
+		string.format(
+			"source %s/plugin/luasnip.vim",
+			os.getenv("LUASNIP_SOURCE")
+		)
+	)
 
 	helpers.exec_lua([[
 	ls = require("luasnip")
