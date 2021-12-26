@@ -4,4 +4,5 @@ nvim:
 
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
 test: nvim
-	LUASNIP_SOURCE=$(shell pwd) TEST_FILE=$(realpath tests) make -C ${NVIM_PATH} functionaltest
+	# add helper-functions to lpath.
+	LUASNIP_SOURCE=$(shell pwd) TEST_FILE=$(realpath tests) BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua make -C ${NVIM_PATH} functionaltest
