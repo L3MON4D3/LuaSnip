@@ -4,7 +4,7 @@ local session = require("luasnip.session")
 
 local next_expand = nil
 local next_expand_params = nil
-local ls
+local ls = {}
 local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
 local function get_active_snip()
@@ -153,7 +153,7 @@ local function expand_or_locally_jumpable()
 end
 
 -- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
-local function snip_expand(snippet, opts)
+function ls.snip_expand(snippet, opts)
 	local snip = snippet:copy()
 
 	opts = opts or {}
@@ -228,7 +228,7 @@ local function expand()
 	if snip then
 		local cursor = util.get_cursor_0ind()
 		-- override snip with expanded copy.
-		snip = snip_expand(snip, {
+		snip = ls.snip_expand(snip, {
 			expand_params = expand_params,
 			-- clear trigger-text.
 			clear_region = {
@@ -251,7 +251,7 @@ local function expand_auto()
 	)
 	if snip then
 		local cursor = util.get_cursor_0ind()
-		snip = snip_expand(snip, {
+		snip = ls.snip_expand(snip, {
 			expand_params = expand_params,
 			-- clear trigger-text.
 			clear_region = {
@@ -277,7 +277,7 @@ local function expand_or_jump()
 end
 
 local function lsp_expand(body, opts)
-	snip_expand(ls.parser.parse_snippet("", body), opts)
+	ls.snip_expand(ls.parser.parse_snippet("", body), opts)
 end
 
 local function choice_active()
@@ -514,13 +514,13 @@ local function refresh_notify(ft)
 	vim.cmd([[doautocmd User LuasnipSnippetsAdded]])
 end
 
-ls = {
+-- there won't be duplicates.
+ls = vim.tbl_extend("keep", ls, {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
 	jumpable = jumpable,
 	expandable = expandable,
 	expand = expand,
-	snip_expand = snip_expand,
 	expand_auto = expand_auto,
 	expand_or_jump = expand_or_jump,
 	jump = jump,
@@ -562,6 +562,6 @@ ls = {
 	session = session,
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,
-}
+})
 
 return ls
