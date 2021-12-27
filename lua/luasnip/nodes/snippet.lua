@@ -366,14 +366,6 @@ function Snippet:trigger_expand(current_node, pos)
 	start_node.parent = self
 
 	insert_into_jumplist(self, start_node, current_node)
-
-	if current_node then
-		if current_node.pos > 0 then
-			current_node.inner_active = true
-		else
-			current_node:input_leave(1)
-		end
-	end
 end
 
 -- returns copy of snip if it matches, nil if not.
