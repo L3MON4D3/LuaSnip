@@ -64,6 +64,13 @@ describe("RestoreNode", function()
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
 		})
+
+		-- make sure the change persisted.
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			^c{3:ccc}                                              |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
 	end)
 
 	it("Node is stored+restored with dynamicNode.", function()
@@ -105,5 +112,75 @@ describe("RestoreNode", function()
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
 		})
+	end)
+
+	it("Can restore choice.", function()
+		exec_lua([[
+			ls.snip_expand( s("trig", {
+				c(1, {
+					{
+						-- insertNode to be able to switch outer choice.
+						t"a", i(1), r(2, "restore_key", c(1, {
+							t"c",
+							t"d"
+						})), t"a"
+					}, {
+						t"b", r(1, "restore_key"), t"b"
+					}
+				})
+			}) )
+		]])
+		screen:expect{grid=[[
+			a^ca                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- change inner choice.
+		exec_lua("ls.jump(1)")
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			a^da                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- change outer choice, inner choice ("b") should be restored.
+		exec_lua("ls.jump(-1)")
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			b^db                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("Nested restoreNode works.", function()
+		exec_lua([[
+			ls.snip_expand( s("trig", {
+				c(1, {
+					r(nil, "restore_key", {
+						t"aaa: ", r(1, "restore_key_2", i(1, "bbb"))
+					}),
+					r(1, "restore_key_2")
+				})
+			}))
+		]])
+		screen:expect{grid=[[
+			aaa: ^b{3:bb}                                          |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		-- change text for restore_key_2, but inside restore_key.
+		feed("ccc")
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			^c{3:cc}                                               |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		-- make sure the text changed in restore_key as well.
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			aaa: ^c{3:cc}                                          |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
 	end)
 end)
