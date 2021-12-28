@@ -197,4 +197,40 @@ describe("RestoreNode", function()
 			{2:-- SELECT --}                                      |]],
 		})
 	end)
+
+	it("functionNode in restoreNode works.", function()
+		exec_lua([[
+			ls.snip_expand( s("trig", {
+				c(1, {
+					r(nil, "restore_key", {
+						i(1, "aaa"), f(function(args) return args[1] end, 1)
+					}),
+					{
+						t"a",
+						r(1, "restore_key"),
+						t"a"
+					}
+				})
+			}))
+		]])
+
+		screen:expect{grid=[[
+			^a{3:aa}aaa                                            |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		-- insertNode isn't updated yet...
+		feed("bbb")
+		screen:expect{grid=[[
+			bbb^aaa                                            |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- but should be updated after the choice is changed.
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			a^b{3:bb}bbba                                          |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
 end)
