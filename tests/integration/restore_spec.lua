@@ -214,23 +214,29 @@ describe("RestoreNode", function()
 			}))
 		]])
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a{3:aa}aaa                                            |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- insertNode isn't updated yet...
 		feed("bbb")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			bbb^aaa                                            |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- but should be updated after the choice is changed.
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a^b{3:bb}bbba                                          |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 end)
