@@ -13,10 +13,10 @@ describe("ChoiceNode", function()
 		screen = Screen.new(50, 3)
 		screen:attach()
 		screen:set_default_attr_ids({
-			[0] = {bold=true, foreground=Screen.colors.Blue},
-			[1] = {bold=true, foreground=Screen.colors.Brown},
-			[2] = {bold=true},
-			[3] = {background = Screen.colors.LightGray};
+			[0] = { bold = true, foreground = Screen.colors.Blue },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
+			[3] = { background = Screen.colors.LightGray },
 		})
 	end)
 
@@ -34,16 +34,20 @@ describe("ChoiceNode", function()
 					})
 				}) )
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a                                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^b                                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Changed content of choice is restored.", function()
@@ -62,33 +66,40 @@ describe("ChoiceNode", function()
 					})
 				}) )
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a a                                               |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- change text in insertNode.
 		feed("c")
 		exec_lua("ls.jump(1)")
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			c ^b                                               |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- change choice on outer choiceNode.
 		exec_lua("ls.jump(-1)")
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^b                                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^c b                                               |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 end)
