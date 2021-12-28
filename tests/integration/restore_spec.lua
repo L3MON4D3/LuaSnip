@@ -13,10 +13,10 @@ describe("RestoreNode", function()
 		screen = Screen.new(50, 3)
 		screen:attach()
 		screen:set_default_attr_ids({
-			[0] = {bold=true, foreground=Screen.colors.Blue},
-			[1] = {bold=true, foreground=Screen.colors.Brown},
-			[2] = {bold=true},
-			[3] = {background = Screen.colors.LightGray};
+			[0] = { bold = true, foreground = Screen.colors.Blue },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
+			[3] = { background = Screen.colors.LightGray },
 		})
 	end)
 
@@ -40,24 +40,30 @@ describe("RestoreNode", function()
 					})
 				}) )
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a{3:aaa}                                              |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		feed("bbbb")
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			"^b{3:bbb}"                                            |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		feed("cccc")
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			'^c{3:ccc}'                                            |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("Node is stored+restored with dynamicNode.", function()
@@ -72,26 +78,32 @@ describe("RestoreNode", function()
 				i(1, "a"), t" -> ", d(2, fnc, {1})
 			}))
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a -> a aaaa                                       |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- change text in restoreNode
 		exec_lua("ls.jump(1)")
 		feed("bbbb")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a -> a bbbb^                                       |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- jump into 1 of outer snippet, change it and jump so an update is triggered.
 		exec_lua("ls.jump(-1)")
 		feed("c")
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			c -> c ^b{3:bbb}                                       |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 end)
