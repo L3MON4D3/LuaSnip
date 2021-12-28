@@ -36,10 +36,12 @@ describe("FunctionNode", function()
 				}) )
 		]])
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			it expands^                                        |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Updates when argnodes' text changes + args as table.", function()
@@ -53,26 +55,31 @@ describe("FunctionNode", function()
 					i(1, "a"), t" -> ", f(func, 1), t" == ", f(func, {1})
 				}) )
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a -> a == a                                       |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- does updating manually work?
 		feed("b")
 		exec_lua("ls.active_update_dependents()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			b^ -> b == b                                       |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- does updating by jumping work?
 		feed("<BS>c")
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			c -> c == c^                                       |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
