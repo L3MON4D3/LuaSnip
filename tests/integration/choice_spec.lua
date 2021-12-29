@@ -140,4 +140,57 @@ describe("ChoiceNode", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("dynamicNode works in choiceNode.", function()
+		local snip = [[
+			s("trig", {
+				i(1, "a"),
+				c(2, {
+					d(nil, function(args, snip)
+						return sn(nil, { i(1, args[1]) })
+					end, 1),
+					t"none"
+				})
+			})
+		]]
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "aa" }
+		)
+		exec_lua("ls.snip_expand("..snip..")")
+		screen:expect{grid=[[
+			^aa                                                |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+		feed("b")
+		exec_lua("ls.active_update_dependents()")
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			b^b                                                |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			b^none                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- won't update, the dynamicNode isn't visible.
+		exec_lua("ls.jump(-1)")
+		feed("c")
+		exec_lua("ls.active_update_dependents()")
+		screen:expect{grid=[[
+			c^none                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- now changeChoice should show the updated dynamicNode.
+		exec_lua("ls.jump(1)")
+		exec_lua("ls.change_choice()")
+		screen:expect{grid=[[
+			c^c                                                |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
 end)
