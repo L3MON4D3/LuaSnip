@@ -372,6 +372,7 @@ function Snippet:trigger_expand(current_node, pos)
 	}, self.ext_opts[types.snippet].passive)
 	self.mark = mark(old_pos, pos, mark_opts)
 
+	self:update()
 	self:update_all_dependents()
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
