@@ -17,6 +17,7 @@ local function D(pos, fn, args, ...)
 		mark = nil,
 		user_args = { ... },
 		dependents = {},
+		active = false
 	})
 end
 
