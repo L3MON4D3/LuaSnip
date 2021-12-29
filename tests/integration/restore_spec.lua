@@ -267,7 +267,7 @@ describe("RestoreNode", function()
 	it("restoreNode is properly indented.", function()
 		local snip = [[
 			s("trig", {
-				r(nil, "restore_key", t{"line 1", "line 2"}),
+				r(1, "restore_key", t{"line 1", "line 2"}),
 			})
 		]]
 		feed("i<Tab>")
