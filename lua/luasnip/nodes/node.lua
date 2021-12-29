@@ -68,6 +68,9 @@ function Node:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
 function Node:get_text()
+	if not self.visible then
+		return nil
+	end
 	local ok, text = pcall(function()
 		local from_pos, to_pos = self.mark:pos_begin_end_raw()
 
@@ -178,7 +181,15 @@ local function get_args(node, get_text_func_name)
 	for _, arg in ipairs(node.args_absolute) do
 		-- Insp(arg)
 		local arg_node = node.parent.snippet.dependents_dict:get(arg).node
-		if not arg_node or not arg_node.visible then
+		-- maybe the node is part of a dynamicNode and not yet generated.
+		if not arg_node then
+			return nil
+		end
+		local argnode_text = arg_node[get_text_func_name](arg_node)
+		-- can only occur with `get_text`. If one returns nil, the argnode
+		-- isn't visible or some other error occured. Either way, return nil
+		-- to signify that not all argnodes are available.
+		if not argnode_text then
 			return nil
 		end
 		args[#args + 1] = arg_node[get_text_func_name](arg_node)
