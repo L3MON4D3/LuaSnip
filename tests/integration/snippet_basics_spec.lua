@@ -25,12 +25,13 @@ describe("snippets_basic", function()
 	end)
 
 	it("Can expand Snippets via snip_expand", function()
-		exec_lua([[
-			ls.snip_expand(
-				s("trig", {
-					t"the snippet expands"
-				}) )
-		]])
+		local snip = [[
+			s("trig", {
+				t"the snippet expands"
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"the snippet expands"})
+		exec_lua("ls.snip_expand("..snip..")")
 
 		-- screen already is in correct state, set `unchanged`.
 		screen:expect({
@@ -62,12 +63,14 @@ describe("snippets_basic", function()
 	end)
 
 	it("Can jump around in simple snippets.", function()
-		exec_lua([[
-			ls.snip_expand(
-				s("trig", {
-					t"text", i(1), t"text again", i(2), t"and again"
-				}) )
-		]])
+		local snip = [[
+			s("trig", {
+				t"text", i(1), t"text again", i(2), t"and again"
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"texttext againand again"})
+		exec_lua("ls.snip_expand("..snip..")")
+
 		screen:expect({
 			grid = [[
 			text^text againand again                           |
@@ -141,13 +144,14 @@ describe("snippets_basic", function()
 	end)
 
 	it("Can expand and jump out of nested snippets.", function()
-		local expand_snip = [[
-			ls.snip_expand(s("trig", {
+		local snip = [[
+			s("trig", {
 				t"a[", i(1), t"]a", i(2), t"b"
-			}) )
+			})
 		]]
-		exec_lua(expand_snip)
-		exec_lua(expand_snip)
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a[]ab"})
+		exec_lua("ls.snip_expand("..snip..")")
+		exec_lua("ls.snip_expand("..snip..")")
 		screen:expect({
 			grid = [[
 			a[a[^]ab]ab                                        |

@@ -25,16 +25,15 @@ describe("FunctionNode", function()
 	end)
 
 	it("Text generated on expand/general test of functionality.", function()
-		exec_lua([[
-			local function test(args, snip)
-				return "it expands"
-			end
-
-			ls.snip_expand(
-				s("trig", {
-					f(test, {})
-				}) )
-		]])
+		local snip = [[
+			s("trig", {
+				f(function(args, snip)
+					return "it expands"
+				end, {})
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"it expands"})
+		exec_lua("ls.snip_expand("..snip..")")
 
 		screen:expect({
 			grid = [[
@@ -45,16 +44,13 @@ describe("FunctionNode", function()
 	end)
 
 	it("Updates when argnodes' text changes + args as table.", function()
-		exec_lua([[
-			local function func(args, snip)
-				return args[1]
-			end
-
-			ls.snip_expand(
-				s("trig", {
-					i(1, "a"), t" -> ", f(func, 1), t" == ", f(func, {1})
-				}) )
-		]])
+		local snip = [[
+			s("trig", {
+				i(1, "a"), t" -> ", f(function(args) return args[1] end, 1), t" == ", f(function(args) return args[1] end, {1})
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a -> a == a"})
+		exec_lua("ls.snip_expand("..snip..")")
 		screen:expect({
 			grid = [[
 			^a -> a == a                                       |
