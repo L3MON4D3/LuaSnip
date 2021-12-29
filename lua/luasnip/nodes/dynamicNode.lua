@@ -49,6 +49,8 @@ local function snip_init(self, snip)
 	snip:init_positions(self.snip_absolute_position)
 	snip:init_insert_positions(self.snip_absolute_insert_position)
 
+	snip:make_args_absolute()
+
 	snip:set_dependents()
 	snip:set_argnodes(self.parent.snippet.dependents_dict)
 end
@@ -193,6 +195,8 @@ function DynamicNode:update()
 
 	tmp:init_positions(self.snip_absolute_position)
 	tmp:init_insert_positions(self.snip_absolute_insert_position)
+
+	tmp:make_args_absolute()
 
 	tmp:set_dependents()
 	tmp:set_argnodes(self.parent.snippet.dependents_dict)
