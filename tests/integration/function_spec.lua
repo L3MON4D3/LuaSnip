@@ -32,8 +32,11 @@ describe("FunctionNode", function()
 				end, {})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"it expands"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "it expands" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
@@ -49,8 +52,11 @@ describe("FunctionNode", function()
 				i(1, "a"), t" -> ", f(function(args) return args[1] end, 1), t" == ", f(function(args) return args[1] end, {1})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a -> a == a"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "a -> a == a" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 		screen:expect({
 			grid = [[
 			^a -> a == a                                       |

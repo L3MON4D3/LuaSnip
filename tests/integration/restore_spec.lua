@@ -39,8 +39,11 @@ describe("RestoreNode", function()
 				})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aaaa"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "aaaa" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
@@ -87,8 +90,11 @@ describe("RestoreNode", function()
 				end, {1})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a -> a aaaa"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "a -> a aaaa" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
@@ -133,8 +139,11 @@ describe("RestoreNode", function()
 				}
 			})
 		}) ]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aca"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "aca" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
@@ -175,8 +184,11 @@ describe("RestoreNode", function()
 				})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aaa: bbb"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "aaa: bbb" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
@@ -220,8 +232,11 @@ describe("RestoreNode", function()
 				})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aaaaaa"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "aaaaaa" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
