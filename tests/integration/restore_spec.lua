@@ -271,11 +271,13 @@ describe("RestoreNode", function()
 			})
 		]]
 		feed("i<Tab>")
-		exec_lua("ls.snip_expand("..snip..")")
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			        line 1                                    |
 			        line 2^                                    |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)

@@ -415,10 +415,12 @@ describe("snippets_basic", function()
 			})
 		]]
 		feed("i<Tab>")
-		exec_lua("ls.snip_expand("..snip..")")
-		screen:expect{grid=[[
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
 			        the snippet expands                       |
 			        and is indeted properly.^                  |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
