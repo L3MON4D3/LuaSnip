@@ -30,8 +30,11 @@ describe("snippets_basic", function()
 				t"the snippet expands"
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"the snippet expands"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "the snippet expands" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		-- screen already is in correct state, set `unchanged`.
 		screen:expect({
@@ -68,8 +71,11 @@ describe("snippets_basic", function()
 				t"text", i(1), t"text again", i(2), t"and again"
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"texttext againand again"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "texttext againand again" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
@@ -149,9 +155,12 @@ describe("snippets_basic", function()
 				t"a[", i(1), t"]a", i(2), t"b"
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a[]ab"})
-		exec_lua("ls.snip_expand("..snip..")")
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "a[]ab" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 		screen:expect({
 			grid = [[
 			a[a[^]ab]ab                                        |

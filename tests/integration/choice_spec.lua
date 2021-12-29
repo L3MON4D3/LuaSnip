@@ -33,8 +33,11 @@ describe("ChoiceNode", function()
 				})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "a" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
@@ -67,8 +70,11 @@ describe("ChoiceNode", function()
 				})
 			})
 		]]
-		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a a"})
-		exec_lua("ls.snip_expand("..snip..")")
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "a a" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
 			grid = [[
