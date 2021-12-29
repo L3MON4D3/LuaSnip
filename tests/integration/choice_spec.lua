@@ -124,16 +124,20 @@ describe("ChoiceNode", function()
 		]]
 
 		feed("i<Tab>")
-		exec_lua("ls.snip_expand("..snip..")")
-		screen:expect{grid=[[
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
 			        ^a                                         |
 			        a                                         |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			        ^b                                         |
 			        b                                         |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)

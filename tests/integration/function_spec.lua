@@ -92,10 +92,12 @@ describe("FunctionNode", function()
 			})
 		]]
 		feed("i<Tab>")
-		exec_lua("ls.snip_expand("..snip..")")
-		screen:expect{grid=[[
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
 			        multiline                                 |
 			        text^                                      |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
