@@ -407,4 +407,18 @@ describe("snippets_basic", function()
 			})
 		end
 	)
+
+	it("Snippets are indented.", function()
+		local snip = [[
+			s("trig", {
+				t{"the snippet expands", "and is indeted properly."}
+			})
+		]]
+		feed("i<Tab>")
+		exec_lua("ls.snip_expand("..snip..")")
+		screen:expect{grid=[[
+			        the snippet expands                       |
+			        and is indeted properly.^                  |
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)

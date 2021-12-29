@@ -84,4 +84,18 @@ describe("FunctionNode", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("Text from functionNode is properly indented.", function()
+		local snip = [[
+			s("trig", {
+				f(function() return {"multiline", "text"} end, {})
+			})
+		]]
+		feed("i<Tab>")
+		exec_lua("ls.snip_expand("..snip..")")
+		screen:expect{grid=[[
+			        multiline                                 |
+			        text^                                      |
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)

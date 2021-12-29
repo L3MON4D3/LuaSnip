@@ -112,4 +112,28 @@ describe("ChoiceNode", function()
 			{2:-- SELECT --}                                      |]],
 		})
 	end)
+
+	it("Choices are indented properly.", function()
+		local snip = [[
+			s("trig", {
+				c(1, {
+					t{"a", "a"},
+					t{"b", "b"}
+				})
+			})
+		]]
+
+		feed("i<Tab>")
+		exec_lua("ls.snip_expand("..snip..")")
+		screen:expect{grid=[[
+			        ^a                                         |
+			        a                                         |
+			{2:-- INSERT --}                                      |]]}
+
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			        ^b                                         |
+			        b                                         |
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)
