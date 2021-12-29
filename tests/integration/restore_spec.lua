@@ -25,21 +25,23 @@ describe("RestoreNode", function()
 	end)
 
 	it("Node is stored+restored with choiceNode.", function()
-		exec_lua([[
-			ls.snip_expand(
-				s("trig", {
-					c(1, {
-						r(nil, "restore_key", i(1, "aaaa")),
-						-- converted to snippetNode.
-						{
-							t"\"", r(1, "restore_key"), t"\""
-						},
-						{
-							t"'", r(1, "restore_key"), t"'"
-						}
-					})
-				}) )
-		]])
+		local snip = [[
+			s("trig", {
+				c(1, {
+					r(nil, "restore_key", i(1, "aaaa")),
+					-- converted to snippetNode.
+					{
+						t"\"", r(1, "restore_key"), t"\""
+					},
+					{
+						t"'", r(1, "restore_key"), t"'"
+					}
+				})
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aaaa"})
+		exec_lua("ls.snip_expand("..snip..")")
+
 		screen:expect({
 			grid = [[
 			^a{3:aaa}                                              |
@@ -76,17 +78,18 @@ describe("RestoreNode", function()
 	end)
 
 	it("Node is stored+restored with dynamicNode.", function()
-		exec_lua([[
-			local function fnc(args, snip)
-				return sn(nil, {
-					t(args[1]), t" ", r(1, "restore_key", i(1, "aaaa"))
-				})
-			end
+		local snip = [[
+			s("trig", {
+				i(1, "a"), t" -> ", d(2, function(args, snip)
+					return sn(nil, {
+						t(args[1]), t" ", r(1, "restore_key", i(1, "aaaa"))
+					})
+				end, {1})
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a -> a aaaa"})
+		exec_lua("ls.snip_expand("..snip..")")
 
-			ls.snip_expand(s("trig", {
-				i(1, "a"), t" -> ", d(2, fnc, {1})
-			}))
-		]])
 		screen:expect({
 			grid = [[
 			^a -> a aaaa                                       |
@@ -117,21 +120,22 @@ describe("RestoreNode", function()
 	end)
 
 	it("Can restore choice.", function()
-		exec_lua([[
-			ls.snip_expand( s("trig", {
-				c(1, {
-					{
-						-- insertNode to be able to switch outer choice.
-						t"a", i(1), r(2, "restore_key", c(1, {
-							t"c",
-							t"d"
-						})), t"a"
-					}, {
-						t"b", r(1, "restore_key"), t"b"
-					}
-				})
-			}) )
-		]])
+		local snip = [[s("trig", {
+			c(1, {
+				{
+					-- insertNode to be able to switch outer choice.
+					t"a", i(1), r(2, "restore_key", c(1, {
+						t"c",
+						t"d"
+					})), t"a"
+				}, {
+					t"b", r(1, "restore_key"), t"b"
+				}
+			})
+		}) ]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aca"})
+		exec_lua("ls.snip_expand("..snip..")")
+
 		screen:expect({
 			grid = [[
 			a^ca                                               |
@@ -161,16 +165,19 @@ describe("RestoreNode", function()
 	end)
 
 	it("Nested restoreNode works.", function()
-		exec_lua([[
-			ls.snip_expand( s("trig", {
+		local snip = [[
+			s("trig", {
 				c(1, {
 					r(nil, "restore_key", {
 						t"aaa: ", r(1, "restore_key_2", i(1, "bbb"))
 					}),
 					r(1, "restore_key_2")
 				})
-			}))
-		]])
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aaa: bbb"})
+		exec_lua("ls.snip_expand("..snip..")")
+
 		screen:expect({
 			grid = [[
 			aaa: ^b{3:bb}                                          |
@@ -199,8 +206,8 @@ describe("RestoreNode", function()
 	end)
 
 	it("functionNode in restoreNode works.", function()
-		exec_lua([[
-			ls.snip_expand( s("trig", {
+		local snip = [[
+			s("trig", {
 				c(1, {
 					r(nil, "restore_key", {
 						i(1, "aaa"), f(function(args) return args[1] end, 1)
@@ -211,8 +218,10 @@ describe("RestoreNode", function()
 						t"a"
 					}
 				})
-			}))
-		]])
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"aaaaaa"})
+		exec_lua("ls.snip_expand("..snip..")")
 
 		screen:expect({
 			grid = [[

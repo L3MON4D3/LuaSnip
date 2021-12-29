@@ -25,15 +25,17 @@ describe("ChoiceNode", function()
 	end)
 
 	it("Can change choice.", function()
-		exec_lua([[
-			ls.snip_expand(
-				s("trig", {
-					c(1, {
-						t"a",
-						t"b"
-					})
-				}) )
-		]])
+		local snip = [[
+			s("trig", {
+				c(1, {
+					t"a",
+					t"b"
+				})
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a"})
+		exec_lua("ls.snip_expand("..snip..")")
+
 		screen:expect({
 			grid = [[
 			^a                                                 |
@@ -51,21 +53,23 @@ describe("ChoiceNode", function()
 	end)
 
 	it("Changed content of choice is restored.", function()
-		exec_lua([[
-			ls.snip_expand(
-				s("trig", {
-					c(1, {
-						-- parsed as snippetNode.
-						{
-							i(1, "a"), t" ", c(2, {
-							                 	t"a",
-							                 	t"b"
-							                 })
-						},
-						t"b"
-					})
-				}) )
-		]])
+		local snip = [[
+			s("trig", {
+				c(1, {
+					-- parsed as snippetNode.
+					{
+						i(1, "a"), t" ", c(2, {
+											t"a",
+											t"b"
+										 })
+					},
+					t"b"
+				})
+			})
+		]]
+		assert.are.same(exec_lua("return "..snip..":get_static_text()"), {"a a"})
+		exec_lua("ls.snip_expand("..snip..")")
+
 		screen:expect({
 			grid = [[
 			^a a                                               |
