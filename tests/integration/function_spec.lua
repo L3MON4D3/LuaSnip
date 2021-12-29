@@ -116,41 +116,50 @@ describe("FunctionNode", function()
 				})
 			}))
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^b{3:bbb} aaaa                                         |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- change text of argnode, shouldn't update fNode just yet.
 		feed("cccc")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			cccc^ aaaa                                         |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- the update isn't visible...
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			cccc ^aaaa                                         |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- now it is.
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			cccc ^cccc                                         |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- make sure that updating while the fNode is the active choice
 		-- actually updates it directly.
 		exec_lua("ls.jump(-1)")
 		feed("dddd")
 		exec_lua("ls.active_update_dependents()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			dddd^ dddd                                         |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
