@@ -179,6 +179,44 @@ describe("DynamicNode", function()
 			c^cbbb                                             |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]]}
+	end)
 
+	it("dynamicNode works in dynamicNode.", function()
+		local snip = [[
+			s("trig", {
+				i(1, "a"),
+				d(2, function(args, snip)
+					return sn(nil, { i(1, args[1]), d(2, function(args, snip) return sn(nil, { t(args[1]) }) end, 1) })
+				end, {1})
+			})
+		]]
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "aaa" }
+		)
+		exec_lua("ls.snip_expand("..snip..")")
+		screen:expect{grid=[[
+			^aaa                                               |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+		
+		-- update inner dynamicNode.
+		exec_lua("ls.jump(1)")
+		feed("b")
+		exec_lua("ls.active_update_dependents()")
+		screen:expect{grid=[[
+			ab^b                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+
+		-- update outer dynamicNode.
+		exec_lua("ls.jump(-1)")
+		feed("c")
+		exec_lua("ls.active_update_dependents()")
+		screen:expect{grid=[[
+			c^cc                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
 	end)
 end)

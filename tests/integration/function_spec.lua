@@ -100,4 +100,57 @@ describe("FunctionNode", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("Updates in choiceNode.", function()
+		exec_lua([[
+			local function func(args, snip)
+				return args[1]
+			end
+
+			ls.snip_expand(s("trig", {
+				i(1, "bbbb"),
+				t" ",
+				c(2, {
+					t"aaaa",
+					f(func, {1})
+				})
+			}))
+		]])
+		screen:expect{grid=[[
+			^b{3:bbb} aaaa                                         |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		-- change text of argnode, shouldn't update fNode just yet.
+		feed("cccc")
+		screen:expect{grid=[[
+			cccc^ aaaa                                         |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- the update isn't visible...
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			cccc ^aaaa                                         |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- now it is.
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			cccc ^cccc                                         |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+
+		-- make sure that updating while the fNode is the active choice
+		-- actually updates it directly.
+		exec_lua("ls.jump(-1)")
+		feed("dddd")
+		exec_lua("ls.active_update_dependents()")
+		screen:expect{grid=[[
+			dddd^ dddd                                         |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)
