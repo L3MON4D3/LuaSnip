@@ -609,6 +609,8 @@ function Snippet:fake_expand()
 	self:init_positions({})
 	self:init_insert_positions({})
 
+	self:make_args_absolute()
+
 	self:set_dependents()
 	self:set_argnodes(self.dependents_dict)
 end
