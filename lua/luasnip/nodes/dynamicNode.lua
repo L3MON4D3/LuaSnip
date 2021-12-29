@@ -127,7 +127,18 @@ function DynamicNode:jump_into(dir, no_move)
 		end
 	else
 		self:input_enter()
-		return self.snip:jump_into(dir, no_move)
+		if self.snip then
+			return self.snip:jump_into(dir, no_move)
+		else
+			-- this will immediately enter and leave, but IMO that's expected
+			-- behaviour.
+			self:input_leave()
+			if dir == 1 then
+				return self.next:jump_into(dir, no_move)
+			else
+				return self.prev:jump_into(dir, no_move)
+			end
+		end
 	end
 end
 
@@ -242,11 +253,16 @@ end
 
 function DynamicNode:set_ext_opts(name)
 	self.mark:update_opts(self.parent.ext_opts[self.type][name])
-	self.snip:set_ext_opts(name)
+	-- might not have been generated (missing nodes).
+	if self.snip then
+		self.snip:set_ext_opts(name)
+	end
 end
 
 function DynamicNode:store()
-	self.snip:store()
+	if self.snip then
+		self.snip:store()
+	end
 end
 
 function DynamicNode:update_restore()
