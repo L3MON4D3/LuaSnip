@@ -263,4 +263,19 @@ describe("RestoreNode", function()
 			{2:-- SELECT --}                                      |]],
 		})
 	end)
+
+	it("restoreNode is properly indented.", function()
+		local snip = [[
+			s("trig", {
+				r(nil, "restore_key", t{"line 1", "line 2"}),
+			})
+		]]
+		feed("i<Tab>")
+		exec_lua("ls.snip_expand("..snip..")")
+
+		screen:expect{grid=[[
+			        line 1                                    |
+			        line 2^                                    |
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)
