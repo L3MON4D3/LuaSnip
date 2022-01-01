@@ -161,6 +161,7 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
+	snip.pos = self.pos
 
 	snip:subsnip_init()
 
