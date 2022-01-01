@@ -60,12 +60,16 @@ end
 FunctionNode.get_docstring = FunctionNode.get_static_text
 
 function FunctionNode:update()
-	self.last_args = self:get_args()
-	if not self.last_args then
+	local args = self:get_args()
+	-- skip this update if
+	-- - not all nodes are available.
+	-- - the args haven't changed.
+	if not args or vim.deep_equal(args, self.last_args) then
 		return
 	end
+	self.last_args = args
 	local text = util.wrap_value(
-		self.fn(self.last_args, self.parent, unpack(self.user_args))
+		self.fn(args, self.parent, unpack(self.user_args))
 	)
 	if vim.o.expandtab then
 		util.expand_tabs(text, util.tab_width())
