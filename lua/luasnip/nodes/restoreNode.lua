@@ -162,7 +162,6 @@ local function snip_init(self, snip)
 	)
 	snip.snippet = self.parent.snippet
 
-	snip:set_static_visible()
 	snip:subsnip_init()
 
 	snip:init_positions(self.snip_absolute_position)
@@ -172,14 +171,20 @@ local function snip_init(self, snip)
 
 	snip:set_dependents()
 	snip:set_argnodes(self.parent.snippet.dependents_dict)
+
+	snip:static_init()
+end
+
+function RestoreNode:static_init()
+	Node.static_init(self)
+	self.snip = self.parent.snippet.stored[self.key]
+	snip_init(self, self.snip)
 end
 
 function RestoreNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		local tmp = self.parent.snippet.stored[self.key]
-		snip_init(self, tmp)
-		self.static_text = tmp:get_static_text()
+		self.static_text = self.snip:get_static_text()
 	end
 	return self.static_text
 end

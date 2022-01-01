@@ -45,7 +45,7 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
-	snip:set_static_visible()
+	snip:static_init()
 
 	snip:subsnip_init()
 	snip:init_positions(self.snip_absolute_position)
@@ -265,7 +265,6 @@ function DynamicNode:update_static()
 	end
 
 	tmp:subsnip_init()
-	tmp:set_static_visible()
 
 	tmp:init_positions(self.snip_absolute_position)
 	tmp:init_insert_positions(self.snip_absolute_insert_position)
@@ -274,6 +273,8 @@ function DynamicNode:update_static()
 
 	tmp:set_dependents()
 	tmp:set_argnodes(self.parent.snippet.dependents_dict)
+
+	tmp:static_init()
 
 	tmp:update_static()
 	-- updates dependents in tmp.

@@ -599,8 +599,6 @@ function Snippet:fake_expand()
 	self:indent("")
 	self:subsnip_init()
 
-	self:set_static_visible()
-
 	self:init_positions({})
 	self:init_insert_positions({})
 
@@ -608,6 +606,8 @@ function Snippet:fake_expand()
 
 	self:set_dependents()
 	self:set_argnodes(self.dependents_dict)
+
+	self:static_init()
 
 	-- no need for update_dependents_static, update_static alone will cause updates for all child-nodes.
 	self:update_static()
@@ -1021,10 +1021,10 @@ function Snippet:resolve_position(position)
 	return self.nodes[position]
 end
 
-function Snippet:set_static_visible()
-	node_mod.Node.set_static_visible(self)
+function Snippet:static_init()
+	node_mod.Node.static_init(self)
 	for _, node in ipairs(self.nodes) do
-		node:set_static_visible()
+		node:static_init()
 	end
 end
 

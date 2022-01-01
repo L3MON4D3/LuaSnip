@@ -298,7 +298,7 @@ function Node:resolve_position(position)
 	)
 end
 
-function Node:set_static_visible()
+function Node:static_init()
 	self.static_visible = true
 end
 
