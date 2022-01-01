@@ -353,6 +353,11 @@ function ChoiceNode:resolve_position(position)
 	return self.choices[position]
 end
 
+function ChoiceNode:set_static_visible()
+	Node.set_static_visible(self)
+	self.active_choice:set_static_visible()
+end
+
 return {
 	C = C,
 }

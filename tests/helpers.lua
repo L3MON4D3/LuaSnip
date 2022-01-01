@@ -35,6 +35,7 @@ function M.session_setup_luasnip()
 	parse = ls.parser.parse_snippet
 	n = require("luasnip.extras").nonempty
 	m = require("luasnip.extras").match
+	ai = require("luasnip.nodes.absolute_indexer")
 	]])
 end
 

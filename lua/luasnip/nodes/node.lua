@@ -9,12 +9,36 @@ function Node:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
+	-- visible is true if the node is visible on-screen, during normal
+	-- expansion, static_visible is needed for eg. get_static_text, where
+	-- argnodes in inactive choices will happily provide their static text,
+	-- which leads to inaccurate docstrings.
 	o.visible = false
+	o.static_visible = false
 	o.old_text = {}
 	return o
 end
 
 function Node:get_static_text()
+	-- return nil if not visible.
+	-- This will prevent updates if not all nodes are visible during
+	-- docstring/static_text-generation. (One example that would otherwise fail
+	-- is the following snippet:
+	--
+	-- s("trig", {
+	-- 	i(1, "cccc"),
+	-- 	t" ",
+	-- 	c(2, {
+	-- 		t"aaaa",
+	-- 		i(nil, "bbbb")
+	-- 	}),
+	-- 	f(function(args) return args[1][1]..args[2][1] end, {ai[2][2], 1} )
+	-- })
+	--
+	-- )
+	if not self.static_visible then
+		return nil
+	end
 	return self.static_text
 end
 
@@ -23,7 +47,9 @@ function Node:get_docstring()
 end
 
 function Node:put_initial(pos)
-	util.put(self:get_static_text(), pos)
+	-- access static text directly, get_static_text() won't work due to
+	-- static_visible not being set.
+	util.put(self.static_text, pos)
 	self.visible = true
 end
 
@@ -250,6 +276,10 @@ function Node:resolve_position(position)
 			vim.inspect(self.absolute_position)
 		)
 	)
+end
+
+function Node:set_static_visible()
+	self.static_visible = true
 end
 
 return {

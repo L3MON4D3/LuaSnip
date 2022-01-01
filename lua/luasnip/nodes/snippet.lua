@@ -599,6 +599,8 @@ function Snippet:fake_expand()
 	self:indent("")
 	self:subsnip_init()
 
+	self:set_static_visible()
+
 	self:init_positions({})
 	self:init_insert_positions({})
 
@@ -622,6 +624,10 @@ function Snippet:get_static_text()
 		local static_text = snipcop:get_static_text()
 		self.static_text = static_text
 		return static_text
+	end
+
+	if not self.static_visible then
+		return nil
 	end
 	local text = { "" }
 	for _, node in ipairs(self.nodes) do
@@ -996,6 +1002,13 @@ end
 
 function Snippet:resolve_position(position)
 	return self.nodes[position]
+end
+
+function Snippet:set_static_visible()
+	node_mod.Node.set_static_visible(self)
+	for _, node in ipairs(self.nodes) do
+		node:set_static_visible()
+	end
 end
 
 return {

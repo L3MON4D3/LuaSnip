@@ -157,7 +157,10 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
+
+	snip:set_static_visible()
 	snip:subsnip_init()
+
 	snip:init_positions(self.snip_absolute_position)
 	snip:init_insert_positions(self.snip_absolute_insert_position)
 
