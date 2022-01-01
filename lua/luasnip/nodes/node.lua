@@ -43,6 +43,9 @@ function Node:get_static_text()
 end
 
 function Node:get_docstring()
+	-- visibility only matters for get_static_text because that's called for
+	-- argnodes whereas get_docstring will only be called for actually
+	-- visible nodes.
 	return self.static_text
 end
 

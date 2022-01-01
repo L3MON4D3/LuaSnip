@@ -191,10 +191,7 @@ end
 
 function RestoreNode:get_docstring()
 	if not self.docstring then
-		local tmp = self.parent.snippet.stored[self.key]
-		-- init correctly.
-		snip_init(self, tmp)
-		self.docstring = tmp:get_docstring()
+		self.docstring = self.snip:get_docstring()
 	end
 	return self.docstring
 end
