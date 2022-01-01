@@ -141,18 +141,17 @@ function Node:input_leave()
 end
 
 local function find_dependents(position_self, dict)
-	position_self[#position_self + 1] =
-		"dependents"
-	local nodes = dict:find_all(
-		position_self,
-		"dependent"
-	)
+	position_self[#position_self + 1] = "dependents"
+	local nodes = dict:find_all(position_self, "dependent")
 	position_self[#position_self] = nil
 	return nodes
 end
 
 function Node:_update_dependents()
-	local dependent_nodes = find_dependents(self.absolute_insert_position, self.parent.snippet.dependents_dict)
+	local dependent_nodes = find_dependents(
+		self.absolute_insert_position,
+		self.parent.snippet.dependents_dict
+	)
 	if not dependent_nodes then
 		return
 	end
@@ -171,7 +170,10 @@ Node.update_dependents = Node._update_dependents
 Node.update_all_dependents = Node._update_dependents
 
 function Node:_update_dependents_static()
-	local dependent_nodes = find_dependents(self.absolute_insert_position, self.parent.snippet.dependents_dict)
+	local dependent_nodes = find_dependents(
+		self.absolute_insert_position,
+		self.parent.snippet.dependents_dict
+	)
 	if not dependent_nodes then
 		return
 	end

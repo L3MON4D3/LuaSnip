@@ -222,7 +222,8 @@ function DynamicNode:update_static()
 		end
 
 		-- build new snippet before exiting, markers may be needed for construncting.
-		ok, tmp = pcall(self.fn,
+		ok, tmp = pcall(
+			self.fn,
 			args,
 			self.parent,
 			self.snip.old_state,
@@ -234,11 +235,19 @@ function DynamicNode:update_static()
 			tmp = SnippetNode(nil, {})
 		else
 			-- also enter node here.
-			ok, tmp = pcall(self.fn, args, self.parent, nil, unpack(self.user_args))
+			ok, tmp = pcall(
+				self.fn,
+				args,
+				self.parent,
+				nil,
+				unpack(self.user_args)
+			)
 		end
 	end
 	if not ok then
-		print(update_errorstring:format(self.indx, self.parent.snippet.name, tmp))
+		print(
+			update_errorstring:format(self.indx, self.parent.snippet.name, tmp)
+		)
 		-- set empty snippet on failure
 		tmp = SnippetNode(nil, {})
 	end

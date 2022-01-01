@@ -30,7 +30,7 @@ function FunctionNode:get_static_text()
 	-- static_text will already have been generated, if possible.
 	-- If it isn't generated, prevent errors by just setting it to empty text.
 	if not self.static_text then
-		self.static_text = {""}
+		self.static_text = { "" }
 	end
 	return self.static_text
 end
@@ -74,14 +74,23 @@ function FunctionNode:update_static()
 	-- updates will fail aswell, if not the `fn` also doesn't always work
 	-- correctly in normal expansion.
 	self.last_args = args
-	local ok, static_text = pcall(self.fn, args, self.parent, unpack(self.user_args))
+	local ok, static_text = pcall(
+		self.fn,
+		args,
+		self.parent,
+		unpack(self.user_args)
+	)
 	if not ok then
-		print(update_errorstring:format(self.indx, self.parent.snippet.name, static_text))
+		print(
+			update_errorstring:format(
+				self.indx,
+				self.parent.snippet.name,
+				static_text
+			)
+		)
 		static_text = { "" }
 	end
-	self.static_text = util.wrap_value(
-		static_text
-	)
+	self.static_text = util.wrap_value(static_text)
 end
 
 function FunctionNode:update_restore()

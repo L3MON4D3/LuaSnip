@@ -181,19 +181,23 @@ describe("FunctionNode", function()
 		)
 		-- the functionNode shouldn't be evaluated after expansion, the ai[2][2] isn't available.
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^c{3:ccc} aaaa                                         |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- change choice, the functionNode should now update.
 		exec_lua("ls.jump(1)")
 		exec_lua("ls.change_choice(1)")
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			cccc ^b{3:bbb}bbbbcccc                                 |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- change choice once more, so the necessary choice isn't visible, jump back,
 		-- change text and update -> should lead to no new evaluation.
@@ -201,17 +205,21 @@ describe("FunctionNode", function()
 		exec_lua("ls.jump(-1)")
 		feed("aaaa")
 		exec_lua("ls.active_update_dependents()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aaaa^ aaaabbbbcccc                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- change choice once more, this time the fNode should be evaluated again.
 		exec_lua("ls.jump(1)")
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aaaa ^b{3:bbb}bbbbaaaa                                 |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 end)
