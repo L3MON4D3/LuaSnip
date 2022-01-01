@@ -184,6 +184,10 @@ function ChoiceNode:update()
 	self.active_choice:update()
 end
 
+function ChoiceNode:update_static()
+	self.active_choice:update_static()
+end
+
 function ChoiceNode:update_restore()
 	self.active_choice:update_restore()
 end
@@ -347,6 +351,13 @@ function ChoiceNode:update_all_dependents()
 	self:_update_dependents()
 
 	self.active_choice:update_all_dependents()
+end
+
+function ChoiceNode:update_all_dependents_static()
+	-- call the version that only updates this node.
+	self:_update_dependents_static()
+
+	self.active_choice:update_all_dependents_static()
 end
 
 function ChoiceNode:resolve_position(position)

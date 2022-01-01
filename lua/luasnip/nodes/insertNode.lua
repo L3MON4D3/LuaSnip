@@ -79,6 +79,10 @@ function ExitNode:_update_dependents() end
 function ExitNode:update_dependents() end
 function ExitNode:update_all_dependents() end
 
+function ExitNode:_update_dependents_static() end
+function ExitNode:update_dependents_static() end
+function ExitNode:update_all_dependents_static() end
+
 function InsertNode:input_enter(no_move)
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 	if not no_move then

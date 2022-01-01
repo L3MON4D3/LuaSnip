@@ -608,6 +608,9 @@ function Snippet:fake_expand()
 
 	self:set_dependents()
 	self:set_argnodes(self.dependents_dict)
+
+	-- no need for update_dependents_static, update_static alone will cause updates for all child-nodes.
+	self:update_static()
 end
 
 -- to work correctly, this may require that the snippets' env,indent,captures? are
@@ -677,6 +680,12 @@ end
 function Snippet:update()
 	for _, node in ipairs(self.nodes) do
 		node:update()
+	end
+end
+
+function Snippet:update_static()
+	for _, node in ipairs(self.nodes) do
+		node:update_static()
 	end
 end
 
@@ -997,6 +1006,14 @@ function Snippet:update_all_dependents()
 	-- only for insertnodes, others will not have dependents.
 	for _, node in ipairs(self.insert_nodes) do
 		node:update_all_dependents()
+	end
+end
+function Snippet:update_all_dependents_static()
+	-- call the version that only updates this node.
+	self:_update_dependents_static()
+	-- only for insertnodes, others will not have dependents.
+	for _, node in ipairs(self.insert_nodes) do
+		node:update_all_dependents_static()
 	end
 end
 

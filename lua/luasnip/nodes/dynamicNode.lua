@@ -57,40 +57,10 @@ local function snip_init(self, snip)
 	snip:set_argnodes(self.parent.snippet.dependents_dict)
 end
 
-local errorstring = [[
-Error while evaluating dynamicNode@%d for snippet '%s':
-%s
- 
-:h luasnip-docstring for more info]]
-local function _static_update(self)
-	local args = self:get_static_args()
-	if not args then
-		-- no error because it may no be fixable, so it would be just annoying.
-		return nil
-	end
-	local success, tmp = pcall(
-		self.fn,
-		args,
-		self.parent,
-		nil,
-		unpack(self.user_args)
-	)
-	if not success then
-		local snip = self.parent.snippet
-		print(errorstring:format(self.indx, snip.name, tmp))
-		return nil
-	else
-		-- set pos for util.string_wrap().
-		snip_init(self, tmp)
-		return tmp
-	end
-end
-
 function DynamicNode:get_static_text()
 	if not self.static_text then
-		local snip = _static_update(self)
-		if snip then
-			self.static_text = snip:get_static_text()
+		if self.snip then
+			self.static_text = self.snip:get_static_text()
 		else
 			self.static_text = { "" }
 		end
@@ -100,9 +70,8 @@ end
 
 function DynamicNode:get_docstring()
 	if not self.docstring then
-		local snip = _static_update(self)
-		if snip then
-			self.docstring = snip:get_docstring()
+		if self.snip then
+			self.docstring = self.snip:get_docstring()
 		else
 			self.docstring = { "" }
 		end
@@ -231,6 +200,88 @@ function DynamicNode:update()
 
 	self.snip = tmp
 	self:update_dependents()
+end
+
+local update_errorstring = [[
+Error while evaluating dynamicNode@%d for snippet '%s':
+%s
+ 
+:h luasnip-docstring for more info]]
+function DynamicNode:update_static()
+	local args = self:get_static_args()
+	if vim.deep_equal(self.last_args, args) then
+		-- no update, the args still match.
+		return
+	end
+
+	local tmp, ok
+	if self.snip then
+		if not args then
+			-- a snippet exists, don't delete it.
+			return
+		end
+
+		-- build new snippet before exiting, markers may be needed for construncting.
+		ok, tmp = pcall(self.fn,
+			args,
+			self.parent,
+			self.snip.old_state,
+			unpack(self.user_args)
+		)
+	else
+		if not args then
+			-- no snippet exists, set an empty one.
+			tmp = SnippetNode(nil, {})
+		else
+			-- also enter node here.
+			ok, tmp = pcall(self.fn, args, self.parent, nil, unpack(self.user_args))
+		end
+	end
+	if not ok then
+		print(update_errorstring:format(self.indx, self.parent.snippet.name, tmp))
+		-- set empty snippet on failure
+		tmp = SnippetNode(nil, {})
+	end
+	self.last_args = args
+
+	-- act as if snip is directly inside parent.
+	tmp.parent = self.parent
+	tmp.indx = self.indx
+
+	tmp.next = self
+	tmp.prev = self
+
+	tmp.ext_opts = tmp.ext_opts
+		or util.increase_ext_prio(
+			vim.deepcopy(self.parent.ext_opts),
+			conf.config.ext_prio_increase
+		)
+	tmp.snippet = self.parent.snippet
+
+	tmp.dynamicNode = self
+	tmp.update_dependents_static = function(node)
+		node:_update_dependents_static()
+		node.dynamicNode:update_dependents_static()
+	end
+
+	tmp:subsnip_init()
+	tmp:set_static_visible()
+
+	tmp:init_positions(self.snip_absolute_position)
+	tmp:init_insert_positions(self.snip_absolute_insert_position)
+
+	tmp:make_args_absolute()
+
+	tmp:set_dependents()
+	tmp:set_argnodes(self.parent.snippet.dependents_dict)
+
+	tmp:update_static()
+	-- updates dependents in tmp.
+	tmp:update_all_dependents_static()
+
+	self.snip = tmp
+	-- updates own dependents.
+	self:update_dependents_static()
 end
 
 function DynamicNode:set_mark_rgrav(val_begin, val_end)

@@ -26,32 +26,11 @@ function FunctionNode:input_enter()
 	self:event(events.enter)
 end
 
-local errorstring = [[
-Error while evaluating functionNode@%d for snippet '%s':
-%s
- 
-:h luasnip-docstring for more info]]
 function FunctionNode:get_static_text()
-	-- cache static_text, no need to recalculate function.
+	-- static_text will already have been generated, if possible.
+	-- If it isn't generated, prevent errors by just setting it to empty text.
 	if not self.static_text then
-		local args = self:get_static_args()
-		-- an argnode couldn't be found.
-		if not args then
-			return { "" }
-		end
-		local success, static_text = pcall(
-			self.fn,
-			args,
-			self.parent,
-			unpack(self.user_args)
-		)
-
-		if not success then
-			local snip = util.find_outer_snippet(self)
-			print(errorstring:format(self.indx, snip.name, static_text))
-			static_text = { "" }
-		end
-		self.static_text = util.wrap_value(static_text)
+		self.static_text = {""}
 	end
 	return self.static_text
 end
@@ -76,6 +55,33 @@ function FunctionNode:update()
 	end
 	-- don't expand tabs in parent.indentstr, use it as-is.
 	self.parent:set_text(self, util.indent(text, self.parent.indentstr))
+end
+
+local update_errorstring = [[
+Error while evaluating functionNode@%d for snippet '%s':
+%s
+ 
+:h luasnip-docstring for more info]]
+function FunctionNode:update_static()
+	local args = self:get_static_args()
+	-- skip this update if
+	-- - not all nodes are available.
+	-- - the args haven't changed.
+	if not args or vim.deep_equal(args, self.last_args) then
+		return
+	end
+	-- should be okay to set last_args even if `fn` potentially fails, future
+	-- updates will fail aswell, if not the `fn` also doesn't always work
+	-- correctly in normal expansion.
+	self.last_args = args
+	local ok, static_text = pcall(self.fn, args, self.parent, unpack(self.user_args))
+	if not ok then
+		print(update_errorstring:format(self.indx, self.parent.snippet.name, static_text))
+		static_text = { "" }
+	end
+	self.static_text = util.wrap_value(
+		static_text
+	)
 end
 
 function FunctionNode:update_restore()

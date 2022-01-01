@@ -137,15 +137,19 @@ function Node:input_leave()
 	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
 end
 
-function Node:_update_dependents()
-	self.absolute_insert_position[#self.absolute_insert_position + 1] =
+local function find_dependents(position_self, dict)
+	position_self[#position_self + 1] =
 		"dependents"
-	local dependent_nodes = self.parent.snippet.dependents_dict:find_all(
-		self.absolute_insert_position,
+	local nodes = dict:find_all(
+		position_self,
 		"dependent"
 	)
-	self.absolute_insert_position[#self.absolute_insert_position] = nil
+	position_self[#position_self] = nil
+	return nodes
+end
 
+function Node:_update_dependents()
+	local dependent_nodes = find_dependents(self.absolute_insert_position, self.parent.snippet.dependents_dict)
 	if not dependent_nodes then
 		return
 	end
@@ -163,7 +167,23 @@ end
 Node.update_dependents = Node._update_dependents
 Node.update_all_dependents = Node._update_dependents
 
+function Node:_update_dependents_static()
+	local dependent_nodes = find_dependents(self.absolute_insert_position, self.parent.snippet.dependents_dict)
+	if not dependent_nodes then
+		return
+	end
+	for _, node in ipairs(dependent_nodes) do
+		if node.static_visible then
+			node:update_static()
+		end
+	end
+end
+
+Node.update_dependents_static = Node._update_dependents_static
+Node.update_all_dependents_static = Node._update_dependents_static
+
 function Node:update() end
+function Node:update_static() end
 
 function Node:expand_tabs(tabwidth)
 	util.expand_tabs(self.static_text, tabwidth)

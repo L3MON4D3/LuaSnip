@@ -252,4 +252,20 @@ describe("DynamicNode", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("generates correct static text when depending on node in dynamicNode.", function()
+		local snip = [[
+			s("trig", {
+				-- arg will not be available when the static text is first queried.
+				f(function(args) return args[1] end, ai[1][0][1]),
+				d(1, function(args)
+					return sn(nil, {i(1, "argnode-text")})
+				end, {})
+			})
+		]]
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "argnode-textargnode-text" }
+		)
+	end)
 end)

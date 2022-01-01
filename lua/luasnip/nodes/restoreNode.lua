@@ -149,6 +149,10 @@ function RestoreNode:update()
 	self.snip:update()
 end
 
+function RestoreNode:update_static()
+	self.snip:update_static()
+end
+
 local function snip_init(self, snip)
 	snip.parent = self.parent
 
@@ -225,6 +229,11 @@ end
 function RestoreNode:update_all_dependents()
 	self:_update_dependents()
 	self.snip:_update_dependents()
+end
+
+function RestoreNode:update_all_dependents_static()
+	self:_update_dependents_static()
+	self.snip:_update_dependents_static()
 end
 
 function RestoreNode:init_insert_positions(position_so_far)
