@@ -570,14 +570,23 @@ function Snippet:put_initial(pos)
 end
 
 -- populate env,inden,captures,trigger(regex),... but don't put any text.
-function Snippet:fake_expand()
+-- the env may be passed in opts via opts.env, if none is passed a new one is
+-- generated.
+function Snippet:fake_expand(opts)
+	if not opts then
+		opts = {}
+	end
 	-- set eg. env.TM_SELECTED_TEXT to $TM_SELECTED_TEXT
-	self.env = {}
-	setmetatable(self.env, {
-		__index = function(_, key)
-			return Environ.is_table(key) and { "$" .. key } or "$" .. key
-		end,
-	})
+	if opts.env then
+		self.env = opts.env
+	else
+		self.env = {}
+		setmetatable(self.env, {
+			__index = function(_, key)
+				return Environ.is_table(key) and { "$" .. key } or "$" .. key
+			end,
+		})
+	end
 
 	self.captures = {}
 	setmetatable(self.captures, {

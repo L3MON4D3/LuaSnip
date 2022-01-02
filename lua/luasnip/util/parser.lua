@@ -169,19 +169,12 @@ local function parse_placeholder(text, tab_stops, brackets)
 			else
 				if not snip:is_interactive() then
 					tab_stops[pos] = dNode.D(pos, function(_, runtime_snip)
-						-- copy, every expansion of the fully parsed snippet
-						-- gets the same snip.
-						local snip = snip:copy()
-						-- properly prepare snippet for get_static_text.
-						snip.ext_opts = runtime_snip.ext_opts
-						snip.snippet = runtime_snip.snippet
-						snip.parent = runtime_snip
-						if vim.o.expandtab then
-							snip:expand_tabs(util.tab_width())
-						end
-						snip:indent(runtime_snip.indentstr)
-						snip:subsnip_init()
-						local iText = snip:get_static_text()
+						-- create new snippet that only contains the parsed snippetNode.
+						-- `snip` has to be copied to prevent every expansion getting the same object.
+						local snippet = snipNode.S("", {snip:copy()})
+
+						snippet:fake_expand({ env = runtime_snip.snippet.env })
+						local iText = snippet:get_static_text()
 						-- no need to un-escape iText, that was already done.
 						return snipNode.SN(nil, iNode.I(1, iText))
 					end, {})

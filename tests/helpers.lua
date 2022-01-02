@@ -51,5 +51,11 @@ function M.static_docstring_test(snip_str, static, docstring)
 		exec_lua("return " .. snip_str .. ":get_docstring()")
 	)
 end
+function M.lsp_static_test(snip_str, static)
+	assert.are.same(
+		static,
+		exec_lua("return ls.parser.parse_snippet(\"trig\", "..snip_str.."):get_static_text()")
+	)
+end
 
 return M
