@@ -280,4 +280,42 @@ describe("RestoreNode", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("dynamicNode works in restoreNode.", function()
+		local snip = [[
+			s("trig", {
+				c(1, {
+					r(nil, "restore_key", {
+						i(1, "aaa"), d(2, function(args) return sn(nil, { i(1, args[1]) }) end, 1)
+					}),
+					{
+						t"a",
+						r(1, "restore_key"),
+						t"a"
+					}
+				})
+			})
+		]]
+		ls_helpers.static_docstring_test(snip, {"aaaaaa"}, {"${1:${1:${1:aaa}${2:${1:aaa}}}}$0"})
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			^a{3:aa}aaa                                            |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		feed("bbb")
+		exec_lua("ls.active_update_dependents()")
+		screen:expect{grid=[[
+			bbb^bbb                                            |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- replace text and change choice, the dNode should be updated.
+		feed("<BS><BS><BS>ccc")
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			a^c{3:cc}ccca                                          |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
 end)

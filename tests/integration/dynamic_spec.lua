@@ -68,7 +68,7 @@ describe("DynamicNode", function()
 		})
 	end)
 
-	it("The dynamicNode is updated if dependent changes.", function()
+	it("The dynamicNode is updated if argnode changes.", function()
 		local snip = [[
 			s("trig", {
 				i(1, "preset"),
@@ -265,12 +265,7 @@ describe("DynamicNode", function()
 				d(1, function(args)
 					return sn(nil, {i(1, "argnode-text")})
 				end, {})
-			})
-		]]
-			assert.are.same(
-				exec_lua("return " .. snip .. ":get_static_text()"),
-				{ "argnode-textargnode-text" }
-			)
+			}) ]]
 			ls_helpers.static_docstring_test(
 				snip,
 				{ "argnode-textargnode-text" },
