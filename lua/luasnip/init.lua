@@ -214,7 +214,7 @@ local function snip_expand(snippet, opts)
 	-- set last action for vim-repeat.
 	-- will silently fail if vim-repeat isn't available.
 	-- -1 to disable count.
-	vim.cmd[[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]]
+	vim.cmd([[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]])
 
 	return snip
 end
