@@ -163,10 +163,14 @@ from the nvim-cmp wiki.
 ## Add Snippets
 To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`.  
 To add snippets in lua, add them to the [`require'luasnip'.snippets`-table](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua#L167).  
-To load snippets from a package that provides snipmate-like (eg. [honza/vim-snippets](https://github.com/honza/vim-snippets)) or vscode-like ([rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) snippets, check [this](https://github.com/L3MON4D3/LuaSnip/blob/5eb67644205386bd02b93a7b570293f827f58e4b/Examples/snippets.lua#L495) section of the examples.
+To load snippets from a package that provides snippets :- 
+* For snipmate-like (eg. [honza/vim-snippets](https://github.com/honza/vim-snippets)) [check this](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#snipmate-snippets-loader)
+* For vscode-like ([rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) , [check this](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#vscode-snippets-loader).  
+
+More information in the [Docs](https://github.com/L3MON4D3/LuaSnip#docs) section.
 
 ## Docs
-The previously mentioned `Examples/snippets.lua` contains brief descriptions, check `DOC.md` (or `:help luasnip`) for more in-depth explainations.
+The previously mentioned [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) contains brief descriptions. Check [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) (or `:help luasnip`) for more in-depth explainations.
 
 # Config
 - `history`: If true, Snippets that were exited can still be jumped back into. As Snippets are not removed when their text is deleted, they have to be removed manually via `LuasnipUnlinkCurrent`.
