@@ -296,26 +296,36 @@ describe("RestoreNode", function()
 				})
 			})
 		]]
-		ls_helpers.static_docstring_test(snip, {"aaaaaa"}, {"${1:${1:${1:aaa}${2:${1:aaa}}}}$0"})
+		ls_helpers.static_docstring_test(
+			snip,
+			{ "aaaaaa" },
+			{ "${1:${1:${1:aaa}${2:${1:aaa}}}}$0" }
+		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a{3:aa}aaa                                            |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		feed("bbb")
 		exec_lua("ls.active_update_dependents()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			bbb^bbb                                            |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- replace text and change choice, the dNode should be updated.
 		feed("<BS><BS><BS>ccc")
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a^c{3:cc}ccca                                          |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 end)
