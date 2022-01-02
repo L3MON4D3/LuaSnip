@@ -18,4 +18,7 @@ M.ns_id = vim.api.nvim_create_namespace("Luasnip")
 M.active_choice_node = nil
 M.latest_load_ft = nil
 
+M.last_expand_snip = nil
+M.last_expand_opts = nil
+
 return M
