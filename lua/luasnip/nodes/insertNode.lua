@@ -75,6 +75,14 @@ function ExitNode:jump_into(dir, no_move)
 	end
 end
 
+function ExitNode:_update_dependents() end
+function ExitNode:update_dependents() end
+function ExitNode:update_all_dependents() end
+
+function ExitNode:_update_dependents_static() end
+function ExitNode:update_dependents_static() end
+function ExitNode:update_all_dependents_static() end
+
 function InsertNode:input_enter(no_move)
 	self.mark:update_opts(self.parent.ext_opts[self.type].active)
 	if not no_move then
@@ -187,6 +195,7 @@ function InsertNode:input_leave()
 end
 
 function InsertNode:exit()
+	self.visible = false
 	self.inner_first = nil
 	self.inner_last = nil
 	self.inner_active = false

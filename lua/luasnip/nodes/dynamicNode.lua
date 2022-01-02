@@ -1,19 +1,23 @@
 local DynamicNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local Node = require("luasnip.nodes.node").Node
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local conf = require("luasnip.config")
+local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
+local SnippetNode = require("luasnip.nodes.snippet").SN
 
 local function D(pos, fn, args, ...)
 	return DynamicNode:new({
 		pos = pos,
 		fn = fn,
-		args = util.wrap_value(args),
+		args = node_util.wrap_args(args),
 		type = types.dynamicNode,
 		mark = nil,
 		user_args = { ... },
 		dependents = {},
+		active = false,
 	})
 end
 
@@ -34,61 +38,51 @@ end
 
 local function snip_init(self, snip)
 	snip.parent = self.parent
+	snip.pos = self.pos
 
 	snip.ext_opts = util.increase_ext_prio(
 		vim.deepcopy(self.parent.ext_opts),
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
+	snip:static_init()
+
 	snip:subsnip_init()
+	snip:init_positions(self.snip_absolute_position)
+	snip:init_insert_positions(self.snip_absolute_insert_position)
+
+	snip:make_args_absolute()
+
+	snip:set_dependents()
+	snip:set_argnodes(self.parent.snippet.dependents_dict)
 end
 
 function DynamicNode:get_static_text()
-	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		local tmp = self.fn(
-			self:get_static_args(),
-			self.parent,
-			nil,
-			unpack(self.user_args)
-		)
-		snip_init(self, tmp)
-		self.static_text = tmp:get_static_text()
+		if self.snip then
+			self.static_text = self.snip:get_static_text()
+		else
+			self.static_text = { "" }
+		end
 	end
 	return self.static_text
 end
 
-local errorstring = [[
-Error while evaluating dynamicNode@%d for snippet '%s':
-%s
- 
-:h luasnip-docstring for more info]]
 function DynamicNode:get_docstring()
-	-- cache static_text, no need to recalculate function.
 	if not self.docstring then
-		local success, tmp = pcall(
-			self.fn,
-			self:get_static_args(),
-			self.parent,
-			nil,
-			unpack(self.user_args)
-		)
-		if not success then
-			local snip = util.find_outer_snippet(self)
-			print(errorstring:format(self.indx, snip.name, tmp))
-			self.docstring = { "" }
+		if self.snip then
+			self.docstring = self.snip:get_docstring()
 		else
-			-- set pos for util.string_wrap().
-			snip_init(self, tmp)
-			tmp.pos = self.pos
-			self.docstring = tmp:get_docstring()
+			self.docstring = { "" }
 		end
 	end
 	return self.docstring
 end
 
 -- DynamicNode's don't have static text, nop these.
-function DynamicNode:put_initial(_) end
+function DynamicNode:put_initial(_)
+	self.visible = true
+end
 
 function DynamicNode:indent(_) end
 
@@ -104,17 +98,38 @@ function DynamicNode:jump_into(dir, no_move)
 		end
 	else
 		self:input_enter()
-		return self.snip:jump_into(dir, no_move)
+		if self.snip then
+			return self.snip:jump_into(dir, no_move)
+		else
+			-- this will immediately enter and leave, but IMO that's expected
+			-- behaviour.
+			self:input_leave()
+			if dir == 1 then
+				return self.next:jump_into(dir, no_move)
+			else
+				return self.prev:jump_into(dir, no_move)
+			end
+		end
 	end
 end
 
 function DynamicNode:update()
+	local args = self:get_args()
+	if vim.deep_equal(self.last_args, args) then
+		-- no update, the args still match.
+		return
+	end
+
 	local tmp
-	self.last_args = self:get_args()
 	if self.snip then
+		if not args then
+			-- a snippet exists, don't delete it.
+			return
+		end
+
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
-			self.last_args,
+			args,
 			self.parent,
 			self.snip.old_state,
 			unpack(self.user_args)
@@ -125,10 +140,16 @@ function DynamicNode:update()
 		-- enters node.
 		self.parent:set_text(self, { "" })
 	else
-		-- also enter node here.
 		self.parent:enter_node(self.indx)
-		tmp = self.fn(self.last_args, self.parent, nil, unpack(self.user_args))
+		if not args then
+			-- no snippet exists, set an empty one.
+			tmp = SnippetNode(nil, {})
+		else
+			-- also enter node here.
+			tmp = self.fn(args, self.parent, nil, unpack(self.user_args))
+		end
 	end
+	self.last_args = args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
@@ -152,8 +173,15 @@ function DynamicNode:update()
 		node.dynamicNode:update_dependents()
 	end
 
-	tmp:populate_argnodes()
 	tmp:subsnip_init()
+
+	tmp:init_positions(self.snip_absolute_position)
+	tmp:init_insert_positions(self.snip_absolute_insert_position)
+
+	tmp:make_args_absolute()
+
+	tmp:set_dependents()
+	tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())
@@ -162,13 +190,109 @@ function DynamicNode:update()
 
 	self.parent:enter_node(self.indx)
 	tmp:put_initial(self.mark:pos_begin_raw())
-	-- Update, tbh no idea how that could come in handy, but should be done.
-	tmp:update()
 
-	tmp:set_old_text()
+	-- Update, tbh no idea how that could come in handy, but should be done.
+	-- Both are needed, becaus
+	-- - a node could only depend on nodes outside of tmp
+	-- - a node outside of tmp could depend on one inside of tmp
+	tmp:update()
+	tmp:update_all_dependents()
 
 	self.snip = tmp
 	self:update_dependents()
+end
+
+local update_errorstring = [[
+Error while evaluating dynamicNode@%d for snippet '%s':
+%s
+ 
+:h luasnip-docstring for more info]]
+function DynamicNode:update_static()
+	local args = self:get_static_args()
+	if vim.deep_equal(self.last_args, args) then
+		-- no update, the args still match.
+		return
+	end
+
+	local tmp, ok
+	if self.snip then
+		if not args then
+			-- a snippet exists, don't delete it.
+			return
+		end
+
+		-- build new snippet before exiting, markers may be needed for construncting.
+		ok, tmp = pcall(
+			self.fn,
+			args,
+			self.parent,
+			self.snip.old_state,
+			unpack(self.user_args)
+		)
+	else
+		if not args then
+			-- no snippet exists, set an empty one.
+			tmp = SnippetNode(nil, {})
+		else
+			-- also enter node here.
+			ok, tmp = pcall(
+				self.fn,
+				args,
+				self.parent,
+				nil,
+				unpack(self.user_args)
+			)
+		end
+	end
+	if not ok then
+		print(
+			update_errorstring:format(self.indx, self.parent.snippet.name, tmp)
+		)
+		-- set empty snippet on failure
+		tmp = SnippetNode(nil, {})
+	end
+	self.last_args = args
+
+	-- act as if snip is directly inside parent.
+	tmp.parent = self.parent
+	tmp.indx = self.indx
+	tmp.pos = self.pos
+
+	tmp.next = self
+	tmp.prev = self
+
+	tmp.ext_opts = tmp.ext_opts
+		or util.increase_ext_prio(
+			vim.deepcopy(self.parent.ext_opts),
+			conf.config.ext_prio_increase
+		)
+	tmp.snippet = self.parent.snippet
+
+	tmp.dynamicNode = self
+	tmp.update_dependents_static = function(node)
+		node:_update_dependents_static()
+		node.dynamicNode:update_dependents_static()
+	end
+
+	tmp:subsnip_init()
+
+	tmp:init_positions(self.snip_absolute_position)
+	tmp:init_insert_positions(self.snip_absolute_insert_position)
+
+	tmp:make_args_absolute()
+
+	tmp:set_dependents()
+	tmp:set_argnodes(self.parent.snippet.dependents_dict)
+
+	tmp:static_init()
+
+	tmp:update_static()
+	-- updates dependents in tmp.
+	tmp:update_all_dependents_static()
+
+	self.snip = tmp
+	-- updates own dependents.
+	self:update_dependents_static()
 end
 
 function DynamicNode:set_mark_rgrav(val_begin, val_end)
@@ -179,6 +303,7 @@ function DynamicNode:set_mark_rgrav(val_begin, val_end)
 end
 
 function DynamicNode:exit()
+	self.visible = false
 	self.mark:clear()
 	-- check if snip actually exists, may not be the case if
 	-- the surrounding snippet was deleted just before.
@@ -192,11 +317,16 @@ end
 
 function DynamicNode:set_ext_opts(name)
 	self.mark:update_opts(self.parent.ext_opts[self.type][name])
-	self.snip:set_ext_opts(name)
+	-- might not have been generated (missing nodes).
+	if self.snip then
+		self.snip:set_ext_opts(name)
+	end
 end
 
 function DynamicNode:store()
-	self.snip:store()
+	if self.snip then
+		self.snip:store()
+	end
 end
 
 function DynamicNode:update_restore()
@@ -227,6 +357,38 @@ function DynamicNode:find_node(predicate)
 		end
 	end
 	return nil
+end
+
+function DynamicNode:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	return self.snip and self.snip:insert_to_node_absolute(position)
+end
+
+function DynamicNode:init_insert_positions(position_so_far)
+	Node.init_insert_positions(self, position_so_far)
+	self.snip_absolute_insert_position = vim.deepcopy(
+		self.absolute_insert_position
+	)
+	-- nodes of current snippet should have a 0 before.
+	self.snip_absolute_insert_position[#self.snip_absolute_insert_position + 1] =
+		0
+end
+
+function DynamicNode:init_positions(position_so_far)
+	Node.init_positions(self, position_so_far)
+	self.snip_absolute_position = vim.deepcopy(self.absolute_position)
+	-- Reach current snippet as snip_absolute_position..0.
+	self.snip_absolute_position[#self.snip_absolute_position + 1] = 0
+end
+
+DynamicNode.make_args_absolute = FunctionNode.make_args_absolute
+DynamicNode.set_dependents = FunctionNode.set_dependents
+
+function DynamicNode:resolve_position(position)
+	-- position must be 0, there are no other options.
+	return self.snip
 end
 
 return {

@@ -2,6 +2,7 @@ local node_mod = require("luasnip.nodes.node")
 local iNode = require("luasnip.nodes.insertNode")
 local tNode = require("luasnip.nodes.textNode")
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
@@ -9,6 +10,7 @@ local Environ = require("luasnip.util.environ")
 local conf = require("luasnip.config")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
+local dict = require("luasnip.util.dict")
 
 local true_func = function()
 	return true
@@ -97,7 +99,6 @@ function Snippet:init_nodes()
 	end
 
 	self.insert_nodes = insert_nodes
-	self:populate_argnodes()
 end
 
 local function wrap_nodes_in_snippetNode(nodes)
@@ -180,9 +181,14 @@ local function S(context, nodes, opts)
 		type = types.snippet,
 		hidden = context.hidden,
 		stored = opts.stored,
+		dependents_dict = dict.new(),
 	})
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
+
+	-- the snippet may not have dependents.
+	snip._update_dependents = function() end
+	snip.update_dependents = snip._update_dependents
 
 	snip:init_nodes()
 
@@ -339,6 +345,15 @@ function Snippet:trigger_expand(current_node, pos)
 
 	self.env = Environ:new(pos)
 	self:subsnip_init()
+
+	self:init_positions({})
+	self:init_insert_positions({})
+
+	self:make_args_absolute()
+
+	self:set_dependents()
+	self:set_argnodes(self.dependents_dict)
+
 	-- at this point `stored` contains the snippetNodes that will actually
 	-- be used, indent them once here.
 	for _, node in pairs(self.stored) do
@@ -356,9 +371,9 @@ function Snippet:trigger_expand(current_node, pos)
 		end_right_gravity = true,
 	}, self.ext_opts[types.snippet].passive)
 	self.mark = mark(old_pos, pos, mark_opts)
-	self:set_old_text()
 
 	self:update()
+	self:update_all_dependents()
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
 	start_node.mark = self.nodes[1].mark
@@ -550,36 +565,28 @@ function Snippet:put_initial(pos)
 			end_right_gravity = false,
 		}, self.ext_opts[node.type].passive)
 		node.mark = mark(old_pos, pos, mark_opts)
-		node:set_old_text()
 	end
-end
-
--- may only be called if the `insertNodes` of all snippet(Node)s are populated
--- (the first node may refer to the last+recursion with Parent_indexer's, can't
--- be done in init_nodes()).
-function Snippet:populate_argnodes()
-	for _, node in ipairs(self.nodes) do
-		-- stylua: ignore
-		if
-			node.type == types.functionNode
-			or node.type == types.dynamicNode
-		then
-			self:populate_args(node)
-		else
-			node:populate_argnodes()
-		end
-	end
+	self.visible = true
 end
 
 -- populate env,inden,captures,trigger(regex),... but don't put any text.
-function Snippet:fake_expand()
+-- the env may be passed in opts via opts.env, if none is passed a new one is
+-- generated.
+function Snippet:fake_expand(opts)
+	if not opts then
+		opts = {}
+	end
 	-- set eg. env.TM_SELECTED_TEXT to $TM_SELECTED_TEXT
-	self.env = {}
-	setmetatable(self.env, {
-		__index = function(_, key)
-			return Environ.is_table(key) and { "$" .. key } or "$" .. key
-		end,
-	})
+	if opts.env then
+		self.env = opts.env
+	else
+		self.env = {}
+		setmetatable(self.env, {
+			__index = function(_, key)
+				return Environ.is_table(key) and { "$" .. key } or "$" .. key
+			end,
+		})
+	end
 
 	self.captures = {}
 	setmetatable(self.captures, {
@@ -600,6 +607,19 @@ function Snippet:fake_expand()
 
 	self:indent("")
 	self:subsnip_init()
+
+	self:init_positions({})
+	self:init_insert_positions({})
+
+	self:make_args_absolute()
+
+	self:set_dependents()
+	self:set_argnodes(self.dependents_dict)
+
+	self:static_init()
+
+	-- no need for update_dependents_static, update_static alone will cause updates for all child-nodes.
+	self:update_static()
 end
 
 -- to work correctly, this may require that the snippets' env,indent,captures? are
@@ -616,6 +636,10 @@ function Snippet:get_static_text()
 		local static_text = snipcop:get_static_text()
 		self.static_text = static_text
 		return static_text
+	end
+
+	if not self.static_visible then
+		return nil
 	end
 	local text = { "" }
 	for _, node in ipairs(self.nodes) do
@@ -668,6 +692,12 @@ function Snippet:update()
 	end
 end
 
+function Snippet:update_static()
+	for _, node in ipairs(self.nodes) do
+		node:update_static()
+	end
+end
+
 function Snippet:update_restore()
 	for _, node in ipairs(self.nodes) do
 		node:update_restore()
@@ -694,15 +724,23 @@ function Snippet:expand_tabs(tabwidth)
 end
 
 function Snippet:subsnip_init()
+	node_util.subsnip_init_children(self, self.nodes)
+end
+
+Snippet.init_positions = node_util.init_child_positions_func(
+	"absolute_position",
+	"nodes",
+	"init_positions"
+)
+Snippet.init_insert_positions = node_util.init_child_positions_func(
+	"absolute_insert_position",
+	"insert_nodes",
+	"init_insert_positions"
+)
+
+function Snippet:make_args_absolute()
 	for _, node in ipairs(self.nodes) do
-		if node.type == types.snippetNode then
-			node.ext_opts = util.increase_ext_prio(
-				vim.deepcopy(self.ext_opts),
-				conf.config.ext_prio_increase
-			)
-			node.snippet = self.snippet
-		end
-		node:subsnip_init()
+		node:make_args_absolute(self.absolute_insert_position)
 	end
 end
 
@@ -757,6 +795,7 @@ end
 -- used in LSP-Placeholders.
 
 function Snippet:exit()
+	self.visible = false
 	for _, node in ipairs(self.nodes) do
 		node:exit()
 	end
@@ -849,25 +888,6 @@ function Snippet:set_mark_rgrav(val_begin, val_end)
 			end
 		end
 		node:set_mark_rgrav(new_rgrav_begin, new_rgrav_end)
-	end
-end
-
-function Snippet:populate_args(node)
-	for i, arg in ipairs(node.args) do
-		local argnode = nil
-		-- simple index; references node in this snippet.
-		if type(arg) == "number" then
-			argnode = self.insert_nodes[arg]
-			--parent_indexer: references node outside this snippet, resolve it.
-		else
-			if getmetatable(arg) == Parent_indexer then
-				argnode = arg:resolve(self)
-			end
-		end
-		if argnode then
-			node.args[i] = argnode
-			argnode.dependents[#argnode.dependents + 1] = node
-		end
 	end
 end
 
@@ -966,6 +986,55 @@ function Snippet:find_node(predicate)
 		end
 	end
 	return nil
+end
+
+function Snippet:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	local insert_indx = util.pop_front(position)
+	return self.insert_nodes[insert_indx]:insert_to_node_absolute(position)
+end
+
+function Snippet:set_dependents()
+	for _, node in ipairs(self.nodes) do
+		node:set_dependents()
+	end
+end
+
+function Snippet:set_argnodes(dict)
+	node_mod.Node.set_argnodes(self, dict)
+	for _, node in ipairs(self.nodes) do
+		node:set_argnodes(dict)
+	end
+end
+
+function Snippet:update_all_dependents()
+	-- call the version that only updates this node.
+	self:_update_dependents()
+	-- only for insertnodes, others will not have dependents.
+	for _, node in ipairs(self.insert_nodes) do
+		node:update_all_dependents()
+	end
+end
+function Snippet:update_all_dependents_static()
+	-- call the version that only updates this node.
+	self:_update_dependents_static()
+	-- only for insertnodes, others will not have dependents.
+	for _, node in ipairs(self.insert_nodes) do
+		node:update_all_dependents_static()
+	end
+end
+
+function Snippet:resolve_position(position)
+	return self.nodes[position]
+end
+
+function Snippet:static_init()
+	node_mod.Node.static_init(self)
+	for _, node in ipairs(self.nodes) do
+		node:static_init()
+	end
 end
 
 return {

@@ -165,4 +165,78 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("can parse variables.", function()
+		local snip = '"a${TM_LINE_INDEX}a"'
+
+		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			a0a^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
+	it("can parse variables as placeholder.", function()
+		local snip = '"a${1:$TM_LINE_INDEX}a"'
+
+		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		-- line index should be selected!
+		screen:expect({
+			grid = [[
+			a^0a                                               |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]],
+		})
+	end)
+
+	it("can parse variables and tabstops nested in placeholder.", function()
+		local snip = '"a${1: $2 $TM_LINE_INDEX}a"'
+
+		ls_helpers.lsp_static_test(snip, { "a  $TM_LINE_INDEXa" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			a^  0a                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+		exec_lua("ls.change_choice(1)")
+		screen:expect({
+			grid = [[
+			a^a                                                |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua("ls.change_choice(1)")
+		screen:expect({
+			grid = [[
+			a^  0a                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua("ls.jump(1)")
+		screen:expect({
+			grid = [[
+			a ^ 0a                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua("ls.jump(1)")
+		screen:expect({
+			grid = [[
+			a  0a^                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)
