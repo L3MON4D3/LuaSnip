@@ -8,6 +8,9 @@ inoremap <silent> <Plug>luasnip-jump-prev <cmd>lua require'luasnip'.jump(-1)<Cr>
 noremap <silent> <Plug>luasnip-delete-check <cmd>lua require'luasnip'.unlink_current_if_deleted()<Cr>
 noremap! <silent> <Plug>luasnip-delete-check <cmd>lua require'luasnip'.unlink_current_if_deleted()<Cr>
 
+noremap <silent> <Plug>luasnip-expand-repeat <cmd>lua require'luasnip'.expand_repeat()<Cr>
+noremap! <silent> <Plug>luasnip-expand-repeat <cmd>lua require'luasnip'.expand_repeat()<Cr>
+
 snoremap <silent> <Plug>luasnip-expand-or-jump <cmd>lua require'luasnip'.expand_or_jump()<Cr>
 snoremap <silent> <Plug>luasnip-expand-snippet <cmd>lua require'luasnip'.expand()<Cr>
 snoremap <silent> <Plug>luasnip-next-choice <cmd>lua require'luasnip'.change_choice(1)<Cr>

@@ -207,6 +207,15 @@ local function snip_expand(snippet, opts)
 			1
 		)
 
+	-- stores original snippet, it doesn't contain any data from expansion.
+	session.last_expand_snip = snippet
+	session.last_expand_opts = opts
+
+	-- set last action for vim-repeat.
+	-- will silently fail if vim-repeat isn't available.
+	-- -1 to disable count.
+	vim.cmd[[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]]
+
 	return snip
 end
 
@@ -263,6 +272,14 @@ local function expand_auto()
 			},
 		})
 	end
+end
+
+local function expand_repeat()
+	-- prevent clearing text with repeated expand.
+	session.last_expand_opts.clear_region = nil
+	session.last_expand_opts.pos = nil
+
+	snip_expand(session.last_expand_snip, session.last_expand_opts)
 end
 
 -- return true and expand snippet if expandable, return false if not.
@@ -522,6 +539,7 @@ ls = {
 	expandable = expandable,
 	expand = expand,
 	snip_expand = snip_expand,
+	expand_repeat = expand_repeat,
 	expand_auto = expand_auto,
 	expand_or_jump = expand_or_jump,
 	jump = jump,
