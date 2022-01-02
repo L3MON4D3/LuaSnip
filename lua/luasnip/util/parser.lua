@@ -171,7 +171,7 @@ local function parse_placeholder(text, tab_stops, brackets)
 					tab_stops[pos] = dNode.D(pos, function(_, runtime_snip)
 						-- create new snippet that only contains the parsed snippetNode.
 						-- `snip` has to be copied to prevent every expansion getting the same object.
-						local snippet = snipNode.S("", {snip:copy()})
+						local snippet = snipNode.S("", { snip:copy() })
 
 						snippet:fake_expand({ env = runtime_snip.snippet.env })
 						local iText = snippet:get_static_text()

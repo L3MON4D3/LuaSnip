@@ -54,7 +54,11 @@ end
 function M.lsp_static_test(snip_str, static)
 	assert.are.same(
 		static,
-		exec_lua("return ls.parser.parse_snippet(\"trig\", "..snip_str.."):get_static_text()")
+		exec_lua(
+			'return ls.parser.parse_snippet("trig", '
+				.. snip_str
+				.. "):get_static_text()"
+		)
 	)
 end
 
