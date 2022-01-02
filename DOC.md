@@ -30,6 +30,7 @@ local c = ls.choice_node
 local d = ls.dynamic_node
 local r = ls.restore_node
 local events = require("luasnip.util.events")
+local ai = require("luasnip.nodes.absolute_indexer")
 ```
 
 # SNIPPETS
@@ -207,7 +208,9 @@ The first parameter of `f` is the function. Its parameters are
 The second parameter is a table of indices of jumpable nodes whose text is
 passed to the function. The table may be empty, in this case the function is
 evaluated once upon snippet-expansion. If the table only has a single node, it
-can be passed directly without wrapping it in a table.
+can be passed directly without wrapping it in a table.  
+The indices can be specified either as relative to the functionNodes' parent
+using numbers or as absolute, using the `absolute_indexer`.
 
 The function shall return a string, which will be inserted as-is, or a table
 of strings for multiline-string, here all lines following the first will be
@@ -232,7 +235,7 @@ s("trig", {
 	-- order is 2,1, not 1,2!!
 	f(function(args, snip)
 		--here
-	end, {2,1} )})
+	end, {2, 1} )})
 ```
 
 At `--here`, `args` would look as follows (provided no text was changed after
@@ -242,6 +245,17 @@ args = {
 	{"first_line_of_second", "second_line_of_second"},
 	{"text_of_first"}
 }
+```
+
+One more example to show usage of `absolute_indexer`:
+```lua
+s("trig", {
+	i(1, "text_of_first"),
+	i(2, {"first_line_of_second", "second_line_of_second"}),
+	f(function(args, snip)
+		-- just concat first lines of both.
+		return args[1][1] .. args[2][1]
+	end, {ai[2], ai[1]} )})
 ```
 
 If the function only performs simple operations on text, consider using
@@ -499,6 +513,77 @@ Now the entered text is stored.
 
 `RestoreNode`s indent is not influenced by `indentSnippetNodes` right now. If
 that really bothers you feel free to open an issue.
+
+# ABSOLUTE_INDEXER
+
+The `absolute_indexer` can be used to pass text of nodes to a function/dynamicNode
+that it doesn't share a parent with.  
+Normally, accessing the outer `i(1)` isn't possible from inside eg. a
+snippetNode (nested inside a choiceNode to make this example more practical):
+
+```lua
+s("trig", {
+	i(1), c(2, {
+		sn(nil, {
+			t"cannot access the argnode :(", f(function(args) return args[1] end, {???})
+		}),
+		t"sample_text"
+	})
+})
+```
+
+Using `absolute_indexer`, it's possible to do so:
+```lua
+s("trig", {
+	i(1), c(2, {
+		sn(nil, {
+			t"can access the argnode :)", f(function(args) return args[1] end, ai[1])
+		}),
+		t"sample_text"
+	})
+})
+```
+
+There are some quirks in addressing nodes:
+```lua
+s("trig", {
+	i(2), -- ai[2]: indices based on insert-order, not position.
+	sn(1, { -- ai[1]
+		i(1), -- ai[1][1]
+		t"lel", -- not addressable.
+		i(2) -- ai[1][2]
+	}),
+	c(3, { -- ai[3]
+		i(nil), -- ai[3][1]
+		t"lel", -- ai[3][2]: choices are always addressable.
+	}),
+	d(4, function() -- ai[4]
+		return sn(nil, { -- ai[4][0]
+			i(1), -- ai[4][0][1]
+		})
+	end, {})
+	}))
+	r(5, "restore_key", -- ai[5]
+		i(1) -- ai[5][0][1]: restoreNodes always store snippetNodes.
+	)
+	r(6, "restore_key_2", -- ai[6]
+		sn(nil, { -- ai[6][0]
+			i(1) -- ai[6][0][1]
+		})
+	)
+	}))
+})
+```
+
+Note specifically that the index of a dynamicNode differs from that of the
+generated snippetNode, and that restoreNodes (internally) always store a
+snippetNode, so even if the restoreNode only contains one node, that node has
+to be accessed as `ai[restoreNodeIndx][0][1]`.
+
+`absolute_indexer`s' can be constructed in different ways:
+```lua
+ai[1][2][3] == ai(1, 2, 3) == ai{1, 2, 3}
+```
 
 # EXTRAS
 
