@@ -1,4 +1,6 @@
 local helpers = require("test.functional.helpers")(after_each)
+local exec_lua = helpers.exec_lua
+local assert = require("luassert")
 
 local M = {}
 
@@ -35,7 +37,29 @@ function M.session_setup_luasnip()
 	parse = ls.parser.parse_snippet
 	n = require("luasnip.extras").nonempty
 	m = require("luasnip.extras").match
+	ai = require("luasnip.nodes.absolute_indexer")
 	]])
+end
+
+function M.static_docstring_test(snip_str, static, docstring)
+	assert.are.same(
+		static,
+		exec_lua("return " .. snip_str .. ":get_static_text()")
+	)
+	assert.are.same(
+		docstring,
+		exec_lua("return " .. snip_str .. ":get_docstring()")
+	)
+end
+function M.lsp_static_test(snip_str, static)
+	assert.are.same(
+		static,
+		exec_lua(
+			'return ls.parser.parse_snippet("trig", '
+				.. snip_str
+				.. "):get_static_text()"
+		)
+	)
 end
 
 return M

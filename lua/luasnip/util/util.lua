@@ -520,6 +520,15 @@ local function pos_sub(p1, p2)
 	return { p1[1] - p2[1], p1[2] - p2[2] }
 end
 
+local function pop_front(list)
+	local front = list[1]
+	for i = 2, #list do
+		list[i - 1] = list[i]
+	end
+	list[#list] = nil
+	return front
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -556,4 +565,5 @@ return {
 	pos_sub = pos_sub,
 	pos_add = pos_add,
 	deduplicate = deduplicate,
+	pop_front = pop_front,
 }

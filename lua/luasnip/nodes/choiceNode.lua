@@ -1,7 +1,7 @@
 local Node = require("luasnip.nodes.node").Node
 local ChoiceNode = Node:new()
 local util = require("luasnip.util.util")
-local conf = require("luasnip.config")
+local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
@@ -75,16 +75,33 @@ local function C(pos, choices, opts)
 end
 
 function ChoiceNode:subsnip_init()
-	for _, node in ipairs(self.choices) do
-		if node.type == types.snippetNode then
-			node.ext_opts = util.increase_ext_prio(
-				vim.deepcopy(self.parent.ext_opts),
-				conf.config.ext_prio_increase
-			)
-			node.snippet = self.parent.snippet
-		end
-		node:subsnip_init()
+	node_util.subsnip_init_children(self.parent, self.choices)
+end
+
+ChoiceNode.init_positions = node_util.init_child_positions_func(
+	"absolute_position",
+	"choices",
+	"init_positions"
+)
+ChoiceNode.init_insert_positions = node_util.init_child_positions_func(
+	"absolute_insert_position",
+	"choices",
+	"init_insert_positions"
+)
+
+function ChoiceNode:make_args_absolute()
+	-- relative indices are relative to the parent of the choiceNode,
+	-- temporarily remove last component of position
+	local last_indx = #self.absolute_insert_position
+	local last = self.absolute_insert_position[last_indx]
+	self.absolute_insert_position[#self.absolute_insert_position] = nil
+
+	for _, choice in ipairs(self.choices) do
+		-- relative to choiceNode!!
+		choice:make_args_absolute(self.absolute_insert_position)
 	end
+
+	self.absolute_insert_position[last_indx] = last
 end
 
 function ChoiceNode:put_initial(pos)
@@ -98,20 +115,7 @@ function ChoiceNode:put_initial(pos)
 	}, self.parent.ext_opts[self.active_choice.type].passive)
 
 	self.active_choice.mark = mark(old_pos, pos, mark_opts)
-end
-
-function ChoiceNode:populate_argnodes()
-	for _, node in ipairs(self.choices) do
-		-- if function- or dynamicNode, dependents may need to be replaced with
-		-- actual nodes, until here dependents may only contain indices of nodes.
-		-- stylua: ignore
-		if
-			node.type == types.functionNode
-			or node.type == types.dynamicNode
-		then
-			self.parent:populate_args(node)
-		end
-	end
+	self.visible = true
 end
 
 function ChoiceNode:indent(indentstr)
@@ -180,6 +184,10 @@ function ChoiceNode:update()
 	self.active_choice:update()
 end
 
+function ChoiceNode:update_static()
+	self.active_choice:update_static()
+end
+
 function ChoiceNode:update_restore()
 	self.active_choice:update_restore()
 end
@@ -214,8 +222,11 @@ function ChoiceNode:change_choice(dir, current_node)
 	)
 
 	self.active_choice:store()
+
 	-- tear down current choice.
-	self.active_choice:input_leave()
+	-- leave all so the choice (could be a snippet) is in the correct state for the next enter.
+	node_util.leave_nodes_between(self.active_choice, current_node)
+
 	self.active_choice:exit()
 
 	-- store in old_choice, active_choice has to be disabled to prevent reading
@@ -235,9 +246,9 @@ function ChoiceNode:change_choice(dir, current_node)
 		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
 	)
 	self.active_choice:put_initial(self.mark:pos_begin_raw())
-	self.active_choice:update_restore()
-	self.active_choice.old_text = self.active_choice:get_text()
 
+	self.active_choice:update_restore()
+	self.active_choice:update_all_dependents()
 	self:update_dependents()
 
 	-- Another node may have been entered in update_dependents.
@@ -251,23 +262,10 @@ function ChoiceNode:change_choice(dir, current_node)
 
 		if target_node then
 			-- the node that the cursor was in when changeChoice was called exists
-			-- in the active choice! jump_into it!
-			--
-			-- if in INSERT before change_choice, don't actually move into the node.
-			-- The new cursor will be set to the actual edit-position later.
-			local jump_node = self.active_choice:jump_into(1, insert_pre_cc)
+			-- in the active choice! Enter it and all nodes between it and this choiceNode,
+			-- then set the cursor.
+			node_util.enter_nodes_between(self, target_node)
 
-			local jumps = 1
-			while jump_node ~= target_node do
-				jump_node = jump_node:jump_from(1, insert_pre_cc)
-
-				-- just for testing...
-				if jumps > 1000 then
-					print("FAIL! Too many jumps!!")
-					return self.active_choice:jump_into(1, insert_pre_cc)
-				end
-				jumps = jumps + 1
-			end
 			if insert_pre_cc then
 				util.set_cursor_0ind(
 					util.pos_add(
@@ -275,8 +273,10 @@ function ChoiceNode:change_choice(dir, current_node)
 						cursor_pos_pre_relative
 					)
 				)
+			else
+				node_util.select_node(target_node)
 			end
-			return jump_node
+			return target_node
 		end
 	end
 
@@ -297,6 +297,7 @@ function ChoiceNode:copy()
 end
 
 function ChoiceNode:exit()
+	self.visible = false
 	self.active_choice:exit()
 	self.mark:clear()
 	if self.active then
@@ -321,6 +322,51 @@ end
 
 function ChoiceNode:store()
 	self.active_choice:store()
+end
+
+function ChoiceNode:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	local front = util.pop_front(position)
+	return self.choices[front]:insert_to_node_absolute(position)
+end
+
+function ChoiceNode:set_dependents()
+	for _, node in ipairs(self.choices) do
+		node:set_dependents()
+	end
+end
+
+function ChoiceNode:set_argnodes(dict)
+	Node.set_argnodes(self, dict)
+
+	for _, node in ipairs(self.choices) do
+		node:set_argnodes(dict)
+	end
+end
+
+function ChoiceNode:update_all_dependents()
+	-- call the version that only updates this node.
+	self:_update_dependents()
+
+	self.active_choice:update_all_dependents()
+end
+
+function ChoiceNode:update_all_dependents_static()
+	-- call the version that only updates this node.
+	self:_update_dependents_static()
+
+	self.active_choice:update_all_dependents_static()
+end
+
+function ChoiceNode:resolve_position(position)
+	return self.choices[position]
+end
+
+function ChoiceNode:static_init()
+	Node.static_init(self)
+	self.active_choice:static_init()
 end
 
 return {

@@ -161,8 +161,9 @@ from the nvim-cmp wiki.
 
 
 ## Add Snippets
-Snippets have to be added to the [`require'luasnip'.snippets`-table](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua#L167).  
-  To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`. 
+To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`.  
+To add snippets in lua, add them to the [`require'luasnip'.snippets`-table](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua#L167).  
+To load snippets from a package that provides snipmate-like (eg. [honza/vim-snippets](https://github.com/honza/vim-snippets)) or vscode-like ([rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) snippets, check [this](https://github.com/L3MON4D3/LuaSnip/blob/5eb67644205386bd02b93a7b570293f827f58e4b/Examples/snippets.lua#L495) section of the examples.
 
 ## Docs
 The previously mentioned `Examples/snippets.lua` contains brief descriptions, check `DOC.md` (or `:help luasnip`) for more in-depth explainations.

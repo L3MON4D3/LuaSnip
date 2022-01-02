@@ -27,12 +27,14 @@ local function R(pos, key, nodes)
 end
 
 function RestoreNode:exit()
+	self.visible = false
 	self.mark:clear()
 	-- snip should exist if exit is called.
 	self.snip:store()
 	-- will be copied on restore, no need to copy here too.
 	self.parent.snippet.stored[self.key] = self.snip
 	self.snip:exit()
+	self.snip = nil
 	self.active = false
 end
 
@@ -92,8 +94,15 @@ function RestoreNode:put_initial(pos)
 		node.restore_node:update_dependents()
 	end
 
-	tmp:populate_argnodes()
 	tmp:subsnip_init()
+
+	tmp:init_positions(self.snip_absolute_position)
+	tmp:init_insert_positions(self.snip_absolute_insert_position)
+
+	tmp:make_args_absolute()
+
+	tmp:set_dependents()
+	tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
 	if vim.o.expandtab then
 		tmp:expand_tabs(util.tab_width())
@@ -110,9 +119,10 @@ function RestoreNode:put_initial(pos)
 	tmp:put_initial(pos)
 	tmp.mark = mark(old_pos, pos, mark_opts)
 
-	tmp:set_old_text()
+	-- no need to call update here, will be done by function calling put_initial.
 
 	self.snip = tmp
+	self.visible = true
 end
 
 -- the same as DynamicNode.
@@ -139,6 +149,10 @@ function RestoreNode:update()
 	self.snip:update()
 end
 
+function RestoreNode:update_static()
+	self.snip:update_static()
+end
+
 local function snip_init(self, snip)
 	snip.parent = self.parent
 
@@ -147,25 +161,38 @@ local function snip_init(self, snip)
 		conf.config.ext_prio_increase
 	)
 	snip.snippet = self.parent.snippet
+	snip.pos = self.pos
+
 	snip:subsnip_init()
+
+	snip:init_positions(self.snip_absolute_position)
+	snip:init_insert_positions(self.snip_absolute_insert_position)
+
+	snip:make_args_absolute()
+
+	snip:set_dependents()
+	snip:set_argnodes(self.parent.snippet.dependents_dict)
+
+	snip:static_init()
+end
+
+function RestoreNode:static_init()
+	Node.static_init(self)
+	self.snip = self.parent.snippet.stored[self.key]
+	snip_init(self, self.snip)
 end
 
 function RestoreNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		local tmp = self.parent.snippet.stored[self.key]
-		snip_init(self, tmp)
-		self.static_text = tmp:get_static_text()
+		self.static_text = self.snip:get_static_text()
 	end
 	return self.static_text
 end
 
 function RestoreNode:get_docstring()
 	if not self.docstring then
-		local tmp = self.parent.snippet.stored[self.key]
-		-- init correctly.
-		snip_init(self, tmp)
-		self.docstring = tmp:get_docstring()
+		self.docstring = self.snip:get_docstring()
 	end
 	return self.docstring
 end
@@ -192,6 +219,46 @@ function RestoreNode:find_node(predicate)
 		end
 	end
 	return nil
+end
+
+function RestoreNode:insert_to_node_absolute(position)
+	if #position == 0 then
+		return self.absolute_position
+	end
+	-- nil if not yet available.
+	return self.snip and self.snip:insert_to_node_absolute(position)
+end
+
+function RestoreNode:update_all_dependents()
+	self:_update_dependents()
+	self.snip:_update_dependents()
+end
+
+function RestoreNode:update_all_dependents_static()
+	self:_update_dependents_static()
+	self.snip:_update_dependents_static()
+end
+
+function RestoreNode:init_insert_positions(position_so_far)
+	Node.init_insert_positions(self, position_so_far)
+	self.snip_absolute_insert_position = vim.deepcopy(
+		self.absolute_insert_position
+	)
+	-- nodes of current snippet should have a 0 before.
+	self.snip_absolute_insert_position[#self.snip_absolute_insert_position + 1] =
+		0
+end
+
+function RestoreNode:init_positions(position_so_far)
+	Node.init_positions(self, position_so_far)
+	self.snip_absolute_position = vim.deepcopy(self.absolute_position)
+	-- Reach current snippet as snip_absolute_position..0.
+	self.snip_absolute_position[#self.snip_absolute_position + 1] = 0
+end
+
+function RestoreNode:resolve_position(position)
+	-- position must be 0, there are no other options.
+	return self.snip
 end
 
 return {
