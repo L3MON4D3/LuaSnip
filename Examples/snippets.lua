@@ -491,7 +491,6 @@ ls.filetype_extend("lua", { "c" })
 -- in a cpp file: search c-snippets, then all-snippets only (no cpp-snippets!!).
 ls.filetype_set("cpp", { "c" })
 
-
 -- Beside defining your own snippets you can also load snippets from "vscode-like" packages
 -- that expose snippets in json files, for example <https://github.com/rafamadriz/friendly-snippets>.
 -- Mind that this will extend  `ls.snippets` so you need to do it after your own snippets or you
