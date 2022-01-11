@@ -491,19 +491,19 @@ ls.filetype_extend("lua", { "c" })
 -- in a cpp file: search c-snippets, then all-snippets only (no cpp-snippets!!).
 ls.filetype_set("cpp", { "c" })
 
---[[
+
 -- Beside defining your own snippets you can also load snippets from "vscode-like" packages
 -- that expose snippets in json files, for example <https://github.com/rafamadriz/friendly-snippets>.
 -- Mind that this will extend  `ls.snippets` so you need to do it after your own snippets or you
 -- will need to extend the table yourself instead of setting a new one.
-]]
 
 require("luasnip.loaders.from_vscode").load({ include = { "python" } }) -- Load only python snippets
+
 -- The directories will have to be structured like eg. <https://github.com/rafamadriz/friendly-snippets> (include
 -- a similar `package.json`)
 require("luasnip.loaders.from_vscode").load({ paths = { "./my-snippets" } }) -- Load snippets from my-snippets folder
 
--- You can also use lazy loading so you only get in memory snippets of languages you use
+-- You can also use lazy loading so snippets are loaded on-demand, not all at once (may interfere with lazy-loading luasnip itself).
 require("luasnip.loaders.from_vscode").lazy_load() -- You can pass { paths = "./my-snippets/"} as well
 
 -- You can also use snippets in snipmate format, for example <https://github.com/honza/vim-snippets>.

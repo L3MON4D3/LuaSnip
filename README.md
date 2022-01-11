@@ -31,12 +31,16 @@ Ie. With [vim-plug](https://github.com/junegunn/vim-plug)
    <summary>in vimscript</summary>
   
 ```vim
+" press <Tab> to expand or jump in a snippet. These can also be mapped separately
+" via <Plug>luasnip-expand-snippet and <Plug>luasnip-jump-next.
 imap <silent><expr> <Tab> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<Tab>' 
+" -1 for jumping backwards.
 inoremap <silent> <S-Tab> <cmd>lua require'luasnip'.jump(-1)<Cr>
 
 snoremap <silent> <Tab> <cmd>lua require('luasnip').jump(1)<Cr>
 snoremap <silent> <S-Tab> <cmd>lua require('luasnip').jump(-1)<Cr>
 
+" For changing choices in choiceNodes (not strictly necessary for a basic setup).
 imap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
 smap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
 ```
@@ -155,22 +159,39 @@ vim.api.nvim_set_keymap("s", "<C-E>", "<Plug>luasnip-next-choice", {})
 ```
   </details>
 
-For nvim-cmp, it is also possible to follow the
-[example recommendation](https://github.com/hrsh7th/nvim-cmp/wiki/Example-mappings#luasnip):
-from the nvim-cmp wiki.
+For nvim-cmp, it is also possible to follow the [example recommendation](https://github.com/hrsh7th/nvim-cmp/wiki/Example-mappings#luasnip) from the nvim-cmp wiki.
 
 
 ## Add Snippets
-To test if LuaSnip works correctly and see some of the capabilities lua-native snippets have, `:luafile` `Examples/snippets.lua`.  
-To add snippets in lua, add them to the [`require'luasnip'.snippets`-table](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua#L167).  
-To load snippets from a package that provides snippets :- 
-* For snipmate-like (eg. [honza/vim-snippets](https://github.com/honza/vim-snippets)) [check this](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#snipmate-snippets-loader)
-* For vscode-like ([rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) , [check this](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#vscode-snippets-loader).  
 
-More information in the [Docs](https://github.com/L3MON4D3/LuaSnip#docs) section.
+- **Vscode-like**: For using snippets from a plugin (eg. [rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) install it and add
+    ```lua
+    require("luasnip.loaders.from_vscode").load()
+    ```
+	somewhere in your config.  
+	For more info on the vscode-loader, check the [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L501) or [documentation](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#vscode-snippets-loader).
 
-## Docs
-The previously mentioned [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) contains brief descriptions. Check [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) (or `:help luasnip`) for more in-depth explainations.
+- **Snipmate-like**: Very similar to Vscode-packages: install the a plugin that provides snippets and call the `load`-function:
+    ```lua
+    require("luasnip.loaders.from_snipmate").load()
+    ```
+    The snipmate format is very simple, so adding **custom snippets** only requires a few steps:
+    - add a directory beside your `init.vim` (or any other place that is in your `runtimepath`) named `snippets`.
+    - inside that directory, create files named `<filetype>.snippet` and add snippets for the given filetype in it (for inspiration, check [honza/vim-snippets](https://github.com/honza/vim-snippets/tree/master/snippets)).  
+        ``` snipmate
+        # comment
+        snippet <trigger> <description>
+        <snippet-body>
+        snippet if C-style if
+        if ($1)
+        	$0
+        ```
+    Again, there are some [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L517) and an entry in the [docs](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#snipmate-snippets-loader)
+- **Lua**: Add the snippets directly to `require("luasnip").snippets.<filetype>`. An example for this can be found [here](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L167).  
+This can also be done much better (one snippet-file per filetype+command for editing the current filetype) than in the example, see [this entry in the wiki](https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#split-up-snippets-by-filetype-load-on-demand-and-reload-after-change-first-iteration)
+## Docs and Exaples
+I highly recommend looking into (or better yet, `:luafile`ing) [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) before writing snippets in lua.  
+Check [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) (or `:help luasnip`) for in-depth explanations of the different nodes.
 
 # Config
 - `history`: If true, Snippets that were exited can still be jumped back into. As Snippets are not removed when their text is deleted, they have to be removed manually via `LuasnipUnlinkCurrent`.
