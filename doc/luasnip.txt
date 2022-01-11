@@ -4,27 +4,28 @@ luasnip.txt                                               Luasnip Snippet Engine
 ================================================================================
 CONTENTS                                                        *luasnip-contents*
 
-1. SNIPPETS.....................................................|luasnip-snippets|
-2. TEXTNODE.....................................................|luasnip-textnode|
-3. INSERTNODE.................................................|luasnip-insertnode|
-4. FUNCTIONNODE.............................................|luasnip-functionnode|
-5. CHOICENODE.................................................|luasnip-choicenode|
-6. SNIPPETNODE...............................................|luasnip-snippetnode|
-7. INDENTSNIPPETNODE...................................|luasnip-indentsnippetnode|
-8. DYNAMICNODE...............................................|luasnip-dynamicnode|
-9. RESTORENODE...............................................|luasnip-restorenode|
-10. ABSOLUTE_INDEXER....................................|luasnip-absolute_indexer|
-11. EXTRAS........................................................|luasnip-extras|
-12. LSP-SNIPPETS............................................|luasnip-lsp-snippets|
-13. VARIABLES..................................................|luasnip-variables|
-14. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
-15. SNIPMATE SNIPPETS LOADER....................|luasnip-snipmate_snippets_loader|
-16. EXT_OPTS....................................................|luasnip-ext_opts|
-17. DOCSTRING..................................................|luasnip-docstring|
-18. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
-19. EVENTS........................................................|luasnip-events|
-20. CLEANUP......................................................|luasnip-cleanup|
-21. API-REFERENCE..........................................|luasnip-api-reference|
+1. BASICS.........................................................|luasnip-basics|
+2. SNIPPETS.....................................................|luasnip-snippets|
+3. TEXTNODE.....................................................|luasnip-textnode|
+4. INSERTNODE.................................................|luasnip-insertnode|
+5. FUNCTIONNODE.............................................|luasnip-functionnode|
+6. CHOICENODE.................................................|luasnip-choicenode|
+7. SNIPPETNODE...............................................|luasnip-snippetnode|
+8. INDENTSNIPPETNODE...................................|luasnip-indentsnippetnode|
+9. DYNAMICNODE...............................................|luasnip-dynamicnode|
+10. RESTORENODE..............................................|luasnip-restorenode|
+11. ABSOLUTE_INDEXER....................................|luasnip-absolute_indexer|
+12. EXTRAS........................................................|luasnip-extras|
+13. LSP-SNIPPETS............................................|luasnip-lsp-snippets|
+14. VARIABLES..................................................|luasnip-variables|
+15. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
+16. SNIPMATE SNIPPETS LOADER....................|luasnip-snipmate_snippets_loader|
+17. EXT_OPTS....................................................|luasnip-ext_opts|
+18. DOCSTRING..................................................|luasnip-docstring|
+19. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
+20. EVENTS........................................................|luasnip-events|
+21. CLEANUP......................................................|luasnip-cleanup|
+22. API-REFERENCE..........................................|luasnip-api-reference|
 >
                 __                       ____
                /\ \                     /\  _`\           __
@@ -58,6 +59,22 @@ All code-snippets in this help assume that
     local events = require("luasnip.util.events")
     local ai = require("luasnip.nodes.absolute_indexer")
 <
+
+================================================================================
+BASICS                                                            *luasnip-basics*
+
+In LuaSnip, snippets are made up of `nodes`. These can contain either static
+text (`textNode`), text that can be edited (`insertNode`), text that can be
+generated from the contents of other nodes (`functionNode`), other nodes
+(`choiceNode`, `restoreNode`) or nodes that can be generated from the content
+of other nodes (`dynamicNode`).
+Snippets are always created using the `s()`-function. It is explained in more
+detail below, but the gist is that it takes a string, the trigger, and a table
+of nodes, all of which will be insterted into the buffer after the snippet is
+expanded.
+The snippets have to be appended to the `ls.snippets.<filetype>`-table.
+It is possible to make snippets from one filetype available to another using
+`ls.filetype_extend`, more info on that here (#api-reference).
 
 ================================================================================
 SNIPPETS                                                        *luasnip-snippets*
