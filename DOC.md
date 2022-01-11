@@ -33,6 +33,20 @@ local events = require("luasnip.util.events")
 local ai = require("luasnip.nodes.absolute_indexer")
 ```
 
+# BASICS
+In LuaSnip, snippets are made up of `nodes`. These can contain either static
+text (`textNode`), text that can be edited (`insertNode`), text that can be
+generated from the contents of other nodes (`functionNode`), other nodes
+(`choiceNode`, `restoreNode`) or nodes that can be generated from the content
+of other nodes (`dynamicNode`).  
+Snippets are always created using the `s()`-function. It is explained in more
+detail below, but the gist is that it takes a string, the trigger, and a table
+of nodes, all of which will be insterted into the buffer after the snippet is
+expanded.  
+The snippets have to be appended to the `ls.snippets.<filetype>`-table.  
+It is possible to make snippets from one filetype available to another using
+`ls.filetype_extend`, more info on that [here](#api-reference).
+
 # SNIPPETS
 
 The most direct way to define snippets is `s`:
