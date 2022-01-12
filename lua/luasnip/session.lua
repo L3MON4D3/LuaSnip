@@ -21,4 +21,10 @@ M.latest_load_ft = nil
 M.last_expand_snip = nil
 M.last_expand_opts = nil
 
+-- jump_active is set while luasnip moves the cursor, prevents
+-- (for example) updating dependents or deleting a snippet via
+-- exit_out_of_region while jumping.
+-- init with false, it will be set by (eg.) ls.jump().
+M.jump_active = false
+
 return M

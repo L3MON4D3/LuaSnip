@@ -64,12 +64,11 @@ local function available()
 	return res
 end
 
-local jump_active = false
 local function no_region_check_wrap(fn, ...)
-	jump_active = true
+	session.jump_active = true
 	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
 	vim.schedule(function()
-		jump_active = false
+		session.jump_active = false
 	end)
 	return fn(...)
 end
@@ -335,7 +334,7 @@ local function active_update_dependents()
 	-- special case for startNode, cannot enter_node on those (and they can't
 	-- have dependents)
 	-- don't update if a jump/change_choice is in progress.
-	if not jump_active and active and active.pos > 0 then
+	if not session.jump_active and active and active.pos > 0 then
 		-- Save cursor-pos to restore later.
 		local cur = util.get_cursor_0ind()
 		local cur_mark = vim.api.nvim_buf_set_extmark(
@@ -467,7 +466,7 @@ end
 
 local function exit_out_of_region(node)
 	-- if currently jumping via luasnip or no active node:
-	if jump_active or not node then
+	if session.jump_active or not node then
 		return
 	end
 
