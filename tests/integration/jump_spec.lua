@@ -156,4 +156,35 @@ describe("Jumping", function()
             {2:-- INSERT --}                                      |
         ]]}
 	end)
+
+	it("can leave the snippet using region_check_events", function()
+		local snip = [[
+			s("res", {
+				i(1, "a"), i(2, "b"), i(3, "c"), i(4, "d")
+			})
+		]]
+
+		exec_lua("ls.snip_expand(".. snip ..")")
+		screen:expect{grid=[[
+            ^abcd                                              |
+            {0:~                                                 }|
+            {0:~                                                 }|
+            {0:~                                                 }|
+            {2:-- SELECT --}                                      |
+        ]]}
+
+		-- leave region of snippet and assure that it is left (by jumping once
+		-- and asserting that the cursor doesn't move) after calling
+		-- ls.exit_out_of_region() (the function called by region_check_events).
+		feed("<Esc>o")
+		exec_lua("ls.exit_out_of_region(ls.session.current_nodes[vim.api.nvim_get_current_buf()])")
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+            abcd                                              |
+            ^                                                  |
+            {0:~                                                 }|
+            {0:~                                                 }|
+            {2:-- INSERT --}                                      |
+        ]]}
+	end)
 end)
