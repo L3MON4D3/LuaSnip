@@ -155,6 +155,39 @@ local function normal_move_on_insert(new_cur_pos)
 	vim.api.nvim_feedkeys(keys, "nt", true)
 end
 
+local function insert_move_on(new_cur_pos)
+	local current_line = get_cursor_0ind()[1]
+
+	-- only compute diff for lines, seems safer and may even be faster because
+	-- the current column isn't required (cursor returns in bytes, calculating
+	-- columns from bytes costs too).
+	local direction, count
+	if current_line > new_cur_pos[1] then
+		-- current line is lower on screen, we need to move up.
+		direction = "<Up>"
+		count = current_line - new_cur_pos[1]
+	else
+		direction = "<Down>"
+		count = new_cur_pos[1] - current_line
+	end
+
+	local try = -- move cursor to first column
+		"<Home>"..
+		-- move to correct line.
+		direction:rep(count)..
+		-- move to correct column
+		string.rep("<Right>", new_cur_pos[2])
+
+	local keys = vim.api.nvim_replace_termcodes(
+		try,
+		true,
+		false,
+		true
+	)
+	-- passing only "n" doesn't open folds (:h feedkeys).
+	vim.api.nvim_feedkeys(keys, "nt", true)
+end
+
 local function multiline_equal(t1, t2)
 	for i, line in ipairs(t1) do
 		if line ~= t2[i] then
@@ -538,6 +571,7 @@ return {
 	normal_move_before = normal_move_before,
 	normal_move_on = normal_move_on,
 	normal_move_on_insert = normal_move_on_insert,
+	insert_move_on = insert_move_on,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	mark_pos_equal = mark_pos_equal,

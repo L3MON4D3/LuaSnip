@@ -15,12 +15,17 @@ end
 
 function TextNode:input_enter(no_move)
 	if not no_move then
-		vim.api.nvim_feedkeys(
-			vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-			"n",
-			true
-		)
-		util.normal_move_on_insert(self.mark:pos_begin())
+		local mark_begin_pos = self.mark:pos_begin()
+		if vim.fn.mode() == "i" then
+			util.insert_move_on(mark_begin_pos)
+		else
+			vim.api.nvim_feedkeys(
+				vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+				"n",
+				true
+			)
+			util.normal_move_on_insert(mark_begin_pos)
+		end
 	end
 
 	self:event(events.enter, no_move)

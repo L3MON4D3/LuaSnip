@@ -97,4 +97,63 @@ describe("Jumping", function()
             {2:-- SELECT --}                                      |
         ]]}
 	end)
+
+	it("can restore the cursor position.", function()
+		local snip = [[
+			s("res", {
+				c(1, {
+					{
+						i(1), t{"aa", "aa "}, r(2, "key", i(1))
+					},
+					{
+						i(1), t" aa", r(2, "key"),
+					},
+					{
+						i(1, "insert"), t{"aa", "aa", "aa"}, r(2, "key")
+					}
+				}, {restore_cursor = true})
+			})
+		]]
+
+		exec_lua("ls.snip_expand("..snip..")")
+		screen:expect{grid=[[
+            ^aa                                                |
+            aa                                                |
+            {0:~                                                 }|
+            {0:~                                                 }|
+            {2:-- INSERT --}                                      |
+        ]]}
+
+		-- jump into restoreNode in first choice.
+		exec_lua("ls.jump(1)")
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+             aa^                                               |
+            {0:~                                                 }|
+            {0:~                                                 }|
+            {0:~                                                 }|
+            {2:-- INSERT --}                                      |
+        ]]}
+
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+            insertaa                                          |
+            aa                                                |
+            aa^                                                |
+            {0:~                                                 }|
+            {2:-- INSERT --}                                      |
+        ]]}
+
+		-- into first of third choice and change, should end up in first of
+		-- first choice.
+		exec_lua("ls.jump(-1)")
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+            ^aa                                                |
+            aa                                                |
+            {0:~                                                 }|
+            {0:~                                                 }|
+            {2:-- INSERT --}                                      |
+        ]]}
+	end)
 end)

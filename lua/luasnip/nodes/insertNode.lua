@@ -37,12 +37,18 @@ function ExitNode:input_enter(no_move)
 	else
 		self:set_mark_rgrav(true, true)
 		if not no_move then
-			vim.api.nvim_feedkeys(
-				vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-				"n",
-				true
-			)
-			util.normal_move_on_insert(self.mark:pos_begin())
+			local mark_begin_pos = self.mark:pos_begin()
+
+			if vim.fn.mode() == "i" then
+				util.insert_move_on(mark_begin_pos)
+			else
+				vim.api.nvim_feedkeys(
+					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+					"n",
+					true
+				)
+				util.normal_move_on_insert(mark_begin_pos)
+			end
 		end
 
 		self:event(events.enter)
@@ -88,14 +94,14 @@ function InsertNode:input_enter(no_move)
 	if not no_move then
 		self.parent:enter_node(self.indx)
 
-		vim.api.nvim_feedkeys(
-			vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-			"n",
-			true
-		)
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 		local mark_begin_pos, mark_end_pos = self.mark:pos_begin_end()
 		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
+			vim.api.nvim_feedkeys(
+				vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+				"n",
+				true
+			)
 			util.normal_move_on(mark_begin_pos)
 			vim.api.nvim_feedkeys(
 				vim.api.nvim_replace_termcodes("v", true, false, true),
@@ -115,7 +121,17 @@ function InsertNode:input_enter(no_move)
 				true
 			)
 		else
-			util.normal_move_on_insert(mark_begin_pos)
+			-- if current and target mode is INSERT, there's no reason to leave it.
+			if vim.fn.mode() == "i" then
+				util.insert_move_on(mark_begin_pos)
+			else
+				vim.api.nvim_feedkeys(
+					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
+					"n",
+					true
+				)
+				util.normal_move_on_insert(mark_begin_pos)
+			end
 		end
 	else
 		self.parent:enter_node(self.indx)
