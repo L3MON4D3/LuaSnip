@@ -111,16 +111,16 @@ local function normal_move_before(new_cur_pos)
 			tostring(new_cur_pos[1] + 1)
 				.. "G0"
 				.. tostring(new_cur_pos[2] - 1)
-				-- open folds!
-				.. "lzv",
-			"n",
+				.. "l",
+			-- passing only "n" doesn't open folds (:h feedkeys).
+			"nt",
 			true
 		)
 	elseif new_cur_pos[2] - 1 == 0 then
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0zv", "n", true)
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "nt", true)
 	else
 		-- column is 0, includes end of previous line. Move there.
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]) .. "G$zv", "n", true)
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]) .. "G$", "nt", true)
 	end
 end
 
@@ -131,12 +131,13 @@ local function normal_move_on(new_cur_pos)
 				.. "G0"
 				.. tostring(new_cur_pos[2])
 				-- open folds!
-				.. "lzv",
-			"n",
+				.. "l",
+			-- passing only "n" doesn't open folds (:h feedkeys).
+			"nt",
 			true
 		)
 	else
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "n", true)
+		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "nt", true)
 	end
 end
 
@@ -144,13 +145,14 @@ local function normal_move_on_insert(new_cur_pos)
 	local keys = vim.api.nvim_replace_termcodes(
 		tostring(new_cur_pos[1] + 1)
 			-- open folds!
-			.. "G0zvi"
+			.. "G0i"
 			.. string.rep("<Right>", new_cur_pos[2]),
 		true,
 		false,
 		true
 	)
-	vim.api.nvim_feedkeys(keys, "n", true)
+	-- passing only "n" doesn't open folds (:h feedkeys).
+	vim.api.nvim_feedkeys(keys, "nt", true)
 end
 
 local function multiline_equal(t1, t2)
