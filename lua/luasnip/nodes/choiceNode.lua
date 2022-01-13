@@ -264,7 +264,8 @@ function ChoiceNode:change_choice(dir, current_node)
 			-- the node that the cursor was in when changeChoice was called exists
 			-- in the active choice! Enter it and all nodes between it and this choiceNode,
 			-- then set the cursor.
-			node_util.enter_nodes_between(self, target_node)
+			-- Pass no_move=true, we will set the cursor ourselves.
+			node_util.enter_nodes_between(self, target_node, true)
 
 			if insert_pre_cc then
 				util.set_cursor_0ind(

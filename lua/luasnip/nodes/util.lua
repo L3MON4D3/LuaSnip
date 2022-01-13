@@ -76,18 +76,18 @@ local function get_nodes_between(parent, child_pos)
 	return nodes
 end
 
-local function leave_nodes_between(parent, child)
+local function leave_nodes_between(parent, child, no_move)
 	local nodes = get_nodes_between(parent, child.absolute_position)
 	-- reverse order, leave child first.
 	for i = #nodes, 1, -1 do
-		nodes[i]:input_leave()
+		nodes[i]:input_leave(no_move)
 	end
 end
 
-local function enter_nodes_between(parent, child)
+local function enter_nodes_between(parent, child, no_move)
 	local nodes = get_nodes_between(parent, child.absolute_position)
 	for _, node in ipairs(nodes) do
-		node:input_enter()
+		node:input_enter(no_move)
 	end
 end
 
