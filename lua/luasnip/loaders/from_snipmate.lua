@@ -10,7 +10,7 @@ local function parse_snipmate(buffer, filename)
 	local extends = {}
 
 	---@type string[]
-	local lines = vim.split(buffer, "[\n\r]+")
+	local lines = util.split_lines(buffer)
 	lines[#lines] = nil
 	local i = 1
 
