@@ -172,9 +172,10 @@ local function insert_move_on(new_cur_pos)
 	end
 
 	local try = -- move cursor to first column
-		"<Home>" -- move to correct line.
-		.. direction:rep(count) -- move to correct column
-		.. string.rep("<Right>", new_cur_pos[2])
+		"<Home>" -- move to correct line. .. direction:rep(count) -- move to correct column .. string.rep(
+			"<Right>",
+			new_cur_pos[2]
+		)
 
 	local keys = vim.api.nvim_replace_termcodes(try, true, false, true)
 	-- passing only "n" doesn't open folds (:h feedkeys).
