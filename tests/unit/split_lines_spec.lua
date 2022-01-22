@@ -20,7 +20,7 @@ describe("split_lines", function()
 
 	-- apparently clear() needs to run before anything else...
 	helpers.clear()
-	-- set in makefile.
+	-- LUASNIP_SOURCE is set in makefile (or before that, even).
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	check("works for DOS-files", "aaa\r\nbbb\r\nccc", { "aaa", "bbb", "ccc" })
@@ -29,6 +29,7 @@ describe("split_lines", function()
 		"aaa\r\nbbb\r\nccc\r\n",
 		{ "aaa", "bbb", "ccc", "" }
 	)
+	check("works for DOS-files with multiple empty lines", "aaa\r\n\r\n\r\nccc", {"aaa", "", "", "ccc"})
 
 	check("works for unix-files", "aaa\nbbb\nccc\n", { "aaa", "bbb", "ccc" })
 	check(
@@ -36,6 +37,7 @@ describe("split_lines", function()
 		"aaa\nbbb\nccc\n\n",
 		{ "aaa", "bbb", "ccc", "" }
 	)
+	check("works for unix-files with multiple empty lines", "aaa\n\n\nccc\n", {"aaa", "", "", "ccc"})
 
 	check("works for mac-files", "aaa\rbbb\rccc\r", { "aaa", "bbb", "ccc" })
 	check(
@@ -43,4 +45,5 @@ describe("split_lines", function()
 		"aaa\rbbb\rccc\r\r",
 		{ "aaa", "bbb", "ccc", "" }
 	)
+	check("works for mac-files with multiple empty lines", "aaa\r\r\rccc\r", {"aaa", "", "", "ccc"})
 end)
