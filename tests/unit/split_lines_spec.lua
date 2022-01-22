@@ -7,7 +7,14 @@ describe("split_lines", function()
 		filestring = filestring:gsub("\r", "\\r")
 		filestring = filestring:gsub("\n", "\\n")
 		it(test_name, function()
-			assert.are.same(lines, exec_lua('return require("luasnip.loaders.util").split_lines("'..filestring..'")'))
+			assert.are.same(
+				lines,
+				exec_lua(
+					'return require("luasnip.loaders.util").split_lines("'
+						.. filestring
+						.. '")'
+				)
+			)
 		end)
 	end
 
@@ -16,12 +23,24 @@ describe("split_lines", function()
 	-- set in makefile.
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
-	check("works for DOS-files", "aaa\r\nbbb\r\nccc", {"aaa", "bbb", "ccc"})
-	check("works for DOS-files with empty last line", "aaa\r\nbbb\r\nccc\r\n", {"aaa", "bbb", "ccc", ""})
+	check("works for DOS-files", "aaa\r\nbbb\r\nccc", { "aaa", "bbb", "ccc" })
+	check(
+		"works for DOS-files with empty last line",
+		"aaa\r\nbbb\r\nccc\r\n",
+		{ "aaa", "bbb", "ccc", "" }
+	)
 
-	check("works for unix-files", "aaa\nbbb\nccc\n", {"aaa", "bbb", "ccc"})
-	check("works for unix-files with empty last line", "aaa\nbbb\nccc\n\n", {"aaa", "bbb", "ccc", ""})
+	check("works for unix-files", "aaa\nbbb\nccc\n", { "aaa", "bbb", "ccc" })
+	check(
+		"works for unix-files with empty last line",
+		"aaa\nbbb\nccc\n\n",
+		{ "aaa", "bbb", "ccc", "" }
+	)
 
-	check("works for mac-files", "aaa\rbbb\rccc\r", {"aaa", "bbb", "ccc"})
-	check("works for mac-files with empty last line", "aaa\rbbb\rccc\r\r", {"aaa", "bbb", "ccc", ""})
+	check("works for mac-files", "aaa\rbbb\rccc\r", { "aaa", "bbb", "ccc" })
+	check(
+		"works for mac-files with empty last line",
+		"aaa\rbbb\rccc\r\r",
+		{ "aaa", "bbb", "ccc", "" }
+	)
 end)
