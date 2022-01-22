@@ -10,7 +10,7 @@ local function parse_snipmate(buffer, filename)
 	local extends = {}
 
 	---@type string[]
-	local lines = util.split_lines(buffer)
+	local lines = loader_util.split_lines(buffer)
 	lines[#lines] = nil
 	local i = 1
 
