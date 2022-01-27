@@ -16,29 +16,26 @@ local function filetypelist_to_set(list)
 end
 
 local function split_lines(filestring)
-	-- test for used line separator and split accordingly.
-	if filestring:find("\r\n") then
-		return vim.split(
-			filestring,
-			"\r\n",
-			{ plain = true, trimemtpy = false }
-		)
-	elseif filestring:find("\r") then
+	local newline_code
+	if vim.endswith(filestring, "\r\n") then -- dos
+		newline_code = "\r\n"
+	elseif vim.endswith(filestring, "\r") then -- mac
 		-- both mac and unix-files contain a trailing newline which would lead
 		-- to an additional empty line being read (\r, \n _terminate_ lines, they
 		-- don't _separate_ them)
-		return vim.split(
-			filestring:sub(1, #filestring - 1),
-			"\r",
-			{ plain = true, trimemtpy = false }
-		)
-	else
-		return vim.split(
-			filestring:sub(1, #filestring - 1),
-			"\n",
-			{ plain = true, trimemtpy = false }
-		)
+		newline_code = "\r"
+		filestring = filestring:sub(1, -2)
+	elseif vim.endswith(filestring, "\n") then -- unix
+		newline_code = "\n"
+		filestring = filestring:sub(1, -2)
+	else -- dos
+		newline_code = "\r\n"
 	end
+	return vim.split(
+		filestring,
+		newline_code,
+		{ plain = true, trimemtpy = false }
+	)
 end
 
 return {
