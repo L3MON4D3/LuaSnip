@@ -11,7 +11,6 @@ local function parse_snipmate(buffer, filename)
 
 	---@type string[]
 	local lines = loader_util.split_lines(buffer)
-	lines[#lines] = nil
 	local i = 1
 
 	local function _parse()
