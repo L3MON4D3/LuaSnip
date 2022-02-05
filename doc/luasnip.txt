@@ -63,16 +63,21 @@ All code-snippets in this help assume that
 ================================================================================
 BASICS                                                            *luasnip-basics*
 
-In LuaSnip, snippets are made up of `nodes`. These can contain either static
-text (`textNode`), text that can be edited (`insertNode`), text that can be
-generated from the contents of other nodes (`functionNode`), other nodes
-(`choiceNode`, `restoreNode`) or nodes that can be generated from the content
-of other nodes (`dynamicNode`).
-Snippets are always created using the `s()`-function. It is explained in more
-detail below, but the gist is that it takes a string, the trigger, and a table
-of nodes, all of which will be insterted into the buffer after the snippet is
-expanded.
-The snippets have to be appended to the `ls.snippets.<filetype>`-table.
+In LuaSnip, snippets are made up of `nodes`. These can contain either
+* static text (`textNode`)
+* text that can be edited (`insertNode`)
+* text that can be generated from the contents of other nodes (`functionNode`)
+* other nodes (`choiceNode`, `restoreNode`)
+* nodes that can be generated based on user-input (`dynamicNode`).
+
+Snippets are always created using the `s(trigger:string, nodes:table)`-function.
+It is explained in more detail in SNIPPETS (#snippets), but the gist is that
+it creates a snippet that contains the nodes specified in `nodes`, which will be
+inserted into a buffer if the text before the cursor matches `trigger` when
+`expand` is called.
+The snippets for a given filetype have to be appended to the
+`ls.snippets.<filetype>`-table. Snippets that should be accessible globally (in
+all filetypes) will be read from the `ls.snippets.all`-table
 It is possible to make snippets from one filetype available to another using
 `ls.filetype_extend`, more info on that here (#api-reference).
 
@@ -116,27 +121,36 @@ snippet. If the table only has a single node, it can be passed directly
 without wrapping it in a table.
 
 The third argument is a table with the following valid keys:
-- `condition`: the condition-function. The snippet will be expanded only
-               if it returns true (default is a function that just returns true)
-               (the function is called before the text is modified in any way).
-               Some parameters are passed to the function: The line up to the
-               cursor, the matched trigger and the captures (table).
-* `show_condition`: Function with signature `f(line_to_cursor) -> boolean`
-               being a hint for completion-engines indicating when the snippet
-               should be included in current completion candidates. Defaults to
-               a function returning always true. This is different than `condition`
-               because `condition` is evaluated by LuaSnip on snippet expansion
-               (and thus has access to the matched trigger and captures), while
-               `show_condition` is evaluated by the completion-engine when scanning
-               for available snippet candidates.
-- `callbacks`: Contains functions that are called upon enterin/leaving a node.
-               To print text upon entering the second node of a snippet, set
-               `callbacks` should be set as follows:
-               `{ [2] = { [events.enter] = function() print "2!" end } }`.
-               To register a callback for the snippets' events, the key `[-1]`
-               may be used.
-               The callbacks are passed only one argument, the node that
-               triggered it.
+- `condition`: the condition-function `fn(line_to_cursor, matched_trigger,
+  captures) -> bool`.
+  The snippet will be expanded only if it returns true (default is a function
+  that just returns `true`).
+  The function is called before the text is modified in any way.
+  Some parameters are passed to the function: The line up to the cursor, the
+  matched trigger and the captures (table).
+* `show_condition`: Function with signature `f(line_to_cursor) -> bool`.
+  It is a hint for completion-engines, indicating when the snippet should be
+  included in current completion candidates.
+  Defaults to a function returning `true`.
+  This is different than `condition` because `condition` is evaluated by
+  LuaSnip on snippet expansion (and thus has access to the matched trigger and
+  captures), while `show_condition` is evaluated by the completion-engine when
+  scanning for available snippet candidates.
+- `callbacks`: Contains functions that are called upon enterin/leaving a node
+  of this snippet.
+  To print text upon entering the second node of a snippet, `callbacks`
+  should be set as follows:
+>
+      {
+      	[2] = {
+      		[events.enter] = function(node) print("2!") end
+      	}
+      }
+<
+
+To register a callback for the snippets' own events, the key `[-1]` may
+  be used.
+  The callbacks are passed only one argument, the node that triggered it.
 This `opts`-table can also be passed to eg. `snippetNode` or `indentSnippetNode`,
 but only `callbacks` is used there.
 
@@ -146,18 +160,14 @@ used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
 Additionally, the string that was used to trigger the snippet is stored in
 `snippet.trigger`. These variables/tables are primarily useful in
 dynamic/functionNodes, where the snippet can be accessed through the immediate
-parent, which is passed to the function.
-
-Snippets that should be loaded for all files must be put into the
-`ls.snippets.all`-table, those only for a specific filetype `ft` belong in
-`ls.snippets.ft`.
+parent (`parent.snippet`), which is passed to the function.
 
 ================================================================================
 TEXTNODE                                                        *luasnip-textnode*
 
 The most simple kind of node; just text.
 >
-    s("trigger", t("Wow! Text!"))
+    s("trigger", { t("Wow! Text!") })
 <
 
 This snippet expands to
@@ -169,7 +179,9 @@ Where ⎵ is the cursor.
 Multiline-strings can be defined by passing a table of lines rather than a
 string:
 >
-    s("trigger", t({"Wow! Text!", "And another line."}))
+    s("trigger", {
+    	t({"Wow! Text!", "And another line."})
+    })
 <
 
 ================================================================================
@@ -179,8 +191,8 @@ These Nodes can be jumped to and from. The functionality is best demonstrated
 with an example:
 >
     s("trigger", {
-    	t({"", "After expanding, the cursor is here ->"}), i(1),
-    	t({"After jumping forward once, cursor is here ->"}), i(2),
+    	t({"After expanding, the cursor is here ->"}), i(1),
+    	t({"", "After jumping forward once, cursor is here ->"}), i(2),
     	t({"", "After jumping once more, the snippet is exited there ->"}), i(0),
     })
 <
@@ -195,7 +207,7 @@ So the order of InsertNode jump is as follows:
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
 after all other nodes.
 
-It is possible to have mixed order in jumping nodes:
+The jumping-order doesn't have to follow the "textual" order of the nodes:
 >
     s("trigger", {
     	t({"After jumping forward once, cursor is here ->"}), i(2),
@@ -204,19 +216,43 @@ It is possible to have mixed order in jumping nodes:
     })
 <
 
-The above snippet will use the same jump flow as above which is:
+The above snippet will behave as follows:
 - After expansion, we will be at InsertNode 1.
 - After jumping forward, we will be at InsertNode 2.
 - After jumping forward again, we will be at InsertNode 0.
 
-It's possible to have easy-to-overwrite text inside an InsertNode initially:
+An important (because here luasnip differs from other snippet-engines) detail
+is that the jump-order restarts at 1 in nested snippets:
+>
+    s("trigger", {
+    	i(1, "First jump"),
+    	t(" :: "),
+    	sn(2, {
+    		i(1, "Second jump"),
+    		t" : ",
+    		i(2, "Third jump")
+    	})
+    })
+<
+
+as opposed to eg. the textmate-syntax, where tabstops are snippet-global:
+>
+    ${1:First jump} :: ${2: ${3:Second jump} : ${4:Third jump}}
+<
+
+(this is not exactly the same snippet of course, but as close as possible)
+(the restart-rule only applies when defining snippets in lua, the above
+textmate-snippet will expand correctly).
+
+It's possible to have initial text inside an InsertNode, which is comfortable
+for potentially keeping some default-value:
 >
     	s("trigger", i(1, "This text is SELECTed after expanding the snippet."))
 <
 
 This initial text is defined the same way as textNodes, eg. can be multiline.
 
-`i(0)`s can have placeholder text, but do note that when the SELECTed text is
+`i(0)`s can have initial text, but do note that when the SELECTed text is
 replaced, its' replacement won't end up in the `i(0)`, but behind it (for
 reasons, check out Luasnip#110).
 
@@ -994,54 +1030,56 @@ API-REFERENCE                                              *luasnip-api-referenc
 *   `lsp_expand(snip_string, opts)`: expand the lsp-syntax-snippet defined via
     `snip_string` at the cursor.
     `opts` can have the same options as `opts` in `snip_expand`.
-*   `active_update_dependents()`: update all function/dynamicNodes that have
-    the current node as their argument (will only actually update them if
-    the text in any of the argnodes changed).
+*   `active_update_dependents()`: update all function/dynamicNodes that have the
+    current node as an argnode (will actually only update them if the text in any
+    of the argnodes changed).
 *   `available()`: return a table of all snippets defined for the current
     filetypes(s) (`{ft1={snip1, snip2}, ft2={snip3, snip4}}`).
 *   `exit_out_of_region(node)`: checks whether the cursor is still within the
-    range of the snippet `node` belongs to. If yes, no change occurs, if not,
-    the snippet is left and following snippets are checked (the next active
-    node will be the 0-node of the snippet before the one the cursor is
-    inside. If the cursor isn't inside any snippet, the active node will be
-    the last node in the jumplist). If a jump causes an error (happens mostly
-    because a snippet was deleted), the snippet is removed from the jumplist.
+    range of the snippet `node` belongs to. If yes, no change occurs, if No, the
+    snippet is exited and following snippets' regions are checked and potentially
+    exited (the next active node will be the 0-node of the snippet before the one
+    the cursor is inside.
+    If the cursor isn't inside any snippet, the active node will be the last node
+    in the jumplist).
+    If a jump causes an error (happens mostly because a snippet was deleted), the
+    snippet is removed from the jumplist.
 *   `store_snippet_docstrings(snippet_table)`: Stores the docstrings of all
     snippets in `snippet_table` to a file
-    (`stdpath("cache")`/luasnip/docstrings.json).
+    (`stdpath("cache")/luasnip/docstrings.json`).
     Calling `store_snippet_docstrings(snippet_table)` after adding/modifying
-    snippets and `load_snippet_docstrings(snippet_table)` on startup
-    after all snippets have been added to `snippet_table` is a way to avoide
-    regenerating the (unchanged) docstrings on each startup.
+    snippets and `load_snippet_docstrings(snippet_table)` on startup after all
+    snippets have been added to `snippet_table` is a way to avoide regenerating
+    the (unchanged) docstrings on each startup.
     (Depending on when the docstrings are required and how luasnip is loaded,
     it may be more sensible to let them load lazily, eg. just before they are
     required).
     `snippet_table` should be laid out just like `luasnip.snippets` (it will
-    also most likely always be `luasnip.snippets`).
+    most likely always be `luasnip.snippets`).
 *   `load_snippet_docstrings(snippet_table)`: Load docstrings for all snippets
-    in `snippet_table` from `stdpath("cache")`/luasnip/docstrings.json.
+    in `snippet_table` from `stdpath("cache")/luasnip/docstrings.json`.
     The docstrings are stored and restored via trigger, meaning if two
     snippets for one filetype have the same(very unlikely to happen in actual
     usage), bugs could occur.
-    `snippet_table` should be laid out like described in
-    `store_snippet_docstrings`.
+    `snippet_table` should be laid out as described in `store_snippet_docstrings`.
 *   `unlink_current_if_deleted()`: Checks if the current snippet was deleted,
     if so, it is removed from the jumplist. This is not 100% reliable as
     luasnip only sees the extmarks and their begin/end may not be on the same
     position, even if all the text between them was deleted.
-*   `filetype_extend(filetype, extend_filetypes)`: Tells luasnip that for a
-    buffer with `ft=filetype`, snippets from `extend_filetypes` should be
-    searched as well. `extend_filetypes` is a lua-array (`{ft1, ft2, ft3}`).
-    `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand
-    c-and cpp-snippets for lua-files.
-*   `filetype_set(filetype, replace_filetypes):` Similar to `filetype_extend`,
-    but where it appended filetypes, this replaces them:
+*   `filetype_extend(filetype:string, extend_filetypes:table of string)`: Tells
+    luasnip that for a buffer with `ft=filetype`, snippets from
+    `extend_filetypes` should be searched as well. `extend_filetypes` is a
+    lua-array (`{ft1, ft2, ft3}`).
+    `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand c-and
+    cpp-snippets for lua-files.
+*   `filetype_set(filetype:string, replace_filetypes:table of string):` Similar
+    to `filetype_extend`, but where append appended filetypes, set sets them:
     `filetype_set("lua", {"c"})` causes only c-snippets to be expanded in
     lua-files, lua-snippets aren't even searched.
 *   `cleanup()`: clears all snippets. Not useful for regular usage, only when
     authoring and testing snippets.
-*   `refresh_notify(ft)`: Triggers an autocmd that other plugins can hook into to
-    perform various cleanup for the refreshed filetype.
+*   `refresh_notify(ft:string)`: Triggers an autocmd that other plugins can hook
+    into to perform various cleanup for the refreshed filetype.
     Useful for signaling that new snippets were added for the filetype `ft`.
 
 Not covered in this section are the various node-constructors exposed by
