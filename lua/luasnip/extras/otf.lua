@@ -76,7 +76,7 @@ local M = {}
 -- It's advaisable not to use the default register as luasnip will probably
 -- override it
 function M.otf()
-	local reg = vim.fn.getreg()
+	local reg = vim.fn.getreg("") --Take the last regex
 	if last_reg ~= reg then
 		last_snip = txt_to_snip(reg)
 	end

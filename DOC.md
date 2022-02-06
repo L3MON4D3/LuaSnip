@@ -736,7 +736,21 @@ insert 1 appended to itself, but the second jump will lead to it, making it
 easy to override the generated text.
 The text will only be changed when a argnode updates it.
 
+## On The Fly snippets
+You can create snippets that are not for being used all the time but only
+in a single session.
 
+This behaves as an "operator" takes what is in a register and transforms it into a
+snippet using words prefixed as $ as inputs or copies (depending if the same word appears 
+more than once). You can escape $ by repeating it.
+
+In order to use add something like this to your config:
+```vim
+vnoremap <leader>e  "pd:lua require('luasnip.extras.otf').otf()<cr>
+nnoremap <leader>e  "p:lua require('luasnip.extras.otf').otf()<cr>
+```
+Notice that you can use your own mapping instead of <leader>e  and you can pick another register
+instead of `"p`
 # LSP-SNIPPETS
 
 Luasnip is capable of parsing lsp-style snippets using
