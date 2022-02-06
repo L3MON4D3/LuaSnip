@@ -187,8 +187,10 @@ string:
 ================================================================================
 INSERTNODE                                                    *luasnip-insertnode*
 
-These Nodes can be jumped to and from. The functionality is best demonstrated
-with an example:
+These Nodes contain editable text and can be jumped to- and from (eg.
+traditional placeholders, like `$1` in textmate-snippets).
+
+The functionality is best demonstrated with an example:
 >
     s("trigger", {
     	t({"After expanding, the cursor is here ->"}), i(1),
@@ -441,7 +443,7 @@ which makes them very powerful as parts of the snippet can be changed based on
 user-input.
 
 The prototype for the dynamicNodes' constructor is
-`d(position, function, argnodes, user_args1, ..., user_argsn)`:
+`d(position:int, function, argnodes:table of nodes, user_args1, ..., user_argsn)`:
 1. `position`: just like all jumpable nodes, when this node will be jumped into.
 2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`
    This function is called when the argnodes' text changes. It generates and
@@ -693,18 +695,44 @@ is only a short outline, their usage is shown more expansively in
     with "e", one could use `lambda(lambda._1:gsub("a", "e"), n)` (signature is
     similar to that of `functionNode`).
     If a node has multiple lines, they will be concatenated using "\n".
-*   `match`: Can insert text based on whether a given insert matches a pattern or
-    a function or lambda returns true.
-    The complete signature for the node is `match(index, match, then, else)`, where
-    `index` has to be a single number, `match` can be a string (interpreted as lua
-    pattern), function, or lambda (useful if string-manipulations have to be
-    performed before the string is matched).
-    `then` and `else` can also be strings (inserted literally), functions (run with
-    the same arguments as a `functionNode`-function), or lambda. The default for
-    `else` is the empty string.
-    To return "A" if insert n matches "ABC", `match(n, "^ABC$", "A", "")` can be
-    used. `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
-    "PALINDROME" if the nth insert is a palindrome.
+*   `match`: Can insert text based on a predicate (shorthand for `functionNode`s).
+    The complete signature for the node is `match(argnodes, condition, then, else)`, where
+    *   `argnodes` can be specified as in `functionNode`,
+    *   `condition` may be a
+    *   string: interpreted as a lua-pattern. Matched on the `\n`-joined (in case
+        it's multiline) text of the first argnode (`args[1]:match(condition)`).
+    *   function: `fn(args, snip) -> bool`: takes the same parameters as the
+        `functionNode`-function, any value other than nil or false is interpreted
+        as a match.
+    *   lambda: `l._n` is the `\n`-joined text of the nth argnode.
+        Useful if string-manipulations have to be performed before the string is matched.
+    *   `then` is inserted if the condition matches, `else` if it doesn't. They can
+        both be either text, lambda or function (with the same parameters as
+        specified above).
+        If `then` is not given, the `then`-value depends on what was specified as the
+        `condition`:
+    *   pattern: Simply the return value from the `match`, eg. the entire match,
+        or, if there were capture groups, the first capture group.
+    *   function: the return value of the function if it is either a string or a
+        table (if there is no `then`, the function cannot return a table containing
+        something other than strings).
+    *   lambda: Simply the first value returned by the lambda.
+
+Examples:
+  * `match(n, "^ABC$", "A")` inserts "A" if the `n`th jumpable node matches
+    "ABC" exactly, nothing otherwise.
+  * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
+    "PALINDROME" if the nth jumpable node is a palindrome.
+  * `lua
+    s("trig", {
+        i(1), t":",
+        i(2), t"::",
+        m({1, 2}, lambda._1:match("^"..lambda._2.."$"), lambda._1:gsub("a", "e"))
+    })
+`
+    This inserts the text of the first insertNode, with all occurences of `a`
+    replaced with `e` if the second insertNode matches the first exactly.
+
 *   `rep`: repeats the node with the passed index. `rep(1)` to repeat the content
     of the first insert.
 *   `partial`: directly inserts the output of a function. Useful for eg.
