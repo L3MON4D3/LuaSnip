@@ -11,6 +11,8 @@ end
 
 local function make_lambda_args(node_args, imm_parent)
 	local snip = imm_parent.snippet
+	-- turn args' table-multilines into \n-multilines (needs to be possible
+	-- to process args with luas' string-functions).
 	local args = vim.tbl_map(_concat, node_args)
 
 	setmetatable(args, {
@@ -23,6 +25,7 @@ local function make_lambda_args(node_args, imm_parent)
 			else
 				-- env may be string or table.
 				if type(snip.env[key]) == "table" then
+					-- table- to \n-multiline.
 					val = _concat(snip.env[key])
 				else
 					val = snip.env[key]
@@ -82,12 +85,17 @@ end
 
 local function match(index, _match, _then, _else)
 	assert(_match, "You have to pass at least 2 arguments")
-	assert(type(index) == "number", "Index has to be a single number")
 
 	_match = to_function(_match, true)
-	_then = to_function(_then or function(text)
-		local match_return = _match(text)
-		return (type(match_return) == "string" and match_return) or ""
+	_then = to_function(_then or function(args, snip)
+		local match_return = _match(args, snip)
+		return (
+				(
+					type(match_return) == "string"
+					-- _assume_ table of string.
+					or type(match_return) == "table"
+				) and match_return
+			) or ""
 	end)
 	_else = to_function(_else or "")
 
@@ -98,10 +106,11 @@ local function match(index, _match, _then, _else)
 		else
 			out = _else(args, snip)
 		end
-		return vim.split(out, "\n")
+		-- \n is used as a line-separator for simple strings.
+		return type(out) == "string" and vim.split(out, "\n") or out
 	end
 
-	return F(func, { index })
+	return F(func, index)
 end
 
 return {
