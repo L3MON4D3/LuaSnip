@@ -190,7 +190,7 @@ ls.snippets = {
 	--     - luasnip.all
 	-- are searched in that order.
 	all = {
-		-- trigger is fn.
+		-- trigger is `fn`, second argument to snippet-constructor are the nodes to insert into the buffer on expansion.
 		s("fn", {
 			-- Simple static text.
 			t("//Parameters: "),
@@ -205,7 +205,7 @@ ls.snippets = {
 			i(2, "int foo"),
 			-- Linebreak
 			t({ ") {", "\t" }),
-			-- Last Placeholder, exit Point of the snippet. EVERY 'outer' SNIPPET NEEDS Placeholder 0.
+			-- Last Placeholder, exit Point of the snippet.
 			i(0),
 			t({ "", "}" }),
 		}),
@@ -375,11 +375,14 @@ ls.snippets = {
 			l(l.CAPTURE1:gsub("1", l.TM_FILENAME), {}),
 		}),
 		-- Set store_selection_keys = "<Tab>" (for example) in your
-		-- luasnip.config.setup() call to access TM_SELECTED_TEXT. In
-		-- this case, select a URL, hit Tab, then expand this snippet.
+		-- luasnip.config.setup() call to populate
+		-- TM_SELECTED_TEXT/SELECT_RAW/SELECT_DEDENT.
+		-- In this case: select a URL, hit Tab, then expand this snippet.
 		s("link_url", {
 			t('<a href="'),
 			f(function(_, snip)
+				-- TM_SELECTED_TEXT is a table to account for multiline-selections.
+				-- In this case only the first line is inserted.
 				return snip.env.TM_SELECTED_TEXT[1] or {}
 			end, {}),
 			t('">'),

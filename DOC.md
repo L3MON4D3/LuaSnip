@@ -157,8 +157,10 @@ s("trigger", {
 
 # INSERTNODE
 
-These Nodes can be jumped to and from. The functionality is best demonstrated
-with an example:
+These Nodes contain editable text and can be jumped to- and from (eg.
+traditional placeholders, like `$1` in textmate-snippets).  
+
+The functionality is best demonstrated with an example:
 
 ```lua
 s("trigger", {
@@ -416,7 +418,7 @@ which makes them very powerful as parts of the snippet can be changed based on
 user-input.
 
 The prototype for the dynamicNodes' constructor is 
-`d(position, function, argnodes, user_args1, ..., user_argsn)`:
+`d(position:int, function, argnodes:table of nodes, user_args1, ..., user_argsn)`:
 1. `position`: just like all jumpable nodes, when this node will be jumped into.
 2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`  
    This function is called when the argnodes' text changes. It generates and
