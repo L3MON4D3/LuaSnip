@@ -746,8 +746,8 @@ more than once). You can escape $ by repeating it.
 
 In order to use add something like this to your config:
 ```vim
-vnoremap <leader>e  "pd:lua require('luasnip.extras.otf').otf()<cr>
-nnoremap <leader>e  "p:lua require('luasnip.extras.otf').otf()<cr>
+vnoremap <leader>e  "pd:lua require('luasnip.extras.otf').on_the_fly()<cr>
+nnoremap <leader>e  "p:lua require('luasnip.extras.otf').on_the_fly()<cr>
 ```
 Notice that you can use your own mapping instead of <leader>e  and you can pick another register
 instead of `"p`
