@@ -43,7 +43,7 @@ local function txt_to_snip(txt)
 		if part[1] == T.TXT then
 			current_text_arg[#current_text_arg] = current_text_arg[#current_text_arg]
 				.. part[2]
-		elseif #current_text_arg > 0 then
+		elseif #current_text_arg > 1 or current_text_arg[1] ~= "" then
 			table.insert(nodes, t(current_text_arg))
 			current_text_arg = { "" }
 		end
@@ -61,7 +61,7 @@ local function txt_to_snip(txt)
 			end
 		end
 	end
-	if #current_text_arg > 1 or current_text_arg[0] ~= "" then
+	if #current_text_arg > 1 or current_text_arg[1] ~= "" then
 		table.insert(nodes, t(current_text_arg))
 	end
 	return s("", nodes)
