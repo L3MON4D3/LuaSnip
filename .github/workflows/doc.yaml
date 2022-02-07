@@ -1,4 +1,4 @@
-name: Formating and doc generation
+name: Doc generation
 
 on: [push, pull_request_target]
 
