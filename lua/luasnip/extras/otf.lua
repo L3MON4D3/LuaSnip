@@ -1,6 +1,7 @@
 local ls = require("luasnip")
 local cp = require("luasnip.util.functions").copy
 local p = require("luasnip.extras._parser_combinator")
+local dedent = require('luasnip.utils.str').dedent
 
 local T = { EOL = "EOL", TXT = "TXT", INP = "INP" }
 
@@ -26,6 +27,7 @@ local function txt_to_snip(txt)
 	local s = ls.s
 	local i = ls.i
 	local f = ls.f
+        txt = dedent(txt)
 
 	-- The parser does not handle empty strings
 	if txt == "" then
