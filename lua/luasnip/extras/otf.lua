@@ -29,7 +29,7 @@ local function txt_to_snip(txt)
 
 	-- The parser does not handle empty strings
 	if txt == "" then
-		return s(t({ "" }))
+		return s('', t({ "" }))
 	end
 
 	local _, chunks, _ = snippet_chunks(txt, 1)
