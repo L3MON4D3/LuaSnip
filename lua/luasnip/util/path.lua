@@ -38,6 +38,16 @@ function Path.async_read_file(path, callback)
 	end)
 end
 
+-- takes path:string, returns content of file:string.
+function Path.read_file(path)
+	local fd = assert(uv.fs_open(path, "r", tonumber("0666", 8)))
+	local stat = assert(uv.fs_fstat(fd))
+	local buf = assert(uv.fs_read(fd, stat.size, 0))
+	uv.fs_close(fd)
+
+	return buf
+end
+
 local MYCONFIG_ROOT = vim.env.MYVIMRC
 -- if MYVIMRC is not set then it means nvim was called with -u
 -- therefore the first script is the configuration
