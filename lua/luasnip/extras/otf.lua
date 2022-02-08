@@ -1,7 +1,8 @@
 local ls = require("luasnip")
 local cp = require("luasnip.util.functions").copy
 local p = require("luasnip.extras._parser_combinator")
-local dedent = require("luasnip.utils.str").dedent
+local dedent = require("luasnip.util.str").dedent
+local M = {}
 
 local T = { EOL = "EOL", TXT = "TXT", INP = "INP" }
 
@@ -20,9 +21,9 @@ local chunk = p.any(
 	end)
 )
 
-local snippet_chunks = p.star(chunk)
+M._snippet_chunks = p.star(chunk)
 
-local function txt_to_snip(txt)
+function M._txt_to_snip(txt)
 	local t = ls.t
 	local s = ls.s
 	local i = ls.i
@@ -34,7 +35,7 @@ local function txt_to_snip(txt)
 		return s("", t({ "" }))
 	end
 
-	local _, chunks, _ = snippet_chunks(txt, 1)
+	local _, chunks, _ = M._snippet_chunks(txt, 1)
 
 	local current_text_arg = { "" }
 	local nodes = {}
@@ -72,15 +73,13 @@ end
 local last_snip = nil
 local last_reg = nil
 
-local M = {}
-
 -- Create snippets On The Fly
 -- It's advaisable not to use the default register as luasnip will probably
 -- override it
 function M.on_the_fly(regname)
 	local reg = vim.fn.getreg(regname) --Uses the last set register if regname is nil
 	if last_reg ~= reg then
-		last_snip = txt_to_snip(reg)
+		last_snip = M._txt_to_snip(reg)
 	end
 	ls.snip_expand(last_snip)
 end
