@@ -1,5 +1,5 @@
 local ls = require("luasnip")
-local caches = require("luasnip.loaders._caches")
+local cache = require("luasnip.loaders._caches").snipmate
 local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
@@ -167,9 +167,9 @@ end
 function M._lazyload()
 	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
-		if not caches.lazy_loaded_ft[ft] then
-			caches.lazy_loaded_ft[ft] = true
-			M.load({ paths = caches.lazy_load_paths, include = { ft } })
+		if not cache.lazy_loaded_ft[ft] then
+			cache.lazy_loaded_ft[ft] = true
+			M.load({ paths = cache.lazy_load_paths, include = { ft } })
 		end
 	end
 end
@@ -182,15 +182,15 @@ function M.lazy_load(opts)
 	elseif type(opts.paths) == "string" then
 		opts.paths = vim.split(opts.paths, ",")
 	end
-	vim.list_extend(caches.lazy_load_paths, opts.paths)
+	vim.list_extend(cache.lazy_load_paths, opts.paths)
 
-	caches.lazy_load_paths = util.deduplicate(caches.lazy_load_paths)
+	cache.lazy_load_paths = util.deduplicate(cache.lazy_load_paths)
 
 	vim.cmd([[
     augroup _luasnip_snipmate_lazy_load
         au!
         au BufWinEnter,FileType * lua require("luasnip.loaders.from_snipmate")._lazyload()
-        au User LuasnipCleanup lua require("luasnip.loaders._caches").clean()
+        au User LuasnipCleanup lua require("luasnip.loaders._caches").snipmate.clean()
     augroup END
     ]])
 end
