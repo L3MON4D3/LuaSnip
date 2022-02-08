@@ -1,12 +1,20 @@
-name: Stylua
+name: Generate docs and format
 
-on: pull_request
+on: push
 
 jobs:
   postprocessing:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: "Auto Generate docs"
+        uses: docker://leiserfg/md2vim
+        with:
+          args:  '-desc  "Luasnip Snippet Engine"  DOC.md doc/luasnip.txt'
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto generate docs"
+          branch: ${{ github.head_ref }}
       - name: "Format with Stylua"
         uses: JohnnyMorganz/stylua-action@1.0.0
         with:
