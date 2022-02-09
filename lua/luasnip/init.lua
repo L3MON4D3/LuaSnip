@@ -536,6 +536,7 @@ ls = {
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
 	jumpable = jumpable,
 	expandable = expandable,
+	in_snippet = in_snippet,
 	expand = expand,
 	snip_expand = snip_expand,
 	expand_repeat = expand_repeat,
