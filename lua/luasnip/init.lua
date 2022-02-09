@@ -86,7 +86,7 @@ local function safe_jump(node, dir, no_move)
 		snip:remove_from_jumplist()
 		-- dir==1: try jumping into next snippet, then prev
 		-- dir==-1: try jumping into prev snippet, then next
-		if dir == 1 then
+		if not dir or dir == 1 then
 			return safe_jump(
 				snip.next.next or snip.prev.prev,
 				snip.next.next and 1 or -1,
