@@ -179,7 +179,7 @@ For nvim-cmp, it is also possible to follow the [example recommendation](https:/
     ```
     The snipmate format is very simple, so adding **custom snippets** only requires a few steps:
     - add a directory beside your `init.vim` (or any other place that is in your `runtimepath`) named `snippets`.
-    - inside that directory, create files named `<filetype>.snippet` and add snippets for the given filetype in it (for inspiration, check [honza/vim-snippets](https://github.com/honza/vim-snippets/tree/master/snippets)).  
+    - inside that directory, create files named `<filetype>.snippets` and add snippets for the given filetype in it (for inspiration, check [honza/vim-snippets](https://github.com/honza/vim-snippets/tree/master/snippets)).  
         ``` snipmate
         # comment
         snippet <trigger> <description>
