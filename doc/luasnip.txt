@@ -278,14 +278,14 @@ The first parameter of `f` is the function. Its parameters are
       (eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
       all lines following the first.
 
-1.  The immediate parent of the `functionNode`. It is included here as it allows
+2.  The immediate parent of the `functionNode`. It is included here as it allows
       easy access to anything that could be useful in functionNodes (ie.
       `parent.snippet.env` or `parent.snippet.captures`, which contains capture
       groups of regex-triggered snippets). In most cases `parent.env` works,
       but if a `functionNode` is nested within a `snippetNode`, the immediate
       parent (a `snippetNode`) will contain neither `captures` nor `env`. Those
       are only stored in the `snippet`, which can be accessed as `parent.snippet`.
-2.  Any parameters passed to `f` behind the second (included to more easily
+3.  Any parameters passed to `f` behind the second (included to more easily
       reuse functions, ie. ternary if based on text in an insertNode).
 
 The second parameter is a table of indices of jumpable nodes whose text is
