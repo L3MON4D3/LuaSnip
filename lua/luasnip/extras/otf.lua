@@ -80,6 +80,7 @@ function M.on_the_fly(regname)
 	regname = regname or ""
 	local reg = table.concat(vim.fn.getreg(regname, 1, true), "\n") -- Avoid eol in the last line
 	if last_reg ~= reg then
+		last_reg = reg
 		last_snip = M._txt_to_snip(reg)
 	end
 	ls.snip_expand(last_snip)
