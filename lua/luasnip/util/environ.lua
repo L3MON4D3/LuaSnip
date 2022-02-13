@@ -182,7 +182,7 @@ local table_env_vars = {
 -- returns nil, but that should be alright.
 -- If not, use metatable.
 function Environ.is_table(key)
-	return table_env_vars.key
+	return table_env_vars[key]
 end
 
 return Environ
