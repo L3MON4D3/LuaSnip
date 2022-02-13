@@ -20,16 +20,12 @@ describe("luasnip.extra.otf", function()
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	check("Only text", "one", { { "TXT", "one" } })
-	check(
-		"Text and inputs",
-		"local $val = require'module'.$color",
-		{
-			{ "TXT", "local " },
-			{ "INP", "val" },
-			{ "TXT", " = require'module'." },
-			{ "INP", "color" },
-		}
-	)
+	check("Text and inputs", "local $val = require'module'.$color", {
+		{ "TXT", "local " },
+		{ "INP", "val" },
+		{ "TXT", " = require'module'." },
+		{ "INP", "color" },
+	})
 
 	check(
 		"Multiline text with escapes",

@@ -77,8 +77,8 @@ local last_reg = nil
 -- It's advaisable not to use the default register as luasnip will probably
 -- override it
 function M.on_the_fly(regname)
-        regname = regname or ""
-	local reg = table.concat(vim.fn.getreg(regname, 1, true), '\n') -- Avoid eol in the last line
+	regname = regname or ""
+	local reg = table.concat(vim.fn.getreg(regname, 1, true), "\n") -- Avoid eol in the last line
 	if last_reg ~= reg then
 		last_snip = M._txt_to_snip(reg)
 	end
