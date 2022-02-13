@@ -273,19 +273,19 @@ user-defined function:
      })
 <
 
-The first parameter of `f` is the function. Its parameters are
-1. A table of the text of currently contained in the argnodes.
+The first parameter of `f` is the function. Its parameters are:
+
+1.  A table of the text of currently contained in the argnodes.
       (eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
       all lines following the first.
-
-1.  The immediate parent of the `functionNode`. It is included here as it allows
+2.  The immediate parent of the `functionNode`. It is included here as it allows
       easy access to anything that could be useful in functionNodes (ie.
       `parent.snippet.env` or `parent.snippet.captures`, which contains capture
       groups of regex-triggered snippets). In most cases `parent.env` works,
       but if a `functionNode` is nested within a `snippetNode`, the immediate
       parent (a `snippetNode`) will contain neither `captures` nor `env`. Those
       are only stored in the `snippet`, which can be accessed as `parent.snippet`.
-2.  Any parameters passed to `f` behind the second (included to more easily
+3.  Any parameters passed to `f` behind the second (included to more easily
       reuse functions, ie. ternary if based on text in an insertNode).
 
 The second parameter is a table of indices of jumpable nodes whose text is
@@ -444,32 +444,33 @@ user-input.
 
 The prototype for the dynamicNodes' constructor is
 `d(position:int, function, argnodes:table of nodes, user_args1, ..., user_argsn)`:
-1. `position`: just like all jumpable nodes, when this node will be jumped into.
-2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`
-   This function is called when the argnodes' text changes. It generates and
-   returns (wrapped inside a `snippetNode`) the nodes that should be inserted
-   at the dynamicNodes place.
-   `args`, `parent` and `user_args` are also explained in
-   functionNode (#functionnode)
-   * `args`: `table of text` (`{{"node1line1", "node1line2"}, {"node2line1"}}`)
-     from nodes the dynamicNode depends on.
-   * `parent`: the immediate parent of the `dynamicNode`).
-   * `old_state`: a user-defined table. This table may contain
-     anything, its intended usage is to preserve information from the previously
-     generated `snippetNode`: If the `dynamicNode` depends on other nodes it may
-     be reconstructed, which means all user input (text inserted in `insertNodes`,
-     changed choices) to the previous dynamicNode is lost.
-     The `old_state` table must be stored in `snippetNode` returned by
-     the function (`snippetNode.old_state`).
-     The second example below illustrates the usage of `old_state`.
-   * `user_args1, ..., user_argsn`: passed through from `dynamicNode`-constructor.
-3. `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
-   update, the `dynamicNode`s' function will be executed and the result inserted at
-   the `dynamicNodes` place.
-   Can be a single index or a table of indices.
-4. `user_args1, ..., user_argsn`: Anything passed here will also be passed to
-   the function (easy to reuse similar functions with small changes) (This may
-   be removed, alternatively use partial functions to reuse functions).
+
+1.  `position`: just like all jumpable nodes, when this node will be jumped into.
+2.  `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`
+    This function is called when the argnodes' text changes. It generates and
+    returns (wrapped inside a `snippetNode`) the nodes that should be inserted
+    at the dynamicNodes place.
+    `args`, `parent` and `user_args` are also explained in
+    functionNode (#functionnode)
+    *   `args`: `table of text` (`{{"node1line1", "node1line2"}, {"node2line1"}}`)
+        from nodes the dynamicNode depends on.
+    *   `parent`: the immediate parent of the `dynamicNode`).
+    *   `old_state`: a user-defined table. This table may contain
+        anything, its intended usage is to preserve information from the previously
+        generated `snippetNode`: If the `dynamicNode` depends on other nodes it may
+        be reconstructed, which means all user input (text inserted in `insertNodes`,
+        changed choices) to the previous dynamicNode is lost.
+        The `old_state` table must be stored in `snippetNode` returned by
+        the function (`snippetNode.old_state`).
+        The second example below illustrates the usage of `old_state`.
+    *   `user_args1, ..., user_argsn`: passed through from `dynamicNode`-constructor.
+3.  `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
+    update, the `dynamicNode`s' function will be executed and the result inserted at
+    the `dynamicNodes` place.
+    Can be a single index or a table of indices.
+4.  `user_args1, ..., user_argsn`: Anything passed here will also be passed to
+    the function (easy to reuse similar functions with small changes) (This may
+    be removed, alternatively use partial functions to reuse functions).
 
 Examples:
 >

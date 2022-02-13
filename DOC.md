@@ -240,7 +240,8 @@ user-defined function:
  	i(0)
  })
 ```
-The first parameter of `f` is the function. Its parameters are
+The first parameter of `f` is the function. Its parameters are:
+
 1. A table of the text of currently contained in the argnodes.
       (eg. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
       all lines following the first.
@@ -419,6 +420,7 @@ user-input.
 
 The prototype for the dynamicNodes' constructor is 
 `d(position:int, function, argnodes:table of nodes, user_args1, ..., user_argsn)`:
+
 1. `position`: just like all jumpable nodes, when this node will be jumped into.
 2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`  
    This function is called when the argnodes' text changes. It generates and
