@@ -746,7 +746,7 @@ more than once). You can escape $ by repeating it.
 
 In order to use add something like this to your config:
 ```vim
-vnoremap <c-f>  "ed:lua require('luasnip.extras.otf').on_the_fly()<cr>
+vnoremap <c-f>  "ec<C-\><C-O>:lua require('luasnip.extras.otf').on_the_fly()<cr>
 inoremap <c-f>  <C-\><C-O>"e:lua require('luasnip.extras.otf').on_the_fly()<cr>
 ```
 
@@ -755,12 +755,12 @@ instead of `"p`. You can even use it several times, as if it where a macro if yo
 mapppings like:
 ```vim
 ; For register a
-vnoremap <c-f>a  "ad:lua require('luasnip.extras.otf').on_the_fly()<cr>
+vnoremap <c-f>a  "ac<C-\><C-O>:lua require('luasnip.extras.otf').on_the_fly()<cr
 inoremap <c-f>a  <C-\><C-O>"a:lua require('luasnip.extras.otf').on_the_fly()<cr>
 
 
 ; For register b
-vnoremap <c-f>b  "bd:lua require('luasnip.extras.otf').on_the_fly()<cr>
+vnoremap <c-f>a  "bc<C-\><C-O>:lua require('luasnip.extras.otf').on_the_fly()<cr
 inoremap <c-f>b  <C-\><C-O>"b:lua require('luasnip.extras.otf').on_the_fly()<cr>
 ```
 
