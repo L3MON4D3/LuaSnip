@@ -193,8 +193,8 @@ For nvim-cmp, it is also possible to follow the [example recommendation](https:/
 This can also be done much better (one snippet-file per filetype+command for editing the current filetype) than in the example, see [this entry in the wiki](https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#split-up-snippets-by-filetype-load-on-demand-and-reload-after-change-first-iteration)
 
 ## Docs and Examples
+Check [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) (or `:help luasnip`) for a short overview and in-depth explanations of the different nodes.
 I highly recommend looking into (or better yet, `:luafile`ing) [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) before writing snippets in lua.  
-Check [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) (or `:help luasnip`) for in-depth explanations of the different nodes.
 The [Wiki](https://github.com/L3MON4D3/LuaSnip/wiki) contains some pretty useful extensions to Luasnip.
 
 # Config
