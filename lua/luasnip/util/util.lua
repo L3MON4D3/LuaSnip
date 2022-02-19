@@ -117,11 +117,7 @@ local function normal_move_before(new_cur_pos)
 			true
 		)
 		-- passing only "n" doesn't open folds (:h feedkeys).
-		vim.api.nvim_feedkeys(
-			keys,
-			"nt",
-			true
-		)
+		vim.api.nvim_feedkeys(keys, "nt", true)
 	elseif new_cur_pos[2] - 1 == 0 then
 		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "nt", true)
 	else
@@ -143,11 +139,7 @@ local function normal_move_on(new_cur_pos)
 			true
 		)
 		-- passing only "n" doesn't open folds (:h feedkeys).
-		vim.api.nvim_feedkeys(
-			keys,
-			"nt",
-			true
-		)
+		vim.api.nvim_feedkeys(keys, "nt", true)
 	else
 		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "nt", true)
 	end
