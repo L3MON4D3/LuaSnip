@@ -107,12 +107,18 @@ end
 local function normal_move_before(new_cur_pos)
 	-- +1: indexing
 	if new_cur_pos[2] - 1 > 0 then
-		vim.api.nvim_feedkeys(
+		local keys = vim.api.nvim_replace_termcodes(
 			tostring(new_cur_pos[1] + 1)
 				.. "G0"
 				.. tostring(new_cur_pos[2] - 1)
-				.. "l",
-			-- passing only "n" doesn't open folds (:h feedkeys).
+				.. "<Right>",
+			true,
+			false,
+			true
+		)
+		-- passing only "n" doesn't open folds (:h feedkeys).
+		vim.api.nvim_feedkeys(
+			keys,
 			"nt",
 			true
 		)
@@ -126,13 +132,19 @@ end
 
 local function normal_move_on(new_cur_pos)
 	if new_cur_pos[2] ~= 0 then
-		vim.api.nvim_feedkeys(
+		local keys = vim.api.nvim_replace_termcodes(
 			tostring(new_cur_pos[1] + 1)
 				.. "G0"
 				.. tostring(new_cur_pos[2])
 				-- open folds!
-				.. "l",
-			-- passing only "n" doesn't open folds (:h feedkeys).
+				.. "<Right>",
+			true,
+			false,
+			true
+		)
+		-- passing only "n" doesn't open folds (:h feedkeys).
+		vim.api.nvim_feedkeys(
+			keys,
 			"nt",
 			true
 		)
