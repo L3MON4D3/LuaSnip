@@ -33,11 +33,11 @@ function ExitNode:input_enter(no_move)
 	-- Don't enter node for -1-node, it isn't in the node-table.
 	if self.pos == 0 then
 		InsertNode.input_enter(self, no_move)
-		-- -1-node:
 	else
+		-- -1-node:
 		self:set_mark_rgrav(true, true)
 		if not no_move then
-			local mark_begin_pos = self.mark:pos_begin()
+			local mark_begin_pos = self.mark:pos_begin_raw()
 
 			if vim.fn.mode() == "i" then
 				util.insert_move_on(mark_begin_pos)
@@ -95,36 +95,15 @@ function InsertNode:input_enter(no_move)
 		self.parent:enter_node(self.indx)
 
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
-		local mark_begin_pos, mark_end_pos = self.mark:pos_begin_end()
+		local mark_begin_pos, mark_end_pos = self.mark:pos_begin_end_raw()
 		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
-			vim.api.nvim_feedkeys(
-				vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-				"n",
-				true
-			)
-			util.normal_move_on(mark_begin_pos)
-			vim.api.nvim_feedkeys(
-				vim.api.nvim_replace_termcodes("v", true, false, true),
-				"n",
-				true
-			)
-			-- with `exclusive` set, visual won't include the last cursor-position.
-			-- The cursor has to be moved one column further to account for that.
-			if vim.o.selection == "exclusive" then
-				util.normal_move_on(mark_end_pos)
-			else
-				util.normal_move_before(mark_end_pos)
-			end
-			vim.api.nvim_feedkeys(
-				vim.api.nvim_replace_termcodes("o<C-G>", true, false, true),
-				"n",
-				true
-			)
+			util.any_select(mark_begin_pos, mark_end_pos)
 		else
 			-- if current and target mode is INSERT, there's no reason to leave it.
 			if vim.fn.mode() == "i" then
 				util.insert_move_on(mark_begin_pos)
 			else
+				-- mode might be VISUAL or something else, but <Esc> always leads to normal.
 				vim.api.nvim_feedkeys(
 					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
 					"n",

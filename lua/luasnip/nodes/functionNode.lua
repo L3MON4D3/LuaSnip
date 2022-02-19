@@ -4,6 +4,7 @@ local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
+local tNode = require("luasnip.nodes.textNode")
 
 local function F(fn, args, ...)
 	return FunctionNode:new({
@@ -15,16 +16,7 @@ local function F(fn, args, ...)
 	})
 end
 
-function FunctionNode:input_enter()
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-		"n",
-		true
-	)
-	util.normal_move_on_insert(self.mark:pos_begin())
-
-	self:event(events.enter)
-end
+FunctionNode.input_enter = tNode.input_enter
 
 function FunctionNode:get_static_text()
 	-- static_text will already have been generated, if possible.

@@ -104,89 +104,74 @@ local function bytecol_to_utfcol(pos)
 	return { pos[1], vim.str_utfindex(line[1] or "", pos[2]) }
 end
 
-local function normal_move_before(new_cur_pos)
-	-- +1: indexing
-	if new_cur_pos[2] - 1 > 0 then
-		local keys = vim.api.nvim_replace_termcodes(
-			tostring(new_cur_pos[1] + 1)
-				.. "G0"
-				.. tostring(new_cur_pos[2] - 1)
-				.. "<Right>",
-			true,
-			false,
-			true
-		)
-		-- passing only "n" doesn't open folds (:h feedkeys).
-		vim.api.nvim_feedkeys(keys, "nt", true)
-	elseif new_cur_pos[2] - 1 == 0 then
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "nt", true)
-	else
-		-- column is 0, includes end of previous line. Move there.
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1]) .. "G$", "nt", true)
-	end
+local function replace_feedkeys(keys, opts)
+	vim.api.nvim_feedkeys(
+		vim.api.nvim_replace_termcodes(keys, true, false, true),
+		-- folds are opened manually now, no need to pass t.
+		-- n prevents langmap from interfering.
+		opts or "n",
+		true
+	)
 end
 
-local function normal_move_on(new_cur_pos)
-	if new_cur_pos[2] ~= 0 then
-		local keys = vim.api.nvim_replace_termcodes(
-			tostring(new_cur_pos[1] + 1)
-				.. "G0"
-				.. tostring(new_cur_pos[2])
-				-- open folds!
-				.. "<Right>",
-			true,
-			false,
-			true
-		)
-		-- passing only "n" doesn't open folds (:h feedkeys).
-		vim.api.nvim_feedkeys(keys, "nt", true)
-	else
-		vim.api.nvim_feedkeys(tostring(new_cur_pos[1] + 1) .. "G0", "nt", true)
+-- pos: (0,0)-indexed.
+local function cursor_set_keys(pos, before)
+	if before then
+		if pos[2] == 0 then
+			pos[1] = pos[1] - 1
+			-- pos2 is set to last columnt of previous line.
+			-- # counts bytes, but win_set_cursor expects bytes, so all's good.
+			pos[2] = #vim.api.nvim_buf_get_lines(
+					0,
+					pos[1],
+					pos[1] + 1,
+					false
+				)[1]
+		else
+			pos[2] = pos[2] - 1
+		end
 	end
+
+	return "<cmd>lua vim.api.nvim_win_set_cursor(0,{"
+		-- +1, win_set_cursor starts at 1.
+		.. pos[1] + 1
+		.. ","
+		-- -1 works for multibyte because of rounding, apparently.
+		.. pos[2]
+		.. "})"
+		.. "<cr><cmd>:silent! foldopen!<cr>"
+end
+
+-- any for any mode.
+-- other functions prefixed with eg. normal have to be in that mode, the
+-- initial esc removes that need.
+local function any_select(b, e)
+	-- stylua: ignore
+	replace_feedkeys(
+		-- this esc -> movement sometimes leads to a slight flicker
+		-- TODO: look into preventing that reliably.
+		-- simple move -> <esc>v isn't possible, leaving insert moves the
+		-- cursor, maybe do check for mode beforehand.
+		"<esc>"
+		.. cursor_set_keys(b)
+		.. "v"
+		.. (vim.o.selection == "exclusive" and
+			cursor_set_keys(e) or
+			-- set before
+			cursor_set_keys(e, true))
+		.. "o<C-G>" )
 end
 
 local function normal_move_on_insert(new_cur_pos)
-	local keys = vim.api.nvim_replace_termcodes(
-		tostring(new_cur_pos[1] + 1)
-			-- open folds!
-			.. "G0i"
-			.. string.rep("<Right>", new_cur_pos[2]),
-		true,
-		false,
-		true
-	)
-	-- passing only "n" doesn't open folds (:h feedkeys).
-	vim.api.nvim_feedkeys(keys, "nt", true)
+	-- moving in normal and going into insert is kind of annoying, eg. when the
+	-- cursor is, in normal, on a tab, i will set it on the beginning of the
+	-- tab. There's more problems, but this is very safe.
+	replace_feedkeys("i" .. cursor_set_keys(new_cur_pos))
 end
 
 local function insert_move_on(new_cur_pos)
-	local current_line = get_cursor_0ind()[1]
-
-	-- only compute diff for lines, seems safer and may even be faster because
-	-- the current column isn't required (cursor returns in bytes, calculating
-	-- columns from bytes costs too).
-	local direction, count
-	if current_line > new_cur_pos[1] then
-		-- current line is lower on screen, we need to move up.
-		direction = "<Up>"
-		count = current_line - new_cur_pos[1]
-	else
-		direction = "<Down>"
-		count = new_cur_pos[1] - current_line
-	end
-
-	-- stylua: ignore
-	local try =
-		-- move cursor to first column
-		"<Home>"
-		-- move to correct line.
-		.. direction:rep(count)
-		-- move to correct column
-		.. string.rep("<Right>", new_cur_pos[2])
-
-	local keys = vim.api.nvim_replace_termcodes(try, true, false, true)
-	-- passing only "n" doesn't open folds (:h feedkeys).
-	vim.api.nvim_feedkeys(keys, "nt", true)
+	-- maybe feedkeys this too.
+	set_cursor_0ind(new_cur_pos)
 end
 
 local function multiline_equal(t1, t2)
@@ -569,10 +554,9 @@ return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
 	move_to_mark = move_to_mark,
-	normal_move_before = normal_move_before,
-	normal_move_on = normal_move_on,
 	normal_move_on_insert = normal_move_on_insert,
 	insert_move_on = insert_move_on,
+	any_select = any_select,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	mark_pos_equal = mark_pos_equal,

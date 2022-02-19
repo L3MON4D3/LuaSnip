@@ -15,7 +15,7 @@ end
 
 function TextNode:input_enter(no_move)
 	if not no_move then
-		local mark_begin_pos = self.mark:pos_begin()
+		local mark_begin_pos = self.mark:pos_begin_raw()
 		if vim.fn.mode() == "i" then
 			util.insert_move_on(mark_begin_pos)
 		else

@@ -92,25 +92,8 @@ local function enter_nodes_between(parent, child, no_move)
 end
 
 local function select_node(node)
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-		"n",
-		true
-	)
-	-- columns in screencolumns.
-	local node_begin, node_end = node.mark:pos_begin_end()
-	util.normal_move_on(node_begin)
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("v", true, false, true),
-		"n",
-		true
-	)
-	util.normal_move_before(node_end)
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes("o<C-G>", true, false, true),
-		"n",
-		true
-	)
+	local node_begin, node_end = node.mark:pos_begin_end_raw()
+	util.any_select(node_begin, node_end)
 end
 
 local function print_dict(dict)
