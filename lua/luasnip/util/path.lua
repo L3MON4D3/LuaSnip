@@ -38,6 +38,17 @@ function Path.async_read_file(path, callback)
 	end)
 end
 
+---@param path string
+---@return string buffer @content of file
+function Path.read_file(path)
+	local fd = assert(uv.fs_open(path, "r", tonumber("0666", 8)))
+	local stat = assert(uv.fs_fstat(fd))
+	local buf = assert(uv.fs_read(fd, stat.size, 0))
+	uv.fs_close(fd)
+
+	return buf
+end
+
 local MYCONFIG_ROOT = vim.env.MYVIMRC
 -- if MYVIMRC is not set then it means nvim was called with -u
 -- therefore the first script is the configuration
@@ -69,7 +80,7 @@ local function resolve_symlink(path)
 		if followed_path then
 			local stat = uv.fs_stat(followed_path)
 			if stat and stat.type ~= "link" then
-				return followed_path
+				return followed_path, stat.type
 			else
 				path = followed_path
 			end
@@ -79,36 +90,35 @@ local function resolve_symlink(path)
 	end
 end
 
----Return t in path as a list
----@param path string
----@param t string @type like file, directory
----@param follow_symlinks boolean If true, we check that the *resolved* path is
---        of filetype `t`, and yet return the *symbolic link* itself in `path`
---        Has no effect if `t` is "link".
----@return string[]
-function Path.scandir(path, t, follow_symlinks)
-	local ret = {}
-	local fs = uv.fs_scandir(path)
+---Return files and directories in path as a list
+---@param root string
+---@return string[] files, string[] directories
+function Path.scandir(root)
+	local files, dirs = {}, {}
+	local fs = uv.fs_scandir(root)
 	if fs then
-		while true do
-			local name, type = uv.fs_scandir_next(fs)
-			if type == t then
-				table.insert(ret, name)
-			elseif type == "link" and follow_symlinks then
-				local followed_path = resolve_symlink(Path.join(path, name))
+		local name, type = "", ""
+		while name do
+			name, type = uv.fs_scandir_next(fs)
+			local path = Path.join(root, name)
+			if type == "file" then
+				table.insert(files, path)
+			elseif type == "directory" then
+				table.insert(dirs, path)
+			elseif type == "link" then
+				local followed_path
+				followed_path, type = resolve_symlink(path)
 				if followed_path then
-					local stat = uv.fs_stat(followed_path)
-					if stat and stat.type == t then
-						table.insert(ret, name)
+					if type == "file" then
+						table.insert(files, followed_path)
+					elseif type == "directory" then
+						table.insert(dirs, followed_path)
 					end
 				end
 			end
-			if name == nil then
-				break
-			end
 		end
 	end
-	return ret
+	return files, dirs
 end
 
 ---Get basename
