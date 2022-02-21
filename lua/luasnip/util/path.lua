@@ -38,6 +38,17 @@ function Path.async_read_file(path, callback)
 	end)
 end
 
+---@param path string
+---@return string buffer @content of file
+function Path.read_file(path)
+	local fd = assert(uv.fs_open(path, "r", tonumber("0666", 8)))
+	local stat = assert(uv.fs_fstat(fd))
+	local buf = assert(uv.fs_read(fd, stat.size, 0))
+	uv.fs_close(fd)
+
+	return buf
+end
+
 local MYCONFIG_ROOT = vim.env.MYVIMRC
 -- if MYVIMRC is not set then it means nvim was called with -u
 -- therefore the first script is the configuration
@@ -58,25 +69,24 @@ function Path.expand(filepath)
 	return uv.fs_realpath(expanded)
 end
 
----Return t in path as a list
+---Return files and directories in path as a list
 ---@param path string
----@param t string @type like file, directory
----@return string[]
-function Path.scandir(path, t)
-	local ret = {}
+---@return string[] files, string[] directories
+function Path.scandir(path)
+	local files, dirs = {}, {}
 	local fs = uv.fs_scandir(path)
 	if fs then
-		while true do
-			local name, type = uv.fs_scandir_next(fs)
-			if type == t then
-				table.insert(ret, name)
-			end
-			if name == nil then
-				break
+		local name, type = "", ""
+		while name do
+			name, type = uv.fs_scandir_next(fs)
+			if type == "file" then
+				table.insert(files, name)
+			elseif type == "directory" then
+				table.insert(dirs, name)
 			end
 		end
 	end
-	return ret
+	return files, dirs
 end
 
 ---Get basename
