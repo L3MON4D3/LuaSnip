@@ -5,7 +5,7 @@ local function filetypelist_to_set(list)
 	end
 	local out = {}
 	for _, ft in ipairs(list) do
-        out[ft] = true
+		out[ft] = true
 	end
 	return out
 end
