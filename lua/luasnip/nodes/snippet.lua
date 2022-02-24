@@ -326,7 +326,7 @@ function Snippet:trigger_expand(current_node, pos)
 	if vim.o.expandtab then
 		self:expand_tabs(util.tab_width())
 	end
-	self:indent(util.get_current_line_to_cursor():match("^%s*"))
+	self:indent(util.line_chars_before(pos):match("^%s*"))
 
 	-- keep (possibly) user-set opts.
 	if not self.ext_opts then

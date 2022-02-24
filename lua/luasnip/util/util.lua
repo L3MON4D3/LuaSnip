@@ -12,12 +12,16 @@ local function set_cursor_0ind(c)
 	vim.api.nvim_win_set_cursor(0, c)
 end
 
+-- pos: (0,0)-indexed.
+local function line_chars_before(pos)
+	-- cur-rows are 1-indexed, api-rows 0.
+	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
+	return string.sub(line[1], 1, pos[2])
+end
+
 -- returns current line with text up-to and excluding the cursor.
 local function get_current_line_to_cursor()
-	local cur = get_cursor_0ind()
-	-- cur-rows are 1-indexed, api-rows 0.
-	local line = vim.api.nvim_buf_get_lines(0, cur[1], cur[1] + 1, false)
-	return string.sub(line[1], 1, cur[2])
+	return line_chars_before(get_cursor_0ind())
 end
 
 -- delete n chars before cursor, MOVES CURSOR
@@ -559,6 +563,7 @@ return {
 	any_select = any_select,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
+	line_chars_before = line_chars_before,
 	mark_pos_equal = mark_pos_equal,
 	multiline_equal = multiline_equal,
 	word_under_cursor = word_under_cursor,
