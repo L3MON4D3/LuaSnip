@@ -183,7 +183,7 @@ function DynamicNode:update()
 	tmp:set_dependents()
 	tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
-	if vim.o.expandtab then
+	if vim.bo.expandtab then
 		tmp:expand_tabs(util.tab_width())
 	end
 	tmp:indent(self.parent.indentstr)

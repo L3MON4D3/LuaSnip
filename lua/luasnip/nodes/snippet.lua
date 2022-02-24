@@ -323,7 +323,7 @@ end
 
 function Snippet:trigger_expand(current_node, pos)
 	-- expand tabs before indenting to keep indentstring unmodified
-	if vim.o.expandtab then
+	if vim.bo.expandtab then
 		self:expand_tabs(util.tab_width())
 	end
 	self:indent(util.line_chars_before(pos):match("^%s*"))

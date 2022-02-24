@@ -104,7 +104,7 @@ function RestoreNode:put_initial(pos)
 	tmp:set_dependents()
 	tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
-	if vim.o.expandtab then
+	if vim.bo.expandtab then
 		tmp:expand_tabs(util.tab_width())
 	end
 

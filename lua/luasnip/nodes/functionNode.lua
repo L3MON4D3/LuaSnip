@@ -42,7 +42,7 @@ function FunctionNode:update()
 	local text = util.wrap_value(
 		self.fn(args, self.parent, unpack(self.user_args))
 	)
-	if vim.o.expandtab then
+	if vim.bo.expandtab then
 		util.expand_tabs(text, util.tab_width())
 	end
 	-- don't expand tabs in parent.indentstr, use it as-is.

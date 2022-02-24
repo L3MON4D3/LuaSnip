@@ -82,7 +82,7 @@ local function expand_tabs(text, tabwidth)
 end
 
 local function tab_width()
-	return vim.o.shiftwidth ~= 0 and vim.o.shiftwidth or vim.o.tabstop
+	return vim.bo.shiftwidth ~= 0 and vim.bo.shiftwidth or vim.bo.tabstop
 end
 
 local function mark_pos_equal(m1, m2)
