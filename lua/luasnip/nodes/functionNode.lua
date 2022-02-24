@@ -4,7 +4,7 @@ local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
-local tNode = require("luasnip.nodes.textNode")
+local tNode = require("luasnip.nodes.textNode").textNode
 
 local function F(fn, args, ...)
 	return FunctionNode:new({

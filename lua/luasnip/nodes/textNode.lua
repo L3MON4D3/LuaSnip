@@ -35,4 +35,5 @@ function TextNode:update_all_dependents() end
 
 return {
 	T = T,
+	textNode = TextNode,
 }
