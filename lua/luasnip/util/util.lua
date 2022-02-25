@@ -554,6 +554,31 @@ local function pop_front(list)
 	return front
 end
 
+local function sorted_keys(t)
+	local s = {}
+	local i = 1
+	for k, _ in pairs(t) do
+		s[i] = k
+		i = i + 1
+	end
+	table.sort(s)
+	return s
+end
+
+-- from https://www.lua.org/pil/19.3.html
+local function key_sorted_pairs(t)
+	local sorted = sorted_keys(t)
+	local i = 0
+	return function()
+		i = i + 1
+		if sorted[i] == nil then
+			return nil
+		else
+			return sorted[i], t[sorted[i]], i
+		end
+	end
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -592,4 +617,5 @@ return {
 	pos_add = pos_add,
 	deduplicate = deduplicate,
 	pop_front = pop_front,
+	key_sorted_pairs = key_sorted_pairs,
 }
