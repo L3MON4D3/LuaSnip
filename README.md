@@ -166,14 +166,14 @@ For nvim-cmp, it is also possible to follow the [example recommendation](https:/
 
 ## Add Snippets
 
-- **Vscode-like**: To use existing vs-code style snippets from a plugin (eg. [rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) simply install the friendly-snippets plugin and then add
+- **Vscode-like**: To use existing vs-code style snippets from a plugin (eg. [rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) simply install the plugin and then add
     ```lua
     require("luasnip.loaders.from_vscode").load()
     ```
-	somewhere in your nvim config. LuaSnip will then automatically load the snippets contained in the friendly-snippets plugin.
-  You can also easily **load your own custom vscode style snippets** by stating the path to the custom snippets folder within the load function:
+	somewhere in your nvim-config. LuaSnip will then load the snippets contained in the plugin on startup.
+  You can also easily **load your own custom vscode style snippets** by passing the path to the custom snippet-directory to the load function:
     ```lua
-    -- in your nvim folder
+    -- load snippets from path/of/your/nvim/config/my-cool-snippets
     require("luasnip.loaders.from_vscode").load({ paths = { "./my-cool-snippets" } })
     ```
 	For more info on the vscode-loader, check the [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L501) or [documentation](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#vscode-snippets-loader).
