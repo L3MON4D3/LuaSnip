@@ -263,7 +263,7 @@ end
 local function fix_node_indices(nodes)
 	local used_nodes = {}
 	for _, node in ipairs(nodes) do
-		if node.pos then
+		if node.pos and node.pos > 0 then
 			used_nodes[node.pos] = node
 		end
 	end

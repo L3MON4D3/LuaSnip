@@ -45,7 +45,7 @@ describe("Parser", function()
 	end)
 
 	it("Can create snippets with tabstops.", function()
-		local snip = '"a$1 b$2 c"'
+		local snip = '"a$2 $0b$1 c"'
 
 		assert.are.same(
 			exec_lua(
@@ -58,14 +58,6 @@ describe("Parser", function()
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
 		screen:expect({
 			grid = [[
-			a^ b c                                             |
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
-		})
-
-		exec_lua("ls.jump(1)")
-		screen:expect({
-			grid = [[
 			a b^ c                                             |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
@@ -74,7 +66,15 @@ describe("Parser", function()
 		exec_lua("ls.jump(1)")
 		screen:expect({
 			grid = [[
-			a b c^                                             |
+			a^ b c                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua("ls.jump(1)")
+		screen:expect({
+			grid = [[
+			a ^b c                                             |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
 		})
