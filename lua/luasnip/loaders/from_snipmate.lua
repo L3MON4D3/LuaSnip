@@ -109,7 +109,7 @@ end
 
 local function get_paths(root)
 	local ret = {}
-	local files = Path.scandir(root, "file")
+	local files = Path.scandir(root, "file", true)
 	for _, file in ipairs(files) do
 		local name, ext = Path.basename(file, true)
 		if ext == "snippets" then

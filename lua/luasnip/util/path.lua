@@ -58,11 +58,35 @@ function Path.expand(filepath)
 	return uv.fs_realpath(expanded)
 end
 
+---Resolve a (chain of) symbolic link(s) to their final destination.
+---@param path string
+---@return string|nil
+---Returns nil if the sym link points to an inexistent file.
+---Assumes that path is a symlink, will return nil otherwise.
+local function resolve_symlink(path)
+	while true do
+		local followed_path = uv.fs_readlink(path)
+		if followed_path then
+			local stat = uv.fs_stat(followed_path)
+			if stat and stat.type ~= "link" then
+				return followed_path
+			else
+				path = followed_path
+			end
+		else
+			return nil
+		end
+	end
+end
+
 ---Return t in path as a list
 ---@param path string
 ---@param t string @type like file, directory
+---@param follow_symlinks boolean If true, we check that the *resolved* path is
+--        of filetype `t`, and yet return the *symbolic link* itself in `path`
+--        Has no effect if `t` is "link".
 ---@return string[]
-function Path.scandir(path, t)
+function Path.scandir(path, t, follow_symlinks)
 	local ret = {}
 	local fs = uv.fs_scandir(path)
 	if fs then
@@ -70,6 +94,14 @@ function Path.scandir(path, t)
 			local name, type = uv.fs_scandir_next(fs)
 			if type == t then
 				table.insert(ret, name)
+			elseif type == "link" and follow_symlinks then
+				local followed_path = resolve_symlink(Path.join(path, name))
+				if followed_path then
+					local stat = uv.fs_stat(followed_path)
+					if stat and stat.type == t then
+						table.insert(ret, name)
+					end
+				end
 			end
 			if name == nil then
 				break
