@@ -379,6 +379,11 @@ parse_snippet = function(context, body, tab_stops, brackets)
 			if type(context) == "number" then
 				return snipNode.SN(context, fix_node_indices(nodes))
 			else
+				-- return raw nodes.
+				if type(context) == "nil" then
+					return fix_node_indices(nodes)
+				end
+
 				if type(context) == "string" then
 					context = { trig = context }
 				end
