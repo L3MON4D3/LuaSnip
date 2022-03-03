@@ -38,6 +38,7 @@ function M.session_setup_luasnip()
 	n = require("luasnip.extras").nonempty
 	m = require("luasnip.extras").match
 	ai = require("luasnip.nodes.absolute_indexer")
+	sp = require("luasnip.nodes.snippetProxy")
 	]])
 end
 

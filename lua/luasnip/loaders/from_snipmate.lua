@@ -4,6 +4,7 @@ local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local session = require("luasnip.session")
+local sp = require("luasnip.nodes.snippetProxy")
 
 local function parse_snipmate(buffer, filename)
 	local snippet = {}
@@ -38,7 +39,7 @@ local function parse_snipmate(buffer, filename)
 		end
 
 		body = table.concat(body, "\n")
-		local snip = ls.parser.parse_snippet({
+		local snip = sp({
 			trig = prefix,
 			dscr = description,
 			wordTrig = true,

@@ -3,7 +3,7 @@ local cache = require("luasnip.loaders._caches").vscode
 local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
-local session = require("luasnip.session")
+local sp = require("luasnip.nodes.snippetProxy")
 
 local function json_decode(data)
 	local status, result = pcall(util.json_decode, data)
@@ -42,7 +42,7 @@ local function load_snippet_file(langs, snippet_set_path)
 						for _, prefix in ipairs(prefixes) do
 							local ls_conf = parts.luasnip or {}
 
-							local snip = ls.parser.parse_snippet({
+							local snip = sp({
 								trig = prefix,
 								name = name,
 								dscr = parts.description or name,

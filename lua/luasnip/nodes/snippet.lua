@@ -120,13 +120,15 @@ local function wrap_nodes_in_snippetNode(nodes)
 	end
 end
 
-local function init_opts(opts)
+local function init_snippet_opts(opts)
 	opts = opts or {}
 
 	opts.callbacks = opts.callbacks or {}
 	-- return empty table for non-specified callbacks.
 	setmetatable(opts.callbacks, callbacks_mt)
+
 	opts.condition = opts.condition or true_func
+
 	opts.show_condition = opts.show_condition or true_func
 
 	-- return sn(t("")) for so-far-undefined keys.
@@ -140,15 +142,27 @@ local function init_opts(opts)
 	return opts
 end
 
-local function S(context, nodes, opts)
+local function init_snippet_context(context)
 	if type(context) == "string" then
 		context = { trig = context }
 	end
 
-	-- context.dscr could be nil, string or table.
-	context.dscr = util.wrap_value(context.dscr or context.trig)
-	local dscr = util.to_line_table(context.dscr)
+	-- trig is set by user, trigger is used internally.
+	-- maybe breaking change, but not worth it, probably.
+	context.trigger = context.trig
+	context.trig = nil
 
+	context.name = context.name or context.trigger
+
+	-- context.dscr could be nil, string or table.
+	context.dscr = util.to_line_table(
+		util.wrap_value(context.dscr or context.trigger)
+	)
+
+	-- maybe do this in a better way when we have more parameters, but this is
+	-- fine for now.
+
+	-- not a necessary argument.
 	if context.docstring then
 		context.docstring = util.to_line_table(context.docstring)
 	end
@@ -158,31 +172,36 @@ local function S(context, nodes, opts)
 		context.wordTrig = true
 	end
 
-	opts = init_opts(opts)
+	-- default: false.
+	if context.hidden == nil then
+		context.hidden = false
+	end
 
+	-- default: false.
+	if context.regTrig == nil then
+		context.regTrig = false
+	end
+
+	return context
+end
+
+-- Create snippet without initializing opts+context.
+-- this might be called from snippetProxy.
+local function _S(snip, nodes)
 	nodes = util.wrap_nodes(nodes)
-	local snip = Snippet:new({
-		trigger = context.trig,
-		dscr = dscr,
-		name = context.name or context.trig,
-		wordTrig = context.wordTrig,
-		regTrig = context.regTrig,
-		docstring = context.docstring,
-		docTrig = context.docTrig,
+	-- tbl_extend creates a new table! Important with Proxy, metatable of snip
+	-- will be changed later.
+	snip = Snippet:new(vim.tbl_extend("error", snip, {
 		nodes = nodes,
 		insert_nodes = {},
 		current_insert = 0,
-		condition = opts.condition,
-		show_condition = opts.show_condition,
-		callbacks = opts.callbacks,
 		mark = nil,
 		dependents = {},
 		active = false,
 		type = types.snippet,
-		hidden = context.hidden,
-		stored = opts.stored,
 		dependents_dict = dict.new(),
-	})
+	}))
+
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
 
@@ -205,8 +224,15 @@ local function S(context, nodes, opts)
 	return snip
 end
 
+local function S(context, nodes, opts)
+	local snip = init_snippet_context(context)
+	snip = vim.tbl_extend("error", snip, init_snippet_opts(opts))
+
+	return _S(snip, nodes)
+end
+
 function SN(pos, nodes, opts)
-	opts = init_opts(opts)
+	opts = init_snippet_opts(opts)
 
 	local snip = Snippet:new({
 		pos = pos,
@@ -1040,8 +1066,11 @@ end
 return {
 	Snippet = Snippet,
 	S = S,
+	_S = _S,
 	SN = SN,
 	P = P,
 	ISN = ISN,
 	wrap_nodes_in_snippetNode = wrap_nodes_in_snippetNode,
+	init_snippet_context = init_snippet_context,
+	init_snippet_opts = init_snippet_opts,
 }

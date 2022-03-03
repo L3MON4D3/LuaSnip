@@ -21,12 +21,13 @@ CONTENTS                                                        *luasnip-content
 14. VARIABLES..................................................|luasnip-variables|
 15. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
 16. SNIPMATE SNIPPETS LOADER....................|luasnip-snipmate_snippets_loader|
-17. EXT_OPTS....................................................|luasnip-ext_opts|
-18. DOCSTRING..................................................|luasnip-docstring|
-19. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
-20. EVENTS........................................................|luasnip-events|
-21. CLEANUP......................................................|luasnip-cleanup|
-22. API-REFERENCE..........................................|luasnip-api-reference|
+17. SNIPPETPROXY............................................|luasnip-snippetproxy|
+18. EXT_OPTS....................................................|luasnip-ext_opts|
+19. DOCSTRING..................................................|luasnip-docstring|
+20. DOCSTRING-CACHE......................................|luasnip-docstring-cache|
+21. EVENTS........................................................|luasnip-events|
+22. CLEANUP......................................................|luasnip-cleanup|
+23. API-REFERENCE..........................................|luasnip-api-reference|
 >
                 __                       ____
                /\ \                     /\  _`\           __
@@ -913,6 +914,26 @@ Here is a summary of the differences from the original snipmate format.
 *   `${VISUAL}` will be replaced by `$TM_SELECTED_TEXT` to make the snippets
     compatible with luasnip
 *   We do not implement eval using ` (backtick). This may be implemented in the future.
+
+================================================================================
+SNIPPETPROXY                                                *luasnip-snippetproxy*
+
+`SnippetProxy` is used internally to alleviate the upfront-cost of
+loading snippets from eg. a snipmate-library or a vscode-package. This is
+achieved by only parsing the snippet on expansion, not immediately after reading
+it from some file.
+`SnippetProxy` may also be used from lua directly, to get the same benefits:
+
+This will parse the snippet on startup...
+>
+    ls.parser.parse_snippet("trig", "a snippet $1!")
+<
+
+... and this will parse the snippet upon expansion.
+>
+    local sp = require("luasnip.nodes.snippetProxy")
+    sp("trig", "a snippet $1")
+<
 
 ================================================================================
 EXT_OPTS                                                        *luasnip-ext_opts*
