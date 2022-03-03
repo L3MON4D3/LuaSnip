@@ -909,6 +909,26 @@ compatible with luasnip
 - We do not implement eval using \` (backtick). This may be implemented in the future.
 
 
+# SNIPPETPROXY
+
+`SnippetProxy` is used internally to alleviate the upfront-cost of
+loading snippets from eg. a snipmate-library or a vscode-package. This is
+achieved by only parsing the snippet on expansion, not immediately after reading
+it from some file.  
+`SnippetProxy` may also be used from lua directly, to get the same benefits:
+
+This will parse the snippet on startup...
+```lua
+ls.parser.parse_snippet("trig", "a snippet $1!")
+```
+
+... and this will parse the snippet upon expansion.
+```lua
+local sp = require("luasnip.nodes.snippetProxy")
+sp("trig", "a snippet $1")
+```
+
+
 # EXT\_OPTS
 
 `ext_opts` are probably best explained with a short example:
