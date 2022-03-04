@@ -17,6 +17,7 @@ CONTENTS                                                        *luasnip-content
 11. ABSOLUTE_INDEXER....................................|luasnip-absolute_indexer|
 12. EXTRAS........................................................|luasnip-extras|
     12.1. On The Fly snippets........................|luasnip-on_the_fly_snippets|
+    12.2. Select_choice....................................|luasnip-select_choice|
 13. LSP-SNIPPETS............................................|luasnip-lsp-snippets|
 14. VARIABLES..................................................|luasnip-variables|
 15. VSCODE SNIPPETS LOADER........................|luasnip-vscode_snippets_loader|
@@ -791,6 +792,19 @@ mapppings like:
     vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr
     inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
 <
+
+--------------------------------------------------------------------------------
+SELECT_CHOICE                                              *luasnip-select_choice*
+
+It's possible to leverage `vim.ui.select` for selecting a choice directly,
+without cycling through choices.
+All that is needed for this is calling `require("luasnip.extras.select_choice")`,
+preferably via some keybind, eg.
+>
+    inoremap <c-u> <cmd>lua require("luasnip.extras.select_choice")()<cr>
+<
+
+, while inside a choiceNode.
 
 ================================================================================
 LSP-SNIPPETS                                                *luasnip-lsp-snippets*
