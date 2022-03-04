@@ -579,6 +579,15 @@ local function key_sorted_pairs(t)
 	end
 end
 
+local function no_region_check_wrap(fn, ...)
+	session.jump_active = true
+	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
+	vim.schedule(function()
+		session.jump_active = false
+	end)
+	return fn(...)
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -618,4 +627,5 @@ return {
 	deduplicate = deduplicate,
 	pop_front = pop_front,
 	key_sorted_pairs = key_sorted_pairs,
+	no_region_check_wrap = no_region_check_wrap,
 }

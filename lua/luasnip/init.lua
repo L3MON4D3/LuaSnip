@@ -64,15 +64,6 @@ local function available()
 	return res
 end
 
-local function no_region_check_wrap(fn, ...)
-	session.jump_active = true
-	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
-	vim.schedule(function()
-		session.jump_active = false
-	end)
-	return fn(...)
-end
-
 local function safe_jump(node, dir, no_move)
 	if not node then
 		return nil
@@ -105,7 +96,7 @@ local function jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
 		session.current_nodes[vim.api.nvim_get_current_buf()] =
-			no_region_check_wrap(
+			util.no_region_check_wrap(
 				safe_jump,
 				current,
 				dir
@@ -200,7 +191,7 @@ local function snip_expand(snippet, opts)
 	end
 
 	session.current_nodes[vim.api.nvim_get_current_buf()] =
-		no_region_check_wrap(
+		util.no_region_check_wrap(
 			snip.jump_into,
 			snip,
 			1
@@ -302,7 +293,7 @@ end
 
 local function change_choice(val)
 	assert(session.active_choice_node, "No active choiceNode")
-	local new_active = no_region_check_wrap(
+	local new_active = util.no_region_check_wrap(
 		session.active_choice_node.change_choice,
 		session.active_choice_node,
 		val,
