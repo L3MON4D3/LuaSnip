@@ -51,6 +51,23 @@ local function complete(ext_opts)
 			node_opts.active or shared_empty_table,
 			node_opts.passive or shared_empty_table
 		)
+
+		--stylua: ignore start
+		if node_opts.snippet_passive.hl_group and not
+		   node_opts.snippet_passive.priority then
+			node_opts.snippet_passive.priority = 0
+		end
+
+		if node_opts.passive.hl_group and not
+		   node_opts.passive.priority then
+			node_opts.passive.priority = 0
+		end
+
+		if node_opts.active.hl_group and not
+		   node_opts.active.priority then
+			node_opts.active.priority = 0
+		end
+		--stylua: ignore end
 	end
 end
 
@@ -82,11 +99,14 @@ end
 local function increase_prio(opts, amount)
 	for _, node_type in pairs(types.node_types) do
 		local node_opts = opts[node_type]
-		node_opts.active.priority = (node_opts.active.priority or 0) + amount
-		node_opts.passive.priority = (node_opts.passive.priority or 0) + amount
-		node_opts.snippet_passive.priority = (
-				node_opts.snippet_passive.priority or 0
-			) + amount
+		node_opts.active.priority = node_opts.active.priority
+			and node_opts.active.priority + amount
+
+		node_opts.passive.priority = node_opts.passive.priority
+			and node_opts.passive.priority + amount
+
+		node_opts.snippet_passive.priority = node_opts.snippet_passive.priority
+			and node_opts.snippet_passive.priority + amount
 	end
 	-- modifies in-place, but utilizing that may be cumbersome.
 	return opts
