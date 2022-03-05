@@ -1085,6 +1085,9 @@ the lazy_load.
 # API-REFERENCE
 
 `require("luasnip")`:
+
+- `in_snippet()`: returns true if the cursor is inside the current snippet.
+
 - `jumpable(direction)`: returns true if the current node has a
   next(`direction` = 1) or previous(`direction` = -1), eg. whether it's
   possible to jump forward or backward to another node.
