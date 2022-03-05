@@ -7,6 +7,7 @@ local RestoreNode = Node:new()
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local util = require("luasnip.util.util")
+local ext_util = require("luasnip.util.ext_opts")
 local conf = require("luasnip.config")
 local mark = require("luasnip.util.mark").mark
 
@@ -81,7 +82,7 @@ function RestoreNode:put_initial(pos)
 	tmp.prev = self
 
 	tmp.ext_opts = tmp.ext_opts
-		or util.increase_ext_prio(
+		or ext_util.increase_prio(
 			vim.deepcopy(self.parent.ext_opts),
 			conf.config.ext_prio_increase
 		)
@@ -156,7 +157,7 @@ end
 local function snip_init(self, snip)
 	snip.parent = self.parent
 
-	snip.ext_opts = util.increase_ext_prio(
+	snip.ext_opts = ext_util.increase_prio(
 		vim.deepcopy(self.parent.ext_opts),
 		conf.config.ext_prio_increase
 	)

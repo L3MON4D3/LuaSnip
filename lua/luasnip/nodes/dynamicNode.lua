@@ -1,5 +1,6 @@
 local DynamicNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
+local ext_util = require("luasnip.util.ext_opts")
 local node_util = require("luasnip.nodes.util")
 local Node = require("luasnip.nodes.node").Node
 local types = require("luasnip.util.types")
@@ -40,7 +41,7 @@ local function snip_init(self, snip)
 	snip.parent = self.parent
 	snip.pos = self.pos
 
-	snip.ext_opts = util.increase_ext_prio(
+	snip.ext_opts = ext_util.increase_prio(
 		vim.deepcopy(self.parent.ext_opts),
 		conf.config.ext_prio_increase
 	)
@@ -159,7 +160,7 @@ function DynamicNode:update()
 	tmp.prev = self
 
 	tmp.ext_opts = tmp.ext_opts
-		or util.increase_ext_prio(
+		or ext_util.increase_prio(
 			vim.deepcopy(self.parent.ext_opts),
 			conf.config.ext_prio_increase
 		)
@@ -262,7 +263,7 @@ function DynamicNode:update_static()
 	tmp.prev = self
 
 	tmp.ext_opts = tmp.ext_opts
-		or util.increase_ext_prio(
+		or ext_util.increase_prio(
 			vim.deepcopy(self.parent.ext_opts),
 			conf.config.ext_prio_increase
 		)

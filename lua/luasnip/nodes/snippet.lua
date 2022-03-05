@@ -2,6 +2,7 @@ local node_mod = require("luasnip.nodes.node")
 local iNode = require("luasnip.nodes.insertNode")
 local tNode = require("luasnip.nodes.textNode")
 local util = require("luasnip.util.util")
+local ext_util = require("luasnip.util.ext_opts")
 local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
@@ -360,7 +361,7 @@ function Snippet:trigger_expand(current_node, pos)
 		-- use those of that snippet and increase priority.
 		-- for now do a check for .indx, TODO: maybe only expand in insertNodes.
 		if current_node and (current_node.indx and current_node.indx > 1) then
-			self.ext_opts = util.increase_ext_prio(
+			self.ext_opts = ext_util.increase_prio(
 				vim.deepcopy(current_node.parent.ext_opts),
 				conf.config.ext_prio_increase
 			)

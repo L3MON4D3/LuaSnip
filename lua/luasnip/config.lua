@@ -1,5 +1,6 @@
 local types = require("luasnip.util.types")
 local util = require("luasnip.util.util")
+local ext_util = require("luasnip.util.ext_opts")
 local ft_functions = require("luasnip.extras.filetype_functions")
 
 local defaults = {
@@ -87,13 +88,14 @@ c = {
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
 
-		util.clear_invalid(conf.ext_opts)
+		-- remove unused highlights from default-ext_opts.
+		ext_util.clear_invalid(conf.ext_opts)
+		ext_util.complete(conf.ext_opts)
+		user_config.ext_opts = user_config.ext_opts or {}
+		ext_util.complete(user_config.ext_opts)
+		ext_util.extend(user_config.ext_opts, conf.ext_opts)
 
-		user_config.ext_opts = util.make_opts_valid(
-			user_config.ext_opts or {},
-			conf.ext_opts
-		)
-		util.increase_ext_prio(
+		ext_util.increase_prio(
 			user_config.ext_opts,
 			user_config.ext_base_prio or conf.ext_base_prio
 		)
@@ -101,6 +103,7 @@ c = {
 		for k, v in pairs(user_config) do
 			conf[k] = v
 		end
+
 		c.config = conf
 		c._setup()
 	end,

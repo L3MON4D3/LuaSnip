@@ -376,71 +376,6 @@ local function pos_equal(p1, p2)
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
 
-local function clear_invalid(opts)
-	for key, val in pairs(opts) do
-		local act_group, pas_group, snip_pas_group =
-			val.active.hl_group,
-			val.passive.hl_group,
-			val.snippet_passive.hl_group
-		opts[key].snippet_passive.hl_group = vim.fn.hlexists(snip_pas_group)
-					== 1
-				and snip_pas_group
-			or nil
-		opts[key].passive.hl_group = vim.fn.hlexists(pas_group) == 1
-				and pas_group
-			or nil
-		opts[key].active.hl_group = vim.fn.hlexists(act_group) == 1
-				and act_group
-			or nil
-	end
-end
-
-local function make_opts_valid(user_opts, default_opts)
-	local opts = vim.deepcopy(default_opts)
-	for key, default_val in pairs(opts) do
-		-- prevent nil-indexing error.
-		user_opts[key] = user_opts[key] or {}
-
-		-- override defaults with user for snippet_passive.
-		default_val.snippet_passive = vim.tbl_extend(
-			"force",
-			default_val.snippet_passive,
-			user_opts[key].snippet_passive or {}
-		)
-		-- override default-passive with user, get missing values from default
-		-- snippet_passive
-		default_val.passive = vim.tbl_extend(
-			"force",
-			user_opts[key].snippet_passive or {},
-			vim.tbl_extend(
-				"force",
-				default_val.passive,
-				user_opts[key].passive or {}
-			)
-		)
-		-- same here, but with passive and active
-		default_val.active = vim.tbl_extend(
-			"force",
-			default_val.passive,
-			vim.tbl_extend(
-				"force",
-				default_val.active,
-				user_opts[key].active or {}
-			)
-		)
-	end
-	return opts
-end
-
-local function increase_ext_prio(opts, amount)
-	for _, val in pairs(opts) do
-		val.active.priority = (val.active.priority or 0) + amount
-		val.passive.priority = (val.passive.priority or 0) + amount
-	end
-	-- modifies in-place, but utilizing that may be cumbersome.
-	return opts
-end
-
 local function string_wrap(lines, pos)
 	local new_lines = vim.deepcopy(lines)
 	if #new_lines == 1 and #new_lines[1] == 0 then
@@ -611,8 +546,6 @@ return {
 	indent = indent,
 	expand_tabs = expand_tabs,
 	tab_width = tab_width,
-	make_opts_valid = make_opts_valid,
-	increase_ext_prio = increase_ext_prio,
 	clear_invalid = clear_invalid,
 	buffer_comment_chars = buffer_comment_chars,
 	string_wrap = string_wrap,
