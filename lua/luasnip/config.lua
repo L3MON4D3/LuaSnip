@@ -95,11 +95,6 @@ c = {
 		ext_util.complete(user_config.ext_opts)
 		ext_util.extend(user_config.ext_opts, conf.ext_opts)
 
-		ext_util.increase_prio(
-			user_config.ext_opts,
-			user_config.ext_base_prio or conf.ext_base_prio
-		)
-
 		for k, v in pairs(user_config) do
 			conf[k] = v
 		end

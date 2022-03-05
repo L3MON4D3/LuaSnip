@@ -140,6 +140,11 @@ local function init_snippet_opts(opts)
 		opts.stored[key] = wrap_nodes_in_snippetNode(nodes)
 	end
 
+	if opts.ext_opts then
+		ext_util.complete(opts.ext_opts)
+		ext_util.merge(opts.ext_opts, conf.config.ext_opts)
+	end
+
 	return opts
 end
 
@@ -357,17 +362,20 @@ function Snippet:trigger_expand(current_node, pos)
 
 	-- keep (possibly) user-set opts.
 	if not self.ext_opts then
-		-- if expanded outside another snippet use configs' ext_opts, if inside,
-		-- use those of that snippet and increase priority.
-		-- for now do a check for .indx, TODO: maybe only expand in insertNodes.
-		if current_node and (current_node.indx and current_node.indx > 1) then
-			self.ext_opts = ext_util.increase_prio(
-				vim.deepcopy(current_node.parent.ext_opts),
-				conf.config.ext_prio_increase
-			)
-		else
-			self.ext_opts = vim.deepcopy(conf.config.ext_opts)
-		end
+		self.ext_opts = vim.deepcopy(conf.config.ext_opts)
+	end
+
+	-- if inside another snippet, increase priority accordingly.
+	-- for now do a check for .indx.
+	-- TODO: maybe allow expand only inside insertNodes.
+	if current_node and (current_node.indx and current_node.indx > 1) then
+		ext_util.increase_prio(
+			self.ext_opts,
+			current_node.parent.ext_opts.increased_by
+				+ conf.config.ext_prio_increase
+		)
+	else
+		ext_util.increase_prio(self.ext_opts, conf.config.ext_base_prio)
 	end
 
 	self.env = Environ:new(pos)

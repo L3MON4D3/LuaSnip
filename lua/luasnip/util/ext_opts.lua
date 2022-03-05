@@ -32,6 +32,7 @@ end
 -- snippet_passive.
 -- Also make sure that all keys have a table, and are not nil!
 local function complete(ext_opts)
+	ext_opts.increased_by = 0
 	for _, node_type in pairs(types.node_types) do
 		local node_opts
 		if not ext_opts[node_type] then
@@ -96,7 +97,13 @@ local function extend(opts_a, opts_b)
 	end
 end
 
+-- ext_opts-priorities are defined relative to some base-priority.
+-- As nvim_api_buf_set_extmark takes absolute values only, we have to
+-- set the absolute priorities, which can vary depending on nesting-level
+-- of a given snippet, during runtime, by increasing the relative priorities by
+-- either the conf.base_prio or the base-prio used in the previous nesting-level.
 local function increase_prio(opts, amount)
+	opts.increased_by = opts.increased_by + amount
 	for _, node_type in pairs(types.node_types) do
 		local node_opts = opts[node_type]
 		node_opts.active.priority = node_opts.active.priority
