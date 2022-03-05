@@ -1090,10 +1090,11 @@ the lazy_load.
 API-REFERENCE                                              *luasnip-api-reference*
 
 `require("luasnip")`:
-- `jumpable(direction)`: returns true if the current node has a
-  next(`direction` = 1) or previous(`direction` = -1), eg. whether it's
-  possible to jump forward or backward to another node.
 
+*   `in_snippet()`: returns true if the cursor is inside the current snippet.
+*   `jumpable(direction)`: returns true if the current node has a
+    next(`direction` = 1) or previous(`direction` = -1), eg. whether it's
+    possible to jump forward or backward to another node.
 *   `jump(direction)`: returns true if the jump was successful.
 *   `expandable()`: true if a snippet can be expanded at the current cursor position.
 *   `expand()`: expands the snippet at(before) the cursor.
