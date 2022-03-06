@@ -915,6 +915,9 @@ When using `honza/vim-snippets`, the file with the global snippets is
 
 Something similar may have to be done for other snippet-repos as well.
 
+Using both `extends OtherFileType` in `FileType.snippets` and
+`ls.filetype_extend("FileType", {"OtherFileType"})` leads to duplicate snippets.
+
 Lazy loading is also available with the snipmate-loader.
 >
      	require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
