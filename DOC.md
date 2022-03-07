@@ -904,6 +904,9 @@ ls.filetype_extend("all", { "_" })
 
 Something similar may have to be done for other snippet-repos as well.
 
+Using both `extends OtherFileType` in `FileType.snippets` and
+`ls.filetype_extend("FileType", {"OtherFileType"})` leads to duplicate snippets.
+
 
 Lazy loading is also available with the snipmate-loader.
 

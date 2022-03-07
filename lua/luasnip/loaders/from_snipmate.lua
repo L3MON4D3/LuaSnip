@@ -39,12 +39,12 @@ local function parse_snipmate(buffer, filename)
 		end
 
 		body = table.concat(body, "\n")
-		local snippet = sp({
+		local snip = sp({
 			trig = prefix,
 			dscr = description,
 			wordTrig = true,
 		}, body)
-		table.insert(snippets, snippet)
+		table.insert(snippets, snip)
 	end
 
 	while i <= #lines do
@@ -97,20 +97,19 @@ end
 local function get_ft_paths(roots)
 	local ft_path = {}
 	for _, root in ipairs(roots) do
-		local files = Path.scandir(root, "file", true)
+		local files, dirs = Path.scandir(root)
 		for _, file in ipairs(files) do
 			local ft, ext = Path.basename(file, true)
 			if ext == "snippets" then
-				_append(ft_path, ft, Path.join(root, file))
+				_append(ft_path, ft, file)
 			end
 		end
-		local dirs = Path.scandir(root, "directory", true)
 		for _, dir in ipairs(dirs) do
 			local ft = dir
-			files, _ = Path.scandir(Path.join(root, dir), "file", true)
+			files, _ = Path.scandir(Path.join(root, dir))
 			for _, file in ipairs(files) do
 				if vim.endswith(file, ".snippets") then
-					_append(ft_path, ft, Path.join(root, dir, file))
+					_append(ft_path, ft, file)
 				end
 			end
 		end

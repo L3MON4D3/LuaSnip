@@ -117,4 +117,14 @@ describe("loaders:", function()
 		-- one snippet from snipmate, one from vscode.
 		assert.are.same(2, exec_lua("return #require('luasnip').snippets.lua"))
 	end)
+
+	it("Can load with extends (snipmate)", function()
+		loaders["snipmate(lazy)"]()
+		-- triggers actual load for `lazy_load()`s'
+		exec("set ft=vim")
+		-- wait a bit for async-operations to finish
+		exec('call wait(200, "0")')
+		-- one snippet from vim.snippets, one from lua.snippets
+		assert.are.same(2, exec_lua("return #require('luasnip').snippets.vim"))
+	end)
 end)
