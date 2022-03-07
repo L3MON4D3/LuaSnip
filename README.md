@@ -195,7 +195,8 @@ For nvim-cmp, it is also possible to follow the [example recommendation](https:/
         ```
     Again, there are some [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L517) and an entry in the [docs](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#snipmate-snippets-loader)
 - **Lua**: Add the snippets directly to `require("luasnip").snippets.<filetype>`. An example for this can be found [here](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L167).  
-This can also be done much better (one snippet-file per filetype+command for editing the current filetype) than in the example, see [this entry in the wiki](https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#split-up-snippets-by-filetype-load-on-demand-and-reload-after-change-first-iteration)
+This can also be done much better (one snippet-file per filetype+command for editing the current filetype) than in the example, see [this entry in the wiki](https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#split-up-snippets-by-filetype-load-on-demand-and-reload-after-change-first-iteration).  
+There's also a repository collecting snippets for various languages, [molleweide/LuaSnip-snippets.nvim](https://github.com/molleweide/LuaSnip-snippets.nvim)
 
 ## Docs and Examples
 Check [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) (or `:help luasnip`) for a short overview and in-depth explanations of the different nodes.
