@@ -38,7 +38,8 @@ function Path.async_read_file(path, callback)
 	end)
 end
 
--- takes path:string, returns content of file:string.
+---@param path string
+---@return string buffer @content of file
 function Path.read_file(path)
 	local fd = assert(uv.fs_open(path, "r", tonumber("0666", 8)))
 	local stat = assert(uv.fs_fstat(fd))
