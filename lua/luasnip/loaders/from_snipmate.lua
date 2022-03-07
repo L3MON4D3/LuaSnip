@@ -71,22 +71,18 @@ local function load_snippet_file(lang, path)
 		return
 	end
 
-	Path.async_read_file(
-		path,
-		vim.schedule_wrap(function(buffer)
-			local snippet, extends = parse_snipmate(buffer, path)
-			if not snippet then
-				return
-			end
-			table.insert(extends, lang)
-			for _, ft in ipairs(extends) do
-				local lang_snips = ls.snippets[ft] or {}
-				ls.snippets[ft] = vim.list_extend(lang_snips, snippet)
-				session.latest_load_ft = ft
-				vim.cmd("do User LuasnipSnippetsAdded")
-			end
-		end)
-	)
+	local buffer = Path.read_file(path)
+	local snippet, extends = parse_snipmate(buffer, path)
+	if not snippet then
+		return
+	end
+	table.insert(extends, lang)
+	for _, ft in ipairs(extends) do
+		local lang_snips = ls.snippets[ft] or {}
+		ls.snippets[ft] = vim.list_extend(lang_snips, snippet)
+		session.latest_load_ft = ft
+		vim.cmd("do User LuasnipSnippetsAdded")
+	end
 end
 
 local function filter(exclude, include)
