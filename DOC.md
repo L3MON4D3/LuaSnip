@@ -368,6 +368,22 @@ The third parameter is a table of options with the following keys:
 Jumpable nodes that normally expect an index as their first parameter don't
 need one inside a choiceNode; their index is the same as the choiceNodes'.
 
+As it is only possible (for now) to change choices from within the choiceNode,
+make sure that all of the choices have some place for the cursor to stop at.  
+This means that in `sn(nil, {...nodes...})` `nodes` has to contain eg. an
+`i(1)`, otherwise luasnip will just "jump through" the nodes, making it
+impossible to change the choice.
+
+```lua
+c(1, {
+	t"some text", -- textNodes are just stopped at.
+	i(nil, "some text"), -- likewise.
+	sn(nil, {t"some text"}) -- this will not work!
+	sn(nil, {i(1), t"some text"}) -- this will.
+})
+```
+
+
 
 
 # SNIPPETNODE
