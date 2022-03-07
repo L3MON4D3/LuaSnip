@@ -105,8 +105,9 @@ local function get_ft_paths(roots)
 			end
 		end
 		for _, dir in ipairs(dirs) do
-			local ft = dir
-			files, _ = Path.scandir(Path.join(root, dir))
+			-- directory-name is ft for snippet-files.
+			local ft = vim.fn.fnamemodify(dir, ":t")
+			files, _ = Path.scandir(dir)
 			for _, file in ipairs(files) do
 				if vim.endswith(file, ".snippets") then
 					_append(ft_path, ft, file)
@@ -148,7 +149,10 @@ end
 
 function M._load(ft)
 	local snippets = {}
-	for _, path in ipairs(cache.ft_paths[ft]) do
+	-- _load might be called for non-existing filetype via `extends`-directive,
+	-- protect against that via `or {}` (we fail silently, though, maybe we
+	-- should throw an error/print some message).
+	for _, path in ipairs(cache.ft_paths[ft] or {}) do
 		local snippet, extends = load_snippet_file(path)
 		vim.list_extend(snippets, snippet)
 		for _, extend in ipairs(extends) do
