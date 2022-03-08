@@ -71,7 +71,7 @@ local defaults = {
 		},
 	},
 	ext_base_prio = 200,
-	ext_prio_increase = 7,
+	ext_prio_increase = 9,
 	enable_autosnippets = false,
 	-- default applied in util.parser, requires iNode, cNode
 	-- (Dependency cycle if here).
@@ -90,10 +90,11 @@ c = {
 
 		-- remove unused highlights from default-ext_opts.
 		ext_util.clear_invalid(conf.ext_opts)
-		ext_util.complete(conf.ext_opts)
-		user_config.ext_opts = user_config.ext_opts or {}
-		ext_util.complete(user_config.ext_opts)
-		ext_util.extend(user_config.ext_opts, conf.ext_opts)
+		conf.ext_opts = ext_util.child_complete(conf.ext_opts)
+		user_config.ext_opts = ext_util.child_complete(
+			user_config.ext_opts or {}
+		)
+		ext_util.child_extend(user_config.ext_opts, conf.ext_opts)
 
 		for k, v in pairs(user_config) do
 			conf[k] = v

@@ -6,13 +6,10 @@ local conf = require("luasnip.config")
 local function subsnip_init_children(parent, children)
 	for _, child in ipairs(children) do
 		if child.type == types.snippetNode then
-			child.ext_opts = ext_util.set_abs_prio(
-				vim.deepcopy(parent.ext_opts),
-				conf.config.ext_prio_increase
-			)
 			child.snippet = parent.snippet
+			child:resolve_child_ext_opts()
 		end
-
+		child:resolve_node_ext_opts()
 		child:subsnip_init()
 	end
 end
@@ -109,6 +106,23 @@ local function print_dict(dict)
 	}))
 end
 
+local function init_node_opts(opts)
+	local in_node = {}
+	if not opts then
+		opts = {}
+	end
+
+	in_node.node_ext_opts = ext_util.complete(opts.node_ext_opts or {})
+
+	if opts.merge_node_ext_opts == nil then
+		in_node.merge_node_ext_opts = true
+	else
+		in_node.merge_node_ext_opts = opts.merge_node_ext_opts
+	end
+
+	return in_node
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -119,4 +133,5 @@ return {
 	enter_nodes_between = enter_nodes_between,
 	select_node = select_node,
 	print_dict = print_dict,
+	init_node_opts = init_node_opts,
 }

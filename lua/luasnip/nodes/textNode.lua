@@ -5,12 +5,12 @@ local events = require("luasnip.util.events")
 
 local TextNode = node_mod.Node:new()
 
-local function T(static_text)
+local function T(static_text, opts)
 	return TextNode:new({
 		static_text = util.wrap_value(static_text) or { "" },
 		mark = nil,
 		type = types.textNode,
-	})
+	}, opts)
 end
 
 function TextNode:input_enter(no_move)

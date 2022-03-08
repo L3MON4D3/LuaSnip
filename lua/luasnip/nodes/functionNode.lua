@@ -6,14 +6,16 @@ local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local tNode = require("luasnip.nodes.textNode").textNode
 
-local function F(fn, args, ...)
+local function F(fn, args, opts)
+	opts = opts or {}
+
 	return FunctionNode:new({
 		fn = fn,
 		args = node_util.wrap_args(args),
 		type = types.functionNode,
 		mark = nil,
-		user_args = { ... },
-	})
+		user_args = opts.user_args or {},
+	}, opts)
 end
 
 FunctionNode.input_enter = tNode.input_enter

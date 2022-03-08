@@ -9,22 +9,24 @@ local conf = require("luasnip.config")
 local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
 local SnippetNode = require("luasnip.nodes.snippet").SN
 
-local function D(pos, fn, args, ...)
+local function D(pos, fn, args, opts)
+	opts = opts or {}
+
 	return DynamicNode:new({
 		pos = pos,
 		fn = fn,
 		args = node_util.wrap_args(args),
 		type = types.dynamicNode,
 		mark = nil,
-		user_args = { ... },
+		user_args = opts.user_args or {},
 		dependents = {},
 		active = false,
-	})
+	}, opts)
 end
 
 function DynamicNode:input_enter()
 	self.active = true
-	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+	self.mark:update_opts(self.ext_opts.active)
 
 	self:event(events.enter)
 end
@@ -34,7 +36,7 @@ function DynamicNode:input_leave()
 
 	self:update_dependents()
 	self.active = false
-	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+	self.mark:update_opts(self.ext_opts.passive)
 end
 
 local function snip_init(self, snip)
@@ -159,22 +161,18 @@ function DynamicNode:update()
 	tmp.next = self
 	tmp.prev = self
 
-	tmp.ext_opts = tmp.ext_opts
-		or ext_util.set_abs_prio(
-			vim.deepcopy(self.parent.ext_opts),
-			conf.config.ext_prio_increase
-		)
 	tmp.snippet = self.parent.snippet
-	tmp.mark = self.mark:copy_pos_gravs(
-		vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
-	)
+
+	tmp:resolve_child_ext_opts()
+	tmp:resolve_node_ext_opts()
+	tmp:subsnip_init()
+
+	tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp.ext_opts.passive))
 	tmp.dynamicNode = self
 	tmp.update_dependents = function(node)
 		node:_update_dependents()
 		node.dynamicNode:update_dependents()
 	end
-
-	tmp:subsnip_init()
 
 	tmp:init_positions(self.snip_absolute_position)
 	tmp:init_insert_positions(self.snip_absolute_insert_position)
@@ -275,6 +273,8 @@ function DynamicNode:update_static()
 		node.dynamicNode:update_dependents_static()
 	end
 
+	tmp:resolve_child_ext_opts()
+	tmp:resolve_node_ext_opts()
 	tmp:subsnip_init()
 
 	tmp:init_positions(self.snip_absolute_position)
@@ -317,7 +317,7 @@ function DynamicNode:exit()
 end
 
 function DynamicNode:set_ext_opts(name)
-	self.mark:update_opts(self.parent.ext_opts[self.type][name])
+	self.mark:update_opts(self.ext_opts[name])
 	-- might not have been generated (missing nodes).
 	if self.snip then
 		self.snip:set_ext_opts(name)
@@ -336,9 +336,7 @@ function DynamicNode:update_restore()
 		-- prevent entering the uninitialized snip in enter_node in a few lines.
 		local tmp = self.stored_snip
 
-		tmp.mark = self.mark:copy_pos_gravs(
-			vim.deepcopy(self.parent.ext_opts[types.snippetNode].passive)
-		)
+		tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp.ext_opts.passive))
 		self.parent:enter_node(self.indx)
 		tmp:put_initial(self.mark:pos_begin_raw())
 		tmp:update_restore()

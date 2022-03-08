@@ -121,31 +121,42 @@ local function wrap_nodes_in_snippetNode(nodes)
 	end
 end
 
-local function init_snippet_opts(opts)
+local function init_snippetNode_opts(opts)
+	local in_node = {}
+
 	opts = opts or {}
 
-	opts.callbacks = opts.callbacks or {}
+	in_node.child_ext_opts = ext_util.child_complete(opts.child_ext_opts or {})
+
+	if opts.merge_child_ext_opts == nil then
+		in_node.merge_child_ext_opts = true
+	end
+
+	in_node.callbacks = opts.callbacks or {}
 	-- return empty table for non-specified callbacks.
-	setmetatable(opts.callbacks, callbacks_mt)
+	setmetatable(in_node.callbacks, callbacks_mt)
 
-	opts.condition = opts.condition or true_func
+	return in_node
+end
 
-	opts.show_condition = opts.show_condition or true_func
+local function init_snippet_opts(opts)
+	local in_node = {}
+
+	opts = opts or {}
+
+	in_node.condition = opts.condition or true_func
+
+	in_node.show_condition = opts.show_condition or true_func
 
 	-- return sn(t("")) for so-far-undefined keys.
-	opts.stored = setmetatable(opts.stored or {}, stored_mt)
+	in_node.stored = setmetatable(opts.stored or {}, stored_mt)
 
 	-- wrap non-snippetNode in snippetNode.
-	for key, nodes in pairs(opts.stored) do
-		opts.stored[key] = wrap_nodes_in_snippetNode(nodes)
+	for key, nodes in pairs(in_node.stored) do
+		in_node.stored[key] = wrap_nodes_in_snippetNode(nodes)
 	end
 
-	if opts.ext_opts then
-		ext_util.complete(opts.ext_opts)
-		ext_util.merge(opts.ext_opts, conf.config.ext_opts)
-	end
-
-	return opts
+	return vim.tbl_extend("error", in_node, init_snippetNode_opts(opts))
 end
 
 local function init_snippet_context(context)
@@ -193,20 +204,23 @@ end
 
 -- Create snippet without initializing opts+context.
 -- this might be called from snippetProxy.
-local function _S(snip, nodes)
+local function _S(snip, nodes, opts)
 	nodes = util.wrap_nodes(nodes)
 	-- tbl_extend creates a new table! Important with Proxy, metatable of snip
 	-- will be changed later.
-	snip = Snippet:new(vim.tbl_extend("error", snip, {
-		nodes = nodes,
-		insert_nodes = {},
-		current_insert = 0,
-		mark = nil,
-		dependents = {},
-		active = false,
-		type = types.snippet,
-		dependents_dict = dict.new(),
-	}))
+	snip = Snippet:new(
+		vim.tbl_extend("error", snip, {
+			nodes = nodes,
+			insert_nodes = {},
+			current_insert = 0,
+			mark = nil,
+			dependents = {},
+			active = false,
+			type = types.snippet,
+			dependents_dict = dict.new(),
+		}),
+		opts
+	)
 
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
@@ -234,23 +248,23 @@ local function S(context, nodes, opts)
 	local snip = init_snippet_context(context)
 	snip = vim.tbl_extend("error", snip, init_snippet_opts(opts))
 
-	return _S(snip, nodes)
+	return _S(snip, nodes, opts)
 end
 
 function SN(pos, nodes, opts)
-	opts = init_snippet_opts(opts)
-
-	local snip = Snippet:new({
-		pos = pos,
-		nodes = util.wrap_nodes(nodes),
-		insert_nodes = {},
-		current_insert = 0,
-		callbacks = opts.callbacks,
-		mark = nil,
-		dependents = {},
-		active = false,
-		type = types.snippetNode,
-	})
+	local snip = Snippet:new(
+		vim.tbl_extend("error", {
+			pos = pos,
+			nodes = util.wrap_nodes(nodes),
+			insert_nodes = {},
+			current_insert = 0,
+			mark = nil,
+			dependents = {},
+			active = false,
+			type = types.snippetNode,
+		}, init_snippetNode_opts(opts)),
+		opts
+	)
 	snip:init_nodes()
 
 	return snip
@@ -360,23 +374,33 @@ function Snippet:trigger_expand(current_node, pos)
 	end
 	self:indent(util.line_chars_before(pos):match("^%s*"))
 
-	-- keep (possibly) user-set opts.
-	if not self.ext_opts then
-		self.ext_opts = vim.deepcopy(conf.config.ext_opts)
-	end
-
+	local parent_ext_opts
+	local parent_ext_base_prio
 	-- if inside another snippet, increase priority accordingly.
 	-- for now do a check for .indx.
-	-- TODO: maybe allow expand only inside insertNodes.
 	if current_node and (current_node.indx and current_node.indx > 1) then
-		ext_util.set_abs_prio(
-			self.ext_opts,
-			current_node.parent.ext_opts.increased_by
-				+ conf.config.ext_prio_increase
+		parent_ext_base_prio = current_node.parent.ext_opts.base_prio
+		parent_ext_opts = current_node.parent.effective_child_ext_opts
+	else
+		parent_ext_base_prio = conf.config.ext_base_prio
+		parent_ext_opts = conf.config.ext_opts
+	end
+
+	-- (possibly) keep user-set opts.
+	if self.merge_child_ext_opts then
+		self.effective_child_ext_opts = ext_util.child_extend(
+			vim.deepcopy(self.child_ext_opts),
+			parent_ext_opts
 		)
 	else
-		ext_util.set_abs_prio(self.ext_opts, conf.config.ext_base_prio)
+		self.effective_child_ext_opts = vim.deepcopy(self.child_ext_opts)
 	end
+
+	-- own highlight can come from self.child_ext_opts.snippet.
+	self:resolve_node_ext_opts(
+		parent_ext_base_prio,
+		self.effective_child_ext_opts[self.type]
+	)
 
 	self.env = Environ:new(pos)
 	self:subsnip_init()
@@ -404,7 +428,7 @@ function Snippet:trigger_expand(current_node, pos)
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = true,
-	}, self.ext_opts[types.snippet].passive)
+	}, self.ext_opts.passive)
 	self.mark = mark(old_pos, pos, mark_opts)
 
 	self:update()
@@ -598,7 +622,7 @@ function Snippet:put_initial(pos)
 		local mark_opts = vim.tbl_extend("keep", {
 			right_gravity = false,
 			end_right_gravity = false,
-		}, self.ext_opts[node.type].passive)
+		}, node.ext_opts.passive)
 		node.mark = mark(old_pos, pos, mark_opts)
 	end
 	self.visible = true
@@ -641,6 +665,11 @@ function Snippet:fake_expand(opts)
 	self.ext_opts = vim.deepcopy(conf.config.ext_opts)
 
 	self:indent("")
+
+	-- ext_opts don't matter here, just use convenient values.
+	self.effective_child_ext_opts = self.child_ext_opts
+	self.ext_opts = self.node_ext_opts
+
 	self:subsnip_init()
 
 	self:init_positions({})
@@ -783,9 +812,10 @@ function Snippet:input_enter()
 	self.active = true
 
 	if self.type == types.snippet then
+		-- set snippet-passive -> passive for all children.
 		self:set_ext_opts("passive")
 	end
-	self.mark:update_opts(self.ext_opts[self.type].active)
+	self.mark:update_opts(self.ext_opts.active)
 
 	self:event(events.enter)
 end
@@ -794,8 +824,10 @@ function Snippet:input_leave()
 	self:event(events.leave)
 	self:update_dependents()
 
-	self.mark:update_opts(self.ext_opts[self.type].passive)
+	-- set own ext_opts to snippet-passive, there is no passive for snippets.
+	self.mark:update_opts(self.ext_opts.snippet_passive)
 	if self.type == types.snippet then
+		-- also override all nodes' ext_opt.
 		self:set_ext_opts("snippet_passive")
 	end
 
@@ -1069,6 +1101,18 @@ function Snippet:static_init()
 	node_mod.Node.static_init(self)
 	for _, node in ipairs(self.nodes) do
 		node:static_init()
+	end
+end
+
+-- called only for snippetNodes!
+function Snippet:resolve_child_ext_opts()
+	if self.merge_child_ext_opts then
+		self.effective_child_ext_opts = ext_util.child_extend(
+			vim.deepcopy(self.child_ext_opts),
+			self.parent.effective_child_ext_opts
+		)
+	else
+		self.effective_child_ext_opts = vim.deepcopy(self.child_ext_opts)
 	end
 end
 

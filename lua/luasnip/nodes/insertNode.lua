@@ -5,7 +5,7 @@ local config = require("luasnip.config")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 
-local function I(pos, static_text)
+local function I(pos, static_text, opts)
 	static_text = util.wrap_value(static_text)
 	if pos == 0 then
 		return ExitNode:new({
@@ -16,7 +16,7 @@ local function I(pos, static_text)
 			type = types.exitNode,
 			-- will only be needed for 0-node, -1-node isn't set with this.
 			ext_gravities_active = { false, false },
-		})
+		}, opts)
 	else
 		return InsertNode:new({
 			pos = pos,
@@ -25,7 +25,7 @@ local function I(pos, static_text)
 			dependents = {},
 			type = types.insertNode,
 			inner_active = false,
-		})
+		}, opts)
 	end
 end
 
@@ -90,7 +90,7 @@ function ExitNode:update_dependents_static() end
 function ExitNode:update_all_dependents_static() end
 
 function InsertNode:input_enter(no_move)
-	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+	self.mark:update_opts(self.ext_opts.active)
 	if not no_move then
 		self.parent:enter_node(self.indx)
 
@@ -186,7 +186,7 @@ function InsertNode:input_leave()
 	self:event(events.leave)
 
 	self:update_dependents()
-	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+	self.mark:update_opts(self.ext_opts.passive)
 end
 
 function InsertNode:exit()

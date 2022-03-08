@@ -69,7 +69,7 @@ local function C(pos, choices, opts)
 		dependents = {},
 		-- default to true.
 		restore_cursor = opts.restore_cursor,
-	})
+	}, opts)
 	c:init_nodes()
 	return c
 end
@@ -112,7 +112,7 @@ function ChoiceNode:put_initial(pos)
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = false,
-	}, self.parent.ext_opts[self.active_choice.type].passive)
+	}, self.active_choice.ext_opts.passive)
 
 	self.active_choice.mark = mark(old_pos, pos, mark_opts)
 	self.visible = true
@@ -131,7 +131,7 @@ function ChoiceNode:expand_tabs(tabwidth)
 end
 
 function ChoiceNode:input_enter()
-	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+	self.mark:update_opts(self.ext_opts.active)
 	self.parent:enter_node(self.indx)
 
 	self.prev_choice_node = session.active_choice_node
@@ -144,7 +144,7 @@ end
 function ChoiceNode:input_leave()
 	self:event(events.leave)
 
-	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+	self.mark:update_opts(self.ext_opts.passive)
 	self:update_dependents()
 	session.active_choice_node = self.prev_choice_node
 	self.active = false
@@ -240,7 +240,7 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice = choice
 
 	self.active_choice.mark = self.mark:copy_pos_gravs(
-		vim.deepcopy(self.parent.ext_opts[self.active_choice.type].passive)
+		vim.deepcopy(self.active_choice.ext_opts.passive)
 	)
 	self.active_choice:put_initial(self.mark:pos_begin_raw())
 
@@ -322,7 +322,7 @@ function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
 function ChoiceNode:set_ext_opts(name)
-	self.mark:update_opts(self.parent.ext_opts[self.type][name])
+	self.mark:update_opts(self.ext_opts[name])
 	self.active_choice:set_ext_opts(name)
 end
 

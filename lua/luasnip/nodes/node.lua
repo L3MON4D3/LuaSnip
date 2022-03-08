@@ -1,14 +1,16 @@
 local session = require("luasnip.session")
 local util = require("luasnip.util.util")
+local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
+local ext_util = require("luasnip.util.ext_opts")
 local events = require("luasnip.util.events")
+local conf = require("luasnip.config")
 
 local Node = {}
 
-function Node:new(o)
+function Node:new(o, opts)
 	o = o or {}
-	setmetatable(o, self)
-	self.__index = self
+
 	-- visible is true if the node is visible on-screen, during normal
 	-- expansion, static_visible is needed for eg. get_static_text, where
 	-- argnodes in inactive choices will happily provide their static text,
@@ -16,6 +18,13 @@ function Node:new(o)
 	o.visible = false
 	o.static_visible = false
 	o.old_text = {}
+	-- override existing keys, might be necessary due to double-init from
+	-- snippetProxy, but shouldn't hurt.
+	o = vim.tbl_extend("force", o, node_util.init_node_opts(opts or {}))
+
+	setmetatable(o, self)
+	self.__index = self
+
 	return o
 end
 
@@ -57,7 +66,7 @@ function Node:put_initial(pos)
 end
 
 function Node:input_enter(_)
-	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+	self.mark:update_opts(self.ext_opts.active)
 
 	self:event(events.enter)
 end
@@ -137,7 +146,7 @@ end
 function Node:input_leave()
 	self:event(events.leave)
 
-	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+	self.mark:update_opts(self.ext_opts.passive)
 end
 
 local function find_dependents(position_self, dict)
@@ -257,7 +266,7 @@ function Node:get_static_args()
 end
 
 function Node:set_ext_opts(name)
-	self.mark:update_opts(self.parent.ext_opts[self.type][name])
+	self.mark:update_opts(self.ext_opts[name])
 end
 
 -- for insert,functionNode.
@@ -305,6 +314,38 @@ end
 
 function Node:static_init()
 	self.static_visible = true
+end
+
+-- resolve_*node*_ext_opts because snippet(Node)s have child_ext_opts, which
+-- also have to be resolved.
+-- This function generates a nodes ext_opts (those actually used in highlighting).
+function Node:resolve_node_ext_opts(base_prio, parent_ext_opts)
+	-- if self.parent then
+	-- 	local ok, res = pcall(function()
+	-- 		local e = self.parent.effective_child_ext_opts[self.type]
+	-- 	end)
+	-- 	if not ok then
+	-- 		print(self.parent.type == types.snippetNode)
+	-- 		Insp(self.parent.child_ext_opts)
+	-- 		print(self.parent.snippet)
+	-- 		print(self.parent.absolute_position)
+	-- 	end
+	-- end
+
+	if self.merge_node_ext_opts then
+		self.ext_opts = ext_util.extend(
+			vim.deepcopy(self.node_ext_opts),
+			parent_ext_opts or self.parent.effective_child_ext_opts[self.type]
+		)
+	else
+		self.ext_opts = self.node_ext_opts
+	end
+
+	ext_util.set_abs_prio(
+		self.ext_opts,
+		(base_prio or self.parent.ext_opts.base_prio)
+			+ conf.config.ext_prio_increase
+	)
 end
 
 return {

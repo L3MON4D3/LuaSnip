@@ -11,7 +11,7 @@ local ext_util = require("luasnip.util.ext_opts")
 local conf = require("luasnip.config")
 local mark = require("luasnip.util.mark").mark
 
-local function R(pos, key, nodes)
+local function R(pos, key, nodes, opts)
 	-- don't create nested snippetNodes, unnecessary.
 	nodes = nodes and wrap_nodes_in_snippetNode(nodes)
 
@@ -24,7 +24,7 @@ local function R(pos, key, nodes)
 		dependents = {},
 		-- TODO: find out why it's necessary only for this node.
 		active = false,
-	})
+	}, opts)
 end
 
 function RestoreNode:exit()
@@ -41,7 +41,7 @@ end
 
 function RestoreNode:input_enter()
 	self.active = true
-	self.mark:update_opts(self.parent.ext_opts[self.type].active)
+	self.mark:update_opts(self.ext_opts.active)
 
 	self:event(events.enter)
 end
@@ -51,7 +51,7 @@ function RestoreNode:input_leave()
 
 	self:update_dependents()
 	self.active = false
-	self.mark:update_opts(self.parent.ext_opts[self.type].passive)
+	self.mark:update_opts(self.ext_opts.passive)
 end
 
 -- set snippetNode for this key here.
@@ -81,11 +81,6 @@ function RestoreNode:put_initial(pos)
 	tmp.next = self
 	tmp.prev = self
 
-	tmp.ext_opts = tmp.ext_opts
-		or ext_util.set_abs_prio(
-			vim.deepcopy(self.parent.ext_opts),
-			conf.config.ext_prio_increase
-		)
 	tmp.snippet = self.parent.snippet
 
 	tmp.restore_node = self
@@ -95,6 +90,8 @@ function RestoreNode:put_initial(pos)
 		node.restore_node:update_dependents()
 	end
 
+	tmp:resolve_child_ext_opts()
+	tmp:resolve_node_ext_opts()
 	tmp:subsnip_init()
 
 	tmp:init_positions(self.snip_absolute_position)
@@ -114,7 +111,7 @@ function RestoreNode:put_initial(pos)
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = false,
-	}, self.parent.ext_opts[types.snippetNode].passive)
+	}, tmp.ext_opts.passive)
 
 	local old_pos = vim.deepcopy(pos)
 	tmp:put_initial(pos)
@@ -142,7 +139,7 @@ function RestoreNode:jump_into(dir, no_move)
 end
 
 function RestoreNode:set_ext_opts(name)
-	self.mark:update_opts(self.parent.ext_opts[self.type][name])
+	self.mark:update_opts(self.ext_opts[name])
 	self.snip:set_ext_opts(name)
 end
 
@@ -164,6 +161,8 @@ local function snip_init(self, snip)
 	snip.snippet = self.parent.snippet
 	snip.pos = self.pos
 
+	snip:resolve_child_ext_opts()
+	snip:resolve_node_ext_opts()
 	snip:subsnip_init()
 
 	snip:init_positions(self.snip_absolute_position)

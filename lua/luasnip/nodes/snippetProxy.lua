@@ -8,6 +8,7 @@
 
 local parse = require("luasnip.util.parser").parse_snippet
 local snip_mod = require("luasnip.nodes.snippet")
+local node_util = require("luasnip.nodes.util")
 
 local SnippetProxy = {}
 
@@ -43,10 +44,15 @@ end
 
 -- context and opts are the same objects as in s(contex, nodes, opts), snippet is a string representing the snippet.
 local function new(context, snippet, opts)
-	local sp = {}
 	-- "error": there should not be duplicate keys, don't silently overwrite/keep.
-	sp = vim.tbl_extend("error", sp, snip_mod.init_snippet_context(context))
-	sp = vim.tbl_extend("error", sp, snip_mod.init_snippet_opts(opts))
+	local sp = vim.tbl_extend(
+		"error",
+		{},
+		snip_mod.init_snippet_context(context),
+		snip_mod.init_snippet_opts(opts),
+		node_util.init_node_opts(opts)
+	)
+
 	sp._snippet_string = snippet
 	-- override docstring
 	sp.docstring = snippet
