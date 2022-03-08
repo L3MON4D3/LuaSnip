@@ -41,7 +41,7 @@ local function snip_init(self, snip)
 	snip.parent = self.parent
 	snip.pos = self.pos
 
-	snip.ext_opts = ext_util.increase_prio(
+	snip.ext_opts = ext_util.set_abs_prio(
 		vim.deepcopy(self.parent.ext_opts),
 		conf.config.ext_prio_increase
 	)
@@ -160,7 +160,7 @@ function DynamicNode:update()
 	tmp.prev = self
 
 	tmp.ext_opts = tmp.ext_opts
-		or ext_util.increase_prio(
+		or ext_util.set_abs_prio(
 			vim.deepcopy(self.parent.ext_opts),
 			conf.config.ext_prio_increase
 		)
@@ -263,7 +263,7 @@ function DynamicNode:update_static()
 	tmp.prev = self
 
 	tmp.ext_opts = tmp.ext_opts
-		or ext_util.increase_prio(
+		or ext_util.set_abs_prio(
 			vim.deepcopy(self.parent.ext_opts),
 			conf.config.ext_prio_increase
 		)

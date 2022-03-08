@@ -6,7 +6,7 @@ local conf = require("luasnip.config")
 local function subsnip_init_children(parent, children)
 	for _, child in ipairs(children) do
 		if child.type == types.snippetNode then
-			child.ext_opts = ext_util.increase_prio(
+			child.ext_opts = ext_util.set_abs_prio(
 				vim.deepcopy(parent.ext_opts),
 				conf.config.ext_prio_increase
 			)

@@ -102,18 +102,21 @@ end
 -- set the absolute priorities, which can vary depending on nesting-level
 -- of a given snippet, during runtime, by increasing the relative priorities by
 -- either the conf.base_prio or the base-prio used in the previous nesting-level.
-local function increase_prio(opts, amount)
-	opts.increased_by = opts.increased_by + amount
+local function set_abs_prio(opts, new_base_prio)
+	-- undo previous increase.
+	-- base_prio is initialized with 0.
+	new_base_prio = new_base_prio - opts.base_prio
+	opts.base_prio = new_base_prio
 	for _, node_type in pairs(types.node_types) do
 		local node_opts = opts[node_type]
 		node_opts.active.priority = node_opts.active.priority
-			and node_opts.active.priority + amount
+			and node_opts.active.priority + new_base_prio
 
 		node_opts.passive.priority = node_opts.passive.priority
-			and node_opts.passive.priority + amount
+			and node_opts.passive.priority + new_base_prio
 
 		node_opts.snippet_passive.priority = node_opts.snippet_passive.priority
-			and node_opts.snippet_passive.priority + amount
+			and node_opts.snippet_passive.priority + new_base_prio
 	end
 	-- modifies in-place, but utilizing that may be cumbersome.
 	return opts
@@ -123,5 +126,5 @@ return {
 	clear_invalid = clear_invalid,
 	complete = complete,
 	extend = extend,
-	increase_prio = increase_prio,
+	set_abs_prio = set_abs_prio,
 }

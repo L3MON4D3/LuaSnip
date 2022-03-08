@@ -369,13 +369,13 @@ function Snippet:trigger_expand(current_node, pos)
 	-- for now do a check for .indx.
 	-- TODO: maybe allow expand only inside insertNodes.
 	if current_node and (current_node.indx and current_node.indx > 1) then
-		ext_util.increase_prio(
+		ext_util.set_abs_prio(
 			self.ext_opts,
 			current_node.parent.ext_opts.increased_by
 				+ conf.config.ext_prio_increase
 		)
 	else
-		ext_util.increase_prio(self.ext_opts, conf.config.ext_base_prio)
+		ext_util.set_abs_prio(self.ext_opts, conf.config.ext_base_prio)
 	end
 
 	self.env = Environ:new(pos)
