@@ -190,6 +190,9 @@ function InsertNode:input_leave()
 end
 
 function InsertNode:exit()
+	if self.inner_first then
+		self.inner_first:exit()
+	end
 	self.visible = false
 	self.inner_first = nil
 	self.inner_last = nil
