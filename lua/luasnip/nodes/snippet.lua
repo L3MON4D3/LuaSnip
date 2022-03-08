@@ -130,6 +130,8 @@ local function init_snippetNode_opts(opts)
 
 	if opts.merge_child_ext_opts == nil then
 		in_node.merge_child_ext_opts = true
+	else
+		in_node.merge_child_ext_opts = opts.merge_child_ext_opts
 	end
 
 	in_node.callbacks = opts.callbacks or {}
@@ -374,29 +376,26 @@ function Snippet:trigger_expand(current_node, pos)
 	end
 	self:indent(util.line_chars_before(pos):match("^%s*"))
 
-	local parent_ext_opts
-	local parent_ext_base_prio
-	-- if inside another snippet, increase priority accordingly.
-	-- for now do a check for .indx.
-	if current_node and (current_node.indx and current_node.indx > 1) then
-		parent_ext_base_prio = current_node.parent.ext_opts.base_prio
-		parent_ext_opts = current_node.parent.effective_child_ext_opts
-	else
-		parent_ext_base_prio = conf.config.ext_base_prio
-		parent_ext_opts = conf.config.ext_opts
-	end
-
 	-- (possibly) keep user-set opts.
 	if self.merge_child_ext_opts then
 		self.effective_child_ext_opts = ext_util.child_extend(
 			vim.deepcopy(self.child_ext_opts),
-			parent_ext_opts
+			conf.config.ext_opts
 		)
 	else
 		self.effective_child_ext_opts = vim.deepcopy(self.child_ext_opts)
 	end
 
-	-- own highlight can come from self.child_ext_opts.snippet.
+	local parent_ext_base_prio
+	-- if inside another snippet, increase priority accordingly.
+	-- for now do a check for .indx.
+	if current_node and (current_node.indx and current_node.indx > 1) then
+		parent_ext_base_prio = current_node.parent.ext_opts.base_prio
+	else
+		parent_ext_base_prio = conf.config.ext_base_prio
+	end
+
+	-- own highlight comes from self.child_ext_opts.snippet.
 	self:resolve_node_ext_opts(
 		parent_ext_base_prio,
 		self.effective_child_ext_opts[self.type]
