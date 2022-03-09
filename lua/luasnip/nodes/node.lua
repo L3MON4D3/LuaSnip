@@ -320,18 +320,6 @@ end
 -- also have to be resolved.
 -- This function generates a nodes ext_opts (those actually used in highlighting).
 function Node:resolve_node_ext_opts(base_prio, parent_ext_opts)
-	-- if self.parent then
-	-- 	local ok, res = pcall(function()
-	-- 		local e = self.parent.effective_child_ext_opts[self.type]
-	-- 	end)
-	-- 	if not ok then
-	-- 		print(self.parent.type == types.snippetNode)
-	-- 		Insp(self.parent.child_ext_opts)
-	-- 		print(self.parent.snippet)
-	-- 		print(self.parent.absolute_position)
-	-- 	end
-	-- end
-
 	if self.merge_node_ext_opts then
 		self.ext_opts = ext_util.extend(
 			vim.deepcopy(self.node_ext_opts),
