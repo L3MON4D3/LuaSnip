@@ -39,27 +39,6 @@ function DynamicNode:input_leave()
 	self.mark:update_opts(self.ext_opts.passive)
 end
 
-local function snip_init(self, snip)
-	snip.parent = self.parent
-	snip.pos = self.pos
-
-	snip.ext_opts = ext_util.set_abs_prio(
-		vim.deepcopy(self.parent.ext_opts),
-		conf.config.ext_prio_increase
-	)
-	snip.snippet = self.parent.snippet
-	snip:static_init()
-
-	snip:subsnip_init()
-	snip:init_positions(self.snip_absolute_position)
-	snip:init_insert_positions(self.snip_absolute_insert_position)
-
-	snip:make_args_absolute()
-
-	snip:set_dependents()
-	snip:set_argnodes(self.parent.snippet.dependents_dict)
-end
-
 function DynamicNode:get_static_text()
 	if not self.static_text then
 		if self.snip then
@@ -260,11 +239,8 @@ function DynamicNode:update_static()
 	tmp.next = self
 	tmp.prev = self
 
-	tmp.ext_opts = tmp.ext_opts
-		or ext_util.set_abs_prio(
-			vim.deepcopy(self.parent.ext_opts),
-			conf.config.ext_prio_increase
-		)
+	-- doesn't matter here, but they'll have to be set.
+	tmp.ext_opts = self.parent.ext_opts
 	tmp.snippet = self.parent.snippet
 
 	tmp.dynamicNode = self

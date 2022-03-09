@@ -154,10 +154,6 @@ end
 local function snip_init(self, snip)
 	snip.parent = self.parent
 
-	snip.ext_opts = ext_util.set_abs_prio(
-		vim.deepcopy(self.parent.ext_opts),
-		conf.config.ext_prio_increase
-	)
 	snip.snippet = self.parent.snippet
 	snip.pos = self.pos
 
