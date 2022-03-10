@@ -65,6 +65,13 @@ ls.snippets = {
 It is possible to make snippets from one filetype available to another using
 `ls.filetype_extend`, more info on that [here](#api-reference).  
 
+# NODE
+
+Every node accepts, as its' last parameter, an optional table of arguments.
+There are some common ones (eg. [`node_ext_opts`](#ext_opts)), and some that
+only apply to some nodes (`user_args` for both function and dynamicNode).  
+These `opts` are only mentioned if they accept options that are not common to
+all nodes.
 
 # SNIPPETS
 
@@ -105,7 +112,7 @@ The second argument to `s` is a table containing all nodes that belong to the
 snippet. If the table only has a single node, it can be passed directly
 without wrapping it in a table.
 
-The third argument is a table with the following valid keys:
+The third argument (`opts`) is a table with the following valid keys:
 - `condition`: the condition-function `fn(line_to_cursor, matched_trigger,
   captures) -> bool`.  
   The snippet will be expanded only if it returns true (default is a function
@@ -113,7 +120,7 @@ The third argument is a table with the following valid keys:
   The function is called before the text is modified in any way.  
   Some parameters are passed to the function: The line up to the cursor, the
   matched trigger and the captures (table).
-* `show_condition`: Function with signature `f(line_to_cursor) -> bool`.  
+- `show_condition`: Function with signature `f(line_to_cursor) -> bool`.  
   It is a hint for completion-engines, indicating when the snippet should be
   included in current completion candidates.  
   Defaults to a function returning `true`.  
@@ -135,8 +142,11 @@ The third argument is a table with the following valid keys:
   To register a callback for the snippets' own events, the key `[-1]` may
   be used.  
   The callbacks are passed only one argument, the node that triggered it.
+- `child_ext_opts`, `merge_child_ext_opts`: `ext_opts` applied to the children
+  of this snippet. More info [here](#ext_opts).
+
 This `opts`-table can also be passed to eg.	`snippetNode` or `indentSnippetNode`,
-but only `callbacks` is used there.
+but only `callbacks` and the `ext_opts`-related options are used there.
 
 Snippets contain some interesting tables, eg. `snippet.env` contains variables
 used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
@@ -208,7 +218,7 @@ The above snippet will behave as follows:
 - After jumping forward again, we will be at InsertNode 0.
 
 An **important** (because here luasnip differs from other snippet-engines) detail
-is that the jump-order restarts at 1 in nested snippets:
+is that the jump-positions restart at 1 in nested snippets:
 ```lua
 s("trigger", {
 	i(1, "First jump"),
@@ -223,7 +233,7 @@ s("trigger", {
 
 as opposed to eg. the textmate-syntax, where tabstops are snippet-global:  
 ```snippet
-${1:First jump} :: ${2: ${3:Second jump} : ${4:Third jump}}
+${1:First jump} :: ${2: ${3:Third jump} : ${4:Fourth jump}}
 ```
 (this is not exactly the same snippet of course, but as close as possible)  
 (the restart-rule only applies when defining snippets in lua, the above
@@ -250,7 +260,7 @@ user-defined function:
  	i(1),
  	f(function(args, snip, user_arg_1) return args[1][1] .. user_arg_1 end,
  		{1},
- 		"Will be appended to text from i(0)"),
+ 		{ user_args = {"Will be appended to text from i(0)"}}),
  	i(0)
  })
 ```
@@ -268,8 +278,12 @@ The first parameter of `f` is the function. Its parameters are:
       parent (a `snippetNode`) will contain neither `captures` nor `env`. Those
       are only stored in the `snippet`, which can be accessed as `parent.snippet`.
 
-3. Any parameters passed to `f` behind the second (included to more easily
-      reuse functions, ie. ternary if based on text in an insertNode).
+3-n. The `user_args` passed in `opts`.
+
+The function shall return a string, which will be inserted as-is, or a table
+of strings for multiline-string, here all lines following the first will be
+prefixed with the snippets' indentation.
+
 
 The second parameter is a table of indices of jumpable nodes whose text is
 passed to the function.  
@@ -280,9 +294,25 @@ it in a table.
 The indices can be specified either as relative to the functionNodes' parent
 using numbers or as absolute, using the [`absolute_indexer`](#absolute_indexer).
 
-The function shall return a string, which will be inserted as-is, or a table
-of strings for multiline-string, here all lines following the first will be
-prefixed with the snippets' indentation.
+The last parameter is, as with any node, `opts`.  
+`functionNode` accepts one additional option: `user_args`, a table of values
+passed to the function.  
+These exist to more easily reuse functionNode-functions, when applicable:
+
+```lua
+local function reused_func(_,_, user_arg1)
+	return user_arg1
+end
+
+s("trig", {
+	f(reused_func, {}, {
+		user_args = {"text"}
+	}),
+	f(reused_func, {}, {
+		user_args = {"different text"}
+	}),
+})
+```
 
 Examples:
 Use captures from the regex-trigger using a functionNode:
@@ -449,7 +479,7 @@ which makes them very powerful as parts of the snippet can be changed based on
 user-input.
 
 The prototype for the dynamicNodes' constructor is 
-`d(position:int, function, argnodes:table of nodes, user_args1, ..., user_argsn)`:
+`d(position:int, function, argnodes:table of nodes, opts: table)`:
 
 1. `position`: just like all jumpable nodes, when this node will be jumped into.
 2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`  
@@ -469,15 +499,13 @@ The prototype for the dynamicNodes' constructor is
      The `old_state` table must be stored in `snippetNode` returned by
      the function (`snippetNode.old_state`).  
      The second example below illustrates the usage of `old_state`.  
-   * `user_args1, ..., user_argsn`: passed through from `dynamicNode`-constructor.
+   * `user_args1, ..., user_argsn`: passed through from `dynamicNode`-opts.
 3. `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
    update, the `dynamicNode`s' function will be executed and the result inserted at
    the `dynamicNodes` place.  
    Can be a single index or a table of indices.  
-4. `user_args1, ..., user_argsn`: Anything passed here will also be passed to
-   the function (easy to reuse similar functions with small changes) (This may
-   be removed, alternatively use partial functions to reuse functions).
-
+4. `opts`: Just like `functionNode`, `dynamicNode` also accepts `user_args` in
+   addition to options common to all nodes.
 
 Examples:  
 
@@ -541,8 +569,8 @@ end
 
 s("trig", {
 	i(1, "1"),
-	-- pos, function, argnodes, user_arg1
-	d(2, lines, {1}, "Sample Text")
+	-- pos, function, argnodes, opts (containing the user_arg).
+	d(2, lines, {1}, {user_args = {"Sample Text"}})
 })
 ```
 This snippet would start out as `"1\nSample Text"` and, upon changing the 1 to
