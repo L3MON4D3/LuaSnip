@@ -124,9 +124,9 @@ return {
 	end,
 	-- Insert the output of a function.
 	partial = function(func, ...)
-		return F(function(_, _, fn, ...)
-			return fn(...)
-		end, {}, func, ...)
+		return F(function(_, _, ...)
+			return func(...)
+		end, {}, { user_args = { ... } })
 	end,
 	nonempty = function(indx, text_if, text_if_not)
 		assert(

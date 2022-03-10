@@ -176,7 +176,7 @@ end
 
 -- Returns a snippet_node wrapped around an insert_node whose initial
 -- text value is set to the current date in the desired format.
-local date_input = function(args, state, fmt)
+local date_input = function(args, snip, old_state, fmt)
 	local fmt = fmt or "%Y-%m-%d"
 	return sn(nil, i(1, os.date(fmt)))
 end
@@ -297,7 +297,7 @@ ls.snippets = {
 		-- value of an insert_node.
 		s("novel", {
 			t("It was a dark and stormy night on "),
-			d(1, date_input, {}, "%A, %B %d of %Y"),
+			d(1, date_input, {}, { user_args = { "%A, %B %d of %Y" } }),
 			t(" and the clocks were striking thirteen."),
 		}),
 		-- Parsing snippets: First parameter: Snippet-Trigger, Second: Snippet body.
@@ -362,6 +362,7 @@ ls.snippets = {
 			-- This list will be applied in order to the first node given in the second argument.
 			l(l._1:match("[^i]*$"):gsub("i", "o"):gsub(" ", "_"):upper(), 1),
 		}),
+
 		s("transform2", {
 			i(1, "initial text"),
 			t("::"),
