@@ -126,7 +126,9 @@ local function init_snippetNode_opts(opts)
 
 	opts = opts or {}
 
-	in_node.child_ext_opts = ext_util.child_complete(opts.child_ext_opts or {})
+	in_node.child_ext_opts = ext_util.child_complete(
+		vim.deepcopy(opts.child_ext_opts or {})
+	)
 
 	if opts.merge_child_ext_opts == nil then
 		in_node.merge_child_ext_opts = true
