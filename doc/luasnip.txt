@@ -969,53 +969,177 @@ This will parse the snippet on startup...
 ================================================================================
 EXT_OPTS                                                        *luasnip-ext_opts*
 
-`ext_opts` are probably best explained with a short example:
+`ext_opts` can be used to set the `opts` (see `nvim_buf_set_extmark`) of the
+extmarks used for marking node-positions, either globally, per-snippet or
+per-node.
+This means that they allow highlighting the text inside of nodes, or adding
+virtual text to the line the node begins on.
+
+This is an example for the `node_ext_opts` used to set `ext_opts` of single nodes:
+>
+    local ext_opts = {
+    	-- these ext_opts are applied when the node is active (eg. it has been
+    	-- jumped into, and not out yet).
+    	active = 
+    	-- this is the table actually passed to `nvim_buf_set_extmark`.
+    	{
+    		-- highlight the text inside the node red.
+    		hl_group = "GruvboxRed"
+    	},
+    	-- these ext_opts are applied when the node is not active, but
+    	-- the snippet still is.
+    	passive = {
+    		-- add virtual text on the line of the node, behind all text.
+    		virt_text = {{"virtual text!!", "GruvboxBlue"}}
+    	},
+    	-- and these are applied when both the node and the snippet are inactive.
+    	snippet_passive = {}
+    }
+    ...
+    s("trig", {
+    	i(1, "text1", {
+    		node_ext_opts = ext_opts
+    	}),
+    	i(2, "text2", {
+    		node_ext_opts = ext_opts
+    	})
+    })
+<
+
+In the above example the text inside the insertNodes is higlighted in red while
+inside them, and the virtual text "virtual text!!" is visible as long as the
+snippet is active.
+
+It's important to note that `snippet_passive` applies to the states
+`snippet_passive`, `passive`, and `active`, `passive` to `passive` and `active`,
+and `active` only to `active`.
+
+To disable a key from a "lower" state, it has to be explicitly set to its
+default, eg. to disable highlighting inherited from `passive` when the node is
+`active`, `hl_group` could be set to `None` in `active`.
+
+--------------------------------------------------------------------------------
+As stated earlier, these `ext_opts` can also be applied globally or for an
+entire snippet. For this it's necessary to specify which kind of node a given
+set of `ext_opts` should be applied to:
 >
     local types = require("luasnip.util.types")
-    vim.api.nvim_command("hi LuasnipChoiceNodePassive cterm=italic")
     ls.config.setup({
     	ext_opts = {
     		[types.insertNode] = {
+    			active = {...},
+    			passive = {...},
+    			snippet_passive = {...}
+    		},
+    		[types.choiceNode] = {
+    			active = {...}
+    		},
+    		[types.snippet] = {
+    			passive = {...}
+    		}
+    	}
+    })
+<
+
+The above applies the given `ext_opts` to all nodes of these types, in all
+snippets...
+>
+    local types = require("luasnip.util.types")
+    s("trig", { i(1, "text1"), i(2, "text2") }, {
+    	child_ext_opts = {
+    		[types.insertNode] = {
     			passive = {
-    				hl_group = "GruvboxRed"
+    				hl_group = "GruvboxAqua"
+    			}
+    		}
+    	}
+    })
+<
+
+... while the `ext_opts` here are only applied to the `insertNodes` inside this
+snippet.
+
+--------------------------------------------------------------------------------
+By default, the `ext_opts` actually used for a node are created by extending the
+`node_ext_opts` with the `effective_child_ext_opts[node.type]` of the parent,
+which are in turn the `child_ext_opts` of the parent extended with the global
+`ext_opts` set in the config.
+
+It's possible to prevent both of these merges by passing
+`merge_node/child_ext_opts=false` to the snippet/node-opts:
+>
+    ls.config.setup({
+    	ext_opts = {
+    		[types.insertNode] = {
+    			active = {...}
+    		}
+    	}
+    })
+    ...
+    s("trig", {
+    	i(1, "text1", {
+    		node_ext_opts = {
+    			active = {...}
+    		},
+    		merge_node_ext_opts = false
+    	}), i(2, "text2") }, {
+    	child_ext_opts = {
+    		[types.insertNode] = {
+    			passive = {...}
+    		}
+    	},
+    	merge_child_ext_opts = false
+    })
+<
+
+--------------------------------------------------------------------------------
+The `hl_group` of the global `ext_opts` can also be set via standard
+highlight-groups:
+>
+    vim.cmd("hi link LuasnipInsertNodePassive GruvboxRed")
+    vim.cmd("hi link LuasnipSnippetPassive GruvboxBlue")
+    -- needs to be called for resolving the actual ext_opts.
+    ls.config.setup({})
+<
+
+The names for the used highlight groups are
+`"Luasnip<node>{Passive,Active,SnippetPassive}"`, where `<node>` can be any kind of
+node in PascalCase (or "Snippet").
+
+--------------------------------------------------------------------------------
+One problem that might arise when nested nodes are highlighted, is that the
+highlight of inner nodes should be visible above that of nodes they are nested inside.
+
+This can be controlled using the `priority`-key in `ext_opts`. Normally, that
+value is an absolute value, but here it is relative to some base-priority, which
+is increased for each nesting level of snippets.
+
+Both the initial base-priority and its' increase and can be controlled using
+`ext_base_prio` and `ext_prio_increase`:
+>
+    ls.config.setup({
+    	ext_opts = {
+    		[types.insertNode] = {
+    			active = {
+    				hl_group = "GruvboxBlue",
+    				-- the priorities should be \in [0, ext_prio_increase).
+    				priority = 1
     			}
     		},
     		[types.choiceNode] = {
     			active = {
-    				virt_text = {{"choiceNode", "GruvboxOrange"}}
+    				hl_group = "GruvboxRed"
+    				-- priority defaults to 0
     			}
-    		},
-    		[types.textNode] = {
-    			snippet_passive = {
-    				hl_group = "GruvboxGreen"
-    			}
-    		},
-    	},
+    		}
+    	}
     	ext_base_prio = 200,
-    	ext_prio_increase = 3,
+    	ext_prio_increase = 2
     })
 <
 
-This highlights `insertNodes` red (both when active and passive) and adds
-virtualText and italics to `choiceNode` while it is active (both only if the
-snippet is active). `textNodes` are highlighted green, even if the snippet is
-no longer active. (unspecified values in `passive` are populated with values
-from `snippet_passive`, those in `active` with those from the new `passive`).
-
-The `active`/ `passive`-tables are passed to `nvim_buf_set_extmark` as `opts`
-which means only entries valid there can be used here. `priority`, while still
-affecting the priority of highlighting, is interpreted as a relative value here,
-not absolute (`0 <= priority < ext_prio_increase`).
-The absolute range of priorities can still be somewhat controlled using
-`ext_base_prio` and `ext_prio_increase` (all highlights start out with
-`ext_base_prio`+their own priority, for highlights belonging to a nested
-snippet(Node), `ext_base_prio` is increased by `ext_prio_increase`)).
-
-As a shortcut for setting `hl_group`, the highlight-groups
-`Luasnip*Node{Active,Passive,SnippetPassive}` may be defined (to be actually
-used by LuaSnip, `ls.config.setup` has to be called after defining). They are
-overridden by the values defined in `ext_opts` directly, but otherwise behave
-the same (active is extended by passive).
+Here the highlight of an insertNode nested directly inside a choiceNode is
+always visible on top of it.
 
 ================================================================================
 DOCSTRING                                                      *luasnip-docstring*
