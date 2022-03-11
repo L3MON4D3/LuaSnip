@@ -168,19 +168,19 @@ For nvim-cmp, it is also possible to follow the [example recommendation](https:/
 
 - **Vscode-like**: To use existing vs-code style snippets from a plugin (eg. [rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) simply install the plugin and then add
     ```lua
-    require("luasnip.loaders.from_vscode").load()
+    require("luasnip.loaders.from_vscode").lazy_load()
     ```
 	somewhere in your nvim-config. LuaSnip will then load the snippets contained in the plugin on startup.
   You can also easily **load your own custom vscode style snippets** by passing the path to the custom snippet-directory to the load function:
     ```lua
     -- load snippets from path/of/your/nvim/config/my-cool-snippets
-    require("luasnip.loaders.from_vscode").load({ paths = { "./my-cool-snippets" } })
+    require("luasnip.loaders.from_vscode").lazy_load({ paths = { "./my-cool-snippets" } })
     ```
 	For more info on the vscode-loader, check the [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L501) or [documentation](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#vscode-snippets-loader).
 
 - **Snipmate-like**: Very similar to Vscode-packages: install a plugin that provides snippets and call the `load`-function:
     ```lua
-    require("luasnip.loaders.from_snipmate").load()
+    require("luasnip.loaders.from_snipmate").lazy_load()
     ```
     The snipmate format is very simple, so adding **custom snippets** only requires a few steps:
     - add a directory beside your `init.vim` (or any other place that is in your `runtimepath`) named `snippets`.
