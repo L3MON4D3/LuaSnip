@@ -769,8 +769,8 @@ The complete signature for the node is `match(argnodes, condition, then, else)`,
     "ABC" exactly, nothing otherwise.
   * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
     "PALINDROME" if the nth jumpable node is a palindrome.
-  *
-    ```lua
+
+  * ```lua
     s("trig", {
     	i(1), t":",
     	i(2), t"::",
