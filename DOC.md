@@ -530,7 +530,7 @@ first `insertNode`.
 ```lua
 local function lines(args, parent, old_state, initial_text)
 	local nodes = {}
-	if not old_state then old_state = {} end
+	old_state = old_state or {}
 
 	-- count is nil for invalid input.
 	local count = tonumber(args[1][1])
