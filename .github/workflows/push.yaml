@@ -1,9 +1,6 @@
 name: Generate docs and format
 
-on:
-  pull_request:
-  push:
-    branches: [master]
+on: [push, pull_request_target]
 
 jobs:
   postprocessing:
