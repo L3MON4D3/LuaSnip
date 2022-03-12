@@ -7,10 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: "Auto Generate docs"
-        uses: docker://leiserfg/md2vim
+      - name: panvimdoc
+        uses: kdheepak/panvimdoc@main
         with:
-          args:  '-desc  "Luasnip Snippet Engine"  DOC.md doc/luasnip.txt'
+          vimdoc: luasnip
+          pandoc: DOC.md
+
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Auto generate docs"
