@@ -384,16 +384,16 @@ The third parameter is a table of options with the following keys:
 	possible to override the default by wrapping the `choiceNode`-constructor
 	in another function that sets `opts.restore_cursor` to `true` and then using
 	that to construct `choiceNode`s:
-	```lua
-	local function restore_cursor_choice(pos, choices, opts)
-		if opts then
-			opts.restore_cursor = true
-		else
-			opts = {restore_cursor = true}
-		end
-		return c(pos, choices, opts)
+```lua
+local function restore_cursor_choice(pos, choices, opts)
+	if opts then
+		opts.restore_cursor = true
+	else
+		opts = {restore_cursor = true}
 	end
-	```
+	return c(pos, choices, opts)
+end
+```
 
 Jumpable nodes that normally expect an index as their first parameter don't
 need one inside a choiceNode; their index is the same as the choiceNodes'.
