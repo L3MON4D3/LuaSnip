@@ -34,4 +34,17 @@ M.invalidated_count = 0
 -- store snippets by some key.
 M.by_key = {}
 
+M.by_prio = {
+	snippets = {
+		[1000] = {
+			all = {},
+		},
+	},
+	autosnippets = {
+		[1000] = {
+			all = {},
+		},
+	},
+}
+
 return M

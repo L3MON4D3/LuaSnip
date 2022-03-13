@@ -682,8 +682,6 @@ ls = {
 	restore_node = require("luasnip.nodes.restoreNode").R,
 	parser = require("luasnip.util.parser"),
 	config = require("luasnip.config"),
-	snippets = { all = {} },
-	autosnippets = { all = {} },
 	session = session,
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,
