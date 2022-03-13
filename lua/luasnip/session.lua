@@ -34,17 +34,62 @@ M.invalidated_count = 0
 -- store snippets by some key.
 M.by_key = {}
 
+-- stores snippets/autosnippets by priority.
 M.by_prio = {
 	snippets = {
+		-- stores sorted keys, eg 1=1000, 2=1010, 3=1020,..., used for
+		-- quick iterating.
+		order = {
+			1000,
+		},
 		[1000] = {
 			all = {},
 		},
 	},
 	autosnippets = {
+		order = {
+			1000,
+		},
 		[1000] = {
 			all = {},
 		},
 	},
 }
+
+-- this isn't in util/util.lua due to circular dependencies. Would be cleaner
+-- to include it there, but it's alright to keep here for now.
+--
+-- this is linear, binary search would certainly be nicer, but for our
+-- applications this should easily be enough.
+local function insert_sorted_unique(t, k)
+	local tbl_len = #t
+
+	local i = 1
+	-- k does not yet exist in table, find first i so t[i] > k.
+	for _ = 1, tbl_len do
+		if t[i] > k then
+			break
+		end
+		i = i + 1
+	end
+
+	-- shift all t[j] with j > i back by one.
+	for j = tbl_len, i, -1 do
+		t[j + 1] = t[j]
+	end
+
+	t[i] = k
+end
+
+local sort_mt = {
+	__newindex = function(t, k, v)
+		-- update priority-order as well.
+		insert_sorted_unique(t.order, k)
+		rawset(t, k, v)
+	end,
+}
+
+setmetatable(M.by_prio.snippets, sort_mt)
+setmetatable(M.by_prio.autosnippets, sort_mt)
 
 return M
