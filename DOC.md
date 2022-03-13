@@ -42,13 +42,13 @@ In LuaSnip, snippets are made up of `nodes`. These can contain either
   * `choiceNode`: allows choosing between two nodes (which might contain more
     nodes)
   * `restoreNode`: store and restore input to nodes
-* or nodes that can be generated based on input (`dynamicNode`).  
+* or nodes that can be generated based on input (`dynamicNode`).
 
 Snippets are always created using the `s(trigger:string, nodes:table)`-function.
 It is explained in more detail in [SNIPPETS](#snippets), but the gist is that
 it creates a snippet that contains the nodes specified in `nodes`, which will be
 inserted into a buffer if the text before the cursor matches `trigger` when
-`expand` is called.  
+`expand` is called.
 The snippets for a given filetype have to be appended to the
 `ls.snippets.<filetype>`-table. Snippets that should be accessible globally (in
 all filetypes) will be read from the `ls.snippets.all`-table:
@@ -63,13 +63,13 @@ ls.snippets = {
 }
 ```
 It is possible to make snippets from one filetype available to another using
-`ls.filetype_extend`, more info on that [here](#api-reference).  
+`ls.filetype_extend`, more info on that [here](#api-reference).
 
 # NODE
 
 Every node accepts, as its' last parameter, an optional table of arguments.
 There are some common ones (eg. [`node_ext_opts`](#ext_opts)), and some that
-only apply to some nodes (`user_args` for both function and dynamicNode).  
+only apply to some nodes (`user_args` for both function and dynamicNode).
 These `opts` are only mentioned if they accept options that are not common to
 all nodes.
 
@@ -113,23 +113,24 @@ snippet. If the table only has a single node, it can be passed directly
 without wrapping it in a table.
 
 The third argument (`opts`) is a table with the following valid keys:
+
 - `condition`: the condition-function `fn(line_to_cursor, matched_trigger,
-  captures) -> bool`.  
+  captures) -> bool`.
   The snippet will be expanded only if it returns true (default is a function
-  that just returns `true`).  
-  The function is called before the text is modified in any way.  
+  that just returns `true`).
+  The function is called before the text is modified in any way.
   Some parameters are passed to the function: The line up to the cursor, the
   matched trigger and the captures (table).
-- `show_condition`: Function with signature `f(line_to_cursor) -> bool`.  
+- `show_condition`: Function with signature `f(line_to_cursor) -> bool`.
   It is a hint for completion-engines, indicating when the snippet should be
-  included in current completion candidates.  
-  Defaults to a function returning `true`.  
+  included in current completion candidates.
+  Defaults to a function returning `true`.
   This is different than `condition` because `condition` is evaluated by
   LuaSnip on snippet expansion (and thus has access to the matched trigger and
   captures), while `show_condition` is evaluated by the completion-engine when
   scanning for available snippet candidates.
 - `callbacks`: Contains functions that are called upon enterin/leaving a node
-  of this snippet.  
+  of this snippet.
   To print text upon entering the _second_ node of a snippet, `callbacks`
   should be set as follows:
   ```lua
@@ -140,7 +141,7 @@ The third argument (`opts`) is a table with the following valid keys:
   }
   ```
   To register a callback for the snippets' own events, the key `[-1]` may
-  be used.  
+  be used.
   The callbacks are passed only one argument, the node that triggered it.
 - `child_ext_opts`, `merge_child_ext_opts`: `ext_opts` applied to the children
   of this snippet. More info [here](#ext_opts).
@@ -168,7 +169,7 @@ This snippet expands to
 ```
     Wow! Text!⎵
 ```
-Where ⎵ is the cursor.  
+Where ⎵ is the cursor.
 Multiline-strings can be defined by passing a table of lines rather than a
 string:
 
@@ -182,7 +183,7 @@ s("trigger", {
 # INSERTNODE
 
 These Nodes contain editable text and can be jumped to- and from (eg.
-traditional placeholders, like `$1` in textmate-snippets).  
+traditional placeholders, like `$1` in textmate-snippets).
 
 The functionality is best demonstrated with an example:
 
@@ -194,8 +195,8 @@ s("trigger", {
 })
 ```
 
-The InsertNodes are jumped over in order from `1 to n`.  
-0-th node is special as it's always the last one.  
+The InsertNodes are jumped over in order from `1 to n`.
+0-th node is special as it's always the last one.
 So the order of InsertNode jump is as follows:
 - After expansion, we will be at InsertNode 1.
 - After jumping forward, we will be at InsertNode 2.
@@ -231,11 +232,11 @@ s("trigger", {
 })
 ```
 
-as opposed to eg. the textmate-syntax, where tabstops are snippet-global:  
+as opposed to eg. the textmate-syntax, where tabstops are snippet-global:
 ```snippet
 ${1:First jump} :: ${2: ${3:Third jump} : ${4:Fourth jump}}
 ```
-(this is not exactly the same snippet of course, but as close as possible)  
+(this is not exactly the same snippet of course, but as close as possible)
 (the restart-rule only applies when defining snippets in lua, the above
 textmate-snippet will expand correctly).
 
@@ -286,17 +287,17 @@ prefixed with the snippets' indentation.
 
 
 The second parameter is a table of indices of jumpable nodes whose text is
-passed to the function.  
+passed to the function.
 The table may be empty, in this case the function is evaluated once upon
-snippet-expansion.  
+snippet-expansion.
 If the table only has a single node, it can be passed directly without wrapping
-it in a table.  
+it in a table.
 The indices can be specified either as relative to the functionNodes' parent
 using numbers or as absolute, using the [`absolute_indexer`](#absolute_indexer).
 
-The last parameter is, as with any node, `opts`.  
+The last parameter is, as with any node, `opts`.
 `functionNode` accepts one additional option: `user_args`, a table of values
-passed to the function.  
+passed to the function.
 These exist to more easily reuse functionNode-functions, when applicable:
 
 ```lua
@@ -376,6 +377,7 @@ jumplist, and as its second a table with nodes, the choices. This table can
 either contain a single node or a table of nodes. In the latter case the table
 will be converted into a `snippetNode`.
 The third parameter is a table of options with the following keys:
+
 - `restore_cursor`: `false` by default. If it is set and the node that was
 	being edited also appears in the switched-to choice (can be the case if a
 	`restoreNode` is present in both choice) the cursor is restored relative to
@@ -399,7 +401,7 @@ Jumpable nodes that normally expect an index as their first parameter don't
 need one inside a choiceNode; their index is the same as the choiceNodes'.
 
 As it is only possible (for now) to change choices from within the choiceNode,
-make sure that all of the choices have some place for the cursor to stop at.  
+make sure that all of the choices have some place for the cursor to stop at.
 This means that in `sn(nil, {...nodes...})` `nodes` has to contain eg. an
 `i(1)`, otherwise luasnip will just "jump through" the nodes, making it
 impossible to change the choice.
@@ -482,10 +484,10 @@ The prototype for the dynamicNodes' constructor is
 `d(position:int, function, argnodes:table of nodes, opts: table)`:
 
 1. `position`: just like all jumpable nodes, when this node will be jumped into.
-2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`  
+2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`
    This function is called when the argnodes' text changes. It generates and
    returns (wrapped inside a `snippetNode`) the nodes that should be inserted
-   at the dynamicNodes place.  
+   at the dynamicNodes place.
    `args`, `parent` and `user_args` are also explained in
    [functionNode](#functionnode)
    * `args`: `table of text` (`{{"node1line1", "node1line2"}, {"node2line1"}}`)
@@ -495,19 +497,19 @@ The prototype for the dynamicNodes' constructor is
      anything, its intended usage is to preserve information from the previously
      generated `snippetNode`: If the `dynamicNode` depends on other nodes it may
      be reconstructed, which means all user input (text inserted in `insertNodes`,
-     changed choices) to the previous dynamicNode is lost.  
+     changed choices) to the previous dynamicNode is lost.
      The `old_state` table must be stored in `snippetNode` returned by
-     the function (`snippetNode.old_state`).  
-     The second example below illustrates the usage of `old_state`.  
+     the function (`snippetNode.old_state`).
+     The second example below illustrates the usage of `old_state`.
    * `user_args1, ..., user_argsn`: passed through from `dynamicNode`-opts.
 3. `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
    update, the `dynamicNode`s' function will be executed and the result inserted at
-   the `dynamicNodes` place.  
-   Can be a single index or a table of indices.  
+   the `dynamicNodes` place.
+   Can be a single index or a table of indices.
 4. `opts`: Just like `functionNode`, `dynamicNode` also accepts `user_args` in
    addition to options common to all nodes.
 
-Examples:  
+Examples:
 
 ```lua
 s("trig", {
@@ -576,7 +578,7 @@ s("trig", {
 This snippet would start out as `"1\nSample Text"` and, upon changing the 1 to
 eg. 3, it would change to `"3\nSample Text\nSample Text\nSample Text"`. Text
 that was inserted into any of the dynamicNodes insertNodes is kept when
-changing to a bigger number.  
+changing to a bigger number.
 (`old_state` is no longer the best way to preserve user-input across multiple
 recreations: the shortly-explained `restoreNode` is much more user-friendly)
 
@@ -660,7 +662,7 @@ that really bothers you feel free to open an issue.
 # ABSOLUTE_INDEXER
 
 The `absolute_indexer` can be used to pass text of nodes to a function/dynamicNode
-that it doesn't share a parent with.  
+that it doesn't share a parent with.
 Normally, accessing the outer `i(1)` isn't possible from inside eg. a
 snippetNode (nested inside a choiceNode to make this example more practical):
 
@@ -740,7 +742,7 @@ with "e", one could use `lambda(lambda._1:gsub("a", "e"), n)` (signature is
 similar to that of `functionNode`).
 If a node has multiple lines, they will be concatenated using "\n".
 
-- `match`: Can insert text based on a predicate (shorthand for `functionNode`s).  
+- `match`: Can insert text based on a predicate (shorthand for `functionNode`s).
 The complete signature for the node is `match(argnodes, condition, then, else)`, where
   * `argnodes` can be specified as in `functionNode`,
   * `condition` may be a
@@ -764,7 +766,7 @@ The complete signature for the node is `match(argnodes, condition, then, else)`,
     something other than strings).
     * lambda: Simply the first value returned by the lambda.
 
-  Examples:  
+  Examples:
   * `match(n, "^ABC$", "A")` inserts "A" if the `n`th jumpable node matches
     "ABC" exactly, nothing otherwise.
   * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
@@ -975,7 +977,7 @@ compatible with luasnip
 `SnippetProxy` is used internally to alleviate the upfront-cost of
 loading snippets from eg. a snipmate-library or a vscode-package. This is
 achieved by only parsing the snippet on expansion, not immediately after reading
-it from some file.  
+it from some file.
 `SnippetProxy` may also be used from lua directly, to get the same benefits:
 
 This will parse the snippet on startup...
@@ -1341,22 +1343,22 @@ the lazy_load.
   range of the snippet `node` belongs to. If yes, no change occurs, if No, the
   snippet is exited and following snippets' regions are checked and potentially
   exited (the next active node will be the 0-node of the snippet before the one
-  the cursor is inside.  
+  the cursor is inside.
   If the cursor isn't inside any snippet, the active node will be the last node
-  in the jumplist).  
+  in the jumplist).
   If a jump causes an error (happens mostly because a snippet was deleted), the
   snippet is removed from the jumplist.
 
 - `store_snippet_docstrings(snippet_table)`: Stores the docstrings of all
   snippets in `snippet_table` to a file
-  (`stdpath("cache")/luasnip/docstrings.json`).  
+  (`stdpath("cache")/luasnip/docstrings.json`).
   Calling `store_snippet_docstrings(snippet_table)` after adding/modifying
   snippets and `load_snippet_docstrings(snippet_table)` on startup after all
   snippets have been added to `snippet_table` is a way to avoide regenerating
-  the (unchanged) docstrings on each startup.  
+  the (unchanged) docstrings on each startup.
   (Depending on when the docstrings are required and how luasnip is loaded,
   it may be more sensible to let them load lazily, eg. just before they are
-  required).  
+  required).
   `snippet_table` should be laid out just like `luasnip.snippets` (it will
   most likely always _be_ `luasnip.snippets`).
 
@@ -1364,7 +1366,7 @@ the lazy_load.
   in `snippet_table` from `stdpath("cache")/luasnip/docstrings.json`.
   The docstrings are stored and restored via trigger, meaning if two
   snippets for one filetype have the same(very unlikely to happen in actual
-  usage), bugs could occur.  
+  usage), bugs could occur.
   `snippet_table` should be laid out as described in `store_snippet_docstrings`.
 
 - `unlink_current_if_deleted()`: Checks if the current snippet was deleted,
@@ -1375,7 +1377,7 @@ the lazy_load.
 - `filetype_extend(filetype:string, extend_filetypes:table of string)`: Tells
   luasnip that for a buffer with `ft=filetype`, snippets from
   `extend_filetypes` should be searched as well. `extend_filetypes` is a
-  lua-array (`{ft1, ft2, ft3}`).  
+  lua-array (`{ft1, ft2, ft3}`).
   `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand c-and
   cpp-snippets for lua-files.
 
@@ -1388,7 +1390,7 @@ the lazy_load.
   authoring and testing snippets.
 
 - `refresh_notify(ft:string)`: Triggers an autocmd that other plugins can hook
-  into to perform various cleanup for the refreshed filetype.  
+  into to perform various cleanup for the refreshed filetype.
   Useful for signaling that new snippets were added for the filetype `ft`.
 
 Not covered in this section are the various node-constructors exposed by
