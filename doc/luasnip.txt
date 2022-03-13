@@ -785,16 +785,16 @@ Examples:
     "ABC" exactly, nothing otherwise.
   * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
     "PALINDROME" if the nth jumpable node is a palindrome.
-  * `lua
-    s("trig", {
-        i(1), t":",
-        i(2), t"::",
-        m({1, 2}, lambda._1:match("^"..lambda._2.."$"), lambda._1:gsub("a", "e"))
-    })
-`
+
+*   >
+        s("trig", {
+            i(1), t":",
+            i(2), t"::",
+            m({1, 2}, lambda._1:match("^"..lambda._2.."$"), lambda._1:gsub("a", "e"))
+        })
+<
     This inserts the text of the first insertNode, with all occurences of `a`
     replaced with `e` if the second insertNode matches the first exactly.
-
 *   `rep`: repeats the node with the passed index. `rep(1)` to repeat the content
     of the first insert.
 *   `partial`: directly inserts the output of a function. Useful for eg.
