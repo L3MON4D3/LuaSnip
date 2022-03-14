@@ -595,44 +595,68 @@ local function invalidate_snippets(snippets)
 	end
 end
 
--- opts.type can be "snippets" or "autosnippets".
-local function add_snippets(ft, snippets, opts)
-	opts = opts or {}
+local function setup_snip_env()
+	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
+end
 
-	local snippet_type = opts.type or "snippets"
+local function _add_snippets(ft, snippets, opts)
+	local prio_snip_table = session.by_prio[opts.type]
+	-- TODO: not the nicest loop, can it be improved? Do table-checks outside
+	-- it, preferably.
+	for _, snip in ipairs(snippets) do
+		snip.priority = opts.override_prio
+			or snip.priority
+			or opts.default_prio
+			or 1000
 
-	-- remove snippets registered with that key, if applicable.
-	if opts.key and ls.session.by_key[opts.key] then
-		invalidate_snippets(ls.session.by_key[opts.key])
+		if not prio_snip_table[snip.priority] then
+			prio_snip_table[snip.priority] = {}
+		end
+
+		local ft_table
+		if not prio_snip_table[snip.priority][ft] then
+			ft_table = {}
+			prio_snip_table[snip.priority][ft] = ft_table
+		else
+			ft_table = prio_snip_table[snip.priority][ft]
+		end
+
+		ft_table[#ft_table + 1] = snip
 	end
 
-	if not ft then
-		-- not the cleanest implementation.
-		if opts.key then
-			ls.session.by_key[opts.key] = {}
-			for ft_, ft_snippets in pairs(snippets) do
-				ls[snippet_type][ft_] = ls[snippet_type][ft_] or {}
-				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
-				vim.list_extend(ls.session.by_key[opts.key], ft_snippets)
-			end
-		else
-			for ft_, ft_snippets in pairs(snippets) do
-				ls[snippet_type][ft_] = ls[snippet_type][ft_] or {}
-				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
-			end
-		end
-	else
-		ls[snippet_type][ft] = ls[snippet_type][ft] or {}
-		vim.list_extend(ls[snippet_type][ft], snippets)
+	-- append here, table was created/emptied in add_snippets.
+	if opts.key then
+		vim.list_extend(session.by_key[opts.key], snippets)
+	end
 
-		if opts.key then
-			ls.session.by_key[opts.key] = snippets
-		end
+	if opts.refresh_notify then
+		refresh_notify(ft)
 	end
 end
 
-local function setup_snip_env()
-	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
+local function add_snippets(ft, snippets, opts)
+	vim.validate({
+		filetype = { ft, {"string", "nil"} },
+		snippets = { snippets, "table" },
+		opts = { opts, { "table", "nil" } },
+	})
+
+	opts = opts or {}
+	opts.refresh_notify = opts.refresh_notify or true
+	-- alternatively, "autosnippets"
+	opts.type = opts.type or "snippets"
+
+	if opts.key then
+		session.by_key[opts.key] = {}
+	end
+
+	if not ft then
+		for ft_, ft_snippets in pairs(snippets) do
+			_add_snippets(ft_, ft_snippets, opts)
+		end
+	else
+		_add_snippets(ft, snippets, opts)
+	end
 end
 
 ls = {

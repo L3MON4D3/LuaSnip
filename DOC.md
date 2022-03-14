@@ -1349,6 +1349,8 @@ the lazy_load.
 	This can be used to reload snippets: pass an unique key to each
 	`add_snippets` and just re-do the `add_snippets`-call when the snippets have
 	changed.
+  - `override_prio`: set priority for all snippets.
+  - `default_prio`: set priority only for snippets without snippet-priority.
 
 - `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
   from internal snippet storage.  
