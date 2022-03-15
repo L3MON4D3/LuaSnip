@@ -49,18 +49,16 @@ It is explained in more detail in [SNIPPETS](#snippets), but the gist is that
 it creates a snippet that contains the nodes specified in `nodes`, which will be
 inserted into a buffer if the text before the cursor matches `trigger` when
 `expand` is called.
-The snippets for a given filetype have to be appended to the
-`ls.snippets.<filetype>`-table. Snippets that should be accessible globally (in
-all filetypes) will be read from the `ls.snippets.all`-table:
+The snippets for a given filetype have to be added to luasnip via
+`ls.add_snippets(filetype, snippets)`. Snippets that should be accessible
+globally (in all filetypes) have to be added to the special filetype `all`.
 ```lua
-ls.snippets = {
-	all = {
-		s("ternary", {
-			-- equivalent to "${1:cond} ? ${2:then} : ${3:else}"
-			i(1, "cond"), t(" ? "), i(2, "then"), t(" : "), i(3, "else")
-		})
-	}
-}
+ls.add_snippets("all", {
+	s("ternary", {
+		-- equivalent to "${1:cond} ? ${2:then} : ${3:else}"
+		i(1, "cond"), t(" ? "), i(2, "then"), t(" : "), i(3, "else")
+	})
+})
 ```
 It is possible to make snippets from one filetype available to another using
 `ls.filetype_extend`, more info on that [here](#api-reference).
@@ -1233,11 +1231,12 @@ s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
 
 Although generation of docstrings is pretty fast, it's preferable to not
 redo it as long as the snippets haven't changed. Using
-`ls.store_snippet_docstrings(ls.snippets)` and its counterpart
-`ls.load_snippet_docstrings(ls.snippets)`, they may be serialized from or
+`ls.store_snippet_docstrings(snippets)` and its counterpart
+`ls.load_snippet_docstrings(snippets)`, they may be serialized from or
 deserialized into the snippets.
-Both functions accept a table structured like `ls.snippets`, ie.
-`{ft1={snippets}, ft2={snippets}}`.
+Both functions accept a table structsured like this: `{ft1={snippets},
+ft2={snippets}}`. Such a table containing all snippets can be obtained via
+`ls.get_snippets()`.
 `load` should be called before any of the `loader`-functions as snippets loaded
 from vscode-style packages already have their `docstring` set (`docstrings`
 wouldn't be overwritten, but there'd be unnecessary calls).
