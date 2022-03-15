@@ -92,4 +92,25 @@ local sort_mt = {
 setmetatable(M.by_prio.snippets, sort_mt)
 setmetatable(M.by_prio.autosnippets, sort_mt)
 
+-- ft: any filetype, optional.
+function M.clear_snippets(ft)
+	if ft then
+		-- remove all ft-(auto)snippets for all priorities.
+		for _, prio in ipairs(M.by_prio.snippets.order) do
+			M.by_prio.snippets[prio][ft] = {}
+		end
+		for _, prio in ipairs(M.by_prio.autosnippets.order) do
+			M.by_prio.autosnippets[prio][ft] = {}
+		end
+	else
+		-- remove all (auto)snippets for all priorities.
+		for _, prio in ipairs(M.by_prio.snippets.order) do
+			M.by_prio.snippets[prio] = {}
+		end
+		for _, prio in ipairs(M.by_prio.autosnippets.order) do
+			M.by_prio.autosnippets[prio] = {}
+		end
+	end
+end
+
 return M

@@ -537,6 +537,8 @@ end
 local function cleanup()
 	-- Use this to reload luasnip
 	vim.cmd([[doautocmd User LuasnipCleanup]])
+	-- clear all snippets.
+	session.clear_snippets()
 end
 
 local function refresh_notify(ft)
@@ -647,6 +649,9 @@ local function add_snippets(ft, snippets, opts)
 	opts.type = opts.type or "snippets"
 
 	if opts.key then
+		if session.by_key[opts.key] then
+			invalidate_snippets(session.by_key[opts.key])
+		end
 		session.by_key[opts.key] = {}
 	end
 
