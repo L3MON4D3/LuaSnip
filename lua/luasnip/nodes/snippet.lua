@@ -179,6 +179,10 @@ local function init_snippet_context(context)
 		util.wrap_value(context.dscr or context.trigger)
 	)
 
+	-- -1 for no prio, we cannot use nil because accessing a nil-value in a
+	-- snippetProxy will cause instantiation.
+	context.priority = context.priority or -1
+
 	-- maybe do this in a better way when we have more parameters, but this is
 	-- fine for now.
 

@@ -605,7 +605,7 @@ local function _add_snippets(ft, snippets, opts)
 	-- it, preferably.
 	for _, snip in ipairs(snippets) do
 		snip.priority = opts.override_prio
-			or snip.priority
+			or (snip.priority ~= -1 and snip.priority)
 			or opts.default_prio
 			or 1000
 
