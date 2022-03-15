@@ -25,8 +25,8 @@ local function load_snippet_file(langs, snippet_set_path)
 	end
 
 	for _, lang in pairs(langs) do
-		local lang_snips = ls.snippets[lang] or {}
-		local auto_lang_snips = ls.autosnippets[lang] or {}
+		local lang_snips = {}
+		local auto_lang_snips = {}
 		for name, parts in pairs(snippet_set_data) do
 			local body = type(parts.body) == "string" and parts.body
 				or table.concat(parts.body, "\n")
@@ -54,9 +54,8 @@ local function load_snippet_file(langs, snippet_set_path)
 				end
 			end)
 		end
-		ls.snippets[lang] = lang_snips
-		ls.autosnippets[lang] = auto_lang_snips
-		ls.refresh_notify(lang)
+		ls.add_snippets(lang, lang_snips, { type = "snippets" })
+		ls.add_snippets(lang, auto_lang_snips, { type = "autosnippets" })
 	end
 end
 
