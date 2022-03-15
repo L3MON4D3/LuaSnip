@@ -82,12 +82,14 @@ describe("snippetProxy", function()
 			[3] = { background = Screen.colors.LightGray },
 		})
 
-		exec_lua([[ls.snippets[""] = { sp("trig", "$1 triggered! $2")}]])
+		exec_lua([[ls.add_snippets("", { sp("trig", "$1 triggered! $2")})]])
 
 		exec_lua("ls.expand()")
 		-- make sure the snippet wasn't instantiated.
 		assert.is_true(
-			exec_lua([[return rawget(ls.snippets[""][1], "_snippet") == nil]])
+			exec_lua(
+				[[return rawget(ls.get_snippets("")[1], "_snippet") == nil]]
+			)
 		)
 
 		feed("itrig")

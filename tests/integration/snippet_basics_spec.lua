@@ -48,13 +48,12 @@ describe("snippets_basic", function()
 
 	it("Can expand Snippets from `all` via <Plug>", function()
 		exec_lua([[
-			ls.snippets = {
-				all = {
+			ls.add_snippets("all", {
 					s("snip", {
 						t"the snippet expands"
 					})
 				}
-			}
+			)
 		]])
 		feed("isnip<Plug>luasnip-expand-or-jump")
 		screen:expect({
