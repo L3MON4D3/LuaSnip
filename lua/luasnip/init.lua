@@ -522,6 +522,37 @@ local function refresh_notify(ft)
 	vim.cmd([[doautocmd User LuasnipSnippetsAdded]])
 end
 
+-- opts.type can be "snippets" or "autosnippets".
+local function add_snippets(ft, snippets, opts)
+	opts = opts or {}
+	local snippet_type = opts.type or "snippets"
+	if not ls[snippet_type][ft] then
+		ls[snippet_type][ft] = {}
+	end
+	local indx = #ls[snippet_type][ft]
+	for _, snip in ipairs(snippets) do
+		ls[snippet_type][ft][indx + 1] = snip
+		indx = indx + 1
+	end
+end
+
+-- ft:
+-- * string: interpreted as filetype, return corresponding snippets.
+-- * nil: return snippets for all filetypes:
+-- {
+-- 	lua = {...},
+-- 	cpp = {...},
+-- 	...
+-- }
+-- opts: optional args, can contain `type`, either "snippets" or "autosnippets".
+local function get_snippets(ft, opts)
+	local snippet_type = opts.type or "snippets"
+	if not ft then
+		return ls[snippet_type]
+	end
+	return ls[snippet_type][ft]
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
@@ -547,6 +578,8 @@ ls = {
 	unlink_current_if_deleted = unlink_current_if_deleted,
 	filetype_extend = filetype_extend,
 	filetype_set = filetype_set,
+	add_snippets = add_snippets,
+	get_snippets = get_snippets,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,
