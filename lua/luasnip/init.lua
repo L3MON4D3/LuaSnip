@@ -38,6 +38,26 @@ local function match_snippet(line, snippet_table)
 	return nil
 end
 
+-- ft:
+-- * string: interpreted as filetype, return corresponding snippets.
+-- * nil: return snippets for all filetypes:
+-- {
+-- 	lua = {...},
+-- 	cpp = {...},
+-- 	...
+-- }
+-- opts: optional args, can contain `type`, either "snippets" or "autosnippets".
+--
+-- return table, may be empty.
+local function get_snippets(ft, opts)
+	opts = opts or {}
+	local snippet_type = opts.type or "snippets"
+	if not ft then
+		return ls[snippet_type] or {}
+	end
+	return ls[snippet_type][ft] or {}
+end
+
 local function get_context(snip)
 	return {
 		name = snip.name,
@@ -53,12 +73,11 @@ local function available()
 	local res = {}
 	for _, ft in ipairs(fts) do
 		res[ft] = {}
-		for _, snippet_table in pairs({ ls.snippets, ls.autosnippets }) do
-			if snippet_table[ft] then
-				for _, snip in ipairs(snippet_table[ft]) do
-					table.insert(res[ft], get_context(snip))
-				end
-			end
+		for _, snip in ipairs(get_snippets(ft)) do
+			table.insert(res[ft], get_context(snip))
+		end
+		for _, snip in ipairs(get_snippets(ft, { type = "autosnippets" })) do
+			table.insert(res[ft], get_context(snip))
 		end
 	end
 	return res
@@ -534,23 +553,6 @@ local function add_snippets(ft, snippets, opts)
 		ls[snippet_type][ft][indx + 1] = snip
 		indx = indx + 1
 	end
-end
-
--- ft:
--- * string: interpreted as filetype, return corresponding snippets.
--- * nil: return snippets for all filetypes:
--- {
--- 	lua = {...},
--- 	cpp = {...},
--- 	...
--- }
--- opts: optional args, can contain `type`, either "snippets" or "autosnippets".
-local function get_snippets(ft, opts)
-	local snippet_type = opts.type or "snippets"
-	if not ft then
-		return ls[snippet_type]
-	end
-	return ls[snippet_type][ft]
 end
 
 ls = {
