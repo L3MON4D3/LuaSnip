@@ -174,10 +174,7 @@ function M.load(opts)
 	for ft, _ in pairs(cache.ft_paths) do
 		if ft_filter(ft) then
 			local snippets = M._load(ft)
-			local lang_snips = ls.snippets[ft] or {}
-			ls.snippets[ft] = vim.list_extend(lang_snips, snippets)
-			session.latest_load_ft = ft
-			vim.cmd("do User LuasnipSnippetsAdded")
+			ls.add_snippets(ft, snippets)
 		end
 	end
 end
