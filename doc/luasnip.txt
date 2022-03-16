@@ -6,6 +6,7 @@ Table of Contents                                  *luasnip-table-of-contents*
 1. BASICS                                                     |luasnip-basics|
 2. NODE                                                         |luasnip-node|
 3. SNIPPETS                                                 |luasnip-snippets|
+  - Api:                                                        |luasnip-api:|
 4. TEXTNODE                                                 |luasnip-textnode|
 5. INSERTNODE                                             |luasnip-insertnode|
 6. FUNCTIONNODE                                         |luasnip-functionnode|
@@ -201,6 +202,16 @@ Additionally, the string that was used to trigger the snippet is stored in
 `snippet.trigger`. These variables/tables are primarily useful in
 dynamic/functionNodes, where the snippet can be accessed through the immediate
 parent (`parent.snippet`), which is passed to the function.
+
+API:                                                            *luasnip-api:*
+
+
+- `invalidate()`: call this method to effectively remove the snippet. The
+    snippet will no longer be able to expand via `expand` or `expand_auto`. It
+    will also be hidden from lists (at least if the plugin creating the list
+    respects the `hidden`-key), but it might be necessary to call
+    `ls.refresh_notify(ft)` after invalidating snippets.
+
 
 ==============================================================================
 4. TEXTNODE                                                 *luasnip-textnode*
