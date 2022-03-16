@@ -155,6 +155,14 @@ Additionally, the string that was used to trigger the snippet is stored in
 dynamic/functionNodes, where the snippet can be accessed through the immediate
 parent (`parent.snippet`), which is passed to the function.
 
+## Api:
+
+- `invalidate()`: call this method to effectively remove the snippet. The
+  snippet will no longer be able to expand via `expand` or `expand_auto`. It
+  will also be hidden from lists (at least if the plugin creating the list
+  respects the `hidden`-key), but it might be necessary to call
+  `ls.refresh_notify(ft)` after invalidating snippets.
+
 
 # TEXTNODE
 
