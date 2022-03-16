@@ -1117,6 +1117,14 @@ function Snippet:resolve_child_ext_opts()
 	end
 end
 
+function Snippet:invalidate()
+	self.hidden = true
+
+	function self:matches()
+		return nil
+	end
+end
+
 return {
 	Snippet = Snippet,
 	S = S,
