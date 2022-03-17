@@ -35,14 +35,14 @@ local ai = require("luasnip.nodes.absolute_indexer")
 
 # BASICS
 In LuaSnip, snippets are made up of `nodes`. These can contain either
-* static text (`textNode`)
-* text that can be edited (`insertNode`)
-* text that can be generated from the contents of other nodes (`functionNode`)
-* other nodes
-  * `choiceNode`: allows choosing between two nodes (which might contain more
+- static text (`textNode`)
+- text that can be edited (`insertNode`)
+- text that can be generated from the contents of other nodes (`functionNode`)
+- other nodes
+    - `choiceNode`: allows choosing between two nodes (which might contain more
     nodes)
-  * `restoreNode`: store and restore input to nodes
-* or nodes that can be generated based on input (`dynamicNode`).
+    - `restoreNode`: store and restore input to nodes
+- or nodes that can be generated based on input (`dynamicNode`).
 
 Snippets are always created using the `s(trigger:string, nodes:table)`-function.
 It is explained in more detail in [SNIPPETS](#snippets), but the gist is that
