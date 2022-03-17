@@ -134,7 +134,7 @@ function Path.basename(filepath, ext)
 		base = base:match(("%s([^%s]+)$"):format(sep, sep))
 	end
 	if ext then
-		return base:match("(.+)%.(.+)")
+		return base:match("(.*)%.(.+)")
 	else
 		return base
 	end
