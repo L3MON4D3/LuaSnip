@@ -20,4 +20,5 @@ end
 return {
 	vscode = new_cache(),
 	snipmate = new_cache(),
+	lua = new_cache(),
 }
