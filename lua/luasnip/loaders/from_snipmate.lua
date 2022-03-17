@@ -118,34 +118,7 @@ local function get_ft_paths(roots)
 	return ft_path
 end
 
-local function filter(exclude, include)
-	exclude = loader_util.filetypelist_to_set(exclude)
-	include = loader_util.filetypelist_to_set(include)
-
-	return function(lang)
-		if exclude and exclude[lang] then
-			return false
-		end
-		if include == nil or include[lang] then
-			return true
-		end
-	end
-end
-
 local M = {}
-
-local function normarize_paths(paths)
-	if not paths then
-		paths = vim.api.nvim_get_runtime_file("snippets", true)
-	elseif type(paths) == "string" then
-		paths = vim.split(paths, ",")
-	end
-
-	paths = vim.tbl_map(Path.expand, paths)
-	paths = util.deduplicate(paths)
-
-	cache.ft_paths = get_ft_paths(paths)
-end
 
 function M._load(ft)
 	local snippets = {}
@@ -166,10 +139,12 @@ function M.load(opts)
 	opts = opts or {}
 
 	if not opts.is_lazy then
-		normarize_paths(opts.paths)
+		cache.ft_paths = get_ft_paths(
+			loader_util.normalize_paths(opts.paths, "snippets")
+		)
 	end
 
-	local ft_filter = filter(opts.exclude, opts.include)
+	local ft_filter = loader_util.ft_filter(opts.exclude, opts.include)
 
 	for ft, _ in pairs(cache.ft_paths) do
 		if ft_filter(ft) then
@@ -192,7 +167,9 @@ end
 function M.lazy_load(opts)
 	opts = opts or {}
 
-	normarize_paths(opts.paths)
+	cache.ft_paths = get_ft_paths(
+		loader_util.normalize_paths(opts.paths, "snippets")
+	)
 
 	vim.cmd([[
     augroup _luasnip_snipmate_lazy_load
