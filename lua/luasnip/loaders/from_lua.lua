@@ -1,3 +1,8 @@
+-- loads snippets from directory structured almost like snipmate-collection:
+-- - files all named <ft>.lua
+-- - each returns table containing keys (optional) "snippets" and
+--   "autosnippets", value for each a list of snippets.
+
 local cache = require("luasnip.loaders._caches").lua
 local path_mod = require("luasnip.util.path")
 local loader_util = require("luasnip.loaders.util")
@@ -125,10 +130,52 @@ function M.lazy_load(opts)
 		end
 	end
 
-	-- call once for current filetype. Useful for lazy_loading snippets in
+	-- call once for current filetype. Necessary for lazy_loading snippets in
 	-- empty, initial buffer, and will not cause issues like duplicate
 	-- snippets.
 	M._load_lazy_loaded()
+end
+
+function M.reload_file(filename)
+	-- only clear and load(!!! snippets may not actually be loaded, lazy_load)
+	-- if the snippets were really loaded.
+	if cache.path_snippets[filename] then
+		for _, snip in ipairs(cache.path_snippets[filename].snippets) do
+			snip:invalidate()
+		end
+		for _, snip in ipairs(cache.path_snippets[filename].autosnippets) do
+			snip:invalidate()
+		end
+		local ft = path_mod.basename(filename, true)
+		ls.refresh_notify(ft)
+
+		load_files(ft, { filename })
+	end
+end
+
+function M.edit_snippet_files()
+	local fts = util.get_snippet_filetypes()
+	vim.ui.select(fts, {
+		prompt = "Select filetype:",
+	}, function(item, _)
+		if item then
+			local ft_paths = cache.ft_paths[item]
+			if ft_paths then
+				-- prompt user again if there are multiple files providing this filetype.
+				if #ft_paths > 1 then
+					vim.ui.select(ft_paths, {
+						prompt = "Multiple files for this filetype, choose one:",
+					}, function(multi_item)
+						vim.cmd("edit " .. multi_item)
+					end)
+				else
+					vim.cmd("edit " .. ft_paths[1])
+				end
+			else
+				print("No file for this filetype.")
+			end
+		end
+	end)
 end
 
 -- register during startup so it'll work even if lazy_load is only called after
