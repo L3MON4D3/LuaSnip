@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 March 16
+*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 March 18
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -70,11 +70,11 @@ All code-snippets in this help assume that
 ==============================================================================
 1. BASICS                                                     *luasnip-basics*
 
-In LuaSnip, snippets are made up of `nodes`. These can contain either * static
-text (`textNode`) * text that can be edited (`insertNode`) * text that can be
-generated from the contents of other nodes (`functionNode`) * other nodes *
+In LuaSnip, snippets are made up of `nodes`. These can contain either - static
+text (`textNode`) - text that can be edited (`insertNode`) - text that can be
+generated from the contents of other nodes (`functionNode`) - other nodes -
 `choiceNode`: allows choosing between two nodes (which might contain more
-nodes) * `restoreNode`: store and restore input to nodes * or nodes that can be
+nodes) - `restoreNode`: store and restore input to nodes - or nodes that can be
 generated based on input (`dynamicNode`).
 
 Snippets are always created using the `s(trigger:string,
