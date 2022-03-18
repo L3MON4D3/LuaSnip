@@ -28,6 +28,8 @@ local function from_filetype()
 	return vim.split(vim.bo.filetype, ".", true)
 end
 
+-- NOTE: Beware that the resulting filetypes may differ from the ones in `vim.bo.filetype`. (for
+-- example the filetype for LaTeX is 'latex' and not 'tex' as in `vim.bo.filetype`)  --
 local function from_pos_or_filetype()
 	local from_cursor = from_cursor_pos()
 	if not vim.tbl_isempty(from_cursor) then
