@@ -35,6 +35,7 @@ local ai = require("luasnip.nodes.absolute_indexer")
 
 # BASICS
 In LuaSnip, snippets are made up of `nodes`. These can contain either
+
 - static text (`textNode`)
 - text that can be edited (`insertNode`)
 - text that can be generated from the contents of other nodes (`functionNode`)
