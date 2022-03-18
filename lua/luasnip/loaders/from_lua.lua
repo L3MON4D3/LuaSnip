@@ -37,6 +37,21 @@ local function load_files(ft, files)
 
 		vim.list_extend(ft_snippets, file_res.snippets)
 		vim.list_extend(ft_autosnippets, file_res.autosnippets)
+
+		-- use lua autocommands here as soon as they're stable.
+		-- stylua: ignore
+		vim.cmd(string.format(
+			[[
+				augroup luasnip_watch_%s
+				autocmd!
+				autocmd BufWritePost %s lua require("luasnip.loaders.from_lua").reload_file("%s")
+			]],
+			-- augroup name may not contain spaces.
+			file:gsub(" ", "_"),
+			-- escape for autocmd-pattern.
+			file:gsub(" ", "\\ "),
+			file
+		))
 	end
 
 	ls.add_snippets(ft, ft_snippets, { type = "snippets" })
