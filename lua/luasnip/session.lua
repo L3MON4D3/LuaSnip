@@ -27,4 +27,6 @@ M.last_expand_opts = nil
 -- init with false, it will be set by (eg.) ls.jump().
 M.jump_active = false
 
+M.config = nil
+
 return M

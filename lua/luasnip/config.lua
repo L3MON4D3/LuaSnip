@@ -1,7 +1,7 @@
 local types = require("luasnip.util.types")
-local util = require("luasnip.util.util")
 local ext_util = require("luasnip.util.ext_opts")
 local ft_functions = require("luasnip.extras.filetype_functions")
+local session = require("luasnip.session")
 
 local defaults = {
 	history = false,
@@ -82,9 +82,9 @@ local defaults = {
 
 -- declare here to use in set_config.
 local c
+session.config = vim.deepcopy(defaults)
 
 c = {
-	config = vim.deepcopy(defaults),
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
 
@@ -100,7 +100,7 @@ c = {
 			conf[k] = v
 		end
 
-		c.config = conf
+		session.config = conf
 		c._setup()
 	end,
 
@@ -117,23 +117,23 @@ c = {
 			"Remove buffers' nodes on deletion+wipeout.
 			autocmd BufDelete,BufWipeout * lua current_nodes = require("luasnip").session.current_nodes if current_nodes then current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
 		]]
-					.. (c.config.enable_autosnippets and [[
+					.. (session.config.enable_autosnippets and [[
 			autocmd InsertCharPre * lua Luasnip_just_inserted = true
 			autocmd TextChangedI,TextChangedP * lua if Luasnip_just_inserted then require("luasnip").expand_auto() Luasnip_just_inserted=nil end
 		]] or "")
 					.. [[
 		augroup END
 		]],
-				c.config.delete_check_events,
-				c.config.updateevents,
-				c.config.region_check_events
+				session.config.delete_check_events,
+				session.config.updateevents,
+				session.config.region_check_events
 			)
 		)
-		if c.config.store_selection_keys then
+		if session.config.store_selection_keys then
 			vim.cmd(
 				string.format(
 					[[xnoremap <silent>  %s  :lua require('luasnip.util.util').store_selection()<cr>gv"_s]],
-					c.config.store_selection_keys
+					session.config.store_selection_keys
 				)
 			)
 		end
