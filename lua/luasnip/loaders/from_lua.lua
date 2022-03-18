@@ -24,8 +24,7 @@ local function load_files(ft, files)
 		local size = vim.loop.fs_fstat(fd).size
 		local func_string = vim.loop.fs_read(fd, size)
 		-- bring snippet-constructors into global scope for that function.
-		func_string = 'dofile("/home/simon/.config/nvim/lua/plugins/luasnip/helpers.lua").setup_snip_env() '
-			.. func_string
+		func_string = 'require("luasnip").setup_snip_env() ' .. func_string
 		local file_res = loadstring(func_string)()
 
 		-- make sure these aren't nil.

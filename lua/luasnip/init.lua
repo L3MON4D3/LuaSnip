@@ -555,6 +555,10 @@ local function add_snippets(ft, snippets, opts)
 	end
 end
 
+local function setup_snip_env()
+	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
@@ -582,6 +586,7 @@ ls = {
 	filetype_set = filetype_set,
 	add_snippets = add_snippets,
 	get_snippets = get_snippets,
+	setup_snip_env = setup_snip_env,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,
