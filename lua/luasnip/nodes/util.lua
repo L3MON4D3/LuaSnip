@@ -1,7 +1,6 @@
 local util = require("luasnip.util.util")
 local ext_util = require("luasnip.util.ext_opts")
 local types = require("luasnip.util.types")
-local conf = require("luasnip.config")
 
 local function subsnip_init_children(parent, children)
 	for _, child in ipairs(children) do

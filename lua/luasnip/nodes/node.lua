@@ -4,7 +4,6 @@ local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
 local ext_util = require("luasnip.util.ext_opts")
 local events = require("luasnip.util.events")
-local conf = require("luasnip.config")
 
 local Node = {}
 
@@ -332,7 +331,7 @@ function Node:resolve_node_ext_opts(base_prio, parent_ext_opts)
 	ext_util.set_abs_prio(
 		self.ext_opts,
 		(base_prio or self.parent.ext_opts.base_prio)
-			+ conf.config.ext_prio_increase
+			+ session.config.ext_prio_increase
 	)
 end
 
