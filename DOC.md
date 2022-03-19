@@ -891,7 +891,7 @@ snippet and then clear them.
 As luasnip is capable of loading the same format of plugins as vscode, it also
 includes an easy way for loading those automatically. You just have to call:
 ```lua
- 	require("luasnip.loaders.from_vscode").load(opts) -- opts can be ommited
+require("luasnip.loaders.from_vscode").load(opts) -- opts can be ommited
 ```
 
 Where `opts` is a table containing the keys:
@@ -914,7 +914,7 @@ your snippets or you will have to extend the table as well.
 Another way of using the loader is making it lazily
 
 ```lua
- 	require("luasnip.loaders.from_vscode").lazy_load(opts) -- opts can be ommited
+require("luasnip.loaders.from_vscode").lazy_load(opts) -- opts can be ommited
 ```
 
 In this case `opts` only accepts paths (`runtimepath` if any). That will load
@@ -938,7 +938,7 @@ As the snipmate snippet format is fundamentally the same as vscode, it can also
 be loaded.
 
 ```lua
- 	require("luasnip.loaders.from_snipmate").load(opts) -- opts can be ommited
+require("luasnip.loaders.from_snipmate").load(opts) -- opts can be ommited
 ```
 
 See `from_vscode` for an explanation of opts.
@@ -964,7 +964,7 @@ Using both `extends OtherFileType` in `FileType.snippets` and
 Lazy loading is also available with the snipmate-loader.
 
 ```lua
- 	require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
+require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
 ```
 
 
@@ -976,6 +976,44 @@ Here is a summary of the differences from the original snipmate format.
 - `${VISUAL}` will be replaced by `$TM_SELECTED_TEXT` to make the snippets
 compatible with luasnip
 - We do not implement eval using \` (backtick). This may be implemented in the future.
+
+
+# LUA SNIPPETS LOADER
+
+Instead of adding all snippets via `add_snippets`, it's possible to store them
+in separate files (each for one filetype) and load all of those.
+
+For this, the files need to be
+
+- in a single directory. The directory may be passed directly to `load()`, or it
+  can be named `luasnippets` and in the `runtimepath`, in which case it will be
+  automatically detected.
+- named `<filetype>.lua`.
+- return two lists of snippets (either may be `nil`). The snippets in the first
+  are regular snippets for `<filetype>`, the ones in the second are autosnippets
+  (make sure they are enabled if this table is used).
+
+As defining all of the snippet-constructors (`s`, `c`, `t`, ...) in every file
+is rather cumbersome, luasnip will bring some globals into scope for executing
+these files.  
+By default the names from `Examples/snippets.lua` will be used, but it's
+possible to customize them by setting `snip_env` in `setup`.  
+
+These collections can be loaded directly
+(`require("luasnip.loaders.from_lua").load(opts)`) or lazily
+(`require("luasnip.loaders.from_lua.lazy_load(opts)")`).
+
+lua-`opts` may contain the same keys as vscode-`opts`, but here `include` and
+`exclude` can be used in `lazy_load`.
+
+Apart from loading, `from_lua` also exposes functions to edit files associated
+with the currently active filetypes, which could be called via an command, for
+example:
+
+```vim
+command! LuaSnipEdit :lua require("luasnip.loaders.from_lua").edit_snippet_files()
+```
+Once loaded, files will be reloaded on save (`BufWritePost`).
 
 
 # SNIPPETPROXY
