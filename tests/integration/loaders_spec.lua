@@ -56,6 +56,33 @@ local loaders = {
 			)
 		)
 	end,
+
+	["lua(rtp)"] = function()
+		exec(
+			"set rtp+="
+				.. os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/lua-snippets"
+		)
+		exec_lua('require("luasnip.loaders.from_lua").load()')
+	end,
+	["lua(path)"] = function()
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets"
+			)
+		)
+	end,
+	["lua(lazy)"] = function()
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").lazy_load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets"
+			)
+		)
+	end,
 }
 
 local function for_all_loaders(message, fn)
@@ -110,6 +137,7 @@ describe("loaders:", function()
 	it("Can lazy-load from multiple sources", function()
 		loaders["snipmate(lazy)"]()
 		loaders["vscode(lazy)"]()
+		loaders["lua(lazy)"]()
 		-- triggers actual load for `lazy_load()`s'
 		exec("set ft=lua")
 		-- wait a bit for async-operations to finish
