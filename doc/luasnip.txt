@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 March 18
+*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 March 19
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -338,7 +338,7 @@ The first parameter of `f` is the function. Its parameters are:
 1. A table of the text of currently contained in the argnodes. (eg. `{{line1},
 {line1, line2}}`). The snippet-indent will be removed from all lines following
 the first.
-1. The immediate parent of the `functionNode`. It is included here as it allows
+2. The immediate parent of the `functionNode`. It is included here as it allows
 easy access to anything that could be useful in functionNodes (ie.
 `parent.snippet.env` or `parent.snippet.captures`, which contains capture
 groups of regex-triggered snippets). In most cases `parent.env` works, but if a
@@ -551,7 +551,7 @@ argnodes:table of nodes, opts: table)`:
 
 
 1. `position`: just like all jumpable nodes, when this node will be jumped into.
-1. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`
+2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`
 This function is called when the argnodes’ text changes. It generates and
 returns (wrapped inside a `snippetNode`) the nodes that should be inserted
 at the dynamicNodes place.
@@ -572,11 +572,11 @@ at the dynamicNodes place.
     The second example below illustrates the usage of `old_state`.
 - `user_args1, ..., user_argsn`: passed through from `dynamicNode`-opts.
 
-1. `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
+3. `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
 update, the `dynamicNode`s’ function will be executed and the result inserted at
 the `dynamicNodes` place.
 Can be a single index or a table of indices.
-1. `opts`: Just like `functionNode`, `dynamicNode` also accepts `user_args` in
+4. `opts`: Just like `functionNode`, `dynamicNode` also accepts `user_args` in
 addition to options common to all nodes.
 
 
