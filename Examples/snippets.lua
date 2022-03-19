@@ -530,10 +530,14 @@ require("luasnip.loaders.from_vscode").lazy_load() -- You can pass { paths = "./
 -- contains global snippets:
 ls.filetype_extend("all", { "_" })
 
-require("luasnip.loaders.from_snipmate").load({ include = { "c" } }) -- Load only python snippets
+require("luasnip.loaders.from_snipmate").load({ include = { "c" } }) -- Load only snippets for c.
 
 require("luasnip.loaders.from_snipmate").load({ path = { "./my-snippets" } }) -- Load snippets from my-snippets folder
 -- If path is not specified, luasnip will look for the `snippets` directory in rtp (for custom-snippet probably
 -- `~/.config/nvim/snippets`).
 
 require("luasnip.loaders.from_snipmate").lazy_load() -- Lazy loading
+
+-- see DOC.md/LUA SNIPPETS LOADER for some details.
+require("luasnip.loaders.from_lua").load({ include = { "c" } })
+require("luasnip.loaders.from_lua").lazy_load({ include = { "all", "cpp" } })
