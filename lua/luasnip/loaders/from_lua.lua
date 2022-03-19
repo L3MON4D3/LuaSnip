@@ -25,17 +25,20 @@ local function load_files(ft, files)
 		local func_string = vim.loop.fs_read(fd, size)
 		-- bring snippet-constructors into global scope for that function.
 		func_string = 'require("luasnip").setup_snip_env() ' .. func_string
-		local file_res = loadstring(func_string)()
+		local file_snippets, file_autosnippets = loadstring(func_string)()
 
 		-- make sure these aren't nil.
-		file_res.snippets = file_res.snippets or {}
-		file_res.autosnippets = file_res.autosnippets or {}
+		file_snippets = file_snippets or {}
+		file_autosnippets = file_autosnippets or {}
 
 		-- keep track of snippet-source.
-		cache.path_snippets[file] = file_res
+		cache.path_snippets[file] = {
+			snippets = file_snippets,
+			autosnippets = file_autosnippets,
+		}
 
-		vim.list_extend(ft_snippets, file_res.snippets)
-		vim.list_extend(ft_autosnippets, file_res.autosnippets)
+		vim.list_extend(ft_snippets, file_snippets)
+		vim.list_extend(ft_autosnippets, file_autosnippets)
 
 		-- use lua autocommands here as soon as they're stable.
 		-- stylua: ignore
