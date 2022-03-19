@@ -1315,6 +1315,13 @@ the lazy_load.
 
 `require("luasnip")`:
 
+- `add_snippets(ft:string or nil, snippets:list or table, opts:table or nil)`:
+  Makes `snippets` available in `ft`.  
+  If `ft` is `nil`, `snippets` should be a table containing lists of snippets,
+  the keys are corresponding filetypes.  
+  `opts` may contain the following keys:
+  - `type`: type of `snippets`, `"snippets"` or `"autosnippets"`.
+
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 
 - `jumpable(direction)`: returns true if the current node has a
