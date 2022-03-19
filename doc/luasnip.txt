@@ -23,13 +23,14 @@ Table of Contents                                  *luasnip-table-of-contents*
 15. VARIABLES                                              |luasnip-variables|
 16. VSCODE SNIPPETS LOADER                    |luasnip-vscode-snippets-loader|
 17. SNIPMATE SNIPPETS LOADER                |luasnip-snipmate-snippets-loader|
-18. SNIPPETPROXY                                        |luasnip-snippetproxy|
-19. EXT_OPTS                                                |luasnip-ext_opts|
-20. DOCSTRING                                              |luasnip-docstring|
-21. DOCSTRING-CACHE                                  |luasnip-docstring-cache|
-22. EVENTS                                                    |luasnip-events|
-23. CLEANUP                                                  |luasnip-cleanup|
-24. API-REFERENCE                                      |luasnip-api-reference|
+18. LUA SNIPPETS LOADER                          |luasnip-lua-snippets-loader|
+19. SNIPPETPROXY                                        |luasnip-snippetproxy|
+20. EXT_OPTS                                                |luasnip-ext_opts|
+21. DOCSTRING                                              |luasnip-docstring|
+22. DOCSTRING-CACHE                                  |luasnip-docstring-cache|
+23. EVENTS                                                    |luasnip-events|
+24. CLEANUP                                                  |luasnip-cleanup|
+25. API-REFERENCE                                      |luasnip-api-reference|
 
 >
                 __                       ____
@@ -974,7 +975,7 @@ As luasnip is capable of loading the same format of plugins as vscode, it also
 includes an easy way for loading those automatically. You just have to call:
 
 >
-        require("luasnip.loaders.from_vscode").load(opts) -- opts can be ommited
+    require("luasnip.loaders.from_vscode").load(opts) -- opts can be ommited
 <
 
 
@@ -996,7 +997,7 @@ your snippets or you will have to extend the table as well.
 Another way of using the loader is making it lazily
 
 >
-        require("luasnip.loaders.from_vscode").lazy_load(opts) -- opts can be ommited
+    require("luasnip.loaders.from_vscode").lazy_load(opts) -- opts can be ommited
 <
 
 
@@ -1024,7 +1025,7 @@ As the snipmate snippet format is fundamentally the same as vscode, it can also
 be loaded.
 
 >
-        require("luasnip.loaders.from_snipmate").load(opts) -- opts can be ommited
+    require("luasnip.loaders.from_snipmate").load(opts) -- opts can be ommited
 <
 
 
@@ -1054,7 +1055,7 @@ snippets.
 Lazy loading is also available with the snipmate-loader.
 
 >
-        require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
+    require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
 <
 
 
@@ -1070,7 +1071,48 @@ Here is a summary of the differences from the original snipmate format.
 
 
 ==============================================================================
-18. SNIPPETPROXY                                        *luasnip-snippetproxy*
+18. LUA SNIPPETS LOADER                          *luasnip-lua-snippets-loader*
+
+Instead of adding all snippets via `add_snippets`, it’s possible to store
+them in separate files (each for one filetype) and load all of those.
+
+For this, the files need to be
+
+
+- in a single directory. The directory may be passed directly to `load()`, or it
+    can be named `luasnippets` and in the `runtimepath`, in which case it will be
+    automatically detected.
+- named `<filetype>.lua`.
+- return two lists of snippets (either may be `nil`). The snippets in the first
+    are regular snippets for `<filetype>`, the ones in the second are autosnippets
+    (make sure they are enabled if this table is used).
+
+
+As defining all of the snippet-constructors (`s`, `c`, `t`, …) in every file
+is rather cumbersome, luasnip will bring some globals into scope for executing
+these files. By default the names from `Examples/snippets.lua` will be used,
+but it’s possible to customize them by setting `snip_env` in `setup`.
+
+These collections can be loaded directly
+(`require("luasnip.loaders.from_lua").load(opts)`) or lazily
+(`require("luasnip.loaders.from_lua.lazy_load(opts)")`).
+
+lua-`opts` may contain the same keys as vscode-`opts`, but here `include` and
+`exclude` can be used in `lazy_load`.
+
+Apart from loading, `from_lua` also exposes functions to edit files associated
+with the currently active filetypes, which could be called via an command, for
+example:
+
+>
+    command! LuaSnipEdit :lua require("luasnip.loaders.from_lua").edit_snippet_files()
+<
+
+
+Once loaded, files will be reloaded on save (`BufWritePost`).
+
+==============================================================================
+19. SNIPPETPROXY                                        *luasnip-snippetproxy*
 
 `SnippetProxy` is used internally to alleviate the upfront-cost of loading
 snippets from eg. a snipmate-library or a vscode-package. This is achieved by
@@ -1094,7 +1136,7 @@ This will parse the snippet on startup…
 
 
 ==============================================================================
-19. EXT_OPTS                                                *luasnip-ext_opts*
+20. EXT_OPTS                                                *luasnip-ext_opts*
 
 `ext_opts` can be used to set the `opts` (see `nvim_buf_set_extmark`) of the
 extmarks used for marking node-positions, either globally, per-snippet or
@@ -1293,7 +1335,7 @@ Here the highlight of an insertNode nested directly inside a choiceNode is
 always visible on top of it.
 
 ==============================================================================
-20. DOCSTRING                                              *luasnip-docstring*
+21. DOCSTRING                                              *luasnip-docstring*
 
 Snippet-docstrings can be queried using `snippet:get_docstring()`. The function
 evaluates the snippet as if it was expanded regularly, which can be problematic
@@ -1343,7 +1385,7 @@ Other issues will have to be handled manually by checking the contents of eg.
 
 
 ==============================================================================
-21. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
+22. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
 
 Although generation of docstrings is pretty fast, it’s preferable to not redo
 it as long as the snippets haven’t changed. Using
@@ -1360,7 +1402,7 @@ The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 `~/.cache/nvim/luasnip/docstrings.json`).
 
 ==============================================================================
-22. EVENTS                                                    *luasnip-events*
+23. EVENTS                                                    *luasnip-events*
 
 Upon leaving/entering nodes or changing a choice an event is triggered: `User
 Luasnip<Node>{Enter,Leave}`, where `<Node>` is the name of a node in
@@ -1377,14 +1419,14 @@ be printing eg. the nodes’ text after entering:
 
 
 ==============================================================================
-23. CLEANUP                                                  *luasnip-cleanup*
+24. CLEANUP                                                  *luasnip-cleanup*
 
 The function ls.cleanup() triggers the `LuasnipCleanup` user-event, that you
 can listen to do some kind of cleaning in your own snippets, by default it will
 empty the snippets table and the caches of the lazy_load.
 
 ==============================================================================
-24. API-REFERENCE                                      *luasnip-api-reference*
+25. API-REFERENCE                                      *luasnip-api-reference*
 
 `require("luasnip")`:
 
