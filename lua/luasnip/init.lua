@@ -544,14 +544,22 @@ end
 -- opts.type can be "snippets" or "autosnippets".
 local function add_snippets(ft, snippets, opts)
 	opts = opts or {}
+
 	local snippet_type = opts.type or "snippets"
-	if not ls[snippet_type][ft] then
-		ls[snippet_type][ft] = {}
-	end
-	local indx = #ls[snippet_type][ft]
-	for _, snip in ipairs(snippets) do
-		ls[snippet_type][ft][indx + 1] = snip
-		indx = indx + 1
+
+	if not ft then
+		for ft_, ft_snippets in pairs(snippets) do
+			add_snippets(ft_, ft_snippets, opts)
+		end
+	else
+		if not ls[snippet_type][ft] then
+			ls[snippet_type][ft] = {}
+		end
+		local indx = #ls[snippet_type][ft]
+		for _, snip in ipairs(snippets) do
+			ls[snippet_type][ft][indx + 1] = snip
+			indx = indx + 1
+		end
 	end
 end
 
