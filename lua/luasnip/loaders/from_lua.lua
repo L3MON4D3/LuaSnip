@@ -15,7 +15,8 @@ local function load_files(ft, files)
 	local ft_autosnippets = {}
 
 	for _, file in ipairs(files) do
-		local fd = vim.loop.fs_open(file, "r", 420)
+		-- 0444 = 292, eg. open with rrr.
+		local fd = vim.loop.fs_open(file, "r", 292)
 
 		if not fd then
 			error("Couldn't find file " .. file)
