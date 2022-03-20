@@ -553,32 +553,6 @@ local function refresh_notify(ft)
 	end
 end
 
--- opts.type can be "snippets" or "autosnippets".
-local function add_snippets(ft, snippets, opts)
-	opts = opts or {}
-
-	local snippet_type = opts.type or "snippets"
-
-	if not ft then
-		for ft_, ft_snippets in pairs(snippets) do
-			add_snippets(ft_, ft_snippets, opts)
-		end
-	else
-		if not ls[snippet_type][ft] then
-			ls[snippet_type][ft] = {}
-		end
-		local indx = #ls[snippet_type][ft]
-		for _, snip in ipairs(snippets) do
-			ls[snippet_type][ft][indx + 1] = snip
-			indx = indx + 1
-		end
-	end
-end
-
-local function setup_snip_env()
-	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
-end
-
 local function clean_invalidated(opts)
 	opts = opts or {}
 
@@ -608,6 +582,48 @@ local function clean_invalidated(opts)
 	else
 		return false
 	end
+end
+
+local function invalidate_snippets(snippets)
+	for _, snip in ipairs(snippets) do
+		snip:invalidate()
+	end
+	if clean_invalidated({ inv_limit = 100 }) then
+		ls.refresh_notify()
+	end
+end
+
+-- opts.type can be "snippets" or "autosnippets".
+local function add_snippets(ft, snippets, opts)
+	opts = opts or {}
+
+	local snippet_type = opts.type or "snippets"
+
+	-- remove snippets registered with that key, if applicable.
+	if opts.key and ls.session.by_key[opts.key] then
+		invalidate_snippets(ls.session.by_key[opts.key])
+	end
+
+	if not ft then
+		if opts.key then
+			ls.session.by_key[opts.key] = {}
+		end
+		for ft_, ft_snippets in pairs(snippets) do
+			vim.list_extend(ls[snippet_type][ft_], ft_snippets)
+			vim.list_extend(ls.session.by_key[opts.key], ft_snippets)
+		end
+	else
+		ls[snippet_type][ft] = ls[snippet_type][ft] or {}
+		vim.list_extend(ls[snippet_type][ft], snippets)
+
+		if opts.key then
+			ls.session.by_key[opts.key] = snippets
+		end
+	end
+end
+
+local function setup_snip_env()
+	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
 end
 
 ls = {

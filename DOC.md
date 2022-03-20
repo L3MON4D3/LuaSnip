@@ -1322,6 +1322,12 @@ the lazy_load.
   the keys are corresponding filetypes.  
   `opts` may contain the following keys:
   - `type`: type of `snippets`, `"snippets"` or `"autosnippets"`.
+  - `key`: Key that identifies snippets added via this call.  
+	If `add_snippets` is called with a key that was already used, the snippets
+	from that previous call will be removed.  
+	This can be used to reload snippets: pass an unique key to each
+	`add_snippets` and just re-do the `add_snippets`-call when the snippets have
+	changed.
 
 - `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
   from internal snippet storage.  

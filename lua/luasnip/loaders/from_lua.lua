@@ -12,9 +12,6 @@ local ls = require("luasnip")
 local M = {}
 
 local function load_files(ft, files)
-	local ft_snippets = {}
-	local ft_autosnippets = {}
-
 	for _, file in ipairs(files) do
 		-- 0444 = 292, eg. open with rrr.
 		local fd = vim.loop.fs_open(file, "r", 292)
@@ -39,9 +36,6 @@ local function load_files(ft, files)
 			autosnippets = file_autosnippets,
 		}
 
-		vim.list_extend(ft_snippets, file_snippets)
-		vim.list_extend(ft_autosnippets, file_autosnippets)
-
 		-- use lua autocommands here as soon as they're stable.
 		-- stylua: ignore
 		vim.cmd(string.format(
@@ -56,10 +50,20 @@ local function load_files(ft, files)
 			file:gsub(" ", "\\ "),
 			file
 		))
+
+		ls.add_snippets(
+			ft,
+			file_snippets,
+			{ type = "snippets", key = "__snippets_" .. file }
+		)
+		ls.add_snippets(
+			ft,
+			file_autosnippets,
+			{ type = "autosnippets", key = "__autosnippets_" .. file }
+		)
 	end
 
-	ls.add_snippets(ft, ft_snippets, { type = "snippets" })
-	ls.add_snippets(ft, ft_autosnippets, { type = "autosnippets" })
+	ls.refresh_notify(ft)
 end
 
 -- extend table like {lua = {path1}, c = {path1, path2}, ...}.
