@@ -1,3 +1,6 @@
+local Path = require("luasnip.util.path")
+local util = require("luasnip.util.util")
+
 local function filetypelist_to_set(list)
 	vim.validate({ list = { list, "table", true } })
 	if not list then
@@ -33,7 +36,36 @@ local function split_lines(filestring)
 	)
 end
 
+local function normalize_paths(paths, rtp_dirname)
+	if not paths then
+		paths = vim.api.nvim_get_runtime_file(rtp_dirname, true)
+	elseif type(paths) == "string" then
+		paths = vim.split(paths, ",")
+	end
+
+	paths = vim.tbl_map(Path.expand, paths)
+	paths = util.deduplicate(paths)
+
+	return paths
+end
+
+local function ft_filter(exclude, include)
+	exclude = filetypelist_to_set(exclude)
+	include = filetypelist_to_set(include)
+
+	return function(lang)
+		if exclude and exclude[lang] then
+			return false
+		end
+		if include == nil or include[lang] then
+			return true
+		end
+	end
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
+	normalize_paths = normalize_paths,
+	ft_filter = ft_filter,
 }

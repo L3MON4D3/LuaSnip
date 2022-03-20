@@ -1,9 +1,9 @@
 local InsertNode = require("luasnip.nodes.node").Node:new()
 local ExitNode = InsertNode:new()
 local util = require("luasnip.util.util")
-local config = require("luasnip.config")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
+local session = require("luasnip.session")
 
 local function I(pos, static_text, opts)
 	static_text = util.wrap_value(static_text)
@@ -64,7 +64,7 @@ function ExitNode:input_leave()
 end
 
 function ExitNode:jump_into(dir, no_move)
-	if not config.config.history then
+	if not session.config.history then
 		self:input_enter(no_move)
 		if (dir == 1 and not self.next) or (dir == -1 and not self.prev) then
 			if self.pos == 0 then
@@ -124,7 +124,7 @@ function InsertNode:jump_into(dir, no_move)
 		if dir == 1 then
 			if self.next then
 				self.inner_active = false
-				if not config.config.history then
+				if not session.config.history then
 					self.inner_first = nil
 					self.inner_last = nil
 				end
@@ -136,7 +136,7 @@ function InsertNode:jump_into(dir, no_move)
 		else
 			if self.prev then
 				self.inner_active = false
-				if not config.config.history then
+				if not session.config.history then
 					self.inner_first = nil
 					self.inner_last = nil
 				end

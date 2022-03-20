@@ -50,18 +50,16 @@ It is explained in more detail in [SNIPPETS](#snippets), but the gist is that
 it creates a snippet that contains the nodes specified in `nodes`, which will be
 inserted into a buffer if the text before the cursor matches `trigger` when
 `expand` is called.
-The snippets for a given filetype have to be appended to the
-`ls.snippets.<filetype>`-table. Snippets that should be accessible globally (in
-all filetypes) will be read from the `ls.snippets.all`-table:
+The snippets for a given filetype have to be added to luasnip via
+`ls.add_snippets(filetype, snippets)`. Snippets that should be accessible
+globally (in all filetypes) have to be added to the special filetype `all`.
 ```lua
-ls.snippets = {
-	all = {
-		s("ternary", {
-			-- equivalent to "${1:cond} ? ${2:then} : ${3:else}"
-			i(1, "cond"), t(" ? "), i(2, "then"), t(" : "), i(3, "else")
-		})
-	}
-}
+ls.add_snippets("all", {
+	s("ternary", {
+		-- equivalent to "${1:cond} ? ${2:then} : ${3:else}"
+		i(1, "cond"), t(" ? "), i(2, "then"), t(" : "), i(3, "else")
+	})
+})
 ```
 It is possible to make snippets from one filetype available to another using
 `ls.filetype_extend`, more info on that [here](#api-reference).
@@ -157,6 +155,14 @@ Additionally, the string that was used to trigger the snippet is stored in
 `snippet.trigger`. These variables/tables are primarily useful in
 dynamic/functionNodes, where the snippet can be accessed through the immediate
 parent (`parent.snippet`), which is passed to the function.
+
+## Api:
+
+- `invalidate()`: call this method to effectively remove the snippet. The
+  snippet will no longer be able to expand via `expand` or `expand_auto`. It
+  will also be hidden from lists (at least if the plugin creating the list
+  respects the `hidden`-key), but it might be necessary to call
+  `ls.refresh_notify(ft)` after invalidating snippets.
 
 
 # TEXTNODE
@@ -886,7 +892,7 @@ snippet and then clear them.
 As luasnip is capable of loading the same format of plugins as vscode, it also
 includes an easy way for loading those automatically. You just have to call:
 ```lua
- 	require("luasnip.loaders.from_vscode").load(opts) -- opts can be ommited
+require("luasnip.loaders.from_vscode").load(opts) -- opts can be ommited
 ```
 
 Where `opts` is a table containing the keys:
@@ -909,7 +915,7 @@ your snippets or you will have to extend the table as well.
 Another way of using the loader is making it lazily
 
 ```lua
- 	require("luasnip.loaders.from_vscode").lazy_load(opts) -- opts can be ommited
+require("luasnip.loaders.from_vscode").lazy_load(opts) -- opts can be ommited
 ```
 
 In this case `opts` only accepts paths (`runtimepath` if any). That will load
@@ -933,7 +939,7 @@ As the snipmate snippet format is fundamentally the same as vscode, it can also
 be loaded.
 
 ```lua
- 	require("luasnip.loaders.from_snipmate").load(opts) -- opts can be ommited
+require("luasnip.loaders.from_snipmate").load(opts) -- opts can be ommited
 ```
 
 See `from_vscode` for an explanation of opts.
@@ -959,7 +965,7 @@ Using both `extends OtherFileType` in `FileType.snippets` and
 Lazy loading is also available with the snipmate-loader.
 
 ```lua
- 	require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
+require("luasnip.loaders.from_snipmate").lazy_load(opts) -- opts can be ommited
 ```
 
 
@@ -971,6 +977,44 @@ Here is a summary of the differences from the original snipmate format.
 - `${VISUAL}` will be replaced by `$TM_SELECTED_TEXT` to make the snippets
 compatible with luasnip
 - We do not implement eval using \` (backtick). This may be implemented in the future.
+
+
+# LUA SNIPPETS LOADER
+
+Instead of adding all snippets via `add_snippets`, it's possible to store them
+in separate files (each for one filetype) and load all of those.
+
+For this, the files need to be
+
+- in a single directory. The directory may be passed directly to `load()`, or it
+  can be named `luasnippets` and in the `runtimepath`, in which case it will be
+  automatically detected.
+- named `<filetype>.lua`.
+- return two lists of snippets (either may be `nil`). The snippets in the first
+  are regular snippets for `<filetype>`, the ones in the second are autosnippets
+  (make sure they are enabled if this table is used).
+
+As defining all of the snippet-constructors (`s`, `c`, `t`, ...) in every file
+is rather cumbersome, luasnip will bring some globals into scope for executing
+these files.  
+By default the names from `Examples/snippets.lua` will be used, but it's
+possible to customize them by setting `snip_env` in `setup`.  
+
+These collections can be loaded directly
+(`require("luasnip.loaders.from_lua").load(opts)`) or lazily
+(`require("luasnip.loaders.from_lua.lazy_load(opts)")`).
+
+lua-`opts` may contain the same keys as vscode-`opts`, but here `include` and
+`exclude` can be used in `lazy_load`.
+
+Apart from loading, `from_lua` also exposes functions to edit files associated
+with the currently active filetypes, which could be called via an command, for
+example:
+
+```vim
+command! LuaSnipEdit :lua require("luasnip.loaders.from_lua").edit_snippet_files()
+```
+Once loaded, files will be reloaded on save (`BufWritePost`).
 
 
 # SNIPPETPROXY
@@ -1234,11 +1278,12 @@ s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
 
 Although generation of docstrings is pretty fast, it's preferable to not
 redo it as long as the snippets haven't changed. Using
-`ls.store_snippet_docstrings(ls.snippets)` and its counterpart
-`ls.load_snippet_docstrings(ls.snippets)`, they may be serialized from or
+`ls.store_snippet_docstrings(snippets)` and its counterpart
+`ls.load_snippet_docstrings(snippets)`, they may be serialized from or
 deserialized into the snippets.
-Both functions accept a table structured like `ls.snippets`, ie.
-`{ft1={snippets}, ft2={snippets}}`.
+Both functions accept a table structsured like this: `{ft1={snippets},
+ft2={snippets}}`. Such a table containing all snippets can be obtained via
+`ls.get_snippets()`.
 `load` should be called before any of the `loader`-functions as snippets loaded
 from vscode-style packages already have their `docstring` set (`docstrings`
 wouldn't be overwritten, but there'd be unnecessary calls).
@@ -1270,6 +1315,37 @@ the lazy_load.
 # API-REFERENCE
 
 `require("luasnip")`:
+
+- `add_snippets(ft:string or nil, snippets:list or table, opts:table or nil)`:
+  Makes `snippets` available in `ft`.  
+  If `ft` is `nil`, `snippets` should be a table containing lists of snippets,
+  the keys are corresponding filetypes.  
+  `opts` may contain the following keys:
+  - `type`: type of `snippets`, `"snippets"` or `"autosnippets"`.
+  - `key`: Key that identifies snippets added via this call.  
+	If `add_snippets` is called with a key that was already used, the snippets
+	from that previous call will be removed.  
+	This can be used to reload snippets: pass an unique key to each
+	`add_snippets` and just re-do the `add_snippets`-call when the snippets have
+	changed.
+
+- `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
+  from internal snippet storage.  
+  Invalidated snippets are still stored, it might be useful to actually remove
+  them, as they still have to be iterated during expansion.
+
+  It will be necessary to call `ls.refresh_notify()` after invalidating snippets.
+
+  `opts` may contain:
+
+  - `inv_limit`: how many invalidated snippets are allowed. If the number of
+  	invalid snippets doesn't exceed this threshold, they are not yet cleaned up.
+
+	A small number of invalidated snippets (<100) probably doesn't affect
+	runtime at all, whereas recreating the internal snippet storage might.
+
+  The function returns whether snippets were removed, which may be used to only
+  conditionally `refresh_notify`.
 
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 

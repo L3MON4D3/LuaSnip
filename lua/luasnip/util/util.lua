@@ -437,7 +437,7 @@ end
 
 -- filetype: string formatted like `'filetype'`.
 local function get_snippet_filetypes()
-	local config = require("luasnip.config").config
+	local config = require("luasnip.session").config
 	local fts = config.ft_func()
 	-- add all last.
 	table.insert(fts, "all")

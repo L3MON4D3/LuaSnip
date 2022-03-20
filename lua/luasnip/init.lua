@@ -38,6 +38,26 @@ local function match_snippet(line, snippet_table)
 	return nil
 end
 
+-- ft:
+-- * string: interpreted as filetype, return corresponding snippets.
+-- * nil: return snippets for all filetypes:
+-- {
+-- 	lua = {...},
+-- 	cpp = {...},
+-- 	...
+-- }
+-- opts: optional args, can contain `type`, either "snippets" or "autosnippets".
+--
+-- return table, may be empty.
+local function get_snippets(ft, opts)
+	opts = opts or {}
+	local snippet_type = opts.type or "snippets"
+	if not ft then
+		return ls[snippet_type] or {}
+	end
+	return ls[snippet_type][ft] or {}
+end
+
 local function get_context(snip)
 	return {
 		name = snip.name,
@@ -53,11 +73,14 @@ local function available()
 	local res = {}
 	for _, ft in ipairs(fts) do
 		res[ft] = {}
-		for _, snippet_table in pairs({ ls.snippets, ls.autosnippets }) do
-			if snippet_table[ft] then
-				for _, snip in ipairs(snippet_table[ft]) do
-					table.insert(res[ft], get_context(snip))
-				end
+		for _, snip in ipairs(get_snippets(ft)) do
+			if not snip.invalidated then
+				table.insert(res[ft], get_context(snip))
+			end
+		end
+		for _, snip in ipairs(get_snippets(ft, { type = "autosnippets" })) do
+			if not snip.invalidated then
+				table.insert(res[ft], get_context(snip))
 			end
 		end
 	end
@@ -516,10 +539,98 @@ end
 
 local function refresh_notify(ft)
 	vim.validate({
-		filetype = { ft, "string" },
+		filetype = { ft, { "string", "nil" } },
 	})
-	session.latest_load_ft = ft
-	vim.cmd([[doautocmd User LuasnipSnippetsAdded]])
+
+	if not ft then
+		-- call refresh_notify for all filetypes that have snippets.
+		for ft_, _ in pairs(ls.snippets) do
+			refresh_notify(ft_)
+		end
+	else
+		session.latest_load_ft = ft
+		vim.cmd([[doautocmd User LuasnipSnippetsAdded]])
+	end
+end
+
+local function clean_invalidated(opts)
+	opts = opts or {}
+
+	if opts.inv_limit then
+		if session.invalidated_count <= opts.inv_limit then
+			return false
+		end
+	end
+
+	if session.invalidated_count > 0 then
+		local new_snippets = {}
+		for ft, snippets in pairs(ls.snippets) do
+			new_snippets[ft] = {}
+			local indx = 1
+			for _, snippet in ipairs(snippets) do
+				if not snippet.invalidated then
+					new_snippets[ft][indx] = snippet
+					indx = indx + 1
+				end
+			end
+		end
+
+		ls.snippets = new_snippets
+
+		session.invalidated_count = 0
+		return true
+	else
+		return false
+	end
+end
+
+local function invalidate_snippets(snippets)
+	for _, snip in ipairs(snippets) do
+		snip:invalidate()
+	end
+	if clean_invalidated({ inv_limit = 100 }) then
+		ls.refresh_notify()
+	end
+end
+
+-- opts.type can be "snippets" or "autosnippets".
+local function add_snippets(ft, snippets, opts)
+	opts = opts or {}
+
+	local snippet_type = opts.type or "snippets"
+
+	-- remove snippets registered with that key, if applicable.
+	if opts.key and ls.session.by_key[opts.key] then
+		invalidate_snippets(ls.session.by_key[opts.key])
+	end
+
+	if not ft then
+		-- not the cleanest implementation.
+		if opts.key then
+			ls.session.by_key[opts.key] = {}
+			for ft_, ft_snippets in pairs(snippets) do
+				ls[snippet_type][ft_] = ls[snippet_type][ft_] or {}
+				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
+				vim.list_extend(ls.session.by_key[opts.key], ft_snippets)
+			end
+		else
+			for ft_, ft_snippets in pairs(snippets) do
+				ls[snippet_type][ft_] = ls[snippet_type][ft_] or {}
+				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
+			end
+		end
+	else
+		ls[snippet_type][ft] = ls[snippet_type][ft] or {}
+		vim.list_extend(ls[snippet_type][ft], snippets)
+
+		if opts.key then
+			ls.session.by_key[opts.key] = snippets
+		end
+	end
+end
+
+local function setup_snip_env()
+	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
 end
 
 ls = {
@@ -547,6 +658,10 @@ ls = {
 	unlink_current_if_deleted = unlink_current_if_deleted,
 	filetype_extend = filetype_extend,
 	filetype_set = filetype_set,
+	add_snippets = add_snippets,
+	get_snippets = get_snippets,
+	setup_snip_env = setup_snip_env,
+	clean_invalidated = clean_invalidated,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,

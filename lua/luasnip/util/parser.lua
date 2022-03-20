@@ -7,7 +7,7 @@ local snipNode = require("luasnip.nodes.snippet")
 local Environ = require("luasnip.util.environ")
 local functions = require("luasnip.util.functions")
 local util = require("luasnip.util.util")
-local config = require("luasnip.config")
+local session = require("luasnip.session")
 
 local function is_escaped(text, indx)
 	local count = 0
@@ -179,8 +179,8 @@ local function parse_placeholder(text, tab_stops, brackets)
 						return snipNode.SN(nil, iNode.I(1, iText))
 					end, {})
 				else
-					if config.config.parser_nested_assembler then
-						tab_stops[pos] = config.config.parser_nested_assembler(
+					if session.config.parser_nested_assembler then
+						tab_stops[pos] = session.config.parser_nested_assembler(
 							pos,
 							snip
 						)

@@ -8,7 +8,6 @@ local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
 local Environ = require("luasnip.util.environ")
-local conf = require("luasnip.config")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 local dict = require("luasnip.util.dict")
@@ -222,6 +221,7 @@ local function _S(snip, nodes, opts)
 			active = false,
 			type = types.snippet,
 			dependents_dict = dict.new(),
+			invalidated = false,
 		}),
 		opts
 	)
@@ -382,7 +382,7 @@ function Snippet:trigger_expand(current_node, pos)
 	if self.merge_child_ext_opts then
 		self.effective_child_ext_opts = ext_util.child_extend(
 			vim.deepcopy(self.child_ext_opts),
-			conf.config.ext_opts
+			session.config.ext_opts
 		)
 	else
 		self.effective_child_ext_opts = vim.deepcopy(self.child_ext_opts)
@@ -394,7 +394,7 @@ function Snippet:trigger_expand(current_node, pos)
 	if current_node and (current_node.indx and current_node.indx > 1) then
 		parent_ext_base_prio = current_node.parent.ext_opts.base_prio
 	else
-		parent_ext_base_prio = conf.config.ext_base_prio
+		parent_ext_base_prio = session.config.ext_base_prio
 	end
 
 	-- own highlight comes from self.child_ext_opts.snippet.
@@ -663,7 +663,7 @@ function Snippet:fake_expand(opts)
 	else
 		self.trigger = "$TRIGGER"
 	end
-	self.ext_opts = vim.deepcopy(conf.config.ext_opts)
+	self.ext_opts = vim.deepcopy(session.config.ext_opts)
 
 	self:indent("")
 
@@ -1115,6 +1115,18 @@ function Snippet:resolve_child_ext_opts()
 	else
 		self.effective_child_ext_opts = vim.deepcopy(self.child_ext_opts)
 	end
+end
+
+local function no_match()
+	return nil
+end
+
+function Snippet:invalidate()
+	self.hidden = true
+	-- override matching-function.
+	self.matches = no_match
+	self.invalidated = true
+	session.invalidated_count = session.invalidated_count + 1
 end
 
 return {

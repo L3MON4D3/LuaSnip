@@ -7,8 +7,6 @@ local RestoreNode = Node:new()
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local util = require("luasnip.util.util")
-local ext_util = require("luasnip.util.ext_opts")
-local conf = require("luasnip.config")
 local mark = require("luasnip.util.mark").mark
 
 local function R(pos, key, nodes, opts)
