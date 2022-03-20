@@ -184,6 +184,9 @@ end
 -- snippets are added via ls.add_snippets(filetype, snippets[, opts]), where
 -- opts may specify the `type` of the snippets ("snippets" or "autosnippets",
 -- for snippets that should expand directly after the trigger is typed).
+--
+-- opts can also specify a key. By passing an unique key to each add_snippets, it's possible to reload snippets by
+-- re-`:luafile`ing the file in which they are defined (eg. this one).
 ls.add_snippets("all", {
 	-- trigger is `fn`, second argument to snippet-constructor are the nodes to insert into the buffer on expansion.
 	s("fn", {
@@ -447,6 +450,8 @@ ls.add_snippets("all", {
 		t({ "", "" }),
 		dl(3, l._1:gsub("\n", " linebreak ") .. l._2, { 1, 2 }),
 	}),
+}, {
+	key = "all",
 })
 
 ls.add_snippets("java", {
@@ -483,6 +488,8 @@ ls.add_snippets("java", {
 		i(0),
 		t({ "", "}" }),
 	}),
+}, {
+	key = "java",
 })
 
 ls.add_snippets("tex", {
@@ -494,6 +501,8 @@ ls.add_snippets("tex", {
 		d(2, rec_ls, {}),
 		t({ "", "\\end{itemize}" }),
 	}),
+}, {
+	key = "tex",
 })
 
 -- set type to "autosnippets" for adding autotriggered snippets.
@@ -503,6 +512,7 @@ ls.add_snippets("all", {
 	}),
 }, {
 	type = "autosnippets",
+	key = "all_auto",
 })
 
 -- in a lua file: search lua-, then c-, then all-snippets.
