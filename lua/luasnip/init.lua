@@ -74,10 +74,14 @@ local function available()
 	for _, ft in ipairs(fts) do
 		res[ft] = {}
 		for _, snip in ipairs(get_snippets(ft)) do
-			table.insert(res[ft], get_context(snip))
+			if not snip.invalidated then
+				table.insert(res[ft], get_context(snip))
+			end
 		end
 		for _, snip in ipairs(get_snippets(ft, { type = "autosnippets" })) do
-			table.insert(res[ft], get_context(snip))
+			if not snip.invalidated then
+				table.insert(res[ft], get_context(snip))
+			end
 		end
 	end
 	return res
