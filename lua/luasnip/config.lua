@@ -5,7 +5,7 @@ local session = require("luasnip.session")
 
 local defaults = {
 	history = false,
-	updateevents = "InsertLeave",
+	update_events = "InsertLeave",
 	-- see :h User, event should never be triggered(except if it is `doautocmd`'d)
 	region_check_events = "User None",
 	delete_check_events = "User None",
@@ -120,6 +120,12 @@ c = {
 		)
 		ext_util.child_extend(user_config.ext_opts, conf.ext_opts)
 
+		-- use value from update_events, then updateevents.
+		-- also nil updateevents, don't spill it into the main config.
+		user_config.update_events = user_config.update_events
+			or user_config.updateevents
+		user_config.updateevents = nil
+
 		for k, v in pairs(user_config) do
 			conf[k] = v
 		end
@@ -149,7 +155,7 @@ c = {
 		augroup END
 		]],
 				session.config.delete_check_events,
-				session.config.updateevents,
+				session.config.update_events,
 				session.config.region_check_events
 			)
 		)

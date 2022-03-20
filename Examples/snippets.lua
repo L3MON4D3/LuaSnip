@@ -26,7 +26,7 @@ local conds = require("luasnip.extras.expand_conditions")
 ls.config.set_config({
 	history = true,
 	-- Update more often, :h events for more info.
-	updateevents = "TextChanged,TextChangedI",
+	update_events = "TextChanged,TextChangedI",
 	-- Snippets aren't automatically removed if their text is deleted.
 	-- `delete_check_events` determines on which events (:h events) a check for
 	-- deleted snippets is performed.
