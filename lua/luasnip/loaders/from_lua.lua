@@ -7,6 +7,7 @@ local cache = require("luasnip.loaders._caches").lua
 local path_mod = require("luasnip.util.path")
 local loader_util = require("luasnip.loaders.util")
 local util = require("luasnip.util.util")
+local ls = require("luasnip")
 
 local M = {}
 
