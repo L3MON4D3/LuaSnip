@@ -1117,6 +1117,35 @@ example:
 
 Once loaded, files will be reloaded on save (`BufWritePost`).
 
+Example:
+
+`~/snippets/all.lua`:
+
+>
+    return {
+        ls.parser.parse_snippet("trig", "loaded!!")
+    }
+<
+
+
+`~/snippets/c.lua`:
+
+>
+    return {
+        ls.parser.parse_snippet("ctrig", "also loaded!!")
+    }, {
+        ls.parser.parse_snippet("autotrig", "autotriggered, if enabled")
+    }
+<
+
+
+Load via
+
+>
+    require("luasnip.loaders.from_lua").load({paths = "~/snippets"})
+<
+
+
 ==============================================================================
 19. SNIPPETPROXY                                        *luasnip-snippetproxy*
 
