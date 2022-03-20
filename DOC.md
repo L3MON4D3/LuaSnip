@@ -1323,10 +1323,12 @@ the lazy_load.
   `opts` may contain the following keys:
   - `type`: type of `snippets`, `"snippets"` or `"autosnippets"`.
 
-- `clean_invalidated(opts: table or nil)`: clean invalidated snippets from
-  internal snippet storage.  
+- `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
+  from internal snippet storage.  
   Invalidated snippets are still stored, it might be useful to actually remove
   them, as they still have to be iterated during expansion.
+
+  It will be necessary to call `ls.refresh_notify()` after invalidating snippets.
 
   `opts` may contain:
 
@@ -1335,6 +1337,9 @@ the lazy_load.
 
 	A small number of invalidated snippets (<100) probably doesn't affect
 	runtime at all, whereas recreating the internal snippet storage might.
+
+  The function returns whether snippets were removed, which may be used to only
+  conditionally `refresh_notify`.
 
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 
