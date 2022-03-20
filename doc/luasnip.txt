@@ -1438,9 +1438,9 @@ empty the snippets table and the caches of the lazy_load.
 
 
 - `add_snippets(ft:string or nil, snippets:list or table, opts:table or nil)`:
-    Makes `snippets` available in `ft`. If `ft` is `nil`, `snippets` should be a
-    table containing lists of snippets, the keys are corresponding filetypes.
-    `opts` may contain the following keys:
+    Makes `snippets` (list of snippets) available in `ft`. If `ft` is `nil`,
+    `snippets` should be a table containing lists of snippets, the keys are
+    corresponding filetypes. `opts` may contain the following keys:
     - `type`: type of `snippets`, `"snippets"` or `"autosnippets"`.
     - `key`: Key that identifies snippets added via this call.
         If `add_snippets` is called with a key that was already used, the snippets
