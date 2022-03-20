@@ -202,7 +202,7 @@ end
 -- register during startup so it'll work even if lazy_load is only called after
 -- the events for some buffers already fired.
 vim.cmd([[
-augroup _luasnip_vscode_lazy_load
+augroup _luasnip_lua_lazy_load
 	autocmd!
 	au BufWinEnter,FileType * lua require('luasnip.loaders.from_lua')._load_lazy_loaded()
 	au User LuasnipCleanup lua require('luasnip.loaders._caches').lua:clean()

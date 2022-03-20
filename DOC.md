@@ -1323,9 +1323,10 @@ the lazy_load.
   - `type`: type of `snippets`, `"snippets"` or `"autosnippets"`.
 
 - `clean_invalidated(opts: table or nil)`: clean invalidated snippets from
-  internal snippet storage.
+  internal snippet storage.  
   Invalidated snippets are still stored, it might be useful to actually remove
   them, as they still have to be iterated during expansion.
+
   `opts` may contain:
 
   - `inv_limit`: how many invalidated snippets are allowed. If the number of
