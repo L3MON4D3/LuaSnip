@@ -1016,6 +1016,27 @@ command! LuaSnipEdit :lua require("luasnip.loaders.from_lua").edit_snippet_files
 ```
 Once loaded, files will be reloaded on save (`BufWritePost`).
 
+Example:
+
+`~/snippets/all.lua`:
+```lua
+return {
+	ls.parser.parse_snippet("trig", "loaded!!")
+}
+```
+`~/snippets/c.lua`:
+```lua
+return {
+	ls.parser.parse_snippet("ctrig", "also loaded!!")
+}, {
+	ls.parser.parse_snippet("autotrig", "autotriggered, if enabled")
+}
+```
+
+Load via 
+```lua
+require("luasnip.loaders.from_lua").load({paths = "~/snippets"})
+```
 
 # SNIPPETPROXY
 
