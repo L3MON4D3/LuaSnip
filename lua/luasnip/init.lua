@@ -605,12 +605,19 @@ local function add_snippets(ft, snippets, opts)
 	end
 
 	if not ft then
+		-- not the cleanest implementation.
 		if opts.key then
 			ls.session.by_key[opts.key] = {}
-		end
-		for ft_, ft_snippets in pairs(snippets) do
-			vim.list_extend(ls[snippet_type][ft_], ft_snippets)
-			vim.list_extend(ls.session.by_key[opts.key], ft_snippets)
+			for ft_, ft_snippets in pairs(snippets) do
+				ls[snippet_type][ft_] = ls[snippet_type][ft_] or {}
+				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
+				vim.list_extend(ls.session.by_key[opts.key], ft_snippets)
+			end
+		else
+			for ft_, ft_snippets in pairs(snippets) do
+				ls[snippet_type][ft_] = ls[snippet_type][ft_] or {}
+				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
+			end
 		end
 	else
 		ls[snippet_type][ft] = ls[snippet_type][ft] or {}
