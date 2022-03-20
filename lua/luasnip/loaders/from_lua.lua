@@ -66,15 +66,13 @@ local function load_files(ft, files)
 	ls.refresh_notify(ft)
 end
 
--- extend table like {lua = {path1}, c = {path1, path2}, ...}.
--- TODO: prevent duplicates here? should only occur if one collection is loaded
--- twice.
+-- extend table like {lua = {path1}, c = {path1, path2}, ...}, new_paths has the same layout.
 local function extend_ft_paths(paths, new_paths)
 	for ft, path in pairs(new_paths) do
 		if paths[ft] then
-			table.insert(paths[ft], path)
+			vim.list_extend(paths[ft], path)
 		else
-			paths[ft] = { path }
+			paths[ft] = path
 		end
 	end
 end
@@ -87,7 +85,7 @@ local function get_ft_paths(root)
 	for _, file in ipairs(files) do
 		-- true: separate filename from extension.
 		local ft = path_mod.basename(file, true)
-		ft_paths[ft] = file
+		ft_paths[ft] = { file }
 	end
 
 	return ft_paths
@@ -113,10 +111,6 @@ local function get_load_paths(opts)
 		local collection_ft_paths = get_ft_paths(collection_root)
 
 		extend_ft_paths(load_paths, collection_ft_paths)
-
-		-- also add files from collection to cache (collection of all loaded
-		-- files by filetype, useful for editing files for some filetype).
-		extend_ft_paths(cache.ft_paths, collection_ft_paths)
 	end
 
 	-- remove files for excluded/non-included filetypes here.
@@ -127,6 +121,9 @@ local function get_load_paths(opts)
 		end
 	end
 
+	-- also add files from collection to cache (collection of all loaded
+	-- files by filetype, useful for editing files for some filetype).
+	extend_ft_paths(cache.ft_paths, load_paths)
 	return load_paths
 end
 
