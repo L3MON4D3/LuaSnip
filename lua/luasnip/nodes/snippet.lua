@@ -221,6 +221,7 @@ local function _S(snip, nodes, opts)
 			active = false,
 			type = types.snippet,
 			dependents_dict = dict.new(),
+			invalidated = false,
 		}),
 		opts
 	)
@@ -1116,12 +1117,16 @@ function Snippet:resolve_child_ext_opts()
 	end
 end
 
+local function no_match()
+	return nil
+end
+
 function Snippet:invalidate()
 	self.hidden = true
-
-	function self:matches()
-		return nil
-	end
+	-- override matching-function.
+	self.matches = no_match
+	self.invalidated = true
+	session.invalidated_count = session.invalidated_count + 1
 end
 
 return {

@@ -567,6 +567,32 @@ local function setup_snip_env()
 	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
 end
 
+local function clean_invalidated(opts)
+	opts = opts or {}
+
+	if opts.inv_limit then
+		if session.invalidated_count <= opts.inv_limit then
+			return
+		end
+	end
+
+	local new_snippets = {}
+	for ft, snippets in pairs(ls.snippets) do
+		new_snippets[ft] = {}
+		local indx = 1
+		for _, snippet in ipairs(snippets) do
+			if not snippet.invalidated then
+				new_snippets[ft][indx] = snippet
+				indx = indx + 1
+			end
+		end
+	end
+
+	ls.snippets = new_snippets
+
+	session.invalidated_count = 0
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
@@ -595,6 +621,7 @@ ls = {
 	add_snippets = add_snippets,
 	get_snippets = get_snippets,
 	setup_snip_env = setup_snip_env,
+	clean_invalidated = clean_invalidated,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,
