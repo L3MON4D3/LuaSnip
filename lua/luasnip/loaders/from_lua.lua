@@ -164,6 +164,9 @@ function M.reload_file(filename)
 		for _, snip in ipairs(cache.path_snippets[filename].autosnippets) do
 			snip:invalidate()
 		end
+
+		ls.clean_invalidated({ inv_limit = 100 })
+
 		local ft = path_mod.basename(filename, true)
 		ls.refresh_notify(ft)
 

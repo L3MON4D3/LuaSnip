@@ -29,4 +29,6 @@ M.jump_active = false
 
 M.config = nil
 
+M.invalidated_count = 0
+
 return M
