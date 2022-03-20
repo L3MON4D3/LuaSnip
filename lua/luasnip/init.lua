@@ -535,10 +535,18 @@ end
 
 local function refresh_notify(ft)
 	vim.validate({
-		filetype = { ft, "string" },
+		filetype = { ft, { "string", "nil" } },
 	})
-	session.latest_load_ft = ft
-	vim.cmd([[doautocmd User LuasnipSnippetsAdded]])
+
+	if not ft then
+		-- call refresh_notify for all filetypes that have snippets.
+		for ft_, _ in pairs(ls.snippets) do
+			refresh_notify(ft_)
+		end
+	else
+		session.latest_load_ft = ft
+		vim.cmd([[doautocmd User LuasnipSnippetsAdded]])
+	end
 end
 
 -- opts.type can be "snippets" or "autosnippets".
@@ -572,25 +580,30 @@ local function clean_invalidated(opts)
 
 	if opts.inv_limit then
 		if session.invalidated_count <= opts.inv_limit then
-			return
+			return false
 		end
 	end
 
-	local new_snippets = {}
-	for ft, snippets in pairs(ls.snippets) do
-		new_snippets[ft] = {}
-		local indx = 1
-		for _, snippet in ipairs(snippets) do
-			if not snippet.invalidated then
-				new_snippets[ft][indx] = snippet
-				indx = indx + 1
+	if session.invalidated_count > 0 then
+		local new_snippets = {}
+		for ft, snippets in pairs(ls.snippets) do
+			new_snippets[ft] = {}
+			local indx = 1
+			for _, snippet in ipairs(snippets) do
+				if not snippet.invalidated then
+					new_snippets[ft][indx] = snippet
+					indx = indx + 1
+				end
 			end
 		end
+
+		ls.snippets = new_snippets
+
+		session.invalidated_count = 0
+		return true
+	else
+		return false
 	end
-
-	ls.snippets = new_snippets
-
-	session.invalidated_count = 0
 end
 
 ls = {
