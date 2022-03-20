@@ -31,4 +31,7 @@ M.config = nil
 
 M.invalidated_count = 0
 
+-- store snippets by some key.
+M.by_key = {}
+
 return M
