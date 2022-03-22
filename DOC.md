@@ -1357,8 +1357,6 @@ the lazy_load.
   Invalidated snippets are still stored, it might be useful to actually remove
   them, as they still have to be iterated during expansion.
 
-  It will be necessary to call `ls.refresh_notify()` after invalidating snippets.
-
   `opts` may contain:
 
   - `inv_limit`: how many invalidated snippets are allowed. If the number of
@@ -1366,9 +1364,6 @@ the lazy_load.
 
 	A small number of invalidated snippets (<100) probably doesn't affect
 	runtime at all, whereas recreating the internal snippet storage might.
-
-  The function returns whether snippets were removed, which may be used to only
-  conditionally `refresh_notify`.
 
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 

@@ -548,34 +548,7 @@ local function refresh_notify(ft)
 end
 
 local function clean_invalidated(opts)
-	opts = opts or {}
-
-	if opts.inv_limit then
-		if session.invalidated_count <= opts.inv_limit then
-			return false
-		end
-	end
-
-	if session.invalidated_count > 0 then
-		local new_snippets = {}
-		for ft, snippets in pairs(ls.snippets) do
-			new_snippets[ft] = {}
-			local indx = 1
-			for _, snippet in ipairs(snippets) do
-				if not snippet.invalidated then
-					new_snippets[ft][indx] = snippet
-					indx = indx + 1
-				end
-			end
-		end
-
-		ls.snippets = new_snippets
-
-		session.invalidated_count = 0
-		return true
-	else
-		return false
-	end
+	snippet_collection.clean_invalidated(opts)
 end
 
 local function setup_snip_env()
