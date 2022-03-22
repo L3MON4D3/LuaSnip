@@ -11,6 +11,7 @@ local Environ = require("luasnip.util.environ")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 local dict = require("luasnip.util.dict")
+local snippet_collection = require("luasnip.session.snippet_collection")
 
 local true_func = function()
 	return true
@@ -1130,7 +1131,8 @@ function Snippet:invalidate()
 	-- override matching-function.
 	self.matches = no_match
 	self.invalidated = true
-	session.invalidated_count = session.invalidated_count + 1
+	snippet_collection.invalidated_count = snippet_collection.invalidated_count
+		+ 1
 end
 
 return {
