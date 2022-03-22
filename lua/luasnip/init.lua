@@ -538,9 +538,9 @@ local function cleanup()
 end
 
 local function refresh_notify(ft)
-	vim.validate({
-		filetype = { ft, { "string", "nil" } },
-	})
+	-- vim.validate({
+	-- 	filetype = { ft, { "string", "nil" } },
+	-- })
 
 	if not ft then
 		-- call refresh_notify for all filetypes that have snippets.
