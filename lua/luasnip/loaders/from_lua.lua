@@ -51,16 +51,17 @@ local function load_files(ft, files)
 			file
 		))
 
-		ls.add_snippets(
-			ft,
-			file_snippets,
-			{ type = "snippets", key = "__snippets_" .. file }
-		)
-		ls.add_snippets(
-			ft,
-			file_autosnippets,
-			{ type = "autosnippets", key = "__autosnippets_" .. file }
-		)
+		ls.add_snippets(ft, file_snippets, {
+			type = "snippets",
+			key = "__snippets_" .. file,
+			-- prevent refresh here, will be done outside loop.
+			refresh_notify = false,
+		})
+		ls.add_snippets(ft, file_autosnippets, {
+			type = "autosnippets",
+			key = "__autosnippets_" .. file,
+			refresh_notify = false,
+		})
 	end
 
 	ls.refresh_notify(ft)
@@ -205,8 +206,9 @@ function M.edit_snippet_files()
 	end)
 end
 
--- register during startup so it'll work even if lazy_load is only called after
--- the events for some buffers already fired.
+-- register during startup (not really startup, as soon as this file is
+-- required) so it'll work even if lazy_load is only called after the events
+-- for some buffers already fired.
 vim.cmd([[
 augroup _luasnip_lua_lazy_load
 	autocmd!
