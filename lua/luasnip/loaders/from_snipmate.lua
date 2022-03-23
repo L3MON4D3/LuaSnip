@@ -84,40 +84,6 @@ local function load_snippet_file(path)
 	return snippet, extends
 end
 
-local function _append(tbl, name, elem)
-	if tbl[name] == nil then
-		tbl[name] = {}
-	end
-	table.insert(tbl[name], elem)
-end
-
----Get paths of .snippets files
----@param roots string[] @snippet directory paths
----@return table @keys are file types, values are paths
-local function get_ft_paths(roots)
-	local ft_path = {}
-	for _, root in ipairs(roots) do
-		local files, dirs = Path.scandir(root)
-		for _, file in ipairs(files) do
-			local ft, ext = Path.basename(file, true)
-			if ext == "snippets" then
-				_append(ft_path, ft, file)
-			end
-		end
-		for _, dir in ipairs(dirs) do
-			-- directory-name is ft for snippet-files.
-			local ft = vim.fn.fnamemodify(dir, ":t")
-			files, _ = Path.scandir(dir)
-			for _, file in ipairs(files) do
-				if vim.endswith(file, ".snippets") then
-					_append(ft_path, ft, file)
-				end
-			end
-		end
-	end
-	return ft_path
-end
-
 local M = {}
 
 function M._load(ft)
@@ -139,8 +105,9 @@ function M.load(opts)
 	opts = opts or {}
 
 	if not opts.is_lazy then
-		cache.ft_paths = get_ft_paths(
-			loader_util.normalize_paths(opts.paths, "snippets")
+		cache.ft_paths = loader_util.get_ft_paths(
+			loader_util.normalize_paths(opts.paths, "snippets"),
+			"snippets"
 		)
 	end
 
@@ -167,8 +134,9 @@ end
 function M.lazy_load(opts)
 	opts = opts or {}
 
-	cache.ft_paths = get_ft_paths(
-		loader_util.normalize_paths(opts.paths, "snippets")
+	cache.ft_paths = loader_util.get_ft_paths(
+		loader_util.normalize_paths(opts.paths, "snippets"),
+		"snippets"
 	)
 
 	vim.cmd([[

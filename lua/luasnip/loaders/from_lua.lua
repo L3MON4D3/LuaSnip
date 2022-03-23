@@ -77,20 +77,6 @@ local function extend_ft_paths(paths, new_paths)
 	end
 end
 
--- return table like {lua = path, c = path}.
-local function get_ft_paths(root)
-	local ft_paths = {}
-
-	local files = path_mod.scandir(root)
-	for _, file in ipairs(files) do
-		-- true: separate filename from extension.
-		local ft = path_mod.basename(file, true)
-		ft_paths[ft] = { file }
-	end
-
-	return ft_paths
-end
-
 function M._load_lazy_loaded()
 	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
@@ -105,13 +91,13 @@ local function get_load_paths(opts)
 	opts = opts or {}
 
 	local load_paths = {}
-	for _, collection_root in
-		ipairs(loader_util.normalize_paths(opts.paths, "luasnippets"))
-	do
-		local collection_ft_paths = get_ft_paths(collection_root)
 
-		extend_ft_paths(load_paths, collection_ft_paths)
-	end
+	local collection_ft_paths = loader_util.get_ft_paths(
+		loader_util.normalize_paths(opts.paths, "luasnippets"),
+		"lua"
+	)
+
+	extend_ft_paths(load_paths, collection_ft_paths)
 
 	-- remove files for excluded/non-included filetypes here.
 	local ft_filter = loader_util.ft_filter(opts.exclude, opts.include)
@@ -124,6 +110,7 @@ local function get_load_paths(opts)
 	-- also add files from collection to cache (collection of all loaded
 	-- files by filetype, useful for editing files for some filetype).
 	extend_ft_paths(cache.ft_paths, load_paths)
+
 	return load_paths
 end
 

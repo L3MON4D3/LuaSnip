@@ -989,7 +989,8 @@ For this, the files need to be
 - in a single directory. The directory may be passed directly to `load()`, or it
   can be named `luasnippets` and in the `runtimepath`, in which case it will be
   automatically detected.
-- named `<filetype>.lua`.
+- named `<filetype>.lua` or in a subdirectory `<filetype>/somename.lua`
+  (Snipmate-structure).
 - return two lists of snippets (either may be `nil`). The snippets in the first
   are regular snippets for `<filetype>`, the ones in the second are autosnippets
   (make sure they are enabled if this table is used).

@@ -63,9 +63,44 @@ local function ft_filter(exclude, include)
 	end
 end
 
+local function _append(tbl, name, elem)
+	if tbl[name] == nil then
+		tbl[name] = {}
+	end
+	table.insert(tbl[name], elem)
+end
+
+---Get paths of .snippets files
+---@param roots string[] @snippet directory paths
+---@return table @keys are file types, values are paths
+local function get_ft_paths(roots, extension)
+	local ft_path = {}
+	for _, root in ipairs(roots) do
+		local files, dirs = Path.scandir(root)
+		for _, file in ipairs(files) do
+			local ft, ext = Path.basename(file, true)
+			if ext == extension then
+				_append(ft_path, ft, file)
+			end
+		end
+		for _, dir in ipairs(dirs) do
+			-- directory-name is ft for snippet-files.
+			local ft = vim.fn.fnamemodify(dir, ":t")
+			files, _ = Path.scandir(dir)
+			for _, file in ipairs(files) do
+				if vim.endswith(file, extension) then
+					_append(ft_path, ft, file)
+				end
+			end
+		end
+	end
+	return ft_path
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
 	normalize_paths = normalize_paths,
 	ft_filter = ft_filter,
+	get_ft_paths = get_ft_paths,
 }
