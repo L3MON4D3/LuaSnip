@@ -1369,6 +1369,8 @@ the lazy_load.
   The function returns whether snippets were removed, which may be used to only
   conditionally `refresh_notify`.
 
+- `get_id_snippet(id)`: returns snippet corresponding to id.
+
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 
 - `jumpable(direction)`: returns true if the current node has a

@@ -593,6 +593,7 @@ local function invalidate_snippets(snippets)
 	end
 end
 
+local current_id = 0
 -- opts.type can be "snippets" or "autosnippets".
 local function add_snippets(ft, snippets, opts)
 	opts = opts or {}
@@ -619,6 +620,15 @@ local function add_snippets(ft, snippets, opts)
 				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
 			end
 		end
+
+		for _, ft_snippets in pairs(snippets) do
+			for _, snip in ipairs(ft_snippets) do
+				snip.id = current_id
+				session.by_id[current_id] = snip
+
+				current_id = current_id + 1
+			end
+		end
 	else
 		ls[snippet_type][ft] = ls[snippet_type][ft] or {}
 		vim.list_extend(ls[snippet_type][ft], snippets)
@@ -626,12 +636,22 @@ local function add_snippets(ft, snippets, opts)
 		if opts.key then
 			session.by_key[opts.key] = snippets
 		end
+
+		for _, snip in ipairs(snippets) do
+			snip.id = current_id
+			session.by_id[current_id] = snip
+
+			current_id = current_id + 1
 		end
 	end
 end
 
 local function setup_snip_env()
 	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
+end
+
+local function get_id_snippet(id)
+	return session.by_id[id]
 end
 
 ls = {
@@ -661,6 +681,7 @@ ls = {
 	filetype_set = filetype_set,
 	add_snippets = add_snippets,
 	get_snippets = get_snippets,
+	get_id_snippet = get_id_snippet,
 	setup_snip_env = setup_snip_env,
 	clean_invalidated = clean_invalidated,
 	s = snip_mod.S,
