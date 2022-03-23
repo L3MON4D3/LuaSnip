@@ -600,18 +600,18 @@ local function add_snippets(ft, snippets, opts)
 	local snippet_type = opts.type or "snippets"
 
 	-- remove snippets registered with that key, if applicable.
-	if opts.key and ls.session.by_key[opts.key] then
-		invalidate_snippets(ls.session.by_key[opts.key])
+	if opts.key and session.by_key[opts.key] then
+		invalidate_snippets(session.by_key[opts.key])
 	end
 
 	if not ft then
 		-- not the cleanest implementation.
 		if opts.key then
-			ls.session.by_key[opts.key] = {}
+			session.by_key[opts.key] = {}
 			for ft_, ft_snippets in pairs(snippets) do
 				ls[snippet_type][ft_] = ls[snippet_type][ft_] or {}
 				vim.list_extend(ls[snippet_type][ft_], ft_snippets)
-				vim.list_extend(ls.session.by_key[opts.key], ft_snippets)
+				vim.list_extend(session.by_key[opts.key], ft_snippets)
 			end
 		else
 			for ft_, ft_snippets in pairs(snippets) do
@@ -624,7 +624,8 @@ local function add_snippets(ft, snippets, opts)
 		vim.list_extend(ls[snippet_type][ft], snippets)
 
 		if opts.key then
-			ls.session.by_key[opts.key] = snippets
+			session.by_key[opts.key] = snippets
+		end
 		end
 	end
 end
