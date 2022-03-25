@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 March 24
+*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 March 25
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1490,6 +1490,7 @@ empty the snippets table and the caches of the lazy_load.
         at all, whereas recreating the internal snippet storage might.
     The function returns whether snippets were removed, which may be used to only
     conditionally `refresh_notify`.
+- `get_id_snippet(id)`: returns snippet corresponding to id.
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 - `jumpable(direction)`: returns true if the current node has a next(`direction`
     = 1) or previous(`direction` = -1), eg. whether it’s possible to jump forward
