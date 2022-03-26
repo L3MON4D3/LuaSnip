@@ -22,7 +22,6 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v4.13.1
         with:
           commit_message: "Auto generate docs"
-          branch: ${{ github.head_ref }}
       - name: "Format with Stylua"
         uses: JohnnyMorganz/stylua-action@1.0.0
         with:
@@ -31,4 +30,3 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Format with stylua"
-          branch: ${{ github.head_ref }}
