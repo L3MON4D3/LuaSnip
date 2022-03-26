@@ -348,7 +348,7 @@ ls.add_snippets("all", {
 		end,
 	}),
 	-- Use a function to execute any shell command and print its text.
-	s("bash", f(bash, {}, "ls")),
+	s("bash", f(bash, {}, {user_args = {"ls"}})),
 	-- Short version for applying String transformations using function nodes.
 	s("transform", {
 		i(1, "initial text"),
