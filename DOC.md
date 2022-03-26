@@ -203,11 +203,11 @@ s("trigger", {
 ```
 
 The InsertNodes are jumped over in order from `1 to n`.
-0-th node is special as it's always the last one.
+The 0-th node is special as it's always the last one.
 So the order of InsertNode jump is as follows:
-- After expansion, we will be at InsertNode 1.
-- After jumping forward, we will be at InsertNode 2.
-- After jumping forward again, we will be at InsertNode 0.
+1. After expansion, we will be at InsertNode 1.
+2. After jumping forward, we will be at InsertNode 2.
+3. After jumping forward again, we will be at InsertNode 0.
 
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
 after all other nodes.
@@ -221,9 +221,9 @@ s("trigger", {
 })
 ```
 The above snippet will behave as follows:
-- After expansion, we will be at InsertNode 1.
-- After jumping forward, we will be at InsertNode 2.
-- After jumping forward again, we will be at InsertNode 0.
+1. After expansion, we will be at InsertNode 1.
+2. After jumping forward, we will be at InsertNode 2.
+3. After jumping forward again, we will be at InsertNode 0.
 
 An **important** (because here luasnip differs from other snippet-engines) detail
 is that the jump-positions restart at 1 in nested snippets:
@@ -286,7 +286,7 @@ The first parameter of `f` is the function. Its parameters are:
       parent (a `snippetNode`) will contain neither `captures` nor `env`. Those
       are only stored in the `snippet`, which can be accessed as `parent.snippet`.
 
-3-n. The `user_args` passed in `opts`.
+3. The `user_args` passed in `opts`. Note that there may be multiple user_args (eg. `user_args1, ..., user_argsn`).
 
 The function shall return a string, which will be inserted as-is, or a table
 of strings for multiline-string, here all lines following the first will be
