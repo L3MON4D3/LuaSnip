@@ -258,10 +258,11 @@ The functionality is best demonstrated with an example:
 <
 
 
-The InsertNodes are jumped over in order from `1 to n`. 0-th node is special as
-it’s always the last one. So the order of InsertNode jump is as follows: -
-After expansion, we will be at InsertNode 1. - After jumping forward, we will
-be at InsertNode 2. - After jumping forward again, we will be at InsertNode 0.
+The InsertNodes are jumped over in order from `1 to n`. The 0-th node is
+special as it’s always the last one. So the order of InsertNode jump is as
+follows: 1. After expansion, we will be at InsertNode 1. 2. After jumping
+forward, we will be at InsertNode 2. 3. After jumping forward again, we will be
+at InsertNode 0.
 
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
 after all other nodes.
@@ -277,8 +278,8 @@ The jumping-order doesn’t have to follow the "textual" order of the nodes:
 <
 
 
-The above snippet will behave as follows: - After expansion, we will be at
-InsertNode 1. - After jumping forward, we will be at InsertNode 2. - After
+The above snippet will behave as follows: 1. After expansion, we will be at
+InsertNode 1. 2. After jumping forward, we will be at InsertNode 2. 3. After
 jumping forward again, we will be at InsertNode 0.
 
 An **important** (because here luasnip differs from other snippet-engines)
@@ -352,9 +353,9 @@ groups of regex-triggered snippets). In most cases `parent.env` works, but if a
 `functionNode` is nested within a `snippetNode`, the immediate parent (a
 `snippetNode`) will contain neither `captures` nor `env`. Those are only stored
 in the `snippet`, which can be accessed as `parent.snippet`.
+3. The `user_args` passed in `opts`. Note that there may be multiple user_args
+(eg. `user_args1, ..., user_argsn`).
 
-
-3-n. The `user_args` passed in `opts`.
 
 The function shall return a string, which will be inserted as-is, or a table of
 strings for multiline-string, here all lines following the first will be
