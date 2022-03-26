@@ -69,27 +69,6 @@ function Path.expand(filepath)
 	return uv.fs_realpath(expanded)
 end
 
----Resolve a (chain of) symbolic link(s) to their final destination.
----@param path string
----@return string|nil
----Returns nil if the sym link points to an inexistent file.
----Assumes that path is a symlink, will return nil otherwise.
-local function resolve_symlink(path)
-	while true do
-		local followed_path = uv.fs_readlink(path)
-		if followed_path then
-			local stat = uv.fs_stat(followed_path)
-			if stat and stat.type ~= "link" then
-				return followed_path, stat.type
-			else
-				path = followed_path
-			end
-		else
-			return nil
-		end
-	end
-end
-
 ---Return files and directories in path as a list
 ---@param root string
 ---@return string[] files, string[] directories
@@ -106,13 +85,13 @@ function Path.scandir(root)
 			elseif type == "directory" then
 				table.insert(dirs, path)
 			elseif type == "link" then
-				local followed_path
-				followed_path, type = resolve_symlink(path)
+				local followed_path = uv.fs_realpath(path)
 				if followed_path then
-					if type == "file" then
-						table.insert(files, followed_path)
-					elseif type == "directory" then
-						table.insert(dirs, followed_path)
+					local stat = uv.fs_stat(followed_path)
+					if stat.type == "file" then
+						table.insert(files, path)
+					elseif stat.type == "directory" then
+						table.insert(dirs, path)
 					end
 				end
 			end
