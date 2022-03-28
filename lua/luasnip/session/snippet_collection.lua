@@ -163,9 +163,7 @@ local function without_invalidated(snippets_by_ft)
 end
 
 M.invalidated_count = 0
-local function clean_invalidated(opts)
-	opts = opts or {}
-
+function M.clean_invalidated(opts)
 	if opts.inv_limit then
 		if M.invalidated_count <= opts.inv_limit then
 			return
@@ -196,7 +194,7 @@ local function invalidate_snippets(snippets_by_ft)
 			snip:invalidate()
 		end
 	end
-	clean_invalidated({ inv_limit = 100 })
+	M.clean_invalidated({ inv_limit = 100 })
 end
 
 local current_id = 0

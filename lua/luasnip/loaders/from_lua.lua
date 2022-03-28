@@ -158,11 +158,8 @@ function M.reload_file(filename)
 		local ft = path_mod.basename(filename, true)
 
 		-- only refresh all filetypes if invalidated snippets were actually cleaned.
-		if ls.clean_invalidated({ inv_limit = 100 }) then
-			ls.refresh_notify()
-		else
-			ls.refresh_notify(ft)
-		end
+		ls.clean_invalidated({ inv_limit = 100 })
+		ls.refresh_notify(ft)
 
 		load_files(ft, { filename })
 	end

@@ -582,6 +582,11 @@ local function add_snippets(ft, snippets, opts)
 	end
 end
 
+local function clean_invalidated(opts)
+	opts = opts or {}
+	snippet_collection.clean_invalidated(opts)
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
