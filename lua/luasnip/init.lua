@@ -43,11 +43,8 @@ end
 -- return table, may be empty.
 local function get_snippets(ft, opts)
 	opts = opts or {}
-	local snippet_type = opts.type or "snippets"
-	if not ft then
-		return snippet_collection.by_ft[snippet_type][ft] or {}
-	end
-	return snippet_collection.by_ft[snippet_type][ft] or {}
+
+	return snippet_collection.get_snippets(ft, opts.type or "snippets") or {}
 end
 
 local function get_context(snip)
@@ -552,7 +549,7 @@ local function setup_snip_env()
 end
 
 local function get_id_snippet(id)
-	return session.by_id[id]
+	return snippet_collection.get_id_snippet(id)
 end
 
 local function add_snippets(ft, snippets, opts)

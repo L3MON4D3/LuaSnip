@@ -1,3 +1,5 @@
+M = {}
+
 -- store snippets by some key.
 -- also ordered by filetype, eg.
 -- {
@@ -77,13 +79,6 @@ local by_id = setmetatable({}, {
 	-- this table.
 	__mode = "v",
 })
-
-
-M = {
-	by_key = by_key,
-	by_prio = by_prio,
-	by_ft = by_ft,
-}
 
 -- ft: any filetype, optional.
 function M.clear_snippets(ft)
@@ -241,6 +236,19 @@ function M.add_snippets(snippets, opts)
 		end
 		by_key[opts.key] = snippets
 	end
+end
+
+-- ft may be nil, type not.
+function M.get_snippets(ft, type)
+	if ft then
+		return by_ft[type][ft]
+	else
+		return by_ft[type]
+	end
+end
+
+function M.get_id_snippet(id)
+	return by_id[id]
 end
 
 return M
