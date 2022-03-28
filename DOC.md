@@ -100,10 +100,9 @@ entries:
 - `hidden`: hint for completion-engines, if set, the snippet should not show
   up when querying snippets.
 - `priority`: Priority of the snippet, a positive number, 1000 by default.
-  Snippets with higher priority will be matched to a trigger before those with a
+  Snippets with high priority will be matched to a trigger before those with a
   lower one.
-  The priority can also be set for an entire snippet-collection in
-  `add_snippets`.
+  The priority for multiple snippets can also be set in `add_snippets`.
 
 `s` can also be a single string, in which case it is used instead of `trig`, all
 other values being defaulted:
@@ -210,6 +209,7 @@ s("trigger", {
 The InsertNodes are jumped over in order from `1 to n`.
 The 0-th node is special as it's always the last one.
 So the order of InsertNode jump is as follows:
+
 1. After expansion, we will be at InsertNode 1.
 2. After jumping forward, we will be at InsertNode 2.
 3. After jumping forward again, we will be at InsertNode 0.
@@ -226,6 +226,7 @@ s("trigger", {
 })
 ```
 The above snippet will behave as follows:
+
 1. After expansion, we will be at InsertNode 1.
 2. After jumping forward, we will be at InsertNode 2.
 3. After jumping forward again, we will be at InsertNode 0.
