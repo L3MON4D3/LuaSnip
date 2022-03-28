@@ -1009,7 +1009,7 @@ possible to customize them by setting `snip_env` in `setup`.
 
 These collections can be loaded directly
 (`require("luasnip.loaders.from_lua").load(opts)`) or lazily
-(`require("luasnip.loaders.from_lua.lazy_load(opts)")`).
+(`require("luasnip.loaders.from_lua").lazy_load(opts)`).
 
 lua-`opts` may contain the same keys as vscode-`opts`, but here `include` and
 `exclude` can be used in `lazy_load`.
