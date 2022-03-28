@@ -29,16 +29,4 @@ M.jump_active = false
 
 M.config = nil
 
-M.invalidated_count = 0
-
--- store snippets by some key.
-M.by_key = {}
-
-M.by_id = setmetatable({}, {
-	-- make by_id-table weak (v).
-	-- this means it won't be necessary to explicitly nil values (snippets) in
-	-- this table.
-	__mode = "v",
-})
-
 return M

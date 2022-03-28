@@ -11,6 +11,7 @@ local Environ = require("luasnip.util.environ")
 local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 local dict = require("luasnip.util.dict")
+local snippet_collection = require("luasnip.session.snippet_collection")
 
 local true_func = function()
 	return true
@@ -178,6 +179,10 @@ local function init_snippet_context(context)
 	context.dscr = util.to_line_table(
 		util.wrap_value(context.dscr or context.trigger)
 	)
+
+	-- -1 for no prio, we cannot use nil because accessing a nil-value in a
+	-- snippetProxy will cause instantiation.
+	context.priority = context.priority or -1
 
 	-- maybe do this in a better way when we have more parameters, but this is
 	-- fine for now.
@@ -1126,7 +1131,8 @@ function Snippet:invalidate()
 	-- override matching-function.
 	self.matches = no_match
 	self.invalidated = true
-	session.invalidated_count = session.invalidated_count + 1
+	snippet_collection.invalidated_count = snippet_collection.invalidated_count
+		+ 1
 end
 
 return {

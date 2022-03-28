@@ -1350,13 +1350,13 @@ the lazy_load.
 	This can be used to reload snippets: pass an unique key to each
 	`add_snippets` and just re-do the `add_snippets`-call when the snippets have
 	changed.
+  - `override_prio`: set priority for all snippets.
+  - `default_prio`: set priority only for snippets without snippet-priority.
 
 - `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
   from internal snippet storage.  
   Invalidated snippets are still stored, it might be useful to actually remove
   them, as they still have to be iterated during expansion.
-
-  It will be necessary to call `ls.refresh_notify()` after invalidating snippets.
 
   `opts` may contain:
 
@@ -1365,9 +1365,6 @@ the lazy_load.
 
 	A small number of invalidated snippets (<100) probably doesn't affect
 	runtime at all, whereas recreating the internal snippet storage might.
-
-  The function returns whether snippets were removed, which may be used to only
-  conditionally `refresh_notify`.
 
 - `get_id_snippet(id)`: returns snippet corresponding to id.
 

@@ -140,7 +140,6 @@ c = {
 				[[
         augroup luasnip
             au!
-            autocmd User LuasnipCleanup lua require("luasnip").snippets = {}
             autocmd %s * lua require("luasnip").unlink_current_if_deleted()
             autocmd %s * lua require("luasnip").active_update_dependents()
             autocmd %s * lua require("luasnip").exit_out_of_region(require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()])
