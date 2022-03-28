@@ -147,6 +147,10 @@ entries:
     trigger that is used during docstring-generation.
 - `hidden`: hint for completion-engines, if set, the snippet should not show
     up when querying snippets.
+- `priority`: Priority of the snippet, a positive number, 1000 by default.
+    Snippets with high priority will be matched to a trigger before those with a
+    lower one.
+    The priority for multiple snippets can also be set in `add_snippets`.
 
 
 `s` can also be a single string, in which case it is used instead of `trig`,
@@ -260,9 +264,13 @@ The functionality is best demonstrated with an example:
 
 The InsertNodes are jumped over in order from `1 to n`. The 0-th node is
 special as it’s always the last one. So the order of InsertNode jump is as
-follows: 1. After expansion, we will be at InsertNode 1. 2. After jumping
-forward, we will be at InsertNode 2. 3. After jumping forward again, we will be
-at InsertNode 0.
+follows:
+
+
+1. After expansion, we will be at InsertNode 1.
+2. After jumping forward, we will be at InsertNode 2.
+3. After jumping forward again, we will be at InsertNode 0.
+
 
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
 after all other nodes.
@@ -278,9 +286,13 @@ The jumping-order doesn’t have to follow the "textual" order of the nodes:
 <
 
 
-The above snippet will behave as follows: 1. After expansion, we will be at
-InsertNode 1. 2. After jumping forward, we will be at InsertNode 2. 3. After
-jumping forward again, we will be at InsertNode 0.
+The above snippet will behave as follows:
+
+
+1. After expansion, we will be at InsertNode 1.
+2. After jumping forward, we will be at InsertNode 2.
+3. After jumping forward again, we will be at InsertNode 0.
+
 
 An **important** (because here luasnip differs from other snippet-engines)
 detail is that the jump-positions restart at 1 in nested snippets:
@@ -1479,18 +1491,17 @@ empty the snippets table and the caches of the lazy_load.
         This can be used to reload snippets: pass an unique key to each
         `add_snippets` and just re-do the `add_snippets`-call when the snippets have
         changed.
+    - `override_priority`: set priority for all snippets.
+    - `default_priority`: set priority only for snippets without snippet-priority.
 - `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
     from internal snippet storage. Invalidated snippets are still stored, it might
     be useful to actually remove them, as they still have to be iterated during
     expansion.
-    It will be necessary to call `ls.refresh_notify()` after invalidating snippets.
     `opts` may contain:
     - `inv_limit`: how many invalidated snippets are allowed. If the number of
         invalid snippets doesn’t exceed this threshold, they are not yet cleaned up.
         A small number of invalidated snippets (<100) probably doesn’t affect runtime
         at all, whereas recreating the internal snippet storage might.
-    The function returns whether snippets were removed, which may be used to only
-    conditionally `refresh_notify`.
 - `get_id_snippet(id)`: returns snippet corresponding to id.
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 - `jumpable(direction)`: returns true if the current node has a next(`direction`
