@@ -68,6 +68,20 @@ local sort_mt = {
 setmetatable(by_prio.snippets, sort_mt)
 setmetatable(by_prio.autosnippets, sort_mt)
 
+-- iterate priorities, high to low.
+local function prio_iter(type)
+	local order = by_prio[type].order
+	local i = #order + 1
+
+	return function()
+		i = i - 1
+		if i > 0 then
+			return by_prio[type][order[i]]
+		end
+		return nil
+	end
+end
+
 local by_ft = {
 	snippets = {},
 	autosnippets = {},
@@ -118,10 +132,9 @@ end
 function M.match_snippet(line, fts, type)
 	local expand_params
 
-	for _, prio in ipairs(by_prio[type].order) do
-		local snippets = by_prio[type][prio]
+	for prio_by_ft in prio_iter(type) do
 		for _, ft in ipairs(fts) do
-			for _, snip in ipairs(snippets[ft] or {}) do
+			for _, snip in ipairs(prio_by_ft[ft] or {}) do
 				expand_params = snip:matches(line)
 				if expand_params then
 					-- return matching snippet and table with expand-parameters.
@@ -203,9 +216,9 @@ function M.add_snippets(snippets, opts)
 		-- TODO: not the nicest loop, can it be improved? Do table-checks outside
 		-- it, preferably.
 		for _, snip in ipairs(ft_snippets) do
-			snip.priority = opts.override_prio
+			snip.priority = opts.override_priority
 				or (snip.priority ~= -1 and snip.priority)
-				or opts.default_prio
+				or opts.default_priority
 				or 1000
 
 			if not prio_snip_table[snip.priority] then

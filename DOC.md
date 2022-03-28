@@ -87,18 +87,23 @@ entries:
 - `trig`: string, plain text by default. The only entry that must be given.
 - `name`: string, can be used by eg. `nvim-compe` to identify the snippet.
 - `dscr`: string, description of the snippet, \n-separated or table
-          for multiple lines.
+  for multiple lines.
 - `wordTrig`: boolean, if true, the snippet is only expanded if the word
-              (`[%w_]+`) before the cursor matches the trigger entirely.
-              True by default.
+  (`[%w_]+`) before the cursor matches the trigger entirely.
+  True by default.
 - `regTrig`: boolean, whether the trigger should be interpreted as a
-             lua pattern. False by default.
+  lua pattern. False by default.
 - `docstring`: string, textual representation of the snippet, specified like
-               `dscr`. Overrides docstrings loaded from json.
+  `dscr`. Overrides docstrings loaded from json.
 - `docTrig`: string, for snippets triggered using a lua pattern: define the
-             trigger that is used during docstring-generation.
+  trigger that is used during docstring-generation.
 - `hidden`: hint for completion-engines, if set, the snippet should not show
-            up when querying snippets.
+  up when querying snippets.
+- `priority`: Priority of the snippet, a positive number, 1000 by default.
+  Snippets with higher priority will be matched to a trigger before those with a
+  lower one.
+  The priority can also be set for an entire snippet-collection in
+  `add_snippets`.
 
 `s` can also be a single string, in which case it is used instead of `trig`, all
 other values being defaulted:
@@ -1350,8 +1355,8 @@ the lazy_load.
 	This can be used to reload snippets: pass an unique key to each
 	`add_snippets` and just re-do the `add_snippets`-call when the snippets have
 	changed.
-  - `override_prio`: set priority for all snippets.
-  - `default_prio`: set priority only for snippets without snippet-priority.
+  - `override_priority`: set priority for all snippets.
+  - `default_priority`: set priority only for snippets without snippet-priority.
 
 - `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
   from internal snippet storage.  
