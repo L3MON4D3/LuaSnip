@@ -110,4 +110,87 @@ describe("add_snippets", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("respects priority", function()
+		exec_lua([[
+		ls.add_snippets("all", {
+			ls.parser.parse_snippet({trig = "trig"}, "bbb")
+		})
+		]])
+
+		feed("itrig")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			bbb^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua([[
+		ls.add_snippets("all", {
+			-- overrides previous trig-snippet
+			ls.parser.parse_snippet({trig = "trig", priority = 1001}, "aaa"),
+		})
+		]])
+		-- delete and re-trigger.
+		feed("<Esc>dditrig")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			aaa^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua([[
+		ls.add_snippets("all", {
+			-- overrides previous trig-snippet
+			ls.parser.parse_snippet({trig = "trig", priority = 999}, "ccc"),
+		}, {
+			override_priority = 1002
+		})
+		]])
+		-- delete and re-trigger.
+		feed("<Esc>dditrig")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			ccc^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua([[
+		ls.add_snippets("all", {
+			-- make sure snippet-priority isn't superseded by default_priority.
+			-- check by overriding previous trig-snippet.
+			ls.parser.parse_snippet({trig = "trig", priority = 1003}, "ddd"),
+
+			-- the lower should have the higher priority (default = 1002)
+			ls.parser.parse_snippet({trig = "treg", priority = 1001}, "aaa"),
+			ls.parser.parse_snippet({trig = "treg"}, "bbb"),
+		}, {
+			default_priority = 1002
+		})
+		]])
+		-- delete and re-trigger.
+		feed("<Esc>dditrig")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			ddd^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+		-- delete and re-trigger.
+		feed("<Esc>dditreg")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			bbb^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)

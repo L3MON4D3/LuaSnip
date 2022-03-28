@@ -143,12 +143,7 @@ describe("loaders:", function()
 		-- wait a bit for async-operations to finish
 		exec('call wait(200, "0")')
 		-- one snippet from snipmate, one from vscode.
-		assert.are.same(
-			3,
-			exec_lua(
-				"return #require('luasnip.session.snippet_collection').by_ft.snippets.lua"
-			)
-		)
+		assert.are.same(3, exec_lua('return #ls.get_snippets("lua")'))
 	end)
 
 	it("Can load with extends (snipmate)", function()
@@ -158,11 +153,6 @@ describe("loaders:", function()
 		-- wait a bit for async-operations to finish
 		exec('call wait(200, "0")')
 		-- one snippet from vim.snippets, one from lua.snippets
-		assert.are.same(
-			2,
-			exec_lua(
-				"return #require('luasnip.session.snippet_collection').by_ft.snippets.vim"
-			)
-		)
+		assert.are.same(2, exec_lua('return #ls.get_snippets("vim")'))
 	end)
 end)
