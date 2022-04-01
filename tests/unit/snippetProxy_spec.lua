@@ -22,23 +22,21 @@ describe("snippetProxy", function()
 		end)
 	end
 
-	for _, v in
-		ipairs({
-			".trigger",
-			".hidden",
-			".docstring",
-			".wordTrig",
-			".regTrig",
-			".dscr",
-			".name",
-			".callbacks",
-			".condition",
-			".show_condition",
-			".stored",
-			':matches("asd")',
-			":get_docstring()",
-		})
-	do
+	for _, v in ipairs({
+		".trigger",
+		".hidden",
+		".docstring",
+		".wordTrig",
+		".regTrig",
+		".dscr",
+		".name",
+		".callbacks",
+		".condition",
+		".show_condition",
+		".stored",
+		':matches("asd")',
+		":get_docstring()",
+	}) do
 		no_inst_on_access_test(v)
 	end
 
