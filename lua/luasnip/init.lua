@@ -388,7 +388,8 @@ local function store_snippet_docstrings(snippet_table)
 	local cache_size = vim.loop.fs_fstat(docstring_cache_fd).size
 	local file_could_be_read, docstrings = pcall(
 		util.json_decode,
-		vim.loop.fs_read(docstring_cache_fd, cache_size)
+		-- offset 0.
+		vim.loop.fs_read(docstring_cache_fd, cache_size, 0)
 	)
 	docstrings = file_could_be_read and docstrings or {}
 
@@ -424,7 +425,8 @@ local function load_snippet_docstrings(snippet_table)
 	-- get size for fs_read()
 	local cache_size = vim.loop.fs_fstat(docstring_cache_fd).size
 	local docstrings = util.json_decode(
-		vim.loop.fs_read(docstring_cache_fd, cache_size)
+		-- offset 0.
+		vim.loop.fs_read(docstring_cache_fd, cache_size, 0)
 	)
 
 	for ft, snippets in pairs(snippet_table) do

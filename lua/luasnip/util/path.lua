@@ -41,8 +41,10 @@ end
 ---@param path string
 ---@return string buffer @content of file
 function Path.read_file(path)
-	local fd = assert(uv.fs_open(path, "r", tonumber("0666", 8)))
+	-- permissions: rrr
+	local fd = assert(uv.fs_open(path, "r", tonumber("0444", 8)))
 	local stat = assert(uv.fs_fstat(fd))
+	-- read from offset 0.
 	local buf = assert(uv.fs_read(fd, stat.size, 0))
 	uv.fs_close(fd)
 

@@ -13,15 +13,7 @@ local M = {}
 
 local function load_files(ft, files)
 	for _, file in ipairs(files) do
-		-- 0444 = 292, eg. open with rrr.
-		local fd = vim.loop.fs_open(file, "r", 292)
-
-		if not fd then
-			error("Couldn't find file " .. file)
-		end
-
-		local size = vim.loop.fs_fstat(fd).size
-		local func_string = vim.loop.fs_read(fd, size)
+		local func_string = path_mod.read_file(file)
 		-- bring snippet-constructors into global scope for that function.
 		func_string = 'require("luasnip").setup_snip_env() ' .. func_string
 		local file_snippets, file_autosnippets = loadstring(func_string)()
