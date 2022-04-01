@@ -542,7 +542,12 @@ ls.filetype_extend("all", { "_" })
 
 require("luasnip.loaders.from_snipmate").load({ include = { "c" } }) -- Load only snippets for c.
 
-require("luasnip.loaders.from_snipmate").load({ path = { "./my-snippets" } }) -- Load snippets from my-snippets folder
+-- Load snippets from my-snippets folder
+-- The "." refers to the directory where of your `$MYVIMRC` (you can print it
+-- out with `:lua print(vim.env.MYVIMRC)`.
+-- NOTE: It's not always set! It isn't set for example if you call neovim with
+-- the `-u` argument like this: `nvim -u yeet.txt`.
+require("luasnip.loaders.from_snipmate").load({ path = { "./my-snippets" } })
 -- If path is not specified, luasnip will look for the `snippets` directory in rtp (for custom-snippet probably
 -- `~/.config/nvim/snippets`).
 
