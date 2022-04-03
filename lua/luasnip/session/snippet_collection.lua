@@ -1,5 +1,3 @@
-M = {}
-
 -- store snippets by some key.
 -- also ordered by filetype, eg.
 -- {
@@ -8,6 +6,10 @@ M = {}
 --		ft2 = {...}
 --	}
 -- }
+local M = {
+	invalidated_count = 0,
+}
+
 local by_key = {}
 
 -- stores snippets/autosnippets by priority.
@@ -99,33 +101,31 @@ function M.clear_snippets(ft)
 	if ft then
 		-- remove all ft-(auto)snippets for all priorities.
 		-- set to empty table so we won't need to rebuild/clear the order-table.
-		for _, prio in ipairs(M.by_prio.snippets.order) do
-			M.by_prio.snippets[prio][ft] = {}
+		for _, prio in ipairs(by_prio.snippets.order) do
+			by_prio.snippets[prio][ft] = {}
 		end
-		for _, prio in ipairs(M.by_prio.autosnippets.order) do
-			M.by_prio.autosnippets[prio][ft] = {}
+		for _, prio in ipairs(by_prio.autosnippets.order) do
+			by_prio.autosnippets[prio][ft] = {}
 		end
 
-		M.by_ft.snippets[ft] = nil
-		M.by_ft.autosnippets[ft] = nil
+		by_ft.snippets[ft] = nil
+		by_ft.autosnippets[ft] = nil
 
 		for key, _ in pairs(by_key) do
 			by_key[key][ft] = nil
 		end
 	else
 		-- remove all (auto)snippets for all priorities.
-		for _, prio in ipairs(M.by_prio.snippets.order) do
-			M.by_prio.snippets[prio] = {}
+		for _, prio in ipairs(by_prio.snippets.order) do
+			by_prio.snippets[prio] = {}
 		end
-		for _, prio in ipairs(M.by_prio.autosnippets.order) do
-			M.by_prio.autosnippets[prio] = {}
+		for _, prio in ipairs(by_prio.autosnippets.order) do
+			by_prio.autosnippets[prio] = {}
 		end
 
-		M.by_ft.snippets = {}
-		M.by_ft.autosnippets = {}
-
+		by_ft.snippets = {}
+		by_ft.autosnippets = {}
 		by_key = {}
-		M.by_key = by_key
 	end
 end
 
@@ -162,7 +162,6 @@ local function without_invalidated(snippets_by_ft)
 	return new_snippets
 end
 
-M.invalidated_count = 0
 function M.clean_invalidated(opts)
 	if opts.inv_limit then
 		if M.invalidated_count <= opts.inv_limit then
