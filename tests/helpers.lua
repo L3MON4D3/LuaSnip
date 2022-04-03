@@ -14,6 +14,10 @@ function M.session_setup_luasnip()
 	)
 
 	helpers.exec_lua([[
+
+	-- MYVIMRC might not be set when nvim is loaded like this.
+	vim.env.MYVIMRC = "/.vimrc"
+
 	ls = require("luasnip")
 	ls.config.setup({})
 

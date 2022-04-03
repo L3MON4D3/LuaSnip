@@ -22,6 +22,7 @@ describe("split_lines", function()
 	helpers.clear()
 	-- LUASNIP_SOURCE is set in makefile (or before that, even).
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	helpers.exec_lua('vim.env.MYVIMRC = "/.vimrc"')
 
 	check("works for DOS-files", "aaa\r\nbbb\r\nccc", { "aaa", "bbb", "ccc" })
 	check(
