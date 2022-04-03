@@ -172,7 +172,7 @@ function M.clean_invalidated(opts)
 	-- remove invalidated snippets from all tables.
 	for _, type_snippets in pairs(by_prio) do
 		for key, prio_snippets in pairs(type_snippets) do
-			if key ~= 'order' then
+			if key ~= "order" then
 				type_snippets[key] = without_invalidated(prio_snippets)
 			end
 		end
