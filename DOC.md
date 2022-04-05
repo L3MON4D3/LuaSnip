@@ -694,7 +694,7 @@ Using `absolute_indexer`, it's possible to do so:
 ```lua
 s("trig", {
 	i(1), c(2, {
-		sn(nil, {
+		sn(nil, { i(1),
 			t"can access the argnode :)", f(function(args) return args[1] end, ai[1])
 		}),
 		t"sample_text"
