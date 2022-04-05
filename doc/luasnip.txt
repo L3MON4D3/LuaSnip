@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 April 03
+*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 April 05
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -781,7 +781,7 @@ Using `absolute_indexer`, it’s possible to do so:
 >
     s("trig", {
         i(1), c(2, {
-            sn(nil, {
+            sn(nil, { i(1),
                 t"can access the argnode :)", f(function(args) return args[1] end, ai[1])
             }),
             t"sample_text"
