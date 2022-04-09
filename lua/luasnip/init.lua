@@ -8,6 +8,11 @@ local next_expand_params = nil
 local ls
 local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
+---@alias direction
+---| '-1' # for previous
+---| '1' # for next
+
+---returns the currently active snippet (not node!).
 local function get_active_snip()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -104,6 +109,10 @@ local function safe_jump(node, dir, no_move)
 		end
 	end
 end
+
+---check if the jump was successful.
+---@param dir direction
+---@return boolean
 local function jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
@@ -119,11 +128,16 @@ local function jump(dir)
 	end
 end
 
+---check if it's possible to jump forward or backward to another node.
+---@param dir direction
+---@return boolean
 local function jumpable(dir)
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	return (node ~= nil and node:jumpable(dir))
 end
 
+---check if a snippet can be expanded at the current cursor position.
+---@return boolean
 local function expandable()
 	next_expand, next_expand_params = match_snippet(
 		util.get_current_line_to_cursor(),
@@ -136,6 +150,7 @@ local function expand_or_jumpable()
 	return expandable() or jumpable(1)
 end
 
+---returns true if the cursor is inside the current snippet.
 local function in_snippet()
 	-- check if the cursor on a row inside a snippet.
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
@@ -221,6 +236,8 @@ local function snip_expand(snippet, opts)
 	return snip
 end
 
+---expands the snippet at(before) the cursor
+---@return boolean
 local function expand()
 	local expand_params
 	local snip
@@ -299,6 +316,7 @@ local function lsp_expand(body, opts)
 	snip_expand(ls.parser.parse_snippet("", body), opts)
 end
 
+---returns true if inside a choiceNode.
 local function choice_active()
 	return session.active_choice_node ~= nil
 end
@@ -442,6 +460,9 @@ local function load_snippet_docstrings(snippet_table)
 	end
 end
 
+---Checks if the current snippet was deleted, if so, it is removed from the jumplist
+---This is not 100% reliable as luasnip only sees the extmarks and their begin/end may not be on the same
+---position, even if all the text between them was deleted
 local function unlink_current_if_deleted()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -523,6 +544,7 @@ local function filetype_set(ft, fts)
 	session.ft_redirect[ft] = fts
 end
 
+---clears all snippets. Not useful for regular usage, only when authoring and testing snippets
 local function cleanup()
 	-- Use this to reload luasnip
 	vim.cmd([[doautocmd User LuasnipCleanup]])
@@ -530,6 +552,9 @@ local function cleanup()
 	snippet_collection.clear_snippets()
 end
 
+---Triggers an autocmd that other plugins can hook into to perform various cleanup for the refreshed filetype
+---Useful for signaling that new snippets were added for the filetype `ft`
+---@param ft string filetype
 local function refresh_notify(ft)
 	-- vim.validate({
 	-- 	filetype = { ft, { "string", "nil" } },
@@ -550,6 +575,7 @@ local function setup_snip_env()
 	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
 end
 
+---returns snippet corresponding to id
 local function get_id_snippet(id)
 	return snippet_collection.get_id_snippet(id)
 end
@@ -584,6 +610,18 @@ local function add_snippets(ft, snippets, opts)
 	end
 end
 
+---clean invalidated snippets from internal snippet storage.
+---Invalidated snippets are still stored, it might be useful to actually remove
+---them, as they still have to be iterated during expansion.
+---
+---  `opts` may contain:
+---
+---  - `inv_limit`: how many invalidated snippets are allowed. If the number of
+---  	invalid snippets doesn't exceed this threshold, they are not yet cleaned up.
+---
+---A small number of invalidated snippets (<100) probably doesn't affect
+---runtime at all, whereas recreating the internal snippet storage might.
+---@param opts any
 local function clean_invalidated(opts)
 	opts = opts or {}
 	snippet_collection.clean_invalidated(opts)
