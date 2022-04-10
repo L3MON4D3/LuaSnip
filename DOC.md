@@ -1004,8 +1004,10 @@ For this, the files need to be
 As defining all of the snippet-constructors (`s`, `c`, `t`, ...) in every file
 is rather cumbersome, luasnip will bring some globals into scope for executing
 these files.  
-By default the names from `Examples/snippets.lua` will be used, but it's
+By default the names from [`luasnip.config.snip_env`][snip-env-src] will be used, but it's
 possible to customize them by setting `snip_env` in `setup`.  
+
+[snip-env-src]: https://github.com/L3MON4D3/LuaSnip/blob/69cb81cf7490666890545fef905d31a414edc15b/lua/luasnip/config.lua#L82-L104
 
 These collections can be loaded directly
 (`require("luasnip.loaders.from_lua").load(opts)`) or lazily
@@ -1028,15 +1030,15 @@ Example:
 `~/snippets/all.lua`:
 ```lua
 return {
-	ls.parser.parse_snippet("trig", "loaded!!")
+	parse("trig", "loaded!!")
 }
 ```
 `~/snippets/c.lua`:
 ```lua
 return {
-	ls.parser.parse_snippet("ctrig", "also loaded!!")
+	parse("ctrig", "also loaded!!")
 }, {
-	ls.parser.parse_snippet("autotrig", "autotriggered, if enabled")
+	parse("autotrig", "autotriggered, if enabled")
 }
 ```
 
