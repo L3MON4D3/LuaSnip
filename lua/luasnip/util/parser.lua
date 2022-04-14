@@ -48,12 +48,8 @@ local function brckt_lst(text)
 end
 
 local function un_escape(text)
-	return text
-		:gsub("\\\\", "\\")
-		:gsub("\\}", "}")
-		:gsub("\\,", ",")
-		:gsub("\\|", "|")
-		:gsub("\\%$", "$")
+	-- remove \ from \ followed by "\", "}", ",", "|" or "$"
+	return text:gsub("\\([\\},|$])", "%1")
 end
 
 local function parse_text(text)
