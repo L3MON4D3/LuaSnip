@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 April 14
+*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 April 15
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -66,6 +66,9 @@ All code-snippets in this help assume that
     local r = ls.restore_node
     local events = require("luasnip.util.events")
     local ai = require("luasnip.nodes.absolute_indexer")
+    local fmt = require("luasnip.extras.fmt").fmt
+    local m = require("luasnip.extras").m
+    local lambda = require("luasnip.extras").l
 <
 
 
