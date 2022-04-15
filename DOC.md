@@ -31,6 +31,9 @@ local d = ls.dynamic_node
 local r = ls.restore_node
 local events = require("luasnip.util.events")
 local ai = require("luasnip.nodes.absolute_indexer")
+local fmt = Prequire("luasnip.extras.fmt").fmt
+local m = Prequire("luasnip.extras").m
+local lambda = Prequire("luasnip.extras").l
 ```
 
 # BASICS
