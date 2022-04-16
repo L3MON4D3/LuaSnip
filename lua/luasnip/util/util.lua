@@ -125,7 +125,8 @@ local function cursor_set_keys(pos, before)
 			pos[1] = pos[1] - 1
 			-- pos2 is set to last columnt of previous line.
 			-- # counts bytes, but win_set_cursor expects bytes, so all's good.
-			pos[2] = #vim.api.nvim_buf_get_lines(
+			pos[2] =
+				#vim.api.nvim_buf_get_lines(
 					0,
 					pos[1],
 					pos[1] + 1,
