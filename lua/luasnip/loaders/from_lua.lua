@@ -59,17 +59,6 @@ local function load_files(ft, files)
 	ls.refresh_notify(ft)
 end
 
--- extend table like {lua = {path1}, c = {path1, path2}, ...}, new_paths has the same layout.
-local function extend_ft_paths(paths, new_paths)
-	for ft, path in pairs(new_paths) do
-		if paths[ft] then
-			vim.list_extend(paths[ft], path)
-		else
-			paths[ft] = path
-		end
-	end
-end
-
 function M._load_lazy_loaded()
 	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
@@ -80,35 +69,16 @@ function M._load_lazy_loaded()
 	end
 end
 
-local function get_load_paths(opts)
-	opts = opts or {}
-
-	local load_paths = {}
-
-	local collection_ft_paths = loader_util.get_ft_paths(
-		loader_util.normalize_paths(opts.paths, "luasnippets"),
+function M.load(opts)
+	local load_paths = loader_util.get_load_paths_snipmate_like(
+		opts,
+		"luasnippets",
 		"lua"
 	)
 
-	extend_ft_paths(load_paths, collection_ft_paths)
-
-	-- remove files for excluded/non-included filetypes here.
-	local ft_filter = loader_util.ft_filter(opts.exclude, opts.include)
-	for ft, _ in pairs(load_paths) do
-		if not ft_filter(ft) then
-			load_paths[ft] = nil
-		end
-	end
-
 	-- also add files from collection to cache (collection of all loaded
 	-- files by filetype, useful for editing files for some filetype).
-	extend_ft_paths(cache.ft_paths, load_paths)
-
-	return load_paths
-end
-
-function M.load(opts)
-	local load_paths = get_load_paths(opts)
+	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
 	for ft, files in pairs(load_paths) do
 		load_files(ft, files)
@@ -116,7 +86,13 @@ function M.load(opts)
 end
 
 function M.lazy_load(opts)
-	local load_paths = get_load_paths(opts)
+	local load_paths = loader_util.get_load_paths_snipmate_like(
+		opts,
+		"luasnippets",
+		"lua"
+	)
+
+	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
 	for ft, files in pairs(load_paths) do
 		if cache.lazy_loaded_ft[ft] then

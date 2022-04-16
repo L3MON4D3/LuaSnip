@@ -86,38 +86,38 @@ end
 
 local M = {}
 
-function M._load(ft)
+function M._load(ft, collection_files)
 	local snippets = {}
 	-- _load might be called for non-existing filetype via `extends`-directive,
 	-- protect against that via `or {}` (we fail silently, though, maybe we
 	-- should throw an error/print some message).
-	for _, path in ipairs(cache.ft_paths[ft] or {}) do
+	for _, path in ipairs(collection_files[ft] or {}) do
 		local snippet, extends = load_snippet_file(path)
 		vim.list_extend(snippets, snippet)
 		for _, extend in ipairs(extends) do
-			vim.list_extend(snippets, M._load(extend))
+			vim.list_extend(snippets, M._load(extend, collection_files))
 		end
 	end
 	return snippets
 end
 
 function M.load(opts)
-	opts = opts or {}
-
-	if not opts.is_lazy then
-		cache.ft_paths = loader_util.get_ft_paths(
-			loader_util.normalize_paths(opts.paths, "snippets"),
+	-- we need all paths available in the collection for `extends`.
+	-- load_paths alone is influenced by in/exclude.
+	local load_paths, collection_paths =
+		loader_util.get_load_paths_snipmate_like(
+			opts,
+			"snippets",
 			"snippets"
 		)
-	end
 
-	local ft_filter = loader_util.ft_filter(opts.exclude, opts.include)
+	-- also add files from collection to cache (collection of all loaded
+	-- files by filetype, useful for editing files for some filetype).
+	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
-	for ft, _ in pairs(cache.ft_paths) do
-		if ft_filter(ft) then
-			local snippets = M._load(ft)
-			ls.add_snippets(ft, snippets)
-		end
+	for ft, _ in pairs(load_paths) do
+		local snippets = M._load(ft, collection_paths)
+		ls.add_snippets(ft, snippets)
 	end
 end
 
@@ -125,27 +125,49 @@ function M._lazyload()
 	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then
+			-- iterate over collections.
+			for _, collection_load_paths in ipairs(cache.lazy_load_paths) do
+				-- don't load if this ft wasn't included/was excluded.
+				if collection_load_paths[ft] then
+					ls.add_snippets(
+						ft,
+						M._load(ft, collection_load_paths.collection or {})
+					)
+				end
+			end
 			cache.lazy_loaded_ft[ft] = true
-			M.load({ include = { ft }, is_lazy = true })
 		end
 	end
 end
 
 function M.lazy_load(opts)
-	opts = opts or {}
+	local load_paths, collection_paths =
+		loader_util.get_load_paths_snipmate_like(
+			opts,
+			"snippets",
+			"snippets"
+		)
 
-	cache.ft_paths = loader_util.get_ft_paths(
-		loader_util.normalize_paths(opts.paths, "snippets"),
-		"snippets"
-	)
+	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
-	vim.cmd([[
-    augroup _luasnip_snipmate_lazy_load
-        au!
-        au BufWinEnter,FileType * lua require("luasnip.loaders.from_snipmate")._lazyload()
-        au User LuasnipCleanup lua require("luasnip.loaders._caches").snipmate:clean()
-    augroup END
-    ]])
+	for ft, _ in pairs(load_paths) do
+		if cache.lazy_loaded_ft[ft] then
+			-- instantly load snippets if they were already loaded...
+			ls.add_snippets(ft, M._load(ft, collection_paths))
+			-- clear from load_paths to prevent duplicat loads.
+			load_paths[ft] = nil
+		end
+	end
+	load_paths.collection = collection_paths
+	table.insert(cache.lazy_load_paths, load_paths)
 end
+
+vim.cmd([[
+augroup _luasnip_snipmate_lazy_load
+	au!
+	au BufWinEnter,FileType * lua require("luasnip.loaders.from_snipmate")._lazyload()
+	au User LuasnipCleanup lua require("luasnip.loaders._caches").snipmate:clean()
+augroup END
+]])
 
 return M

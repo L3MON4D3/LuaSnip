@@ -97,10 +97,46 @@ local function get_ft_paths(roots, extension)
 	return ft_path
 end
 
+-- extend table like {lua = {path1}, c = {path1, path2}, ...}, new_paths has the same layout.
+local function extend_ft_paths(paths, new_paths)
+	for ft, path in pairs(new_paths) do
+		if paths[ft] then
+			vim.list_extend(paths[ft], path)
+		else
+			paths[ft] = path
+		end
+	end
+end
+
+local function get_load_paths_snipmate_like(opts, rtp_dirname, extension)
+	opts = opts or {}
+
+	local load_paths = {}
+
+	local collection_ft_paths = get_ft_paths(
+		normalize_paths(opts.paths, rtp_dirname),
+		extension
+	)
+
+	extend_ft_paths(load_paths, collection_ft_paths)
+
+	-- remove files for excluded/non-included filetypes here.
+	local collection_filter = ft_filter(opts.exclude, opts.include)
+	for ft, _ in pairs(load_paths) do
+		if not collection_filter(ft) then
+			load_paths[ft] = nil
+		end
+	end
+
+	return load_paths, collection_ft_paths
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
 	normalize_paths = normalize_paths,
 	ft_filter = ft_filter,
 	get_ft_paths = get_ft_paths,
+	get_load_paths_snipmate_like = get_load_paths_snipmate_like,
+	extend_ft_paths = extend_ft_paths,
 }
