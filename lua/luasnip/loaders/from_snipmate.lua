@@ -7,16 +7,23 @@ local session = require("luasnip.session")
 local sp = require("luasnip.nodes.snippetProxy")
 
 local function parse_snipmate(buffer, filename)
-	local snippets = {}
+	-- could also be separate variables, but easier to access this way.
+	local snippets = {
+		snippet = {},
+		autosnippet = {},
+	}
 	local extends = {}
 
 	---@type string[]
 	local lines = loader_util.split_lines(buffer)
 	local i = 1
 
-	local function _parse()
+	local function _parse(snippet_type)
 		local line = lines[i]
-		local prefix, description = line:match([[^snippet%s+(%S+)%s*(.*)]])
+		-- "snippet" or "autosnippet"
+		local prefix, description = line:match(
+			"^" .. snippet_type .. [[%s+(%S+)%s*(.*)]]
+		)
 		local body = {}
 
 		i = i + 1
@@ -44,13 +51,15 @@ local function parse_snipmate(buffer, filename)
 			dscr = description,
 			wordTrig = true,
 		}, body)
-		table.insert(snippets, snip)
+		table.insert(snippets[snippet_type], snip)
 	end
 
 	while i <= #lines do
 		local line = lines[i]
 		if vim.startswith(line, "snippet") then
-			_parse()
+			_parse("snippet")
+		elseif vim.startswith(line, "autosnippet") then
+			_parse("autosnippet")
 		elseif vim.startswith(line, "extends") then
 			extends = vim.split(vim.trim(line:sub(8)), "[,%s]+")
 			i = i + 1
@@ -62,7 +71,7 @@ local function parse_snipmate(buffer, filename)
 		end
 	end
 
-	return snippets, extends
+	return snippets.snippet, snippets.autosnippet, extends
 end
 
 local function load_snippet_file(path)
@@ -70,35 +79,49 @@ local function load_snippet_file(path)
 		return
 	end
 
-	local snippet, extends
+	local snippet, autosnippet, extends
 
 	if cache.path_snippets[path] then
 		snippet = cache.path_snippets[path].snippet
+		autosnippet = cache.path_snippets[path].snippet
 		extends = cache.path_snippets[path].extends
 	else
 		local buffer = Path.read_file(path)
-		snippet, extends = parse_snipmate(buffer)
-		cache.path_snippets[path] = { snippet = snippet, extends = extends }
+		snippet, autosnippet, extends = parse_snipmate(buffer)
+		cache.path_snippets[path] = {
+			snippet = snippet,
+			autosnippet = autosnippet,
+			extends = extends,
+		}
 	end
 
-	return snippet, extends
+	return snippet, autosnippet, extends
 end
 
 local M = {}
 
 function M._load(ft, collection_files)
 	local snippets = {}
+	local autosnippets = {}
 	-- _load might be called for non-existing filetype via `extends`-directive,
 	-- protect against that via `or {}` (we fail silently, though, maybe we
 	-- should throw an error/print some message).
 	for _, path in ipairs(collection_files[ft] or {}) do
-		local snippet, extends = load_snippet_file(path)
-		vim.list_extend(snippets, snippet)
+		local file_snippets, file_autosnippets, extends = load_snippet_file(
+			path
+		)
+		vim.list_extend(snippets, file_snippets)
+		vim.list_extend(autosnippets, file_autosnippets)
 		for _, extend in ipairs(extends) do
-			vim.list_extend(snippets, M._load(extend, collection_files))
+			local extend_snippets, extend_autosnippets = M._load(
+				extend,
+				collection_files
+			)
+			vim.list_extend(snippets, extend_snippets)
+			vim.list_extend(autosnippets, extend_autosnippets)
 		end
 	end
-	return snippets
+	return snippets, autosnippets
 end
 
 function M.load(opts)
@@ -116,8 +139,9 @@ function M.load(opts)
 	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
 	for ft, _ in pairs(load_paths) do
-		local snippets = M._load(ft, collection_paths)
-		ls.add_snippets(ft, snippets)
+		local snippets, autosnippets = M._load(ft, collection_paths)
+		ls.add_snippets(ft, snippets, { type = "snippets" })
+		ls.add_snippets(ft, autosnippets, { type = "autosnippets" })
 	end
 end
 
@@ -129,10 +153,12 @@ function M._lazyload()
 			for _, collection_load_paths in ipairs(cache.lazy_load_paths) do
 				-- don't load if this ft wasn't included/was excluded.
 				if collection_load_paths[ft] then
-					ls.add_snippets(
+					local snippets, autosnippets = M._load(
 						ft,
-						M._load(ft, collection_load_paths.collection or {})
+						collection_load_paths.collection
 					)
+					ls.add_snippets(ft, snippets, { type = "snippets" })
+					ls.add_snippets(ft, autosnippets, { type = "autosnippets" })
 				end
 			end
 			cache.lazy_loaded_ft[ft] = true
@@ -153,7 +179,9 @@ function M.lazy_load(opts)
 	for ft, _ in pairs(load_paths) do
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
-			ls.add_snippets(ft, M._load(ft, collection_paths))
+			local snippets, autosnippets = M._load(ft, collection_paths)
+			ls.add_snippets(ft, snippets, { type = "snippets" })
+			ls.add_snippets(ft, autosnippets, { type = "autosnippets" })
 			-- clear from load_paths to prevent duplicat loads.
 			load_paths[ft] = nil
 		end
