@@ -124,9 +124,9 @@ function ChoiceNode:indent(indentstr)
 	end
 end
 
-function ChoiceNode:expand_tabs(tabwidth)
+function ChoiceNode:expand_tabs(tabwidth, indentstringlen)
 	for _, node in ipairs(self.choices) do
-		node:expand_tabs(tabwidth)
+		node:expand_tabs(tabwidth, indentstringlen)
 	end
 end
 

@@ -1,5 +1,5 @@
 local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed = helpers.exec_lua, helpers.feed
+local exec_lua, feed, exec = helpers.exec_lua, helpers.feed, helpers.exec
 local ls_helpers = require("helpers")
 local Screen = require("test.functional.ui.screen")
 
@@ -419,6 +419,21 @@ describe("snippets_basic", function()
 			grid = [[
 			        the snippet expands                       |
 			        and is indeted properly.^                  |
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
+	it("Tabs are expanded correctly", function()
+		local snip = [[
+			parse("trig", "\ta")
+		]]
+		feed("i<Space><Space>")
+		exec("set expandtab | set shiftwidth=8")
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			        a^                                         |
+			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
 		})
 	end)

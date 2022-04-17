@@ -101,7 +101,7 @@ function RestoreNode:put_initial(pos)
 	tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
 	if vim.bo.expandtab then
-		tmp:expand_tabs(util.tab_width())
+		tmp:expand_tabs(util.tab_width(), self.parent.indentstring)
 	end
 
 	-- correctly set extmark for node.
