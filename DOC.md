@@ -853,7 +853,7 @@ preferably via some keybind, eg.
 ```vim
 inoremap <c-u> <cmd>lua require("luasnip.extras.select_choice")()<cr>
 ```
-, while inside a choiceNode.
+, while inside a choiceNode. The `opts.kind` hint for `vim.ui.select` will be set to `luasnip`.
 
 
 # LSP-SNIPPETS
