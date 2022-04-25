@@ -27,7 +27,11 @@ end
 
 local function select_choice()
 	assert(session.active_choice_node, "No active choiceNode")
-	vim.ui.select(active_choice_get_choices_text(), {kind="luasnip"}, set_choice_callback)
+	vim.ui.select(
+		active_choice_get_choices_text(),
+		{ kind = "luasnip" },
+		set_choice_callback
+	)
 end
 
 return select_choice
