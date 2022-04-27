@@ -164,7 +164,7 @@ local function any_select(b, e)
 			cursor_set_keys(e) or
 			-- set before
 			cursor_set_keys(e, true))
-		.. "o<C-G>" )
+		.. "o<C-G><C-r>_" )
 end
 
 local function normal_move_on_insert(new_cur_pos)
