@@ -103,7 +103,7 @@ local function extend_ft_paths(paths, new_paths)
 		if paths[ft] then
 			vim.list_extend(paths[ft], path)
 		else
-			paths[ft] = path
+			paths[ft] = vim.deepcopy(path)
 		end
 	end
 end
