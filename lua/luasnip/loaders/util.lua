@@ -108,6 +108,17 @@ local function extend_ft_paths(paths, new_paths)
 	end
 end
 
+--- Find
+---   1. all files that belong to a collection and
+---   2. the files from that
+---      collection that should actually be loaded.
+---@param opts table: straight from `load`/`lazy_load`.
+---@param rtp_dirname string: if no path is given in opts, we look for a
+--- directory named `rtp_dirname` in the runtimepath.
+---@param extension string: extension of valid snippet-files for the given
+--- collection (eg `.lua` or `.snippets`)
+---@return table: two tables like `{ft1={files}, ft2={files}}`: The files that
+--- should actually be loaded, and all files in the collection.
 local function get_load_paths_snipmate_like(opts, rtp_dirname, extension)
 	opts = opts or {}
 

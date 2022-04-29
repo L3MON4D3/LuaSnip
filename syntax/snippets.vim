@@ -6,11 +6,12 @@ syn match tabStop '\$\d\+'
 syn match snipEscape '\\\\\|\\`'
 syn match snipCommand '\%(\\\@<!\%(\\\\\)*\)\@<=`.\{-}\%(\\\@<!\%(\\\\\)*\)\@<=`'
 syn match snippet '^snippet.*' contains=multiSnipText,snipKeyword
+syn match snippet '^autosnippet.*' contains=multiSnipText,snipKeyword
 syn match snippet '^extends.*' contains=snipKeyword
 syn match snippet '^version.*' contains=snipKeyword
 syn match multiSnipText '\S\+ \zs.*' contained
-syn match snipKeyword '^(snippet|extends|version)'me=s+8 contained
-syn match snipError "^[^#vse\t].*$"
+syn match snipKeyword '^(snippet|extends|version|autosnippet)'me=s+8 contained
+syn match snipError "^[^#vsae\t].*$"
 
 hi link snippet       Identifier
 hi link snipComment   Comment
