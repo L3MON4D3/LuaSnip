@@ -986,6 +986,8 @@ Here is a summary of the differences from the original snipmate format.
 - `${VISUAL}` will be replaced by `$TM_SELECTED_TEXT` to make the snippets
 compatible with luasnip
 - We do not implement eval using \` (backtick). This may be implemented in the future.
+- `snippet ...` defines a regular snippet wheras `autosnippet ...` may be used
+  to add autotriggered snippets.
 
 
 # LUA SNIPPETS LOADER
