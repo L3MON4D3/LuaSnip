@@ -154,6 +154,10 @@ local function expand_or_locally_jumpable()
 	return expandable() or (in_snippet() and jumpable())
 end
 
+local function _jump_into_default(snippet)
+	return util.no_region_check_wrap(snippet.jump_into, snippet, 1)
+end
+
 -- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
 local function snip_expand(snippet, opts)
 	local snip = snippet:copy()
@@ -162,6 +166,7 @@ local function snip_expand(snippet, opts)
 	opts.expand_params = opts.expand_params or {}
 	-- override with current position if none given.
 	opts.pos = opts.pos or util.get_cursor_0ind()
+	opts.jump_into_func = opts.jump_into_func or _jump_into_default
 
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}
@@ -202,12 +207,10 @@ local function snip_expand(snippet, opts)
 		end
 	end
 
-	session.current_nodes[vim.api.nvim_get_current_buf()] =
-		util.no_region_check_wrap(
-			snip.jump_into,
-			snip,
-			1
-		)
+	-- jump_into-callback returns new active node.
+	session.current_nodes[vim.api.nvim_get_current_buf()] = opts.jump_into_func(
+		snip
+	)
 
 	-- stores original snippet, it doesn't contain any data from expansion.
 	session.last_expand_snip = snippet
