@@ -83,7 +83,7 @@ local function load_snippet_file(path)
 
 	if cache.path_snippets[path] then
 		snippet = cache.path_snippets[path].snippet
-		autosnippet = cache.path_snippets[path].snippet
+		autosnippet = cache.path_snippets[path].autosnippet
 		extends = cache.path_snippets[path].extends
 	else
 		local buffer = Path.read_file(path)
