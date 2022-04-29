@@ -13,5 +13,14 @@
 			"#not removed??",
 			"snippet$0"
 		]
+	},
+	"snip2": {
+		"prefix": "vscode_lua2",
+		"body": [
+			"vscode$1lualualua"
+		],
+		"luasnip": {
+			"autotrigger": true
+		}
 	}
 }
