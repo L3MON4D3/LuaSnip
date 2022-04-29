@@ -2,6 +2,24 @@
 -- - files all named <ft>.lua
 -- - each returns table containing keys (optional) "snippets" and
 --   "autosnippets", value for each a list of snippets.
+--
+-- cache:
+-- - lazy_load_paths: {
+-- 	{
+-- 		add_opts = {...},
+-- 		ft1 = {filename1, filename2},
+-- 		ft2 = {filename1},
+-- 		...
+-- 	}, {
+-- 		add_opts = {...},
+-- 		ft1 = {filename1},
+-- 		...
+-- 	}
+-- }
+--
+-- each call to load generates a new entry in that list. We cannot just merge
+-- all files for some ft since add_opts might be different (they might be from
+-- different lazy_load-calls).
 
 local cache = require("luasnip.loaders._caches").lua
 local path_mod = require("luasnip.util.path")
@@ -11,7 +29,7 @@ local ls = require("luasnip")
 
 local M = {}
 
-local function load_files(ft, files)
+local function load_files(ft, files, add_opts)
 	for _, file in ipairs(files) do
 		local func_string = path_mod.read_file(file)
 		-- bring snippet-constructors into global scope for that function.
@@ -43,17 +61,26 @@ local function load_files(ft, files)
 			file
 		))
 
-		ls.add_snippets(ft, file_snippets, {
-			type = "snippets",
-			key = "__snippets_" .. file,
-			-- prevent refresh here, will be done outside loop.
-			refresh_notify = false,
-		})
-		ls.add_snippets(ft, file_autosnippets, {
-			type = "autosnippets",
-			key = "__autosnippets_" .. file,
-			refresh_notify = false,
-		})
+		ls.add_snippets(
+			ft,
+			file_snippets,
+			vim.tbl_extend("keep", {
+				type = "snippets",
+				key = "__snippets_" .. file,
+				-- prevent refresh here, will be done outside loop.
+				refresh_notify = false,
+			}, add_opts)
+		)
+		ls.add_snippets(
+			ft,
+			file_autosnippets,
+			vim.tbl_extend("keep", {
+				type = "autosnippets",
+				key = "__autosnippets_" .. file,
+				-- prevent refresh here, will be done outside loop.
+				refresh_notify = false,
+			}, add_opts)
+		)
 	end
 
 	ls.refresh_notify(ft)
@@ -63,13 +90,21 @@ function M._load_lazy_loaded()
 	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then
-			cache.lazy_loaded_ft[ft] = true
-			load_files(ft, cache.lazy_load_paths[ft] or {})
+			for _, load_call_paths in ipairs(cache.lazy_load_paths) do
+				cache.lazy_loaded_ft[ft] = true
+				load_files(
+					ft,
+					load_call_paths[ft] or {},
+					load_call_paths.add_opts
+				)
+			end
 		end
 	end
 end
 
 function M.load(opts)
+	opts = opts or {}
+
 	local load_paths = loader_util.get_load_paths_snipmate_like(
 		opts,
 		"luasnippets",
@@ -81,11 +116,14 @@ function M.load(opts)
 	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
 	for ft, files in pairs(load_paths) do
-		load_files(ft, files)
+		load_files(ft, files, opts.add_opts or {})
 	end
 end
 
 function M.lazy_load(opts)
+	opts = opts or {}
+	local add_opts = opts.add_opts or {}
+
 	local load_paths = loader_util.get_load_paths_snipmate_like(
 		opts,
 		"luasnippets",
@@ -97,14 +135,15 @@ function M.lazy_load(opts)
 	for ft, files in pairs(load_paths) do
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
-			load_files(ft, files)
-		else
-			-- and append them to the files to load for some filetype,
-			-- otherwise.
-			cache.lazy_load_paths[ft] = cache.lazy_load_paths[ft] or {}
-			vim.list_extend(cache.lazy_load_paths[ft], files)
+			load_files(ft, files, add_opts)
+
+			-- don't load these files again.
+			load_paths[ft] = nil
 		end
 	end
+
+	load_paths.add_opts = add_opts
+	table.insert(cache.lazy_load_paths, load_paths)
 
 	-- call once for current filetype. Necessary for lazy_loading snippets in
 	-- empty, initial buffer, and will not cause issues like duplicate

@@ -125,6 +125,8 @@ function M._load(ft, collection_files)
 end
 
 function M.load(opts)
+	opts = opts or {}
+	local add_opts = opts.add_opts or {}
 	-- we need all paths available in the collection for `extends`.
 	-- load_paths alone is influenced by in/exclude.
 	local load_paths, collection_paths =
@@ -140,8 +142,16 @@ function M.load(opts)
 
 	for ft, _ in pairs(load_paths) do
 		local snippets, autosnippets = M._load(ft, collection_paths)
-		ls.add_snippets(ft, snippets, { type = "snippets" })
-		ls.add_snippets(ft, autosnippets, { type = "autosnippets" })
+		ls.add_snippets(
+			ft,
+			snippets,
+			vim.tbl_extend("keep", { type = "snippets" }, add_opts)
+		)
+		ls.add_snippets(
+			ft,
+			autosnippets,
+			vim.tbl_extend("keep", { type = "autosnippets" }, add_opts)
+		)
 	end
 end
 
@@ -167,6 +177,9 @@ function M._lazyload()
 end
 
 function M.lazy_load(opts)
+	opts = opts or {}
+	local add_opts = opts.add_opts or {}
+
 	local load_paths, collection_paths =
 		loader_util.get_load_paths_snipmate_like(
 			opts,
@@ -180,13 +193,25 @@ function M.lazy_load(opts)
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
 			local snippets, autosnippets = M._load(ft, collection_paths)
-			ls.add_snippets(ft, snippets, { type = "snippets" })
-			ls.add_snippets(ft, autosnippets, { type = "autosnippets" })
+			Insp(vim.tbl_extend("keep", { type = "snippets" }, add_opts))
+			Insp(vim.tbl_extend("keep", { type = "autosnippets" }, add_opts))
+			ls.add_snippets(
+				ft,
+				snippets,
+				vim.tbl_extend("keep", { type = "snippets" }, add_opts)
+			)
+			ls.add_snippets(
+				ft,
+				autosnippets,
+				vim.tbl_extend("keep", { type = "autosnippets" }, add_opts)
+			)
 			-- clear from load_paths to prevent duplicat loads.
 			load_paths[ft] = nil
 		end
 	end
+
 	load_paths.collection = collection_paths
+	load_paths.add_opts = add_opts
 	table.insert(cache.lazy_load_paths, load_paths)
 end
 
