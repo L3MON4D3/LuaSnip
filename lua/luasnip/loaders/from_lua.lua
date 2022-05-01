@@ -45,6 +45,7 @@ local function load_files(ft, files, add_opts)
 			snippets = file_snippets,
 			autosnippets = file_autosnippets,
 			add_opts = add_opts,
+			ft = ft,
 		}
 
 		-- use lua autocommands here as soon as they're stable.
@@ -153,18 +154,19 @@ function M.lazy_load(opts)
 end
 
 function M.reload_file(filename)
+	local file_cache = cache.path_snippets[filename]
 	-- only clear and load(!!! snippets may not actually be loaded, lazy_load)
 	-- if the snippets were really loaded.
-	if cache.path_snippets[filename] then
-		for _, snip in ipairs(cache.path_snippets[filename].snippets) do
+	if file_cache then
+		for _, snip in ipairs(file_cache.snippets) do
 			snip:invalidate()
 		end
-		for _, snip in ipairs(cache.path_snippets[filename].autosnippets) do
+		for _, snip in ipairs(file_cache.autosnippets) do
 			snip:invalidate()
 		end
-		local add_opts = cache.path_snippets[filename].add_opts
 
-		local ft = path_mod.basename(filename, true)
+		local add_opts = file_cache.add_opts
+		local ft = file_cache.ft
 
 		-- only refresh all filetypes if invalidated snippets were actually cleaned.
 		ls.clean_invalidated({ inv_limit = 100 })
