@@ -44,6 +44,7 @@ local function load_files(ft, files, add_opts)
 		cache.path_snippets[file] = {
 			snippets = file_snippets,
 			autosnippets = file_autosnippets,
+			add_opts = add_opts,
 		}
 
 		-- use lua autocommands here as soon as they're stable.
@@ -161,6 +162,7 @@ function M.reload_file(filename)
 		for _, snip in ipairs(cache.path_snippets[filename].autosnippets) do
 			snip:invalidate()
 		end
+		local add_opts = cache.path_snippets[filename].add_opts
 
 		local ft = path_mod.basename(filename, true)
 
@@ -168,7 +170,7 @@ function M.reload_file(filename)
 		ls.clean_invalidated({ inv_limit = 100 })
 		ls.refresh_notify(ft)
 
-		load_files(ft, { filename })
+		load_files(ft, { filename }, add_opts)
 	end
 end
 
