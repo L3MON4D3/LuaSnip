@@ -314,6 +314,31 @@ local function change_choice(val)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 end
 
+local function set_choice(choice_indx)
+	assert(session.active_choice_node, "No active choiceNode")
+	local choice = session.active_choice_node.choices[choice_indx]
+	assert(choice, "Invalid Choice")
+	local new_active = util.no_region_check_wrap(
+		session.active_choice_node.set_choice,
+		session.active_choice_node,
+		choice,
+		session.current_nodes[vim.api.nvim_get_current_buf()]
+	)
+	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
+end
+
+local function get_current_choices()
+	assert(session.active_choice_node, "No active choiceNode")
+
+	local choice_lines = {}
+
+	for i, choice in ipairs(session.active_choice_node.choices) do
+		choice_lines[i] = table.concat(choice:get_docstring(), "\n")
+	end
+
+	return choice_lines
+end
+
 local function unlink_current()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -604,6 +629,8 @@ ls = {
 	get_active_snip = get_active_snip,
 	choice_active = choice_active,
 	change_choice = change_choice,
+	set_choice = set_choice,
+	get_current_choices = get_current_choices,
 	unlink_current = unlink_current,
 	lsp_expand = lsp_expand,
 	active_update_dependents = active_update_dependents,
