@@ -2,9 +2,20 @@ local Cache = {}
 
 function Cache:clean()
 	self.lazy_load_paths = {}
-	self.lazy_loaded_ft = {}
 	self.ft_paths = {}
 	self.path_snippets = {}
+	-- We do not clean lazy_loaded_ft!!
+	--
+	-- It is preserved to accomodate a workflow where the luasnip-config
+	-- begins with `ls.cleanup()`, which should make it completely reloadable.
+	-- This would not be the case if lazy_loaded_ft was cleaned:
+	-- the autocommands for loading lazy_load-snippets will not necessarily be
+	-- triggered before the next expansion occurs, at which point the snippets
+	-- should be available (but won't be, because the actual load wasn't
+	-- triggered).
+	-- As the list is not cleaned, the snippets will be loaded when
+	-- `lazy_load()` is called (where a check for already-loaded filetypes is
+	-- done explicitly).
 end
 
 local function new_cache()

@@ -151,6 +151,13 @@ function M.lazy_load(opts)
 	elseif type(opts.paths) == "string" then
 		opts.paths = vim.split(opts.paths, ",")
 	end
+
+	-- immediately load filetypes that have already been loaded.
+	-- They will not be loaded otherwise.
+	for ft, _ in pairs(cache.lazy_loaded_ft) do
+		M.load({ paths = opts.paths, include = { ft } })
+	end
+
 	vim.list_extend(cache.lazy_load_paths, opts.paths)
 
 	cache.lazy_load_paths = util.deduplicate(cache.lazy_load_paths) -- Remove doppelgänger paths and ditch nil ones
