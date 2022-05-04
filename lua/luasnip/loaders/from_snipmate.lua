@@ -194,7 +194,6 @@ vim.cmd([[
 augroup _luasnip_snipmate_lazy_load
 	au!
 	au BufWinEnter,FileType * lua require("luasnip.loaders.from_snipmate")._lazyload()
-	au User LuasnipCleanup lua require("luasnip.loaders._caches").snipmate:clean()
 augroup END
 ]])
 
