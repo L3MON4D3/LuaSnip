@@ -3,6 +3,8 @@ local Cache = {}
 function Cache:clean()
 	self.lazy_load_paths = {}
 	self.lazy_loaded_ft = {}
+	self.ft_paths = {}
+	self.path_snippets = {}
 end
 
 local function new_cache()
@@ -31,8 +33,16 @@ local function new_cache()
 	})
 end
 
-return {
+local M = {
 	vscode = new_cache(),
 	snipmate = new_cache(),
 	lua = new_cache(),
 }
+
+function M.cleanup()
+	M.vscode:clean()
+	M.snipmate:clean()
+	M.lua:clean()
+end
+
+return M

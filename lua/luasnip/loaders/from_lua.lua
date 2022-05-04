@@ -167,7 +167,6 @@ vim.cmd([[
 augroup _luasnip_lua_lazy_load
 	autocmd!
 	au BufWinEnter,FileType * lua require('luasnip.loaders.from_lua')._load_lazy_loaded()
-	au User LuasnipCleanup lua require('luasnip.loaders._caches').lua:clean()
 augroup END
 ]])
 

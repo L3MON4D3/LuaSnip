@@ -3,6 +3,8 @@ local util = require("luasnip.util.util")
 local session = require("luasnip.session")
 local snippet_collection = require("luasnip.session.snippet_collection")
 
+local loader_caches = require("luasnip.loaders._caches")
+
 local next_expand = nil
 local next_expand_params = nil
 local ls
@@ -553,6 +555,7 @@ local function cleanup()
 	vim.cmd([[doautocmd User LuasnipCleanup]])
 	-- clear all snippets.
 	snippet_collection.clear_snippets()
+	loader_caches.cleanup()
 end
 
 local function refresh_notify(ft)
