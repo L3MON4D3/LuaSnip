@@ -177,4 +177,20 @@ describe("loaders:", function()
 		-- one snippet from vim.snippets, one from lua.snippets
 		assert.are.same(2, exec_lua('return #ls.get_snippets("vim")'))
 	end)
+
+	it("separates snippets from different collection for `extends`", function()
+		-- load from both snippets (where vim extends lua) and snippets1 (where
+		-- it doesn't).
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_snipmate").load({paths={"%s", "%s"}})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets",
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets1"
+			)
+		)
+
+		assert.are.same(3, exec_lua('return #ls.get_snippets("vim")'))
+	end)
 end)

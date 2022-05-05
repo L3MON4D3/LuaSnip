@@ -136,19 +136,23 @@ function M.load(opts)
 
 	-- we need all paths available in the collection for `extends`.
 	-- only load_paths is influenced by in/exclude.
-	local load_paths, collection_paths =
-		loader_util.get_load_paths_snipmate_like(
-			opts,
-			"snippets",
-			"snippets"
-		)
+	local collections_load_paths = loader_util.get_load_paths_snipmate_like(
+		opts,
+		"snippets",
+		"snippets"
+	)
 
-	-- also add files from load_paths to cache (collection of all loaded
-	-- files by filetype, useful for editing files for some filetype).
-	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
+	for _, collection in ipairs(collections_load_paths) do
+		local load_paths = collection.load_paths
+		local collection_paths = collection.collection_paths
 
-	for ft, paths in pairs(load_paths) do
-		load_snippet_files(ft, paths, collection_paths, add_opts)
+		-- also add files from load_paths to cache (collection of all loaded
+		-- files by filetype, useful for editing files for some filetype).
+		loader_util.extend_ft_paths(cache.ft_paths, load_paths)
+
+		for ft, paths in pairs(load_paths) do
+			load_snippet_files(ft, paths, collection_paths, add_opts)
+		end
 	end
 end
 
@@ -177,27 +181,31 @@ function M.lazy_load(opts)
 	opts = opts or {}
 	local add_opts = opts.add_opts or {}
 
-	local load_paths, collection_paths =
-		loader_util.get_load_paths_snipmate_like(
-			opts,
-			"snippets",
-			"snippets"
-		)
+	local collections_load_paths = loader_util.get_load_paths_snipmate_like(
+		opts,
+		"snippets",
+		"snippets"
+	)
 
-	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
+	for _, collection in ipairs(collections_load_paths) do
+		local load_paths = collection.load_paths
+		local collection_paths = collection.collection_paths
 
-	for ft, paths in pairs(load_paths) do
-		if cache.lazy_loaded_ft[ft] then
-			-- instantly load snippets if the ft is already loaded...
-			load_snippet_files(ft, paths, collection_paths, add_opts)
-			-- clear from load_paths to prevent duplicat loads.
-			load_paths[ft] = nil
+		loader_util.extend_ft_paths(cache.ft_paths, load_paths)
+
+		for ft, paths in pairs(load_paths) do
+			if cache.lazy_loaded_ft[ft] then
+				-- instantly load snippets if the ft is already loaded...
+				load_snippet_files(ft, paths, collection_paths, add_opts)
+				-- clear from load_paths to prevent duplicat loads.
+				load_paths[ft] = nil
+			end
 		end
-	end
 
-	load_paths.collection = collection_paths
-	load_paths.add_opts = add_opts
-	table.insert(cache.lazy_load_paths, load_paths)
+		load_paths.collection = collection_paths
+		load_paths.add_opts = add_opts
+		table.insert(cache.lazy_load_paths, load_paths)
+	end
 end
 
 vim.cmd([[

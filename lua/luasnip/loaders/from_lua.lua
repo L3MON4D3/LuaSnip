@@ -107,18 +107,21 @@ end
 function M.load(opts)
 	opts = opts or {}
 
-	local load_paths = loader_util.get_load_paths_snipmate_like(
+	local collections = loader_util.get_load_paths_snipmate_like(
 		opts,
 		"luasnippets",
 		"lua"
 	)
+	for _, collection in ipairs(collections) do
+		local load_paths = collection.load_paths
 
-	-- also add files from collection to cache (collection of all loaded
-	-- files by filetype, useful for editing files for some filetype).
-	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
+		-- also add files from collection to cache (collection of all loaded
+		-- files by filetype, useful for editing files for some filetype).
+		loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
-	for ft, files in pairs(load_paths) do
-		load_files(ft, files, opts.add_opts or {})
+		for ft, files in pairs(load_paths) do
+			load_files(ft, files, opts.add_opts or {})
+		end
 	end
 end
 
@@ -126,27 +129,29 @@ function M.lazy_load(opts)
 	opts = opts or {}
 	local add_opts = opts.add_opts or {}
 
-	local load_paths = loader_util.get_load_paths_snipmate_like(
+	local collections = loader_util.get_load_paths_snipmate_like(
 		opts,
 		"luasnippets",
 		"lua"
 	)
+	for _, collection in ipairs(collections) do
+		local load_paths = collection.load_paths
 
-	loader_util.extend_ft_paths(cache.ft_paths, load_paths)
+		loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
-	for ft, files in pairs(load_paths) do
-		if cache.lazy_loaded_ft[ft] then
-			-- instantly load snippets if they were already loaded...
-			load_files(ft, files, add_opts)
+		for ft, files in pairs(load_paths) do
+			if cache.lazy_loaded_ft[ft] then
+				-- instantly load snippets if they were already loaded...
+				load_files(ft, files, add_opts)
 
-			-- don't load these files again.
-			load_paths[ft] = nil
+				-- don't load these files again.
+				load_paths[ft] = nil
+			end
 		end
+
+		load_paths.add_opts = add_opts
+		table.insert(cache.lazy_load_paths, load_paths)
 	end
-
-	load_paths.add_opts = add_opts
-	table.insert(cache.lazy_load_paths, load_paths)
-
 	-- call once for current filetype. Necessary for lazy_loading snippets in
 	-- empty, initial buffer, and will not cause issues like duplicate
 	-- snippets.
