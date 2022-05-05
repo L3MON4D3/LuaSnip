@@ -17,47 +17,62 @@ end
 local function load_snippet_files(lang, files)
 	for _, file in ipairs(files) do
 		if not Path.exists(file) then
-			return
+			goto continue
 		end
 
 		-- TODO: make check if file was already parsed once, we can store+reuse the
 		-- snippets.
-		local data = Path.read_file(file)
-		local snippet_set_data = json_decode(data)
-		if snippet_set_data == nil then
-			return
-		end
 
 		local lang_snips = {}
 		local auto_lang_snips = {}
 
-		for name, parts in pairs(snippet_set_data) do
-			local body = type(parts.body) == "string" and parts.body
-				or table.concat(parts.body, "\n")
+		local cached_path = cache.path_snippets[file]
+		if cached_path then
+			lang_snips = cached_path.snippets
+			auto_lang_snips = cached_path.autosnippets
+		else
+			local data = Path.read_file(file)
+			local snippet_set_data = json_decode(data)
+			if snippet_set_data == nil then
+				return
+			end
 
-			-- There are still some snippets that fail while loading
-			pcall(function()
-				-- Sometimes it's a list of prefixes instead of a single one
-				local prefixes = type(parts.prefix) == "table" and parts.prefix
-					or { parts.prefix }
-				for _, prefix in ipairs(prefixes) do
-					local ls_conf = parts.luasnip or {}
+			for name, parts in pairs(snippet_set_data) do
+				local body = type(parts.body) == "string" and parts.body
+					or table.concat(parts.body, "\n")
 
-					local snip = sp({
-						trig = prefix,
-						name = name,
-						dscr = parts.description or name,
-						wordTrig = true,
-					}, body)
+				-- There are still some snippets that fail while loading
+				pcall(function()
+					-- Sometimes it's a list of prefixes instead of a single one
+					local prefixes = type(parts.prefix) == "table"
+							and parts.prefix
+						or { parts.prefix }
+					for _, prefix in ipairs(prefixes) do
+						local ls_conf = parts.luasnip or {}
 
-					if ls_conf.autotrigger then
-						table.insert(auto_lang_snips, snip)
-					else
-						table.insert(lang_snips, snip)
+						local snip = sp({
+							trig = prefix,
+							name = name,
+							dscr = parts.description or name,
+							wordTrig = true,
+						}, body)
+
+						if ls_conf.autotrigger then
+							table.insert(auto_lang_snips, snip)
+						else
+							table.insert(lang_snips, snip)
+						end
 					end
-				end
-			end)
+				end)
+			end
+
+			-- store snippets to prevent parsing the same file more than once.
+			cache.path_snippets[file] = {
+				snippets = lang_snips,
+				autosnippets = auto_lang_snips
+			}
 		end
+
 		ls.add_snippets(
 			lang,
 			lang_snips,
@@ -68,6 +83,8 @@ local function load_snippet_files(lang, files)
 			auto_lang_snips,
 			{ type = "autosnippets", refresh_notify = false }
 		)
+
+		::continue::
 	end
 
 	ls.refresh_notify(lang)
