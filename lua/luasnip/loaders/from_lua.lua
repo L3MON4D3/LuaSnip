@@ -163,21 +163,11 @@ function M.reload_file(filename)
 	-- only clear and load(!!! snippets may not actually be loaded, lazy_load)
 	-- if the snippets were really loaded.
 	if file_cache then
-		for _, snip in ipairs(file_cache.snippets) do
-			snip:invalidate()
-		end
-		for _, snip in ipairs(file_cache.autosnippets) do
-			snip:invalidate()
-		end
-
 		local add_opts = file_cache.add_opts
 		local ft = file_cache.ft
 
-		-- only refresh all filetypes if invalidated snippets were actually cleaned.
-		ls.clean_invalidated({ inv_limit = 100 })
-		ls.refresh_notify(ft)
-
 		load_files(ft, { filename }, add_opts)
+		ls.clean_invalidated({ inv_limit = 100 })
 	end
 end
 
