@@ -145,6 +145,35 @@ local function get_load_paths_snipmate_like(opts, rtp_dirname, extension)
 	return collections_load_paths
 end
 
+--- Asks (via vim.ui.select) to edit a file that currently provides snippets
+---@param ft_files table, map filetype to a number of files.
+local function edit_snippet_files(ft_files)
+	local fts = util.get_snippet_filetypes()
+	vim.ui.select(fts, {
+		prompt = "Select filetype:",
+	}, function(item, _)
+		if item then
+			local ft_paths = ft_files[item]
+			if ft_paths then
+				-- prompt user again if there are multiple files providing this filetype.
+				if #ft_paths > 1 then
+					vim.ui.select(ft_paths, {
+						prompt = "Multiple files for this filetype, choose one:",
+					}, function(multi_item)
+						if multi_item then
+							vim.cmd("edit " .. multi_item)
+						end
+					end)
+				else
+					vim.cmd("edit " .. ft_paths[1])
+				end
+			else
+				print("No file for this filetype.")
+			end
+		end
+	end)
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
@@ -153,4 +182,5 @@ return {
 	get_ft_paths = get_ft_paths,
 	get_load_paths_snipmate_like = get_load_paths_snipmate_like,
 	extend_ft_paths = extend_ft_paths,
+	edit_snippet_files = edit_snippet_files,
 }

@@ -69,7 +69,7 @@ local function load_snippet_files(lang, files)
 			-- store snippets to prevent parsing the same file more than once.
 			cache.path_snippets[file] = {
 				snippets = lang_snips,
-				autosnippets = auto_lang_snips
+				autosnippets = auto_lang_snips,
 			}
 		end
 
@@ -170,7 +170,11 @@ end
 
 local M = {}
 function M.load(opts)
-	for ft, files in pairs(get_snippet_files(opts)) do
+	local ft_files = get_snippet_files(opts)
+
+	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
+
+	for ft, files in pairs(ft_files) do
 		load_snippet_files(ft, files)
 	end
 end
@@ -188,6 +192,8 @@ end
 function M.lazy_load(opts)
 	local ft_files = get_snippet_files(opts)
 
+	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
+
 	for ft, files in pairs(ft_files) do
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
@@ -199,6 +205,10 @@ function M.lazy_load(opts)
 	end
 
 	loader_util.extend_ft_paths(cache.lazy_load_paths, ft_files)
+end
+
+function M.edit_snippet_files()
+	loader_util.edit_snippet_files(cache.ft_paths)
 end
 
 vim.cmd([[

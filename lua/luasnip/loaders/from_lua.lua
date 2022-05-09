@@ -172,28 +172,7 @@ function M.reload_file(filename)
 end
 
 function M.edit_snippet_files()
-	local fts = util.get_snippet_filetypes()
-	vim.ui.select(fts, {
-		prompt = "Select filetype:",
-	}, function(item, _)
-		if item then
-			local ft_paths = cache.ft_paths[item]
-			if ft_paths then
-				-- prompt user again if there are multiple files providing this filetype.
-				if #ft_paths > 1 then
-					vim.ui.select(ft_paths, {
-						prompt = "Multiple files for this filetype, choose one:",
-					}, function(multi_item)
-						vim.cmd("edit " .. multi_item)
-					end)
-				else
-					vim.cmd("edit " .. ft_paths[1])
-				end
-			else
-				print("No file for this filetype.")
-			end
-		end
-	end)
+	loader_util.edit_snippet_files(cache.ft_paths)
 end
 
 -- register during startup (not really startup, as soon as this file is

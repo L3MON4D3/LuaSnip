@@ -208,6 +208,10 @@ function M.lazy_load(opts)
 	end
 end
 
+function M.edit_snippet_files()
+	loader_util.edit_snippet_files(cache.ft_paths)
+end
+
 vim.cmd([[
 augroup _luasnip_snipmate_lazy_load
 	au!
