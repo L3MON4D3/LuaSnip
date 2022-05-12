@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0            Last change: 2022 April 29
+*luasnip.txt*             For NVIM v0.5.0             Last change: 2022 May 05
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1605,6 +1605,13 @@ empty the snippets table and the caches of the lazy_load.
 - `refresh_notify(ft:string)`: Triggers an autocmd that other plugins can hook
     into to perform various cleanup for the refreshed filetype. Useful for
     signaling that new snippets were added for the filetype `ft`.
+- `set_choice(indx:number)`: Changes to the `indx`th choice. If no `choiceNode`
+    is active, an error is thrown. If the active `choiceNode` doesn’t have an
+    `indx`th choice, an error is thrown.
+- `get_current_choices() -> string[]`: Returns a list of multiline-strings
+    (themselves lists, even if they have only one line), the `i`th string
+    corresponding to the `i`th choice of the currently active `choiceNode`. If no
+    `choiceNode` is active, an error is thrown.
 
 
 Not covered in this section are the various node-constructors exposed by the

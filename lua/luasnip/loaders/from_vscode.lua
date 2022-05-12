@@ -213,6 +213,8 @@ function M.lazy_load(opts)
 
 	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
 
+	-- immediately load filetypes that have already been loaded.
+	-- They will not be loaded otherwise.
 	for ft, files in pairs(ft_files) do
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
@@ -222,7 +224,6 @@ function M.lazy_load(opts)
 			ft_files[ft] = nil
 		end
 	end
-
 	loader_util.extend_ft_paths(cache.lazy_load_paths, ft_files)
 end
 
@@ -243,7 +244,6 @@ vim.cmd([[
 augroup _luasnip_vscode_lazy_load
 	autocmd!
 	au BufWinEnter,FileType * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
-	au User LuasnipCleanup lua require('luasnip.loaders._caches').vscode:clean()
 augroup END
 ]])
 
