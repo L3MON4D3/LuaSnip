@@ -93,8 +93,27 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 				snippet = snippet,
 				autosnippet = autosnippet,
 				extends = extends,
+				-- store for reload.
+				add_opts = add_opts,
 			}
 		end
+
+		-- ++once: the autocommand will be re-added because this file will run again.
+		vim.cmd(string.format(
+			[[
+				augroup luasnip_watch_%s_%s
+				autocmd!
+				autocmd BufWritePost %s lua require("luasnip.loaders.from_snipmate").reload_file("%s", "%s")
+				augroup END
+			]],
+			-- augroup name may not contain spaces.
+			path:gsub(" ", "_"),
+			add_ft,
+			-- escape for autocmd-pattern.
+			path:gsub(" ", "\\ "),
+			add_ft,
+			path
+		))
 
 		ls.add_snippets(
 			add_ft,
@@ -116,10 +135,10 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 		)
 
 		for _, ft in ipairs(extends) do
-			-- "or {}" because the ft might (if the extended filetype is not
-			-- actually present in the collection) be nil.
 			load_snippet_files(
 				add_ft,
+				-- "or {}" because the ft might (if the extended filetype is not
+				-- actually present in the collection) be nil.
 				collection_files[ft] or {},
 				collection_files,
 				add_opts
@@ -210,6 +229,21 @@ end
 
 function M.edit_snippet_files()
 	loader_util.edit_snippet_files(cache.ft_paths)
+end
+
+function M.reload_file(ft, file)
+	local file_cache = cache.path_snippets[file]
+
+	if file_cache then
+		local add_opts = file_cache.add_opts
+		cache.path_snippets[file] = nil
+
+		-- we can safely set collection to empty, the `extends` are already
+		-- "set up", eg have their own autocommands for reloading.
+		load_snippet_files(ft, { file }, {}, add_opts)
+
+		ls.clean_invalidated({ inv_limit = 100 })
+	end
 end
 
 vim.cmd([[

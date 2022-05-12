@@ -162,6 +162,8 @@ function M.reload_file(filename)
 	local file_cache = cache.path_snippets[filename]
 	-- only clear and load(!!! snippets may not actually be loaded, lazy_load)
 	-- if the snippets were really loaded.
+	-- normally file_cache should exist if the autocommand was registered, just
+	-- be safe here.
 	if file_cache then
 		local add_opts = file_cache.add_opts
 		local ft = file_cache.ft
