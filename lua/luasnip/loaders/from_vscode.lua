@@ -240,11 +240,4 @@ function M.reload_file(ft, file)
 	end
 end
 
-vim.cmd([[
-augroup _luasnip_vscode_lazy_load
-	autocmd!
-	au BufWinEnter,FileType * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
-augroup END
-]])
-
 return M

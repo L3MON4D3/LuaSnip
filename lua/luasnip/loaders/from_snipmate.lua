@@ -243,11 +243,4 @@ function M.reload_file(ft, file)
 	end
 end
 
-vim.cmd([[
-augroup _luasnip_snipmate_lazy_load
-	au!
-	au BufWinEnter,FileType * lua require("luasnip.loaders.from_snipmate")._lazyload()
-augroup END
-]])
-
 return M

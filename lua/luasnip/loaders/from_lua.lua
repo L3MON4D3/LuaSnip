@@ -177,14 +177,4 @@ function M.edit_snippet_files()
 	loader_util.edit_snippet_files(cache.ft_paths)
 end
 
--- register during startup (not really startup, as soon as this file is
--- required) so it'll work even if lazy_load is only called after the events
--- for some buffers already fired.
-vim.cmd([[
-augroup _luasnip_lua_lazy_load
-	autocmd!
-	au BufWinEnter,FileType * lua require('luasnip.loaders.from_lua')._load_lazy_loaded()
-augroup END
-]])
-
 return M
