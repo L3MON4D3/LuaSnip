@@ -53,4 +53,15 @@ function M.edit_snippet_files(opts)
 	end)
 end
 
+function M.cleanup()
+	Cache.cleanup()
+
+	-- remove reload-autocommands.
+	vim.cmd([[
+		augroup luasnip_watch_reload
+		autocmd!
+		augroup END
+	]])
+end
+
 return M

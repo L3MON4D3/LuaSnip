@@ -78,18 +78,18 @@ local function load_snippet_files(lang, files)
 		-- augroup.
 		vim.cmd(string.format(
 			[[
-				augroup luasnip_watch_%s_%s
-				autocmd!
-				autocmd BufWritePost %s lua require("luasnip.loaders.from_vscode").reload_file("%s", "%s")
+				augroup luasnip_watch_reload
+				autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_vscode").reload_file("%s", "%s")
+				augroup END
 			]],
-			-- augroup name may not contain spaces.
-			file:gsub(" ", "_"),
-			lang,
 			-- escape for autocmd-pattern.
 			file:gsub(" ", "\\ "),
+			-- args for reload.
 			lang,
 			file
 		))
+
+		print(lang, file)
 
 		ls.add_snippets(lang, lang_snips, {
 			type = "snippets",

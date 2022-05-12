@@ -48,16 +48,16 @@ local function load_files(ft, files, add_opts)
 			ft = ft,
 		}
 
-		-- use lua autocommands here as soon as they're stable.
+		-- Use lua autocommands here as soon as they're stable.
+		-- ++once: the autocommand will be re-registered in the reload_file-call.
+		-- All autocommands in the augroup will be cleaned on ls.cleanup.
 		-- stylua: ignore
 		vim.cmd(string.format(
 			[[
-				augroup luasnip_watch_%s
-				autocmd!
-				autocmd BufWritePost %s lua require("luasnip.loaders.from_lua").reload_file("%s")
+				augroup luasnip_watch_reload
+				autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_lua").reload_file("%s")
+				augroup END
 			]],
-			-- augroup name may not contain spaces.
-			file:gsub(" ", "_"),
 			-- escape for autocmd-pattern.
 			file:gsub(" ", "\\ "),
 			file
