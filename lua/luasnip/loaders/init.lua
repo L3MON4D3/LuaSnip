@@ -9,9 +9,11 @@ end
 
 --- Quickly jump to snippet-file from any source for the active filetypes.
 ---@param opts table, options for this function:
---- - format: fn(path, source_name) -> string.
+--- - format: fn(path:string, source_name:string) -> string|nil
+---   source_name is one of "vscode", "snipmate" or "lua".
 ---   May be used to format the displayed items. For example, replace the
 ---   excessively long packer-path with something shorter.
+---   If format returns nil for some item, the item will not be displayed.
 function M.edit_snippet_files(opts)
 	opts = opts or {}
 	local format = opts.format or default_format
@@ -27,8 +29,11 @@ function M.edit_snippet_files(opts)
 			-- concat files from all loaders for the selected filetype ft.
 			for _, cache_name in ipairs({ "vscode", "snipmate", "lua" }) do
 				for _, path in ipairs(Cache[cache_name].ft_paths[ft] or {}) do
-					table.insert(ft_paths, path)
-					table.insert(items, format(path, cache_name))
+					local fmt_name = format(path, cache_name)
+					if fmt_name then
+						table.insert(ft_paths, path)
+						table.insert(items, fmt_name)
+					end
 				end
 			end
 
@@ -41,7 +46,7 @@ function M.edit_snippet_files(opts)
 						vim.cmd("edit " .. ft_paths[indx])
 					end
 				end)
-			else
+			elseif ft_paths[1] then
 				vim.cmd("edit " .. ft_paths[1])
 			end
 		end
