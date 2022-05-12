@@ -73,16 +73,35 @@ local function load_snippet_files(lang, files)
 			}
 		end
 
-		ls.add_snippets(
+		-- difference to lua-loader: one file may contribute snippets to
+		-- multiple filetypes, so the ft has to be included in the unique!!
+		-- augroup.
+		vim.cmd(string.format(
+			[[
+				augroup luasnip_watch_%s_%s
+				autocmd!
+				autocmd BufWritePost %s lua require("luasnip.loaders.from_vscode").reload_file("%s", "%s")
+			]],
+			-- augroup name may not contain spaces.
+			file:gsub(" ", "_"),
 			lang,
-			lang_snips,
-			{ type = "snippets", refresh_notify = false }
-		)
-		ls.add_snippets(
+			-- escape for autocmd-pattern.
+			file:gsub(" ", "\\ "),
 			lang,
-			auto_lang_snips,
-			{ type = "autosnippets", refresh_notify = false }
-		)
+			file
+		))
+
+		ls.add_snippets(lang, lang_snips, {
+			type = "snippets",
+			-- again, include filetype, same reasoning as with augroup.
+			key = string.format("__%s_snippets_%s", lang, file),
+			refresh_notify = false,
+		})
+		ls.add_snippets(lang, auto_lang_snips, {
+			type = "autosnippets",
+			key = string.format("__%s_autosnippets_%s", lang, file),
+			refresh_notify = false,
+		})
 
 		::continue::
 	end
@@ -209,6 +228,15 @@ end
 
 function M.edit_snippet_files()
 	loader_util.edit_snippet_files(cache.ft_paths)
+end
+
+function M.reload_file(ft, file)
+	if cache.path_snippets[file] then
+		cache.path_snippets[file] = nil
+		load_snippet_files(ft, { file })
+
+		ls.clean_invalidated({ inv_limit = 100 })
+	end
 end
 
 vim.cmd([[
