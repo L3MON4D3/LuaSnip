@@ -148,7 +148,8 @@ local M = {}
 
 function M.load(opts)
 	opts = opts or {}
-	local add_opts = opts.add_opts or {}
+
+	local add_opts = loader_util.add_opts(opts)
 
 	-- we need all paths available in the collection for `extends`.
 	-- only load_paths is influenced by in/exclude.
@@ -195,7 +196,8 @@ end
 
 function M.lazy_load(opts)
 	opts = opts or {}
-	local add_opts = opts.add_opts or {}
+
+	local add_opts = loader_util.add_opts(opts)
 
 	local collections_load_paths = loader_util.get_load_paths_snipmate_like(
 		opts,

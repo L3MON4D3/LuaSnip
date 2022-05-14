@@ -105,6 +105,8 @@ end
 function M.load(opts)
 	opts = opts or {}
 
+	local add_opts = loader_util.add_opts(opts)
+
 	local collections = loader_util.get_load_paths_snipmate_like(
 		opts,
 		"luasnippets",
@@ -118,14 +120,15 @@ function M.load(opts)
 		loader_util.extend_ft_paths(cache.ft_paths, load_paths)
 
 		for ft, files in pairs(load_paths) do
-			load_files(ft, files, opts.add_opts or {})
+			load_files(ft, files, add_opts)
 		end
 	end
 end
 
 function M.lazy_load(opts)
 	opts = opts or {}
-	local add_opts = opts.add_opts or {}
+
+	local add_opts = loader_util.add_opts(opts)
 
 	local collections = loader_util.get_load_paths_snipmate_like(
 		opts,

@@ -167,8 +167,6 @@ end
 
 -- sanitizes opts and returns ft -> files-map for `opts` (respects in/exclude).
 local function get_snippet_files(opts)
-	opts = opts or {}
-
 	local paths
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
 	if not opts.paths then
@@ -197,12 +195,14 @@ end
 local M = {}
 function M.load(opts)
 	opts = opts or {}
+
 	local ft_files = get_snippet_files(opts)
+	local add_opts = loader_util.add_opts(opts)
 
 	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
 
 	for ft, files in pairs(ft_files) do
-		load_snippet_files(ft, files, opts.add_opts or {})
+		load_snippet_files(ft, files, add_opts)
 	end
 end
 
@@ -224,9 +224,9 @@ end
 
 function M.lazy_load(opts)
 	opts = opts or {}
-	local add_opts = opts.add_opts or {}
 
 	local ft_files = get_snippet_files(opts)
+	local add_opts = loader_util.add_opts(opts)
 
 	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
 

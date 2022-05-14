@@ -120,8 +120,6 @@ end
 --- - collection_paths: ft->files for the entire collection and
 --- - load_paths: ft->files for only the files that should be loaded.
 local function get_load_paths_snipmate_like(opts, rtp_dirname, extension)
-	opts = opts or {}
-
 	local collections_load_paths = {}
 
 	for _, path in ipairs(normalize_paths(opts.paths, rtp_dirname)) do
@@ -174,6 +172,13 @@ local function edit_snippet_files(ft_files)
 	end)
 end
 
+local function add_opts(opts)
+	return {
+		override_priority = opts.override_priority,
+		default_priority = opts.default_priority,
+	}
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
@@ -183,4 +188,5 @@ return {
 	get_load_paths_snipmate_like = get_load_paths_snipmate_like,
 	extend_ft_paths = extend_ft_paths,
 	edit_snippet_files = edit_snippet_files,
+	add_opts = add_opts,
 }
