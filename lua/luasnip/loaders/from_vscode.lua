@@ -28,8 +28,8 @@ local function load_snippet_files(lang, files)
 
 		local cached_path = cache.path_snippets[file]
 		if cached_path then
-			lang_snips = cached_path.snippets
-			auto_lang_snips = cached_path.autosnippets
+			lang_snips = vim.deepcopy(cached_path.snippets)
+			auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
 		else
 			local data = Path.read_file(file)
 			local snippet_set_data = json_decode(data)
@@ -68,8 +68,9 @@ local function load_snippet_files(lang, files)
 
 			-- store snippets to prevent parsing the same file more than once.
 			cache.path_snippets[file] = {
-				snippets = lang_snips,
-				autosnippets = auto_lang_snips,
+				snippets = vim.deepcopy(lang_snips),
+				autosnippets = vim.deepcopy(auto_lang_snips),
+				add_opts = add_opts,
 			}
 		end
 

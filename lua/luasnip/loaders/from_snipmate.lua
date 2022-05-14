@@ -83,15 +83,15 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 		local snippet, autosnippet, extends
 
 		if cache.path_snippets[path] then
-			snippet = cache.path_snippets[path].snippet
-			autosnippet = cache.path_snippets[path].autosnippet
+			snippet = vim.deepcopy(cache.path_snippets[path].snippet)
+			autosnippet = vim.deepcopy(cache.path_snippets[path].autosnippet)
 			extends = cache.path_snippets[path].extends
 		else
 			local buffer = Path.read_file(path)
 			snippet, autosnippet, extends = parse_snipmate(buffer, path)
 			cache.path_snippets[path] = {
-				snippet = snippet,
-				autosnippet = autosnippet,
+				snippet = vim.deepcopy(snippet),
+				autosnippet = vim.deepcopy(autosnippet),
 				extends = extends,
 				-- store for reload.
 				add_opts = add_opts,

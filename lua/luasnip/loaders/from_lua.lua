@@ -42,8 +42,6 @@ local function load_files(ft, files, add_opts)
 
 		-- keep track of snippet-source.
 		cache.path_snippets[file] = {
-			snippets = file_snippets,
-			autosnippets = file_autosnippets,
 			add_opts = add_opts,
 			ft = ft,
 		}
