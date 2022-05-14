@@ -18,7 +18,7 @@ local function parse_snipmate(buffer, filename)
 	local lines = loader_util.split_lines(buffer)
 	local i = 1
 
-	local function _parse(snippet_type)
+	local function _parse(snippet_type, snipmate_opts)
 		local line = lines[i]
 		-- "snippet" or "autosnippet"
 		local prefix, description = line:match(
@@ -50,21 +50,32 @@ local function parse_snipmate(buffer, filename)
 			trig = prefix,
 			dscr = description,
 			wordTrig = true,
+			priority = snipmate_opts.priority,
 		}, body)
 		table.insert(snippets[snippet_type], snip)
 	end
 
+	-- options for some snippet can be specified in the lines before the
+	-- {auto}snippet-keyword ("priority 2000\nsnippet....").
+	-- They are stored in snipmate_opts, which is cleaned whenever a snippet is
+	-- actually created.
+	local snipmate_opts = {}
 	while i <= #lines do
 		local line = lines[i]
 		if vim.startswith(line, "snippet") then
-			_parse("snippet")
+			_parse("snippet", snipmate_opts)
+			snipmate_opts = {}
 		elseif vim.startswith(line, "autosnippet") then
-			_parse("autosnippet")
+			_parse("autosnippet", snipmate_opts)
+			snipmate_opts = {}
 		elseif vim.startswith(line, "extends") then
 			extends = vim.split(vim.trim(line:sub(8)), "[,%s]+")
 			i = i + 1
 		elseif vim.startswith(line, "#") or line:find("^%s*$") then
 			-- comment and blank line
+			i = i + 1
+		elseif vim.startswith(line, "priority") then
+			snipmate_opts.priority = tonumber(line:match("priority%s+(%d+)"))
 			i = i + 1
 		else
 			error(("invalid line in %s: %s"):format(filename, i))

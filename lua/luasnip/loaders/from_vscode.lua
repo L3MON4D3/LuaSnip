@@ -55,6 +55,7 @@ local function load_snippet_files(lang, files, add_opts)
 							name = name,
 							dscr = parts.description or name,
 							wordTrig = true,
+							priority = ls_conf.priority,
 						}, body)
 
 						if ls_conf.autotrigger then

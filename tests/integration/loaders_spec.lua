@@ -298,4 +298,75 @@ describe("loaders:", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("vscode-options work.", function()
+		loaders["vscode(rtp)"]()
+		exec("set ft=prio")
+
+		feed("ibbbb")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			2^                                                 |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_vscode").load({
+					paths={"%s"},
+					default_priority = 2002
+				})]],
+			os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
+		))
+
+		feed("<Cr>bbbb")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			2                                                 |
+			3^                                                 |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
+	it("snipmate-options work.", function()
+		loaders["snipmate(rtp)"]()
+		exec("set ft=prio")
+
+		feed("ibbbb")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			2^                                                 |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_snipmate").load({
+					paths={"%s"},
+					default_priority = 2002
+				})]],
+			os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/snipmate-snippets/snippets"
+		))
+
+		feed("<Cr>bbbb")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			2                                                 |
+			3^                                                 |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)

@@ -1,8 +1,41 @@
 {
-	"aaaa": {
+	"a": {
 		"prefix": "aaaa",
 		"body": [
 			"vscode"
 		]
+	},
+	"b": {
+		"prefix": "bbbb",
+		"body": [
+			"1"
+		],
+		"luasnip": {
+			"priority": 2000
+		}
+	},
+	"c": {
+		"prefix": "bbbb",
+		"body": [
+			"2"
+		],
+		"luasnip": {
+			"priority": 2001
+		}
+	},
+	"d": {
+		"prefix": "bbbb",
+		"body": [
+			"3"
+		]
+	},
+	"e": {
+		"prefix": "bbbb",
+		"body": [
+			"4"
+		],
+		"luasnip": {
+			"priority": 1999
+		}
 	}
 }
