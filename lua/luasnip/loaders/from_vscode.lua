@@ -14,7 +14,7 @@ local function json_decode(data)
 	end
 end
 
-local function load_snippet_files(lang, files)
+local function load_snippet_files(lang, files, add_opts)
 	for _, file in ipairs(files) do
 		if not Path.exists(file) then
 			goto continue
@@ -90,17 +90,25 @@ local function load_snippet_files(lang, files)
 			file
 		))
 
-		ls.add_snippets(lang, lang_snips, {
-			type = "snippets",
-			-- again, include filetype, same reasoning as with augroup.
-			key = string.format("__%s_snippets_%s", lang, file),
-			refresh_notify = false,
-		})
-		ls.add_snippets(lang, auto_lang_snips, {
-			type = "autosnippets",
-			key = string.format("__%s_autosnippets_%s", lang, file),
-			refresh_notify = false,
-		})
+		ls.add_snippets(
+			lang,
+			lang_snips,
+			vim.tbl_extend("keep", {
+				type = "snippets",
+				-- again, include filetype, same reasoning as with augroup.
+				key = string.format("__%s_snippets_%s", lang, file),
+				refresh_notify = false,
+			}, add_opts)
+		)
+		ls.add_snippets(
+			lang,
+			auto_lang_snips,
+			vim.tbl_extend("keep", {
+				type = "autosnippets",
+				key = string.format("__%s_autosnippets_%s", lang, file),
+				refresh_notify = false,
+			}, add_opts)
+		)
 
 		::continue::
 	end
@@ -188,12 +196,13 @@ end
 
 local M = {}
 function M.load(opts)
+	opts = opts or {}
 	local ft_files = get_snippet_files(opts)
 
 	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
 
 	for ft, files in pairs(ft_files) do
-		load_snippet_files(ft, files)
+		load_snippet_files(ft, files, opts.add_opts or {})
 	end
 end
 
@@ -201,13 +210,22 @@ function M._luasnip_vscode_lazy_load()
 	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then
-			cache.lazy_loaded_ft[ft] = true
-			load_snippet_files(ft, cache.lazy_load_paths[ft] or {})
+			for _, load_call_paths in ipairs(cache.lazy_load_paths) do
+				cache.lazy_loaded_ft[ft] = true
+				load_snippet_files(
+					ft,
+					load_call_paths[ft] or {},
+					load_call_paths.add_opts
+				)
+			end
 		end
 	end
 end
 
 function M.lazy_load(opts)
+	opts = opts or {}
+	local add_opts = opts.add_opts or {}
+
 	local ft_files = get_snippet_files(opts)
 
 	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
@@ -217,13 +235,15 @@ function M.lazy_load(opts)
 	for ft, files in pairs(ft_files) do
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
-			load_snippet_files(ft, files)
+			load_snippet_files(ft, files, add_opts)
 
 			-- don't load these files again.
 			ft_files[ft] = nil
 		end
 	end
-	loader_util.extend_ft_paths(cache.lazy_load_paths, ft_files)
+
+	ft_files.add_opts = add_opts
+	table.insert(cache.lazy_load_paths, ft_files)
 end
 
 function M.edit_snippet_files()
@@ -232,8 +252,9 @@ end
 
 function M.reload_file(ft, file)
 	if cache.path_snippets[file] then
+		local add_opts = cache.path_snippets[file].add_opts
 		cache.path_snippets[file] = nil
-		load_snippet_files(ft, { file })
+		load_snippet_files(ft, { file }, add_opts)
 
 		ls.clean_invalidated({ inv_limit = 100 })
 	end
