@@ -3,8 +3,15 @@ local util = require("luasnip.util.util")
 
 local M = {}
 
-local function default_format(path, source_name)
-	return source_name .. ": " .. path
+local function default_format(path, _)
+	path = path:gsub(
+		vim.fn.stdpath("data") .. "/site/pack/packer/start",
+		"$PLUGINS"
+	)
+	if vim.env.HOME then
+		path = path:gsub(vim.env.HOME .. "/.config/nvim", "$CONFIG")
+	end
+	return path
 end
 
 --- Quickly jump to snippet-file from any source for the active filetypes.

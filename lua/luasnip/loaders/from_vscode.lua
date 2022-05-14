@@ -89,8 +89,6 @@ local function load_snippet_files(lang, files)
 			file
 		))
 
-		print(lang, file)
-
 		ls.add_snippets(lang, lang_snips, {
 			type = "snippets",
 			-- again, include filetype, same reasoning as with augroup.
