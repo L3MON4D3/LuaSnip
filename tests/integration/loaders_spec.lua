@@ -193,4 +193,109 @@ describe("loaders:", function()
 
 		assert.are.same(3, exec_lua('return #ls.get_snippets("vim")'))
 	end)
+
+	it("respects {override,default}_priority", function()
+		-- just the filetype the test-snippets are added for.
+		exec("set ft=prio")
+
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_snipmate").load({
+					paths={"%s"},
+					override_priority = 2000
+				})]],
+			os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/snipmate-snippets/snippets"
+		))
+
+		feed("iaaaa")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			snipmate^                                          |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_vscode").load({
+					paths={"%s"},
+					override_priority = 3000
+				})]],
+			os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
+		))
+
+		feed("<Cr>aaaa")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			snipmate                                          |
+			vscode^                                            |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_snipmate").load({
+					paths={"%s"},
+					override_priority = 4000
+				})]],
+			os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/snipmate-snippets/snippets"
+		))
+
+		feed("<Cr>aaaa")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			snipmate                                          |
+			vscode                                            |
+			snipmate^                                          |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_lua").load({
+					paths={"%s"},
+					default_priority = 5000
+				})]],
+			os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/lua-snippets/luasnippets"
+		))
+
+		feed("<Cr>aaaa")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			snipmate                                          |
+			vscode                                            |
+			snipmate                                          |
+			lua^                                               |
+			{2:-- INSERT --}                                      |]],
+		})
+
+		-- make sure that not just the last loaded snippet is triggered.
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_snipmate").load({
+					paths={"%s"},
+					default_priority = 4999
+				})]],
+			os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/snipmate-snippets/snippets"
+		))
+
+		feed("<Cr>aaaa")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			vscode                                            |
+			snipmate                                          |
+			lua                                               |
+			lua^                                               |
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)

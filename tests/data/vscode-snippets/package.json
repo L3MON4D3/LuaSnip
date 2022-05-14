@@ -10,6 +10,12 @@
 			},
 			{
 				"language": [
+					"prio"
+				],
+				"path": "./snippets/prio.json"
+			},
+			{
+				"language": [
 					"lua"
 				],
 				"path": "./lua.json"
