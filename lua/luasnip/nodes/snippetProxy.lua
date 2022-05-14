@@ -15,6 +15,8 @@ local SnippetProxy = {}
 -- add Snippet-functions SnippetProxy can perform using the available data.
 SnippetProxy.matches = snip_mod.Snippet.matches
 
+SnippetProxy.invalidate = snip_mod.Snippet.invalidate
+
 function SnippetProxy:get_docstring()
 	return self.docstring
 end
