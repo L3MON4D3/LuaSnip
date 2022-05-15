@@ -199,13 +199,7 @@ function Node:update() end
 function Node:update_static() end
 
 function Node:expand_tabs(tabwidth, indentstr)
-	--if self.static_text[1]:match("default") then
-	Insp(self.static_text)
-	--end
 	util.expand_tabs(self.static_text, tabwidth, indentstr)
-	--if self.static_text[1]:match("default") then
-	Insp(self.static_text)
-	--end
 end
 
 function Node:indent(indentstr)

@@ -437,4 +437,27 @@ describe("snippets_basic", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("ISN also expands tabs correctly.", function()
+		local snip = [[
+			s("trig", {
+				isn(1, {
+					t{"", "\ta"}
+				}, "$PARENT_INDENT  ")
+			})
+		]]
+		exec("set expandtab | set shiftwidth=8")
+
+		feed("7i<Space><Esc>i")
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+
+		-- a is indented to the 16th column, not just the 8th.
+		screen:expect({
+			grid = [[
+			                                                  |
+			                a^                                 |
+			{2:-- INSERT --}                                      |]],
+		})
+		--  .......|.......|
+	end)
 end)

@@ -286,7 +286,7 @@ end
 local function ISN(pos, nodes, indent_text, opts)
 	local snip = SN(pos, nodes, opts)
 
-	function snip:indent(parent_indent)
+	local function get_indent(parent_indent)
 		local indentstring = ""
 		if vim.bo.expandtab then
 			-- preserve content of $PARENT_INDENT, but expand tabs before/after it
@@ -305,7 +305,22 @@ local function ISN(pos, nodes, indent_text, opts)
 			indentstring = indent_text:gsub("$PARENT_INDENT", parent_indent)
 		end
 
-		Snippet.indent(self, indentstring)
+		return indentstring
+	end
+
+	function snip:indent(parent_indent)
+		Snippet.indent(self, get_indent(parent_indent))
+	end
+
+	-- expand_tabs also needs to be modified: the children of the isn get the
+	-- indent of the isn, so we'll have to calculate it now.
+	-- This is done with a dummy-indentstring of the correct length.
+	function snip:expand_tabs(tabwidth, indentstrlen)
+		Snippet.expand_tabs(
+			self,
+			tabwidth,
+			#get_indent(string.rep(" ", indentstrlen))
+		)
 	end
 
 	return snip
