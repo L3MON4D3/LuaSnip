@@ -815,6 +815,64 @@ insert 1 appended to itself, but the second jump will lead to it, making it
 easy to override the generated text.
 The text will only be changed when a argnode updates it.
 
+## FMT
+
+`require("luasnip.extras.fmt").fmt` can be used to create snippets in a more
+readable way.
+
+Simple example:
+
+```lua
+ls.add_snippets("all", {
+	-- important! fmt does not return a snippet, it returns a table of nodes.
+	s("example1", fmt("just an {iNode1}", {
+		iNode1 = i(1, "example")
+	}),
+	s("example2", fmt([[
+		if {} then
+			{}
+		end
+	]], {
+		-- i(1) is at nodes[1], i(2) at nodes[2].
+		i(1, "not now"), i(2, "when")
+	}),
+	s("example3", fmt([[
+		if <> then
+			<>
+		end
+	]], {
+		-- i(1) is at nodes[1], i(2) at nodes[2].
+		i(1, "not now"), i(2, "when")
+	}, {
+		delimiters = "<>"
+	}),
+})
+```
+
+`fmt(format:string, nodes:table of nodes, opts:table|nil) -> table of nodes`
+
+* `format`: a string. Occurences of `{<somekey>}` ( `{,}` are customizable, more
+  on that later) are replaced with `content[<somekey>]` (which should be a
+  node), while surrounding text becomes `textNode`s.  
+  To escape a delimiter, repeat it (`"{{"`).  
+  If no key is given (`{}`) are numbered automatically:  
+  `"{} ? {} : {}"` becomes `"{1} ? {2} : {3}"`, while
+  `"{} ? {3} : {}"` becomes `"{1} ? {3} : {4}"` (the count restarts at each
+  numbered placeholder).
+* `nodes`: just a table of nodes.
+* `opts`: optional arguments:
+  * `delimiters`: string, two characters. Change `{,}` to some other pair, eg.
+  	`"<>"`.
+  * `strict`: Warn about unused nodes (default true).
+  * `trim_empty`: remove empty (`"%s*"`) first and last line in `format`. Useful
+  	when passing multiline strings via `[[]]` (default true).
+  * `dedent`: remove indent common to all lines in `format`. Again, makes
+  	passing multiline-strings a bit nicer (default true).
+
+There is also `require("luasnip.extras.fmt").fmta`. This only differs from `fmt`
+by using angle-brackets (`<>`) as the default-delimiter.
+
+
 ## On The Fly snippets
 You can create snippets that are not for being used all the time but only
 in a single session.
