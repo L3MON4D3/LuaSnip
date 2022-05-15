@@ -649,6 +649,7 @@ ls = {
 	get_id_snippet = get_id_snippet,
 	setup_snip_env = setup_snip_env,
 	clean_invalidated = clean_invalidated,
+	get_snippet_filetypes = util.get_snippet_filetypes,
 	s = snip_mod.S,
 	sn = snip_mod.SN,
 	t = require("luasnip.nodes.textNode").T,

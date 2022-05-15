@@ -436,7 +436,6 @@ local function find_outer_snippet(node)
 	return node
 end
 
--- filetype: string formatted like `'filetype'`.
 local function get_snippet_filetypes()
 	local config = require("luasnip.session").config
 	local fts = config.ft_func()
