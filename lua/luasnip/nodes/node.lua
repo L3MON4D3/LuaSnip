@@ -198,8 +198,8 @@ Node.update_all_dependents_static = Node._update_dependents_static
 function Node:update() end
 function Node:update_static() end
 
-function Node:expand_tabs(tabwidth)
-	util.expand_tabs(self.static_text, tabwidth)
+function Node:expand_tabs(tabwidth, indentstr)
+	util.expand_tabs(self.static_text, tabwidth, indentstr)
 end
 
 function Node:indent(indentstr)

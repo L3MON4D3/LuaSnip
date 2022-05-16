@@ -45,7 +45,7 @@ function FunctionNode:update()
 		self.fn(args, self.parent, unpack(self.user_args))
 	)
 	if vim.bo.expandtab then
-		util.expand_tabs(text, util.tab_width())
+		util.expand_tabs(text, util.tab_width(), #self.parent.indentstr)
 	end
 	-- don't expand tabs in parent.indentstr, use it as-is.
 	self.parent:set_text(self, util.indent(text, self.parent.indentstr))

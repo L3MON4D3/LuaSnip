@@ -57,8 +57,18 @@ local function indent(text, indentstring)
 	return text
 end
 
--- in-place expand tabs in leading whitespace.
-local function expand_tabs(text, tabwidth)
+--- In-place expands tabs in `text`.
+--- Difficulties:
+--- we cannot simply replace tabs with a given number of spaces, the tabs align
+--- text at multiples of `tabwidth`. This is also the reason we need the number
+--- of columns the text is already indented by (otherwise we can only start a 0).
+---@param text string[], multiline string.
+---@param tabwidth number, displaycolumns one tab should shift following text
+--- by.
+---@param parent_indent_displaycolumns number, displaycolumn this text is
+--- already at.
+---@return string[], `text` (only for simple nesting).
+local function expand_tabs(text, tabwidth, parent_indent_displaycolumns)
 	for i, line in ipairs(text) do
 		local new_line = ""
 		local start_indx = 1
@@ -69,7 +79,14 @@ local function expand_tabs(text, tabwidth)
 			if tab_indx then
 				-- #new_line is index of this tab in new_line.
 				new_line = new_line
-					.. string.rep(" ", tabwidth - #new_line % tabwidth)
+					.. string.rep(
+						" ",
+						tabwidth
+							- (
+								(parent_indent_displaycolumns + #new_line)
+								% tabwidth
+							)
+					)
 			else
 				-- reached end of string.
 				break

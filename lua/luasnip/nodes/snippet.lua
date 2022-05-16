@@ -286,8 +286,41 @@ end
 local function ISN(pos, nodes, indent_text, opts)
 	local snip = SN(pos, nodes, opts)
 
+	local function get_indent(parent_indent)
+		local indentstring = ""
+		if vim.bo.expandtab then
+			-- preserve content of $PARENT_INDENT, but expand tabs before/after it
+			for str in vim.gsplit(indent_text, "$PARENT_INDENT", true) do
+				-- append expanded text and parent_indent, we'll remove the superfluous one after the loop.
+				indentstring = indentstring
+					.. util.expand_tabs(
+						{ str },
+						util.tab_width(),
+						#indentstring + #parent_indent
+					)[1]
+					.. parent_indent
+			end
+			indentstring = indentstring:sub(1, -#parent_indent - 1)
+		else
+			indentstring = indent_text:gsub("$PARENT_INDENT", parent_indent)
+		end
+
+		return indentstring
+	end
+
 	function snip:indent(parent_indent)
-		Snippet.indent(self, indent_text:gsub("$PARENT_INDENT", parent_indent))
+		Snippet.indent(self, get_indent(parent_indent))
+	end
+
+	-- expand_tabs also needs to be modified: the children of the isn get the
+	-- indent of the isn, so we'll have to calculate it now.
+	-- This is done with a dummy-indentstring of the correct length.
+	function snip:expand_tabs(tabwidth, indentstrlen)
+		Snippet.expand_tabs(
+			self,
+			tabwidth,
+			#get_indent(string.rep(" ", indentstrlen))
+		)
 	end
 
 	return snip
@@ -381,11 +414,12 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 end
 
 function Snippet:trigger_expand(current_node, pos)
+	local indentstring = util.line_chars_before(pos):match("^%s*")
 	-- expand tabs before indenting to keep indentstring unmodified
 	if vim.bo.expandtab then
-		self:expand_tabs(util.tab_width())
+		self:expand_tabs(util.tab_width(), #indentstring)
 	end
-	self:indent(util.line_chars_before(pos):match("^%s*"))
+	self:indent(indentstring)
 
 	-- (possibly) keep user-set opts.
 	if self.merge_child_ext_opts then
@@ -791,9 +825,9 @@ function Snippet:indent(prefix)
 	end
 end
 
-function Snippet:expand_tabs(tabwidth)
+function Snippet:expand_tabs(tabwidth, indenstringlen)
 	for _, node in ipairs(self.nodes) do
-		node:expand_tabs(tabwidth)
+		node:expand_tabs(tabwidth, indenstringlen)
 	end
 end
 

@@ -1,5 +1,5 @@
 local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed = helpers.exec_lua, helpers.feed
+local exec_lua, feed, exec = helpers.exec_lua, helpers.feed, helpers.exec
 local ls_helpers = require("helpers")
 local Screen = require("test.functional.ui.screen")
 
@@ -421,5 +421,43 @@ describe("snippets_basic", function()
 			        and is indeted properly.^                  |
 			{2:-- INSERT --}                                      |]],
 		})
+	end)
+
+	it("Tabs are expanded correctly", function()
+		local snip = [[
+			parse("trig", "\ta")
+		]]
+		feed("i<Space><Space>")
+		exec("set expandtab | set shiftwidth=8")
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			        a^                                         |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
+	it("ISN also expands tabs correctly.", function()
+		local snip = [[
+			s("trig", {
+				isn(1, {
+					t{"", "\ta"}
+				}, "$PARENT_INDENT  ")
+			})
+		]]
+		exec("set expandtab | set shiftwidth=8")
+
+		feed("7i<Space><Esc>i")
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+
+		-- a is indented to the 16th column, not just the 8th.
+		screen:expect({
+			grid = [[
+			                                                  |
+			                a^                                 |
+			{2:-- INSERT --}                                      |]],
+		})
+		--  .......|.......|
 	end)
 end)
