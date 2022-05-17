@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.5.0             Last change: 2022 May 16
+*luasnip.txt*             For NVIM v0.5.0             Last change: 2022 May 17
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -507,6 +507,22 @@ impossible to change the choice.
     })
 <
 
+
+The active choice for a choiceNode can be changed by calling
+`ls.change_choice(1)` (forwards) or `ls.change_choice(-1)` (backwards), for
+example via
+
+>
+    -- set keybinds for both INSERT and VISUAL.
+    vim.api.nvim_set_keymap("i", "<C-n>", "<Plug>luasnip-next-choice", {})
+    vim.api.nvim_set_keymap("s", "<C-n>", "<Plug>luasnip-next-choice", {})
+    vim.api.nvim_set_keymap("i", "<C-p>", "<Plug>luasnip-previous-choice", {})
+    vim.api.nvim_set_keymap("s", "<C-p>", "<Plug>luasnip-previous-choice", {})
+<
+
+
+Apart from this, there is also a |luasnip-picker| where no cycling is necessary
+and any choice can be selected right away, via `vim.ui.select`.
 
 ==============================================================================
 8. SNIPPETNODE                                           *luasnip-snippetnode*
