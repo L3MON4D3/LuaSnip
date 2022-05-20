@@ -92,8 +92,8 @@ function M._load_lazy_loaded_ft(ft)
 	end
 end
 
-function M._load_lazy_loaded()
-	local fts = util.get_snippet_filetypes()
+function M._load_lazy_loaded(bufnr)
+	local fts = loader_util.get_load_fts(bufnr)
 
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then

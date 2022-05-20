@@ -48,7 +48,7 @@ lua require('luasnip.config')._setup()
 " (BufWinEnter -> lazy_load() wouldn't load any files without these).
 augroup _luasnip_lazy_load
 	au!
-	au BufWinEnter,FileType * lua require('luasnip.loaders.from_lua')._load_lazy_loaded()
-	au BufWinEnter,FileType * lua require("luasnip.loaders.from_snipmate")._lazyload()
-	au BufWinEnter,FileType * lua require('luasnip.loaders.from_vscode')._luasnip_vscode_lazy_load()
+	au BufWinEnter,FileType * lua require('luasnip.loaders.from_lua')._load_lazy_loaded(tonumber(vim.fn.expand("<abuf>")))
+	au BufWinEnter,FileType * lua require("luasnip.loaders.from_snipmate")._load_lazy_loaded(tonumber(vim.fn.expand("<abuf>")))
+	au BufWinEnter,FileType * lua require('luasnip.loaders.from_vscode')._load_lazy_loaded(tonumber(vim.fn.expand("<abuf>")))
 augroup END

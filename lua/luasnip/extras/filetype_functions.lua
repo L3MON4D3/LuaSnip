@@ -39,8 +39,13 @@ local function from_pos_or_filetype()
 	end
 end
 
+local function from_filetype_load(bufnr)
+	return vim.split(vim.api.nvim_buf_get_option(bufnr, "filetype"), ".", true)
+end
+
 return {
 	from_filetype = from_filetype,
 	from_cursor_pos = from_cursor_pos,
 	from_pos_or_filetype = from_pos_or_filetype,
+	from_filetype_load = from_filetype_load,
 }

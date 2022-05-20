@@ -78,6 +78,8 @@ local defaults = {
 	parser_nested_assembler = nil,
 	-- Function expected to return a list of filetypes (or empty list)
 	ft_func = ft_functions.from_filetype,
+	-- fn(bufnr) -> string[] (filetypes).
+	load_ft_func = ft_functions.from_filetype_load,
 	-- globals injected into luasnippet-files.
 	snip_env = {
 		s = require("luasnip.nodes.snippet").S,
