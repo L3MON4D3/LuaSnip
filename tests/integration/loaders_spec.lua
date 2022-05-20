@@ -94,9 +94,6 @@ local function for_all_loaders(message, fn)
 			load("snippets")
 			-- triggers actual load for `lazy_load()`s'
 			exec("doautocmd Filetype")
-			-- wait a bit for async-operations to finish
-			-- Bad, load (even lazy_load) will be synchronous (soon).
-			exec('call wait(200, "0")')
 			fn()
 		end)
 	end
