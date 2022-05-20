@@ -71,4 +71,21 @@ function M.cleanup()
 	]])
 end
 
+--- explicitly load lazy-loaded snippets for some filetypes.
+---@param fts string[]: list of filetypes.
+function M.load_lazy_loaded(fts)
+	fts = util.redirect_filetypes(fts)
+
+	for _, ft in ipairs(fts) do
+		require("luasnip.loaders.from_lua")._load_lazy_loaded_ft(ft)
+		Cache.lua.lazy_loaded_ft[ft] = true
+
+		require("luasnip.loaders.from_snipmate")._load_lazy_loaded_ft(ft)
+		Cache.snipmate.lazy_loaded_ft[ft] = true
+
+		require("luasnip.loaders.from_vscode")._load_lazy_loaded_ft(ft)
+		Cache.vscode.lazy_loaded_ft[ft] = true
+	end
+end
+
 return M

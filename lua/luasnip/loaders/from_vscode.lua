@@ -207,18 +207,22 @@ function M.load(opts)
 	end
 end
 
-function M._luasnip_vscode_lazy_load()
+function M._load_lazy_loaded_ft(ft)
+	for _, load_call_paths in ipairs(cache.lazy_load_paths) do
+		load_snippet_files(
+			ft,
+			load_call_paths[ft] or {},
+			load_call_paths.add_opts
+		)
+	end
+end
+
+function M._load_lazy_loaded()
 	local fts = util.get_snippet_filetypes()
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then
-			for _, load_call_paths in ipairs(cache.lazy_load_paths) do
-				cache.lazy_loaded_ft[ft] = true
-				load_snippet_files(
-					ft,
-					load_call_paths[ft] or {},
-					load_call_paths.add_opts
-				)
-			end
+			M._load_lazy_loaded_ft(ft)
+			cache.lazy_loaded_ft[ft] = true
 		end
 	end
 end
