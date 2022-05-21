@@ -1615,7 +1615,24 @@ the lazy_load.
       `nvim_win_get_cursor()`), where the snippet should be expanded. The
       snippet will be put between `(line,col-1)` and `(line,col)`. The snippet
       will be expanded at the current cursor if pos is nil.
-  `opts` and either of its parameter may be nil.
+    - `jump_into_func`: fn(snippet) -> node:
+      Callback responsible for jumping into the snippet. The returned node is
+      set as the new active node, ie. it is the origin of the next jump.
+      The default is basically this
+      ```lua
+      function(snip)
+      	-- jump_into set the placeholder of the snippet, 1
+      	-- to jump forwards.
+      	return snip:jump_into(1)
+      ```
+      While this can be used to only insert the snippet
+      ```lua
+      function(snip)
+      	return snip.insert_nodes[0]
+      end
+      ```
+
+  `opts` and any of its parameters may be nil.
 
 - `get_active_snip()`: returns the currently active snippet (not node!).
 
