@@ -43,9 +43,42 @@ local function from_filetype_load(bufnr)
 	return vim.split(vim.api.nvim_buf_get_option(bufnr, "filetype"), ".", true)
 end
 
+local function extend_load_ft(extend_fts)
+	setmetatable(extend_fts, {
+		-- if the filetype is not extended, only it itself should be loaded.
+		-- preventing ifs via __index.
+		__index = function(t, ft)
+			local val = { ft }
+			rawset(t, ft, val)
+			return val
+		end,
+	})
+
+	for ft, _ in pairs(extend_fts) do
+		-- append the regular filetype to the extend-filetypes.
+		table.insert(extend_fts[ft], ft)
+	end
+
+	return function(bufnr)
+		local fts = vim.split(
+			vim.api.nvim_buf_get_option(bufnr, "filetype"),
+			".",
+			true
+		)
+		local res = {}
+
+		for _, ft in ipairs(fts) do
+			vim.list_extend(res, extend_fts[ft])
+		end
+
+		return res
+	end
+end
+
 return {
 	from_filetype = from_filetype,
 	from_cursor_pos = from_cursor_pos,
 	from_pos_or_filetype = from_pos_or_filetype,
 	from_filetype_load = from_filetype_load,
+	extend_load_ft = extend_load_ft,
 }
