@@ -413,7 +413,7 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 	start_node.next = snippet
 end
 
-function Snippet:trigger_expand(current_node, pos)
+function Snippet:trigger_expand(current_node, pos, env)
 	local indentstring = util.line_chars_before(pos):match("^%s*")
 	-- expand tabs before indenting to keep indentstring unmodified
 	if vim.bo.expandtab then
@@ -446,7 +446,7 @@ function Snippet:trigger_expand(current_node, pos)
 		self.effective_child_ext_opts[self.type]
 	)
 
-	self.env = Environ:new(pos)
+	self.env = env
 	self:subsnip_init()
 
 	self:init_positions({})

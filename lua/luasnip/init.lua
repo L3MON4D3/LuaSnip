@@ -2,6 +2,7 @@ local snip_mod = require("luasnip.nodes.snippet")
 local util = require("luasnip.util.util")
 local session = require("luasnip.session")
 local snippet_collection = require("luasnip.session.snippet_collection")
+local Environ = require("luasnip.util.environ")
 
 local loader = require("luasnip.loaders")
 
@@ -173,15 +174,22 @@ local function snip_expand(snippet, opts)
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}
 
-	snip:trigger_expand(
-		session.current_nodes[vim.api.nvim_get_current_buf()],
-		opts.pos
+	local env = Environ:new(opts.pos)
+
+	local id = vim.api.nvim_buf_set_extmark(
+		0,
+		session.ns_id,
+		opts.pos[1],
+		opts.pos[2],
+		-- track position between pos[2]-1 and pos[2].
+		{ right_gravity = false }
 	)
 
 	-- optionally clear text. Text has to be cleared befor jumping into the new
 	-- snippet, as the cursor-position can end up in the wrong position (to be
-	-- precise the text will be moved, the cursor will stay at the same position,
-	-- which is just as bad) if text before the cursor, on the same line is cleared.
+	-- precise the text will be moved, the cursor will stay at the same
+	-- position, which is just as bad) if text before the cursor, on the same
+	-- line is cleared.
 	if opts.clear_region then
 		vim.api.nvim_buf_set_text(
 			0,
@@ -192,6 +200,14 @@ local function snip_expand(snippet, opts)
 			{ "" }
 		)
 	end
+
+	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, id, {})
+
+	snip:trigger_expand(
+		session.current_nodes[vim.api.nvim_get_current_buf()],
+		pos,
+		env
+	)
 
 	local current_buf = vim.api.nvim_get_current_buf()
 
