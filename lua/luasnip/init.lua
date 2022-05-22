@@ -176,7 +176,7 @@ local function snip_expand(snippet, opts)
 
 	local env = Environ:new(opts.pos)
 
-	local id = vim.api.nvim_buf_set_extmark(
+	local pos_id = vim.api.nvim_buf_set_extmark(
 		0,
 		session.ns_id,
 		opts.pos[1],
@@ -201,11 +201,9 @@ local function snip_expand(snippet, opts)
 		)
 	end
 
-	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, id, {})
-
 	snip:trigger_expand(
 		session.current_nodes[vim.api.nvim_get_current_buf()],
-		pos,
+		pos_id,
 		env
 	)
 
