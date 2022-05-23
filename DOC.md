@@ -141,14 +141,16 @@ The third argument (`opts`) is a table with the following valid keys:
   should be set as follows:
   ```lua
   {
+  	-- position of the node, not the jump-position!!
+  	-- s("trig", {t"first node", t"second node", i(1, "third node")}).
   	[2] = {
-  		[events.enter] = function(node) print("2!") end
+  		[events.enter] = function(node, _event_args) print("2!") end
   	}
   }
   ```
   To register a callback for the snippets' own events, the key `[-1]` may
   be used.
-  The callbacks are passed only one argument, the node that triggered it.
+  More info on events [here](#here)
 - `child_ext_opts`, `merge_child_ext_opts`: `ext_opts` applied to the children
   of this snippet. More info [here](#ext_opts).
 
@@ -1517,18 +1519,81 @@ The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 
 # EVENTS
 
-Upon leaving/entering nodes or changing a choice an event is triggered:
-`User Luasnip<Node>{Enter,Leave}`, where `<Node>` is the name of a node in
-PascalCase, eg. `InsertNode` or `DynamicNode` or `Snippet`.
-The event triggered when changing the choice in a `choiceNode` is
-`User LuasnipChangeChoice`.
+Events can be used to react to some action inside snippets. These callbacks can
+be defined per-snippet (`callbacks`-key in snippet constructor) or globally
+(autocommand).
+
+`callbacks`: `fn(node[, event_args])`  
+All callbacks get the `node` associated with the event and event-specific
+optional arguments, `event_args`.
+
+`autocommand`:
+Luasnip uses `User`-events. Autocommands for these can be registered using
+```vim
+au User SomeUserEvent echom "SomeUserEvent was triggered"
+```
+
+or
+```lua
+vim.api.nvim_create_autocommand("User", {
+	patter = "SomeUserEvent",
+	command = "echom SomeUserEvent was triggered"
+})
+```
+The node and `event_args` can be accessed through `require("luasnip").session`:
+
+* `node`: `session.event_node`  
+* `event_args`: `session.event_args`
+
+**Events**:
+
+* `enter/leave`: Called when a node is entered/left (for example when jumping
+  around in a snippet).  
+  `User-event`: `"Luasnip<Node>{Enter,Leave}"`, with `<Node>` in
+  PascalCase, eg. `InsertNode` or `DynamicNode`.  
+  `event_args`: none
+* `change_choice`: When the active choice in a choiceNode is changed.  
+  `User-event`: `"LuasnipChangeChoice"`  
+  `event_args`: none
+* `pre_expand`: Called before a snippet is expanded. Modifying text is allowed,
+  the expand-position will be adjusted so the snippet expands at the same
+  position relative to existing text.  
+  `User-event`: `"LuasnipPreExpand"`  
+  `event_args`:
+  * `expand_pos`: `{<row>, <column>}`, position at which the snippet will be
+  	expanded. `<row>` and `<column>` are both 0-indexed.
 
 A pretty useless, beyond serving as an example here, application of these would
 be printing eg. the nodes' text after entering:
 
-```vim
-au User LuasnipInsertNodeEnter
-	\lua print(require("luasnip").session.event_node:get_text()[1])
+```lua
+vim.api.nvim_create_autocmd("User", {
+	pattern = "LuasnipInsertNodeEnter",
+	callback = function()
+		local node = require("luasnip").session.event_node
+		print(table.concat(node:get_text(), "\n"))
+	end
+})
+```
+
+or some information about expansions
+
+```lua
+vim.api.nvim_create_autocmd("User", {
+	pattern = "LuasnipPreExpand",
+	callback = function()
+		-- get event-parameters from `session`.
+		local snippet = require("luasnip").session.event_node
+		local expand_position =
+			require("luasnip").session.event_args.expand_pos
+
+		print(string.format("expanding snippet %s at %s:%s",
+			table.concat(snippet:get_docstring(), "\n"),
+			expand_position[1],
+			expand_position[2]
+		))
+	end
+})
 ```
 
 # CLEANUP
