@@ -33,7 +33,10 @@ local function new_cache()
 		-- ft -> {true, nil}.
 		-- Keep track of which filetypes were already lazy_loaded to prevent
 		-- duplicates.
-		lazy_loaded_ft = {},
+		--
+		-- load "all" by default, makes no sense to include it again and again,
+		-- just once on startup seems nicer.
+		lazy_loaded_ft = { all = true },
 
 		-- key is file type, value are paths of .snippets files.
 		ft_paths = {},

@@ -184,22 +184,26 @@ function M.load(opts)
 	end
 end
 
-function M._lazyload()
-	local fts = util.get_snippet_filetypes()
+function M._load_lazy_loaded_ft(ft)
+	for _, collection_load_paths in ipairs(cache.lazy_load_paths) do
+		-- don't load if this ft wasn't included/was excluded.
+		if collection_load_paths[ft] then
+			load_snippet_files(
+				ft,
+				collection_load_paths[ft],
+				collection_load_paths.collection,
+				collection_load_paths.add_opts
+			)
+		end
+	end
+end
+
+function M._load_lazy_loaded(bufnr)
+	local fts = loader_util.get_load_fts(bufnr)
+
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then
-			-- iterate over collections.
-			for _, collection_load_paths in ipairs(cache.lazy_load_paths) do
-				-- don't load if this ft wasn't included/was excluded.
-				if collection_load_paths[ft] then
-					load_snippet_files(
-						ft,
-						collection_load_paths[ft],
-						collection_load_paths.collection,
-						collection_load_paths.add_opts
-					)
-				end
-			end
+			M._load_lazy_loaded_ft(ft)
 			cache.lazy_loaded_ft[ft] = true
 		end
 	end

@@ -1,5 +1,6 @@
 local Path = require("luasnip.util.path")
 local util = require("luasnip.util.util")
+local session = require("luasnip.session")
 
 local function filetypelist_to_set(list)
 	vim.validate({ list = { list, "table", true } })
@@ -179,6 +180,12 @@ local function add_opts(opts)
 	}
 end
 
+local function get_load_fts(bufnr)
+	local fts = session.config.load_ft_func(bufnr)
+
+	return util.redirect_filetypes(fts)
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
@@ -189,4 +196,5 @@ return {
 	extend_ft_paths = extend_ft_paths,
 	edit_snippet_files = edit_snippet_files,
 	add_opts = add_opts,
+	get_load_fts = get_load_fts,
 }

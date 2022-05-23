@@ -86,18 +86,19 @@ local function load_files(ft, files, add_opts)
 	ls.refresh_notify(ft)
 end
 
-function M._load_lazy_loaded()
-	local fts = util.get_snippet_filetypes()
+function M._load_lazy_loaded_ft(ft)
+	for _, load_call_paths in ipairs(cache.lazy_load_paths) do
+		load_files(ft, load_call_paths[ft] or {}, load_call_paths.add_opts)
+	end
+end
+
+function M._load_lazy_loaded(bufnr)
+	local fts = loader_util.get_load_fts(bufnr)
+
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then
-			for _, load_call_paths in ipairs(cache.lazy_load_paths) do
-				cache.lazy_loaded_ft[ft] = true
-				load_files(
-					ft,
-					load_call_paths[ft] or {},
-					load_call_paths.add_opts
-				)
-			end
+			M._load_lazy_loaded_ft(ft)
+			cache.lazy_loaded_ft[ft] = true
 		end
 	end
 end
@@ -153,10 +154,6 @@ function M.lazy_load(opts)
 		load_paths.add_opts = add_opts
 		table.insert(cache.lazy_load_paths, load_paths)
 	end
-	-- call once for current filetype. Necessary for lazy_loading snippets in
-	-- empty, initial buffer, and will not cause issues like duplicate
-	-- snippets.
-	M._load_lazy_loaded()
 end
 
 function M.reload_file(filename)

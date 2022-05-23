@@ -925,6 +925,41 @@ inoremap <c-u> <cmd>lua require("luasnip.extras.select_choice")()<cr>
 , while inside a choiceNode. The `opts.kind` hint for `vim.ui.select` will be set to `luasnip`.
 
 
+## filetype_functions
+
+Contains some utility-functions that can be passed to the `ft_func` or
+`load_ft_func`-settings.
+
+* `from_filetype`: the default for `ft_func`. Simply returns the filetype(s) of
+  the buffer.
+* `from_cursor_pos`: uses treesitter to determine the filetype at the cursor.
+  With that, it's possible to expand snippets in injected regions, as long as
+  the treesitter-parser supports them.
+  If this is used in conjuction with `lazy_load`, extra care must be taken that
+  all the filetypes that can be expanded in a given buffer are also returned by
+  `load_ft_func` (otherwise their snippets may not be loaded).
+  This can easily be achieved with `extend_load_ft`.
+* `extend_load_ft`: `fn(extend_ft:map) -> fn`
+  A simple solution to the problem described above is loading more filetypes
+  than just that of the target-buffer when `lazy_load`ing. This can be done
+  ergonomically via `extend_load_ft`: calling it with a table where the keys are
+  filetypes and the values are the filetypes that should be loaded additionaly
+  returns a function that can be passed to `load_ft_func` and takes care of
+  extending the filetypes properly.
+
+  ```lua
+  ls.config.setup({
+  	load_ft_func =
+  		-- Also load both lua and json when a markdown-file is opened,
+  		-- javascript for html.
+  		-- Other filetypes just load themselves.
+  		require("luasnip.extras.filetype_functions").extend_load_ft({
+  			markdown = {"lua", "json"},
+  			html = {"javascript"}
+  		})
+  })
+  ```
+
 # LSP-SNIPPETS
 
 Luasnip is capable of parsing lsp-style snippets using
@@ -1000,7 +1035,10 @@ where `opts` can contain the following keys:
 While `load` will immediately load the snippets, `lazy_load` will defer loading until
 the snippets are actually needed (whenever a new buffer is created or the
 filetype is changed luasnip actually loads `lazy_load`ed snippets for the
-filetypes associated with this buffer).
+filetypes associated with this buffer. This association can be changed by
+customizing `load_ft_func` in `setup`: the option takes a function that, passed
+a `bufnr`, returns the filetypes that should be loaded (`fn(bufnr) -> filetypes
+(string[])`)).
 
 All of the loaders support reloading, so simply editing any file contributing
 snippets will reload its snippets (only in the session the file was edited in,
@@ -1035,8 +1073,8 @@ selected.
 * As we only load `lazy_load`ed snippet on some events, `lazy_load` will
   probably not play nice when a non-default `ft_func` is used: if it depends on
   eg. the cursor-position, only the filetypes for the cursor-position when the
-  `lazy_load`-events are triggered will be loaded. In these cases, `load` should
-  be used.
+  `lazy_load`-events are triggered will be loaded. Check
+  [filetype_function's `extend_load_ft`](#filetype_functions) for a solution.
 
 ## VSCODE
 

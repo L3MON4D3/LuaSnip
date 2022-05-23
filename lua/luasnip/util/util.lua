@@ -453,18 +453,23 @@ local function find_outer_snippet(node)
 	return node
 end
 
+local function redirect_filetypes(fts)
+	local snippet_fts = {}
+
+	for _, ft in ipairs(fts) do
+		vim.list_extend(snippet_fts, session.ft_redirect[ft])
+	end
+
+	return snippet_fts
+end
+
 local function get_snippet_filetypes()
 	local config = require("luasnip.session").config
 	local fts = config.ft_func()
 	-- add all last.
 	table.insert(fts, "all")
 
-	local snippet_fts = {}
-	for _, ft in ipairs(fts) do
-		vim.list_extend(snippet_fts, session.ft_redirect[ft])
-	end
-
-	return snippet_fts
+	return redirect_filetypes(fts)
 end
 
 local function deduplicate(list)
@@ -568,6 +573,7 @@ return {
 	string_wrap = string_wrap,
 	to_line_table = to_line_table,
 	find_outer_snippet = find_outer_snippet,
+	redirect_filetypes = redirect_filetypes,
 	get_snippet_filetypes = get_snippet_filetypes,
 	json_encode = json_encode,
 	json_decode = json_decode,
