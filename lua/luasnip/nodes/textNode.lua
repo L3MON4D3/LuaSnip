@@ -17,6 +17,8 @@ extend_decorator.register(T, { arg_indx = 2 })
 
 function TextNode:input_enter(no_move)
 	self.mark:update_opts(self.ext_opts.active)
+	self.visited = true
+
 	if not no_move then
 		local mark_begin_pos = self.mark:pos_begin_raw()
 		if vim.fn.mode() == "i" then

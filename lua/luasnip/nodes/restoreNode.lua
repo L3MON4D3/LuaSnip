@@ -41,6 +41,7 @@ end
 
 function RestoreNode:input_enter()
 	self.active = true
+	self.visited = true
 	self.mark:update_opts(self.ext_opts.active)
 
 	self:event(events.enter)
@@ -51,7 +52,8 @@ function RestoreNode:input_leave()
 
 	self:update_dependents()
 	self.active = false
-	self.mark:update_opts(self.ext_opts.passive)
+
+	self.mark:update_opts(self:get_passive_ext_opts())
 end
 
 -- set snippetNode for this key here.
@@ -111,7 +113,7 @@ function RestoreNode:put_initial(pos)
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = false,
-	}, tmp.ext_opts.passive)
+	}, tmp:get_passive_ext_opts())
 
 	local old_pos = vim.deepcopy(pos)
 	tmp:put_initial(pos)
@@ -139,7 +141,8 @@ function RestoreNode:jump_into(dir, no_move)
 end
 
 function RestoreNode:set_ext_opts(name)
-	self.mark:update_opts(self.ext_opts[name])
+	Node.set_ext_opts(self, name)
+
 	self.snip:set_ext_opts(name)
 end
 

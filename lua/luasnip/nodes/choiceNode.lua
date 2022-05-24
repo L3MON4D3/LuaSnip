@@ -114,7 +114,7 @@ function ChoiceNode:put_initial(pos)
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = false,
-	}, self.active_choice.ext_opts.passive)
+	}, self.active_choice:get_passive_ext_opts())
 
 	self.active_choice.mark = mark(old_pos, pos, mark_opts)
 	self.visible = true
@@ -138,6 +138,7 @@ function ChoiceNode:input_enter()
 
 	self.prev_choice_node = session.active_choice_node
 	session.active_choice_node = self
+	self.visited = true
 	self.active = true
 
 	self:event(events.enter)
@@ -146,7 +147,7 @@ end
 function ChoiceNode:input_leave()
 	self:event(events.leave)
 
-	self.mark:update_opts(self.ext_opts.passive)
+	self.mark:update_opts(self:get_passive_ext_opts())
 	self:update_dependents()
 	session.active_choice_node = self.prev_choice_node
 	self.active = false
@@ -240,7 +241,7 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice = choice
 
 	self.active_choice.mark = self.mark:copy_pos_gravs(
-		vim.deepcopy(self.active_choice.ext_opts.passive)
+		vim.deepcopy(self.active_choice:get_passive_ext_opts())
 	)
 
 	-- re-init positions for child-restoreNodes (they will update their
@@ -328,7 +329,8 @@ function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
 end
 
 function ChoiceNode:set_ext_opts(name)
-	self.mark:update_opts(self.ext_opts[name])
+	Node.set_ext_opts(self, name)
+
 	self.active_choice:set_ext_opts(name)
 end
 

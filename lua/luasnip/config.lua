@@ -28,11 +28,15 @@ local defaults = {
 		[types.textNode] = {
 			active = { hl_group = "LuasnipTextNodeActive" },
 			passive = { hl_group = "LuasnipTextNodePassive" },
+			visited = { hl_group = "LuasnipTextNodeVisited" },
+			unvisited = { hl_group = "LuasnipTextNodeUnvisited" },
 			snippet_passive = { hl_group = "LuasnipTextNodeSnippetPassive" },
 		},
 		[types.insertNode] = {
 			active = { hl_group = "LuasnipInsertNodeActive" },
 			passive = { hl_group = "LuasnipInsertNodePassive" },
+			visited = { hl_group = "LuasnipInsertNodeVisited" },
+			unvisited = { hl_group = "LuasnipInsertNodeUnvisited" },
 			snippet_passive = {
 				hl_group = "LuasnipInsertNodeSnippetPassive",
 			},
@@ -40,11 +44,15 @@ local defaults = {
 		[types.exitNode] = {
 			active = { hl_group = "LuasnipExitNodeActive" },
 			passive = { hl_group = "LuasnipExitNodePassive" },
+			visited = { hl_group = "LuasnipExitNodeVisited" },
+			unvisited = { hl_group = "LuasnipExitNodeUnvisited" },
 			snippet_passive = { hl_group = "LuasnipExitNodeSnippetPassive" },
 		},
 		[types.functionNode] = {
 			active = { hl_group = "LuasnipFunctionNodeActive" },
 			passive = { hl_group = "LuasnipFunctionNodePassive" },
+			visited = { hl_group = "LuasnipFunctionNodeVisited" },
+			unvisited = { hl_group = "LuasnipFunctionNodeUnvisited" },
 			snippet_passive = {
 				hl_group = "LuasnipFunctionNodeSnippetPassive",
 			},
@@ -52,6 +60,8 @@ local defaults = {
 		[types.snippetNode] = {
 			active = { hl_group = "LuasnipSnippetNodeActive" },
 			passive = { hl_group = "LuasnipSnippetNodePassive" },
+			visited = { hl_group = "LuasnipSnippetNodeVisited" },
+			unvisited = { hl_group = "LuasnipSnippetNodeUnvisited" },
 			snippet_passive = {
 				hl_group = "LuasnipSnippetNodeSnippetPassive",
 			},
@@ -59,6 +69,8 @@ local defaults = {
 		[types.choiceNode] = {
 			active = { hl_group = "LuasnipChoiceNodeActive" },
 			passive = { hl_group = "LuasnipChoiceNodePassive" },
+			visited = { hl_group = "LuasnipChoiceNodeVisited" },
+			unvisited = { hl_group = "LuasnipChoiceNodeUnvisited" },
 			snippet_passive = {
 				hl_group = "LuasnipChoiceNodeSnippetPassive",
 			},
@@ -66,6 +78,8 @@ local defaults = {
 		[types.dynamicNode] = {
 			active = { hl_group = "LuasnipDynamicNodeActive" },
 			passive = { hl_group = "LuasnipDynamicNodePassive" },
+			visited = { hl_group = "LuasnipDynamicNodeVisited" },
+			unvisited = { hl_group = "LuasnipDynamicNodeUnvisited" },
 			snippet_passive = {
 				hl_group = "LuasnipDynamicNodeSnippetPassive",
 			},
@@ -74,11 +88,15 @@ local defaults = {
 			active = { hl_group = "LuasnipSnippetActive" },
 			passive = { hl_group = "LuasnipSnippetPassive" },
 			-- not used!
+			visited = { hl_group = "LuasnipSnippetVisited" },
+			unvisited = { hl_group = "LuasnipSnippetUnvisited" },
 			snippet_passive = { hl_group = "LuasnipSnippetSnippetPassive" },
 		},
 		[types.restoreNode] = {
 			active = { hl_group = "LuasnipRestoreNodeActive" },
 			passive = { hl_group = "LuasnipRestoreNodePassive" },
+			visited = { hl_group = "LuasnipRestoreNodeVisited" },
+			unvisited = { hl_group = "LuasnipRestoreNodeUnvisited" },
 			snippet_passive = {
 				hl_group = "LuasnipRestoreNodeSnippetPassive",
 			},

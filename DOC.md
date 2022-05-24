@@ -1861,6 +1861,13 @@ local ext_opts = {
 		-- add virtual text on the line of the node, behind all text.
 		virt_text = {{"virtual text!!", "GruvboxBlue"}}
 	},
+	-- visited or unvisited are applied when a node was/was not jumped into.
+	visited = {
+		hl_group = "GruvboxBlue"
+	},
+	unvisited = {
+		hl_group = "GruvboxGreen"
+	},
 	-- and these are applied when both the node and the snippet are inactive.
 	snippet_passive = {}
 }
@@ -1883,17 +1890,32 @@ s("trig", {
 
 <!-- panvimdoc-ignore-end -->
 
-In the above example the text inside the insertNodes is higlighted in red while
-inside them, and the virtual text "virtual text!!" is visible as long as the
-snippet is active.
+In the above example the text inside the insertNodes is higlighted in green if
+they were not yet visited, in blue once they were, and red while they are.  
+The virtual text "virtual text!!" is visible as long as the snippet is active.
 
-It's important to note that `snippet_passive` applies to the states
-`snippet_passive`, `passive`, and `active`, `passive` to `passive` and `active`,
-and `active` only to `active`.
+To make defining `ext_opts` less verbose, more specific states inherit from less
+specific ones:
 
-To disable a key from a "lower" state, it has to be explicitly set to its
+- `passive` inherits from `snippet_passive`
+- `visited` and `unvisited` from `passive`
+- `active` from `visited`
+
+<!-- panvimdoc-ignore-start -->
+
+```mermaid
+flowchart TD
+	visited --> active
+	passive --> visited
+	passive --> unvisited
+	snippet_passive --> passive
+```
+
+<!-- panvimdoc-ignore-end -->
+
+To disable a key from a less specific state, it has to be explicitly set to its
 default, e.g. to disable highlighting inherited from `passive` when the node is
-`active`, `hl_group` could be set to `None` in `active`.
+`active`, `hl_group` should be set to `None`.
 
 ---
 
@@ -1908,11 +1930,13 @@ ls.setup({
 	ext_opts = {
 		[types.insertNode] = {
 			active = {...},
+			visited = {...},
 			passive = {...},
 			snippet_passive = {...}
 		},
 		[types.choiceNode] = {
-			active = {...}
+			active = {...},
+			unvisited = {...}
 		},
 		[types.snippet] = {
 			passive = {...}
@@ -1944,8 +1968,8 @@ snippet.
 
 By default, the `ext_opts` actually used for a node are created by extending the
 `node_ext_opts` with the `effective_child_ext_opts[node.type]` of the parent,
-which are in turn the `child_ext_opts` of the parent extended with the global
-`ext_opts` set in the config.
+which are in turn the parent's `child_ext_opts` extended with the global
+`ext_opts` (those set `ls.setup`).
 
 It's possible to prevent both of these merges by passing
 `merge_node/child_ext_opts=false` to the snippet/node-opts:
@@ -1967,7 +1991,9 @@ s("trig", {
 			active = {...}
 		},
 		merge_node_ext_opts = false
-	}), i(2, "text2") }, {
+	}),
+	i(2, "text2")
+}, {
 	child_ext_opts = {
 		[types.insertNode] = {
 			passive = {...}
@@ -1986,7 +2012,7 @@ highlight-groups:
 vim.cmd("hi link LuasnipInsertNodePassive GruvboxRed")
 vim.cmd("hi link LuasnipSnippetPassive GruvboxBlue")
 
--- needs to be called for resolving the actual ext_opts.
+-- needs to be called for resolving the effective ext_opts.
 ls.setup({})
 ```
 The names for the used highlight groups are
@@ -1996,11 +2022,13 @@ node in PascalCase (or "Snippet").
 ---
 
 One problem that might arise when nested nodes are highlighted, is that the
-highlight of inner nodes should be visible above that of nodes they are nested inside.
+highlight of inner nodes should be visible, eg. above that of nodes they are
+nested inside.
 
-This can be controlled using the `priority`-key in `ext_opts`. Normally, that
-value is an absolute value, but here it is relative to some base-priority, which
-is increased for each nesting level of snippets.
+This can be controlled using the `priority`-key in `ext_opts`. In
+`nvim_buf_set_extmark`, that value is an absolute value, but here it is relative
+to some base-priority, which is increased for each nesting level of
+snippet(Nodes)s.
 
 Both the initial base-priority and its' increase and can be controlled using
 `ext_base_prio` and `ext_prio_increase`:

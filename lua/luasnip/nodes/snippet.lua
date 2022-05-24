@@ -484,7 +484,7 @@ function Snippet:trigger_expand(current_node, pos_id, env)
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
 		end_right_gravity = true,
-	}, self.ext_opts.passive)
+	}, self:get_passive_ext_opts())
 	self.mark = mark(old_pos, pos, mark_opts)
 
 	self:update()
@@ -671,7 +671,7 @@ function Snippet:put_initial(pos)
 		local mark_opts = vim.tbl_extend("keep", {
 			right_gravity = false,
 			end_right_gravity = false,
-		}, node.ext_opts.passive)
+		}, node:get_passive_ext_opts())
 		node.mark = mark(old_pos, pos, mark_opts)
 	end
 	self.visible = true
@@ -853,10 +853,11 @@ function Snippet:make_args_absolute()
 end
 
 function Snippet:input_enter()
+	self.visited = true
 	self.active = true
 
 	if self.type == types.snippet then
-		-- set snippet-passive -> passive for all children.
+		-- set snippet-passive -> visited/unvisited for all children.
 		self:set_ext_opts("passive")
 	end
 	self.mark:update_opts(self.ext_opts.active)

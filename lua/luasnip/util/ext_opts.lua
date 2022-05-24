@@ -11,27 +11,28 @@ local types = require("luasnip.util.types")
 -- always pass this empty table, which will (has to!) stay empty.
 local shared_empty_table = {}
 
--- opts: child_ext_opts, have to have hl_group set for all combinations of
--- node-type and active,passive,snippet_passive.
-local function clear_invalid(opts)
-	for _, node_type in pairs(types.node_types) do
-		local act_group, pas_group, snip_pas_group =
-			opts[node_type].active.hl_group,
-			opts[node_type].passive.hl_group,
-			opts[node_type].snippet_passive.hl_group
+local states = {
+	"active",
+	"passive",
+	"snippet_passive",
+	"visited",
+	"unvisited",
+}
 
-		--stylua: ignore start
-		opts[node_type].snippet_passive.hl_group =
-			vim.fn.hlexists(snip_pas_group) == 1 and snip_pas_group
-			or nil
-		opts[node_type].passive.hl_group =
-			vim.fn.hlexists(pas_group) == 1 and pas_group
-			or nil
-		opts[node_type].active.hl_group =
-			vim.fn.hlexists(act_group) == 1 and act_group
-			or nil
-		--stylua: ignore end
+-- opts: child_ext_opts, have to have hl_group set for all combinations of
+-- node-type and active,passive,snippet_passive,visited,unvisited.
+local function clear_invalid(opts)
+	--stylua: ignore start
+	for _, node_type in pairs(types.node_types) do
+		for _, state in ipairs(states) do
+			local state_hl_group = opts[node_type][state].hl_group
+
+			opts[node_type][state].hl_group =
+				vim.fn.hlexists(state_hl_group) == 1 and state_hl_group
+				                                      or nil
+		end
 	end
+	--stylua: ignore end
 end
 
 local function _complete_ext_opts(ext_opts)
@@ -44,28 +45,32 @@ local function _complete_ext_opts(ext_opts)
 		ext_opts.passive or shared_empty_table,
 		ext_opts.snippet_passive or shared_empty_table
 	)
+	-- both unvisited and visited inherit from passive.
+	ext_opts.unvisited = vim.tbl_extend(
+		"keep",
+		ext_opts.unvisited or shared_empty_table,
+		ext_opts.passive or shared_empty_table
+	)
+	ext_opts.visited = vim.tbl_extend(
+		"keep",
+		ext_opts.visited or shared_empty_table,
+		ext_opts.passive or shared_empty_table
+	)
+	-- active inherits from visited.
 	ext_opts.active = vim.tbl_extend(
 		"keep",
 		ext_opts.active or shared_empty_table,
-		ext_opts.passive or shared_empty_table
+		ext_opts.visited or shared_empty_table
 	)
 
-	--stylua: ignore start
-	if ext_opts.snippet_passive.hl_group and not
-	   ext_opts.snippet_passive.priority then
-		ext_opts.snippet_passive.priority = 0
+	for _, state in ipairs(states) do
+		--stylua: ignore start
+		if ext_opts[state].hl_group and not
+		   ext_opts[state].priority then
+			ext_opts[state].priority = 0
+		end
+		--stylua: ignore end
 	end
-
-	if ext_opts.passive.hl_group and not
-	   ext_opts.passive.priority then
-		ext_opts.passive.priority = 0
-	end
-
-	if ext_opts.active.hl_group and not
-	   ext_opts.active.priority then
-		ext_opts.active.priority = 0
-	end
-	--stylua: ignore end
 
 	return ext_opts
 end
@@ -92,10 +97,9 @@ end
 -- in-place adds opts of b to a, doesn't override.
 -- a/b: completed ext_opts, not nil.
 local function extend(opts_a, opts_b)
-	opts_a.snippet_passive =
-		vim.tbl_extend("keep", opts_a.snippet_passive, opts_b.snippet_passive)
-	opts_a.passive = vim.tbl_extend("keep", opts_a.passive, opts_b.passive)
-	opts_a.active = vim.tbl_extend("keep", opts_a.active, opts_b.active)
+	for _, state in ipairs(states) do
+		opts_a[state] = vim.tbl_extend("keep", opts_a[state], opts_b[state])
+	end
 
 	return opts_a
 end
@@ -112,13 +116,10 @@ end
 
 local function increase_prio(opts, inc)
 	-- increase only if there is a priority.
-	opts.active.priority = opts.active.priority and (opts.active.priority + inc)
-
-	opts.passive.priority = opts.passive.priority
-		and (opts.passive.priority + inc)
-
-	opts.snippet_passive.priority = opts.snippet_passive.priority
-		and (opts.snippet_passive.priority + inc)
+	for _, state in ipairs(states) do
+		opts[state].priority = opts[state].priority
+			and (opts[state].priority + inc)
+	end
 end
 
 -- ext_opts-priorities are defined relative to some base-priority.

@@ -25,6 +25,7 @@ end
 extend_decorator.register(D, { arg_indx = 4 })
 
 function DynamicNode:input_enter()
+	self.visited = true
 	self.active = true
 	self.mark:update_opts(self.ext_opts.active)
 
@@ -36,7 +37,7 @@ function DynamicNode:input_leave()
 
 	self:update_dependents()
 	self.active = false
-	self.mark:update_opts(self.ext_opts.passive)
+	self.mark:update_opts(self:get_passive_ext_opts())
 end
 
 function DynamicNode:get_static_text()
@@ -148,7 +149,9 @@ function DynamicNode:update()
 	tmp:resolve_node_ext_opts()
 	tmp:subsnip_init()
 
-	tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp.ext_opts.passive))
+	tmp.mark = self.mark:copy_pos_gravs(
+		vim.deepcopy(tmp:get_passive_ext_opts())
+	)
 	tmp.dynamicNode = self
 	tmp.update_dependents = function(node)
 		node:_update_dependents()
@@ -298,7 +301,8 @@ function DynamicNode:exit()
 end
 
 function DynamicNode:set_ext_opts(name)
-	self.mark:update_opts(self.ext_opts[name])
+	Node.set_ext_opts(self, name)
+
 	-- might not have been generated (missing nodes).
 	if self.snip then
 		self.snip:set_ext_opts(name)
@@ -317,7 +321,7 @@ function DynamicNode:update_restore()
 		-- prevent entering the uninitialized snip in enter_node in a few lines.
 		local tmp = self.stored_snip
 
-		tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp.ext_opts.passive))
+		tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
 
 		-- position might (will probably!!) still have changed, so update it
 		-- here too (as opposed to only in update).
