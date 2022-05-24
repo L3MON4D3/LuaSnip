@@ -90,7 +90,9 @@ function ExitNode:update_dependents_static() end
 function ExitNode:update_all_dependents_static() end
 
 function InsertNode:input_enter(no_move)
+	self.visited = true
 	self.mark:update_opts(self.ext_opts.active)
+
 	if not no_move then
 		self.parent:enter_node(self.indx)
 
@@ -186,7 +188,7 @@ function InsertNode:input_leave()
 	self:event(events.leave)
 
 	self:update_dependents()
-	self.mark:update_opts(self.ext_opts.passive)
+	self.mark:update_opts(self:get_passive_ext_opts())
 end
 
 function InsertNode:exit()

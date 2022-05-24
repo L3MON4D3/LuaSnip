@@ -66,7 +66,7 @@ local function _complete_ext_opts(ext_opts)
 	for _, state in ipairs(states) do
 		--stylua: ignore start
 		if ext_opts[state].hl_group and not
-		   ext_opts[state].snippet_passive.priority then
+		   ext_opts[state].priority then
 			ext_opts[state].priority = 0
 		end
 		--stylua: ignore end

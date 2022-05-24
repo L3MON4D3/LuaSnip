@@ -17,6 +17,7 @@ function Node:new(o, opts)
 	o.visible = false
 	o.static_visible = false
 	o.old_text = {}
+	o.visited = false
 	-- override existing keys, might be necessary due to double-init from
 	-- snippetProxy, but shouldn't hurt.
 	o = vim.tbl_extend("force", o, node_util.init_node_opts(opts or {}))
@@ -65,6 +66,7 @@ function Node:put_initial(pos)
 end
 
 function Node:input_enter(_)
+	self.visited = true
 	self.mark:update_opts(self.ext_opts.active)
 
 	self:event(events.enter)
@@ -142,10 +144,18 @@ function Node:exit()
 	self.mark:clear()
 end
 
+function Node:get_passive_ext_opts()
+	if self.visited then
+		return self.ext_opts.visited
+	else
+		return self.ext_opts.unvisited
+	end
+end
+
 function Node:input_leave()
 	self:event(events.leave)
 
-	self.mark:update_opts(self.ext_opts.passive)
+	self.mark:update_opts(self:get_passive_ext_opts())
 end
 
 local function find_dependents(position_self, dict)
@@ -265,7 +275,12 @@ function Node:get_static_args()
 end
 
 function Node:set_ext_opts(name)
-	self.mark:update_opts(self.ext_opts[name])
+	-- differentiate, either visited or unvisited needs to be set.
+	if name == "passive" then
+		self.mark:update_opts(self:get_passive_ext_opts())
+	else
+		self.mark:update_opts(self.ext_opts[name])
+	end
 end
 
 -- for insert,functionNode.
