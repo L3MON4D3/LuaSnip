@@ -18,4 +18,9 @@ function M.dedent(s)
 	return table.concat(lst, "\n")
 end
 
+function M.aupatescape(s)
+	local comma_escaped = s:gsub(",", "\\,")
+	return vim.fn.fnameescape(comma_escaped)
+end
+
 return M

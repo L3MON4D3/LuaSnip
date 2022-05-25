@@ -25,6 +25,7 @@ local cache = require("luasnip.loaders._caches").lua
 local path_mod = require("luasnip.util.path")
 local loader_util = require("luasnip.loaders.util")
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
 local ls = require("luasnip")
 
 local M = {}
@@ -57,7 +58,7 @@ local function load_files(ft, files, add_opts)
 				augroup END
 			]],
 			-- escape for autocmd-pattern.
-			file:gsub(" ", "\\ "),
+			str_util.aupatescape(file),
 			file
 		))
 
