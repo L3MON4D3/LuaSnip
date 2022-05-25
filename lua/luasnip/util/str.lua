@@ -20,7 +20,8 @@ end
 
 function M.aupatescape(s)
 	local comma_escaped = s:gsub(",", "\\,")
-	return vim.fn.fnameescape(comma_escaped)
+	local backslash_escaped = comma_escaped:gsub("\\", "\\\\")
+	return vim.fn.fnameescape(backslash_escaped)
 end
 
 return M
