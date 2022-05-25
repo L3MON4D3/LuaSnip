@@ -1,6 +1,7 @@
 local ls = require("luasnip")
 local cache = require("luasnip.loaders._caches").snipmate
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local session = require("luasnip.session")
@@ -117,7 +118,7 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 				augroup END
 			]],
 			-- escape for autocmd-pattern.
-			path:gsub(" ", "\\ "),
+			str_util.aupatescape(path),
 			-- args for reload.
 			add_ft,
 			path
