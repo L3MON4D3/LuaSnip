@@ -18,4 +18,10 @@ function M.dedent(s)
 	return table.concat(lst, "\n")
 end
 
+function M.aupatescape(s)
+	local comma_escaped = s:gsub(",", "\\,")
+	local backslash_escaped = comma_escaped:gsub("\\", "\\\\")
+	return vim.fn.fnameescape(backslash_escaped)
+end
+
 return M
