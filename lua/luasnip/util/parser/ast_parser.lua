@@ -68,14 +68,24 @@ local to_node_funcs = {
 					state.last_text[#state.last_text]:match(
 						"^%s+$"
 					)
-				local indentstring = var ~= "TM_SELECTED_TEXT"
-						and "$PARENT_INDENT" .. last_line_indent
-					or last_line_indent
-
 				if last_line_indent then
-					return sNode.ISN(nil, { f }, indentstring)
+					-- TM_SELECTED_TEXT contains the indent of the selected
+					-- snippets, which leads to correct indentation if the
+					-- snippet is expanded at the position the text was removed
+					-- from.
+					-- This seems pretty stupid, but TM_SELECTED_TEXT is
+					-- desigend to be compatible with vscode.
+					-- Use SELECT_DEDENT insted.
+					-- stylua: ignore
+					local indentstring = var ~= "TM_SELECTED_TEXT"
+						and "$PARENT_INDENT" .. last_line_indent
+						or last_line_indent
+
+					f = sNode.ISN(nil, { f }, indentstring)
 				end
 			end
+
+			return f
 		end
 		-- if the variable is unknown, just insert an empty text-snippet.
 		-- maybe put this into `state.last_text`? otoh, this won't be visible.
