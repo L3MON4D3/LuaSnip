@@ -1,6 +1,7 @@
 local ls = require("luasnip")
 local cache = require("luasnip.loaders._caches").vscode
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local sp = require("luasnip.nodes.snippetProxy")
@@ -85,7 +86,7 @@ local function load_snippet_files(lang, files, add_opts)
 				augroup END
 			]],
 			-- escape for autocmd-pattern.
-			file:gsub(" ", "\\ "),
+			str_util.aupatescape(file),
 			-- args for reload.
 			lang,
 			file
