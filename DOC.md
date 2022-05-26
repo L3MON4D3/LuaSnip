@@ -440,8 +440,8 @@ The active choice for a choiceNode can be changed by calling `ls.change_choice(1
 -- set keybinds for both INSERT and VISUAL.
 vim.api.nvim_set_keymap("i", "<C-n>", "<Plug>luasnip-next-choice", {})
 vim.api.nvim_set_keymap("s", "<C-n>", "<Plug>luasnip-next-choice", {})
-vim.api.nvim_set_keymap("i", "<C-p>", "<Plug>luasnip-previous-choice", {})
-vim.api.nvim_set_keymap("s", "<C-p>", "<Plug>luasnip-previous-choice", {})
+vim.api.nvim_set_keymap("i", "<C-p>", "<Plug>luasnip-prev-choice", {})
+vim.api.nvim_set_keymap("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
 ```
 
 Apart from this, there is also a [picker](#select_choice) where no cycling is necessary and any
