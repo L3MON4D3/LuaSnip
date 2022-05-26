@@ -168,6 +168,10 @@ local to_node_funcs = {
 --- This should most likely be `{}`.
 ---@return table: node corresponding to `ast`.
 function _to_node(ast, state)
+	if getmetatable(ast) ~= ast_utils.Node_mt then
+		-- ast is not an ast (probably a luasnip-node), return it as-is.
+		return ast
+	end
 	return to_node_funcs[ast.type](ast, state)
 end
 
