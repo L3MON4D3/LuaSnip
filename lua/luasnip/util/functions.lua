@@ -12,6 +12,19 @@ return {
 			return { v }
 		end
 	end,
+	better_var = function(_, parent, varname)
+		local v = parent.snippet.env[varname]
+		if type(v) == "table" then
+			-- Avoid issues with empty vars
+			if #v > 0 then
+				return v
+			else
+				return { "" }
+			end
+		else
+			return { v }
+		end
+	end,
 	copy = function(args)
 		return args[1]
 	end,
