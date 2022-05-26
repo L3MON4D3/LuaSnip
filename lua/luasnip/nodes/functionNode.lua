@@ -84,7 +84,10 @@ function FunctionNode:update_static()
 		)
 		static_text = { "" }
 	end
-	self.static_text = util.wrap_value(static_text)
+	self.static_text = util.indent(
+		util.wrap_value(static_text),
+		self.parent.indentstr
+	)
 end
 
 function FunctionNode:update_restore()
