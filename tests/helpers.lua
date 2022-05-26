@@ -19,7 +19,9 @@ function M.session_setup_luasnip()
 	vim.env.MYVIMRC = "/.vimrc"
 
 	ls = require("luasnip")
-	ls.config.setup({})
+	ls.config.setup({
+		store_selection_keys = "<Tab>"
+	})
 
 	s = ls.s
 	sn = ls.sn

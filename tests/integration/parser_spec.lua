@@ -239,4 +239,35 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("indents Variables.", function()
+		local snip = "b\n\t$TM_SELECTED_TEXT b"
+
+		-- indent, insert text, SELECT.
+		feed("i<Tab><Tab>asdf<Cr>asdf<Esc>Vk<Tab> ")
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		-- the \t in front of $1 is extended to both lines of $TM_SELECTED_TEXT.
+		screen:expect{grid=[[
+			        asdf                                      |
+			        asdf b^                                    |
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("indents Variables in placeholder.", function()
+		local snip = "b\n\t${1:$TM_SELECTED_TEXT}b"
+
+		-- indent, insert text, SELECT.
+		feed("i<Tab><Tab>asdf<Cr>asdf<Esc>Vk<Tab> ")
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		-- the \t in front of $1 is extended to both lines of $TM_SELECTED_TEXT.
+		screen:expect{grid=[[
+			        ^a{3:sdf}                                      |
+			{3:        asdf}b                                     |
+			{2:-- SELECT --}                                      |]]}
+
+		-- just make sure this also works.
+		snip = "b\n\t$TM_SELECTED_TEXTb"
+	end)
 end)
