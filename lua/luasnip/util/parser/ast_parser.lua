@@ -7,6 +7,8 @@ local dNode = require("luasnip.nodes.dynamicNode")
 local sNode = require("luasnip.nodes.snippet")
 local functions = require("luasnip.util.functions")
 local Environ = require("luasnip.util.environ")
+local session = require("luasnip.session")
+local util = require("luasnip.util.util")
 
 local M = {}
 
@@ -18,17 +20,35 @@ local types = ast_utils.types
 
 local _to_node
 
+local function fix_node_indices(nodes)
+	local used_nodes = {}
+	for _, node in ipairs(nodes) do
+		if node.pos and node.pos > 0 then
+			used_nodes[node.pos] = node
+		end
+	end
+
+	for _, v, i in util.key_sorted_pairs(used_nodes) do
+		v.pos = i
+	end
+	return nodes
+end
+
+local function to_nodes(ast_nodes, state)
+	local nodes = {}
+	for i, ast_node in ipairs(ast_nodes) do
+		nodes[i] = _to_node(ast_node, state)
+	end
+
+	return fix_node_indices(nodes)
+end
+
 -- these actually create nodes from any AST.
 local to_node_funcs = {
 	-- careful! this only returns a list of nodes, not a full snippet!
 	-- The table can be passed to the regular snippet-constructors.
 	[types.SNIPPET] = function(ast, state)
-		local children = {}
-		for i, child in ipairs(ast.children) do
-			children[i] = _to_node(child, tabstops)
-		end
-
-		return children
+		return to_nodes(ast.children, state)
 	end,
 	[types.TEXT] = function(ast, state)
 		local text = _split(ast.esc)
@@ -55,6 +75,47 @@ local to_node_funcs = {
 		local node = iNode.I(ast.tabstop)
 		state.tabstops[ast.tabstop] = node
 
+		return node
+	end,
+	[types.PLACEHOLDER] = function(ast, state)
+		-- check from TABSTOP.
+		local existing_tabstop = state.tabstops[ast.tabstop]
+		if existing_tabstop then
+			return fNode.F(functions.copy, { existing_tabstop })
+		end
+
+		local node
+
+		if #ast.children == 1 and ast.children[1].type == types.TEXT then
+			-- placeholder only contains text, like `"${1:adsf}"`.
+			-- `"${1}"` are parsed as tabstops.
+			node = iNode.I(ast.tabstop, ast.children[1].esc)
+		else
+			local snip = sNode.SN(ast.tabstop, to_nodes(ast.children, state))
+			if not snip:is_interactive() then
+				-- this placeholder only contains text or (transformed)
+				-- variables, so an insertNode can be generated from its
+				-- contents on expansion.
+				node = dNode.D(ast.tabstop, function(_, parent)
+					-- create new snippet that only contains the parsed
+					-- snippetNode.
+					-- The children have to be copied to prevent every
+					-- expansion getting the same object.
+					local snippet = sNode.S("", snip:copy())
+
+					-- get active env from snippet.
+					snippet:fake_expand({ env = parent.snippet.env })
+					local iText = snippet:get_static_text()
+
+					-- no need to un-escape iText, that was already done.
+					return sNode.SN(nil, iNode.I(1, iText))
+				end, {})
+			else
+				node = session.config.parser_nested_assembler(ast.tabstop, snip)
+			end
+		end
+
+		state.tabstops[ast.tabstop] = node
 		return node
 	end,
 	[types.VARIABLE] = function(ast, state)
