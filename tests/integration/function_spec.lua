@@ -222,4 +222,20 @@ describe("FunctionNode", function()
 			{2:-- SELECT --}                                      |]],
 		})
 	end)
+
+	it("Is correctly indented inside ISN.", function()
+		local snip = [[
+			s("", {
+				isn(1, {
+					f(function()
+						return {"asdf", "asdf"}
+					end, {})
+				}, "\t")
+			})
+		]]
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_static_text()"),
+			{ "asdf", "\tasdf" }
+		)
+	end)
 end)
