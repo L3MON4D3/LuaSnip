@@ -14,13 +14,15 @@ local _split = function(s)
 	return vim.split(s, "\n", { plain = true })
 end
 
+local types = ast_utils.types
+
 local _to_node
 
 -- these actually create nodes from any AST.
 local to_node_funcs = {
 	-- careful! this only returns a list of nodes, not a full snippet!
 	-- The table can be passed to the regular snippet-constructors.
-	[ast_utils.types.SNIPPET] = function(ast, tabstops)
+	[types.SNIPPET] = function(ast, state)
 		local children = {}
 		for i, child in ipairs(ast.children) do
 			children[i] = _to_node(child, tabstops)
@@ -28,13 +30,13 @@ local to_node_funcs = {
 
 		return children
 	end,
-	[ast_utils.types.TEXT] = function(ast, state)
+	[types.TEXT] = function(ast, state)
 		local text = _split(ast.esc)
 		-- store text for `VARIABLE`, might be needed for indentation.
 		state.last_text = text
 		return tNode.T(text)
 	end,
-	[ast_utils.types.CHOICE] = function(ast)
+	[types.CHOICE] = function(ast)
 		local choices = {}
 		for i, choice in ipairs(ast.items) do
 			choices[i] = tNode.T(_split(choice))
@@ -42,7 +44,7 @@ local to_node_funcs = {
 
 		return cNode.C(ast.tabstop, choices)
 	end,
-	[ast_utils.types.TABSTOP] = function(ast, state)
+	[types.TABSTOP] = function(ast, state)
 		local existing_tabstop = state.tabstops[ast.tabstop]
 		if existing_tabstop then
 			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
@@ -55,7 +57,7 @@ local to_node_funcs = {
 
 		return node
 	end,
-	[ast_utils.types.VARIABLE] = function(ast, state)
+	[types.VARIABLE] = function(ast, state)
 		local var = ast.name
 		if Environ.is_valid_var(var) then
 			-- pass varname as first user_arg.
