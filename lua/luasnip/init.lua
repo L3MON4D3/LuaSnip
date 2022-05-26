@@ -315,10 +315,7 @@ local function expand_or_jump()
 end
 
 local function lsp_expand(body, opts)
-	-- snip_expand(ls.parser.parse_snippet("", body), opts)
-	local parser = require("luasnip.util.parser.ast_parser")
-	local ast = require("vim.lsp._snippet").parse(body)
-	snip_expand(snip_mod.S("", parser.to_node(ast, {})))
+	snip_expand(ls.parser.parse_snippet("", body), opts)
 end
 
 local function choice_active()

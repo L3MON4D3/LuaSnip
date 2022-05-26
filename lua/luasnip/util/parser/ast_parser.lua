@@ -164,12 +164,11 @@ local to_node_funcs = {
 --- - `tabstops`: maps tabstop-position to already-parsed tabstops.
 --- - `last_text`: stores last text, VARIABLE might have to be indented with
 ---   its contents (`"\n\t$SOMEVAR"`, all lines of $SOMEVAR have to be indented
----   with "\n").
+---   with "\t").
 --- This should most likely be `{}`.
 ---@return table: node corresponding to `ast`.
 function _to_node(ast, state)
-	local l = to_node_funcs[ast.type](ast, state)
-	return l
+	return to_node_funcs[ast.type](ast, state)
 end
 
 function M.to_node(ast)
