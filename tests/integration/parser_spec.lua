@@ -248,10 +248,12 @@ describe("Parser", function()
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
 		-- the \t in front of $1 is extended to both lines of $TM_SELECTED_TEXT.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			        asdf                                      |
 			        asdf b^                                    |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("indents Variables in placeholder.", function()
@@ -262,10 +264,12 @@ describe("Parser", function()
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
 		-- the \t in front of $1 is extended to both lines of $TM_SELECTED_TEXT.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			        ^a{3:sdf}                                      |
 			{3:        asdf}b                                     |
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		-- just make sure this also works.
 		snip = "b\n\t$TM_SELECTED_TEXTb"
