@@ -120,40 +120,44 @@ local to_node_funcs = {
 	end,
 	[types.VARIABLE] = function(ast, state)
 		local var = ast.name
+		local fn
 		if Environ.is_valid_var(var) then
-			-- pass varname as first user_arg.
-			local f = fNode.F(functions.better_var, {}, { user_args = { var } })
-
-			-- if the variable is preceded by \n<indent>, the indent is applied to
-			-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
-			if state.last_text ~= nil and #state.last_text > 1 then
-				local last_line_indent =
-					state.last_text[#state.last_text]:match(
-						"^%s+$"
-					)
-				if last_line_indent then
-					-- TM_SELECTED_TEXT contains the indent of the selected
-					-- snippets, which leads to correct indentation if the
-					-- snippet is expanded at the position the text was removed
-					-- from.
-					-- This seems pretty stupid, but TM_SELECTED_TEXT is
-					-- desigend to be compatible with vscode.
-					-- Use SELECT_DEDENT insted.
-					-- stylua: ignore
-					local indentstring = var ~= "TM_SELECTED_TEXT"
-						and "$PARENT_INDENT" .. last_line_indent
-						or last_line_indent
-
-					f = sNode.ISN(nil, { f }, indentstring)
-				end
-			end
-
-			return f
+			fn = functions.better_var(var)
+		elseif state.var_functions[var] then
+			fn = state.var_functions[var]
+		else
+			-- if the variable is unknown, just insert an empty text-snippet.
+			-- maybe put this into `state.last_text`? otoh, this won't be visible.
+			-- Don't for now.
+			return tNode.T({ "" })
 		end
-		-- if the variable is unknown, just insert an empty text-snippet.
-		-- maybe put this into `state.last_text`? otoh, this won't be visible.
-		-- Don't for now.
-		return tNode.T({ "" })
+
+		local f = fNode.F(fn, {})
+
+		-- if the variable is preceded by \n<indent>, the indent is applied to
+		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
+		if state.last_text ~= nil and #state.last_text > 1 then
+			local last_line_indent = state.last_text[#state.last_text]:match(
+				"^%s+$"
+			)
+			if last_line_indent then
+				-- TM_SELECTED_TEXT contains the indent of the selected
+				-- snippets, which leads to correct indentation if the
+				-- snippet is expanded at the position the text was removed
+				-- from.
+				-- This seems pretty stupid, but TM_SELECTED_TEXT is
+				-- desigend to be compatible with vscode.
+				-- Use SELECT_DEDENT insted.
+				-- stylua: ignore
+				local indentstring = var ~= "TM_SELECTED_TEXT"
+					and "$PARENT_INDENT" .. last_line_indent
+					or last_line_indent
+
+				f = sNode.ISN(nil, { f }, indentstring)
+			end
+		end
+
+		return f
 	end,
 }
 
@@ -165,6 +169,8 @@ local to_node_funcs = {
 --- - `last_text`: stores last text, VARIABLE might have to be indented with
 ---   its contents (`"\n\t$SOMEVAR"`, all lines of $SOMEVAR have to be indented
 ---   with "\t").
+--- - `var_functions`: table, maps varname to custom function for that variable.
+---   For now, only used when parsing snipmate-snippets.
 --- This should most likely be `{}`.
 ---@return table: node corresponding to `ast`.
 function _to_node(ast, state)
@@ -175,8 +181,15 @@ function _to_node(ast, state)
 	return to_node_funcs[ast.type](ast, state)
 end
 
-function M.to_node(ast)
-	return _to_node(ast, { tabstops = {}, last_text = nil })
+function M.to_node(ast, opts)
+	return _to_node(
+		ast,
+		vim.tbl_extend("keep", opts or {}, {
+			tabstops = {},
+			var_functions = {},
+			last_text = nil,
+		})
+	)
 end
 
 return M
