@@ -155,6 +155,9 @@ function M.lazy_load(opts)
 		load_paths.add_opts = add_opts
 		table.insert(cache.lazy_load_paths, load_paths)
 	end
+
+	-- load for current buffer on startup.
+	M._load_lazy_loaded(vim.api.nvim_get_current_buf())
 end
 
 function M.reload_file(filename)
