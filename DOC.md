@@ -1694,7 +1694,7 @@ the lazy_load.
 - `expand_or_jump()`: returns true if jump/expand was succesful.
 
 - `expand_auto()`: expands the autosnippets before the cursor (not necessary
-  to call manually, will be called via autocmd if `enable_autosnippet` is set
+  to call manually, will be called via autocmd if `enable_autosnippets` is set
   in the config).
 
 - `snip_expand(snip, opts)`: expand `snip` at the current cursor position.
