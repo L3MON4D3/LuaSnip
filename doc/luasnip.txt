@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.5.0             Last change: 2022 May 27
+*luasnip.txt*             For NVIM v0.5.0             Last change: 2022 May 28
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1854,8 +1854,8 @@ empty the snippets table and the caches of the lazy_load.
     is ignored if the cursor is not inside the current snippet.
 - `expand_or_jump()`: returns true if jump/expand was succesful.
 - `expand_auto()`: expands the autosnippets before the cursor (not necessary to
-    call manually, will be called via autocmd if `enable_autosnippets` is set in the
-    config).
+    call manually, will be called via autocmd if `enable_autosnippets` is set in
+    the config).
 - `snip_expand(snip, opts)`: expand `snip` at the current cursor position. `opts`
     may contain the following keys:
     - `clear_region`: A region of text to clear after expanding (but before
