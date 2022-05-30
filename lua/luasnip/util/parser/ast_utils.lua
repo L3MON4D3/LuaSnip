@@ -1,7 +1,7 @@
 local M = {}
 
-local types = require("vim.lsp._snippet").NodeType
-local Node_mt = getmetatable(require("vim.lsp._snippet").parse("$0"))
+local types = require("vim.lsp.parser").ast.node_type
+local Node_mt = getmetatable(require("vim.lsp.parser").parse("$0"))
 
 --- Find type of 0-placeholder/choice/tabstop, if it exists.
 --- Ignores transformations.

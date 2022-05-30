@@ -1,7 +1,7 @@
 local sNode = require("luasnip.nodes.snippet")
 local ast_utils = require("luasnip.util.parser.ast_utils")
 local ast_parser = require("luasnip.util.parser.ast_parser")
-local parse = require("vim.lsp._snippet").parse
+local parse = require("vim.lsp.parser").parse
 local str = require("luasnip.util.str")
 local functions = require("luasnip.util.functions")
 
