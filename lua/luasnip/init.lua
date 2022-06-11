@@ -634,6 +634,12 @@ local function clean_invalidated(opts)
 	snippet_collection.clean_invalidated(opts)
 end
 
+local function leave_current_snippet()
+	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
+	-- make i(0) of that snippet active.
+	session.current_nodes[vim.api.nvim_get_current_buf()] = active.parent.snippet.next
+end
+
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
@@ -690,6 +696,7 @@ ls = {
 	session = session,
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,
+	leave_current_snippet = leave_current_snippet,
 }
 
 return ls
