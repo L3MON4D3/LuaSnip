@@ -460,4 +460,32 @@ describe("snippets_basic", function()
 		})
 		--  .......|.......|
 	end)
+
+	it("env is extended", function()
+		local snip = [[
+			s("trig", {
+				l(l.EXTENDED)
+			}, {
+				callbacks = {
+					[-1] = {
+						[events.pre_expand] = function()
+							return {
+								env_override = {
+									EXTENDED = "woah :o"
+								}
+							}
+						end
+					}
+				}
+			})
+		]]
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+
+		screen:expect({
+			grid = [[
+			woah :o^                                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)
