@@ -4,22 +4,23 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    types: 
-      - synchronize
+  pull_request_target:
 
 jobs:
   postprocessing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
       - name: panvimdoc
         uses: kdheepak/panvimdoc@main
         with:
           vimdoc: luasnip
           pandoc: DOC.md
 
-      - uses: stefanzweifel/git-auto-commit-action@v4.13.1
+      - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Auto generate docs"
       - name: "Format with Stylua"
