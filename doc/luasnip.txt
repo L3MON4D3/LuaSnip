@@ -972,6 +972,9 @@ Simple example:
     `"{} ? {} : {}"` becomes `"{1} ? {2} : {3}"`, while
     `"{} ? {3} : {}"` becomes `"{1} ? {3} : {4}"` (the count restarts at each
     numbered placeholder).
+    If a key appears more than once in `format`, the node in
+    `content[<duplicate_key>]` is inserted for the first, and copies of it for
+    subsequent occurences.
 - `nodes`: just a table of nodes.
 - `opts`: optional arguments:
     - `delimiters`: string, two characters. Change `{,}` to some other pair, eg.
