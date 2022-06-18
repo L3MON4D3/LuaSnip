@@ -1564,9 +1564,11 @@ Events can be used to react to some action inside snippets. These callbacks can
 be defined per-snippet (`callbacks`-key in snippet constructor) or globally
 (autocommand).
 
-`callbacks`: `fn(node[, event_args])`  
+`callbacks`: `fn(node[, event_args]) -> event_res`  
 All callbacks get the `node` associated with the event and event-specific
 optional arguments, `event_args`.
+`event_res` is only used in one event, `pre_expand`, where some properties of
+the snippet can be changed.
 
 `autocommand`:
 Luasnip uses `User`-events. Autocommands for these can be registered using
@@ -1603,6 +1605,9 @@ The node and `event_args` can be accessed through `require("luasnip").session`:
   `event_args`:
   * `expand_pos`: `{<row>, <column>}`, position at which the snippet will be
   	expanded. `<row>` and `<column>` are both 0-indexed.
+  `event_res`:
+  * `env_override`: `map string->(string[]|string)`, override or extend the
+    snippet's environment (`snip.env`).
 
 A pretty useless, beyond serving as an example here, application of these would
 be printing eg. the nodes' text after entering:
