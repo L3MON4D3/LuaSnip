@@ -12,6 +12,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 - Dynamic Snippet creation
 - Regex-Trigger
 - Autotriggered Snippets
+- Easy Postfix Snippets
 - Fast
 - Parse [LSP-Style](https://microsoft.github.io/language-server-protocol/specification#snippet_syntax) Snippets either directly in lua, as a vscode package or a snipmate snippet collection.
 - Expand LSP-Snippets with [nvim-compe](https://github.com/hrsh7th/nvim-compe) (or its' successor, [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) (requires [cmp_luasnip](https://github.com/saadparwaiz1/cmp_luasnip)))
