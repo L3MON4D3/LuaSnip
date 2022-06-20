@@ -40,6 +40,12 @@ function Environ:__index(key)
 	return v
 end
 
+function Environ:override(env, new_env)
+	for k, v in pairs(new_env) do
+		env[k] = v
+	end
+end
+
 -- Variables defined in https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variables
 
 -- Inherited from TextMate

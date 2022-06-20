@@ -420,7 +420,7 @@ function Snippet:trigger_expand(current_node, pos_id, env)
 	-- update pos, event-callback might have moved the extmark.
 	pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 
-	env = vim.tbl_extend("force", env, pre_expand_res.env_override or {})
+	Environ:override(env, pre_expand_res.env_override or {})
 
 	local indentstring = util.line_chars_before(pos):match("^%s*")
 	-- expand tabs before indenting to keep indentstring unmodified
