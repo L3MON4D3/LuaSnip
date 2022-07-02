@@ -225,7 +225,7 @@ end
 
 function RestoreNode:update_all_dependents()
 	self:_update_dependents()
-	self.snip:_update_dependents()
+	self.snip:update_all_dependents()
 end
 
 function RestoreNode:update_all_dependents_static()

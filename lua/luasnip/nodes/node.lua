@@ -175,6 +175,10 @@ end
 -- This allows overriding update_dependents in a parent-node (eg. snippetNode)
 -- while still having access to the original function (for subsequent overrides).
 Node.update_dependents = Node._update_dependents
+-- update_all_dependents is used to update all nodes' dependents in a
+-- snippet-tree. Necessary in eg. set_choice (especially since nodes may have
+-- dependencies outside the tree itself, so update_all_dependents should take
+-- care of those too.)
 Node.update_all_dependents = Node._update_dependents
 
 function Node:_update_dependents_static()
