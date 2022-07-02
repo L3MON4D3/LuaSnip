@@ -311,6 +311,17 @@ function DynamicNode:update_restore()
 		local tmp = self.stored_snip
 
 		tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp.ext_opts.passive))
+
+		-- position might (will probably!!) still have changed, so update it
+		-- here too (as opposed to only in update).
+		tmp:init_positions(self.snip_absolute_position)
+		tmp:init_insert_positions(self.snip_absolute_insert_position)
+
+		tmp:make_args_absolute()
+
+		tmp:set_dependents()
+		tmp:set_argnodes(self.parent.snippet.dependents_dict)
+
 		self.parent:enter_node(self.indx)
 		tmp:put_initial(self.mark:pos_begin_raw())
 		tmp:update_restore()

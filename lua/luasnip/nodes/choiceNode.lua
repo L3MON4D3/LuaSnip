@@ -242,6 +242,12 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice.mark = self.mark:copy_pos_gravs(
 		vim.deepcopy(self.active_choice.ext_opts.passive)
 	)
+
+	-- re-init positions for child-restoreNodes (they will update their
+	-- children in put_initial, but their own position has to be changed here).
+	self:init_positions(self.absolute_position)
+	self:init_insert_positions(self.absolute_insert_position)
+
 	self.active_choice:put_initial(self.mark:pos_begin_raw())
 
 	self.active_choice:update_restore()
