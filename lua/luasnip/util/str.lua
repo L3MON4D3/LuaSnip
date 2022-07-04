@@ -1,20 +1,47 @@
 -- Some string processing utility functions
 local M = {}
 
-function M.dedent(s)
-	local lst = vim.split(s, "\n")
-	if #lst > 0 then
+---In-place dedents strings in lines.
+---@param lines string[].
+local function dedent(lines)
+	if #lines > 0 then
 		local ind_size = math.huge
-		for i, _ in ipairs(lst) do
-			local i1, i2 = lst[i]:find("^%s*[^%s]")
+		for i, _ in ipairs(lines) do
+			local i1, i2 = lines[i]:find("^%s*[^%s]")
 			if i1 and i2 < ind_size then
 				ind_size = i2
 			end
 		end
-		for i, _ in ipairs(lst) do
-			lst[i] = lst[i]:sub(ind_size, -1)
+		for i, _ in ipairs(lines) do
+			lines[i] = lines[i]:sub(ind_size, -1)
 		end
 	end
+end
+
+---Applies opts to lines.
+---lines is modified in-place.
+---@param lines string[].
+---@param options table, required, can have values:
+---  - trim_empty: removes empty first and last lines.
+---  - dedent: removes indent common to all lines.
+function M.process_multiline(lines, options)
+	if options.trim_empty then
+		if lines[1]:match("^%s*$") then
+			table.remove(lines, 1)
+		end
+		if lines[#lines]:match("^%s*$") then
+			lines[#lines] = nil
+		end
+	end
+
+	if options.dedent then
+		dedent(lines)
+	end
+end
+
+function M.dedent(s)
+	local lst = vim.split(s, "\n")
+	dedent(lst)
 	return table.concat(lst, "\n")
 end
 
