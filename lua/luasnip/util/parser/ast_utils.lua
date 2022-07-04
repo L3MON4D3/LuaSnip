@@ -1,7 +1,9 @@
 local M = {}
 
 local types = require("luasnip.util.parser.neovim_ast").node_type
-local Node_mt = getmetatable(require("luasnip.util.parser.neovim_parser").parse("$0"))
+local Node_mt = getmetatable(
+	require("luasnip.util.parser.neovim_parser").parse("$0")
+)
 
 --- Find type of 0-placeholder/choice/tabstop, if it exists.
 --- Ignores transformations.
