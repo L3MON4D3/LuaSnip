@@ -1,7 +1,8 @@
 local sNode = require("luasnip.nodes.snippet")
 local ast_utils = require("luasnip.util.parser.ast_utils")
 local ast_parser = require("luasnip.util.parser.ast_parser")
-local parse = require("vim.lsp.parser").parse
+local parse = require("luasnip.util.parser.neovim_parser").parse
+local Ast = require("luasnip.util.parser.neovim_ast")
 local Str = require("luasnip.util.str")
 local functions = require("luasnip.util.functions")
 
@@ -14,8 +15,14 @@ function M.parse_snippet(context, body, opts)
 	Str.process_multiline(lines, opts)
 	body = table.concat(lines, "\n")
 
-	local ast = parse(body)
-
+	local ast
+	if body == "" then
+		ast = Ast.snippet({
+			Ast.text(""),
+		})
+	else
+		ast = parse(body)
+	end
 	if type(context) == "number" then
 		return sNode.SN(context, ast_parser.to_node(ast))
 	end
