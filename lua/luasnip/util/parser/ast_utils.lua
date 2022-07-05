@@ -1,9 +1,11 @@
-local M = {}
-
 local types = require("luasnip.util.parser.neovim_ast").node_type
 local Node_mt = getmetatable(
 	require("luasnip.util.parser.neovim_parser").parse("$0")
 )
+local util = require("luasnip.util.util")
+local jsregexp_ok, jsregexp = pcall(require, "jsregexp")
+
+local M = {}
 
 --- Find type of 0-placeholder/choice/tabstop, if it exists.
 --- Ignores transformations.
@@ -83,6 +85,76 @@ function M.fix_zero(ast)
 			tabstop = 0,
 		}, Node_mt)
 	)
+end
+
+local function apply_modifier(modifier, text)
+	-- TODO: impl.
+	return text
+end
+
+local function apply_transform_format(nodes, captures)
+	local transformed = ""
+	for _, node in ipairs(nodes) do
+		if node.type == types.TEXT then
+			transformed = transformed .. node.esc
+		else
+			local capture = captures[node.capture_index]
+			-- capture exists if it ..exists.. and is nonempty.
+			if capture and #capture > 1 then
+				if node.if_text then
+					transformed = transformed .. node.if_text
+				elseif node.modifier then
+					transformed = transformed
+						.. apply_modifier(capture, node.modifier)
+				else
+					transformed = transformed .. capture
+				end
+			else
+				if node.else_text then
+					transformed = transformed .. node.else_text
+				end
+			end
+		end
+	end
+
+	return transformed
+end
+
+if jsregexp_ok then
+	function M.apply_transform(transform)
+		local reg_compiled = jsregexp.compile(
+			transform.pattern,
+			transform.option
+		)
+		-- can be passed to functionNode!
+		return function(lines)
+			-- luasnip expects+passes lines as list, but regex needs one string.
+			lines = table.concat(lines, "\\n")
+			local matches = reg_compiled(lines)
+
+			local transformed = ""
+			-- index one past the end of previous match.
+			-- This is used to append unmatched characters to `transformed`, so
+			-- it's initialized with 1.
+			local prev_match_end = 1
+			for _, match in ipairs(matches) do
+				-- -1: begin_ind is inclusive.
+				transformed = transformed
+					.. lines:sub(prev_match_end, match.begin_ind - 1)
+					.. apply_transform_format(transform.format, match.groups)
+
+				-- end-exclusive
+				prev_match_end = match.end_ind
+			end
+			transformed = transformed .. lines:sub(prev_match_end, #lines)
+
+			return vim.split(transformed, "\n")
+		end
+	end
+else
+	function M.apply_transform()
+		return util.id
+	end
 end
 
 M.types = types

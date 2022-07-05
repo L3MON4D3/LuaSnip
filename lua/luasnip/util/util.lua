@@ -545,6 +545,10 @@ local function no_region_check_wrap(fn, ...)
 	return fn(...)
 end
 
+local function id(a)
+	return a
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -584,4 +588,5 @@ return {
 	pop_front = pop_front,
 	key_sorted_pairs = key_sorted_pairs,
 	no_region_check_wrap = no_region_check_wrap,
+	id = id,
 }

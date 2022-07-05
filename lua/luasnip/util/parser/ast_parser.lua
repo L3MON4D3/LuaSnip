@@ -43,6 +43,30 @@ local function to_nodes(ast_nodes, state)
 	return fix_node_indices(nodes)
 end
 
+local function var_func(varname, variable)
+	local transform_func
+	if variable.transform then
+		transform_func = ast_utils.apply_transform(variable.transform)
+	else
+		transform_func = util.id
+	end
+	return function(_, parent)
+		local v = parent.snippet.env[varname]
+		local lines
+		if type(v) == "table" then
+			-- Avoid issues with empty vars
+			if #v > 0 then
+				lines = v
+			else
+				lines = { "" }
+			end
+		else
+			lines = { v }
+		end
+		return transform_func(lines)
+	end
+end
+
 -- these actually create nodes from any AST.
 local to_node_funcs = {
 	-- careful! this only returns a list of nodes, not a full snippet!
@@ -122,7 +146,7 @@ local to_node_funcs = {
 		local var = ast.name
 		local fn
 		if Environ.is_valid_var(var) then
-			fn = functions.better_var(var)
+			fn = var_func(var, ast)
 		elseif state.var_functions[var] then
 			fn = state.var_functions[var]
 		else
