@@ -139,16 +139,16 @@ end
 ---@param capture_transform (string | table | nil)
 ---         - (string): {capture_transform} is a modifier.
 ---         - (table): {capture_transform} can contain either of
----                    - {if_text} (string, default "") Inserted for nonempty
----                                                     capture.
----                    - {else_text} (string, default "") Inserted for empty or
----                                                       undefined capture.
+---                    - {if_text} (string) Inserted for nonempty
+---                                         capture.
+---                    - {else_text} (string) Inserted for empty or
+---                                           undefined capture.
 ---@return table |lsp-parser-format|
 function M.format(capture_index, capture_transform)
 	local if_text, else_text, modifier
 	if type(capture_transform) == "table" then
-		if_text = capture_transform.if_text or ""
-		else_text = capture_transform.else_text or ""
+		if_text = capture_transform.if_text
+		else_text = capture_transform.else_text
 	elseif type(capture_transform) == "string" then
 		modifier = capture_transform
 	end
