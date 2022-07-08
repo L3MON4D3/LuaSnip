@@ -1094,6 +1094,50 @@ To use any `*SELECT*` variable, the `store_selection_keys` must be set via
 hitting `<Tab>` while in Visualmode will populate the `*SELECT*`-vars for the next
 snippet and then clear them.
 
+## Environemt Namespaces
+
+You can also add your own variables by using the `ls.env_namespace(name, opts)` where:
+
+* `name`  is string that does not contains the character "_" and names the namespace.
+* `opts` is a table containing:
+    * `vars` 
+    Is a function that receives a string and returns a value for the var with that name
+    or a table from var name to a value
+    (in this case, if the value is a function it will be executed  lazily once per snippet expansion).
+    * `init` A function that gets a parameter pos with the 0-based position of the cursor and returns
+        a table of variables that will set to the environment of the snippet on expansion,
+        use this for vars that have to be calculated in that moment or that depend on each other.
+    * `eager` A list of names of vars that will be taken from `vars` and appended  eagerly (like those in init)
+    * `multiline_vars` Says if certain vars are a table or just a string, can be a function that get's the name of the var and returns
+        true if the var is a key, a list of vars that are tables or a boolean for the full namespace, it's false by default.
+
+The four fields of `opts` are optional but you need to provide either `init` or  `vars`, and `eager` can't be without `vars`.
+Also you can't use namespaces that override default vars.
+
+You can also add your own variables by using the `ls.extend_env(namespace, vars)` where:
+
+* `namespace` is string that does not contains the character "_".
+* `vars` 
+  * is a function that receives a string and returns a value for the var with that name
+  * or a table from var name to a value 
+    (in this case, if the value is a function it will be executed  lazily once per snippet expansion)
+
+A simple example to make it more clear:
+
+```lua
+local random_lang()
+    return return ({"LUA", "VIML"})[math.floor(math.random()+0.5)]
+end
+
+ls.extend_env(MY, { NAME="LuaSnip",  LANG=random_lang })`
+
+-- then you can use  $MY_NAME and $MY_LANG in your snippets
+
+ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
+
+-- then you can use  $SYS_HOME and $SYS_USER (or any other system environment var) in your snippets
+```
+
 
 # LOADERS
 
