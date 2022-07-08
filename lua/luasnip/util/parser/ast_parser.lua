@@ -67,6 +67,17 @@ local function var_func(varname, variable)
 	end
 end
 
+local function copy_func(tabstop)
+	local transform_func
+	if tabstop.transform then
+		transform_func = ast_utils.apply_transform(tabstop.transform)
+	else
+		transform_func = util.id
+	end
+	return function(args)
+		return transform_func(args[1])
+	end
+end
 -- these actually create nodes from any AST.
 local to_node_funcs = {
 	-- careful! this only returns a list of nodes, not a full snippet!
@@ -92,7 +103,7 @@ local to_node_funcs = {
 		local existing_tabstop = state.tabstops[ast.tabstop]
 		if existing_tabstop then
 			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
-			return fNode.F(functions.copy, { existing_tabstop })
+			return fNode.F(copy_func(ast), { existing_tabstop })
 		end
 
 		-- tabstops don't have placeholder-text.

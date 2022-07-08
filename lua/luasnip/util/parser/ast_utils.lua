@@ -87,9 +87,23 @@ function M.fix_zero(ast)
 	)
 end
 
-local function apply_modifier(modifier, text)
-	-- TODO: impl.
-	return text
+local modifiers = setmetatable({
+	upcase = string.upper,
+	downcase = string.lower,
+	capitalize = function(string)
+		-- uppercase first character only.
+		return string:sub(1, 1):upper() .. string:sub(2, -1)
+	end,
+}, {
+	__index = function()
+		-- return string unmodified.
+		-- TODO: log an error/warning here.
+		return util.id
+	end,
+})
+local function apply_modifier(text, modifier)
+	Insp(modifier)
+	return modifiers[modifier](text)
 end
 
 local function apply_transform_format(nodes, captures)
@@ -120,8 +134,8 @@ local function apply_transform_format(nodes, captures)
 	return transformed
 end
 
-if jsregexp_ok then
-	function M.apply_transform(transform)
+function M.apply_transform(transform)
+	if jsregexp_ok then
 		local reg_compiled = jsregexp.compile(
 			transform.pattern,
 			transform.option
@@ -150,9 +164,11 @@ if jsregexp_ok then
 
 			return vim.split(transformed, "\n")
 		end
-	end
-else
-	function M.apply_transform()
+	else
+		-- without jsregexp, we cannot properly transform whatever is supposed to
+		-- be transformed here.
+		-- Just return a function that returns the to-be-transformed string
+		-- unmodified.
 		return util.id
 	end
 end

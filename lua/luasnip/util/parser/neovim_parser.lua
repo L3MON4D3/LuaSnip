@@ -260,8 +260,8 @@ S.format = P.any(
 		),
 		function(values)
 			return ast.format(values[3], {
-				if_text = values[5][2] and values[5][2].esc,
-				else_text = values[5][4] and values[5][4].esc,
+				if_text = values[5][2] and values[5][2].esc or "",
+				else_text = values[5][4] and values[5][4].esc or "",
 			})
 		end
 	),
@@ -276,7 +276,7 @@ S.format = P.any(
 		),
 		function(values)
 			return ast.format(values[3], {
-				if_text = values[5][2] and values[5][2].esc,
+				if_text = values[5][2] and values[5][2].esc or "",
 			})
 		end
 	),
@@ -292,7 +292,7 @@ S.format = P.any(
 		),
 		function(values)
 			return ast.format(values[3], {
-				else_text = values[6] and values[6].esc,
+				else_text = values[6] and values[6].esc or "",
 			})
 		end
 	),
@@ -307,7 +307,7 @@ S.format = P.any(
 		),
 		function(values)
 			return ast.format(values[3], {
-				else_text = values[5] and values[5].esc,
+				else_text = values[5] and values[5].esc or "",
 			})
 		end
 	)
