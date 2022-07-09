@@ -1126,7 +1126,7 @@ A simple example to make it more clear:
 
 ```lua
 local random_lang()
-    return return ({"LUA", "VIML"})[math.floor(math.random()+0.5)]
+    return ({"LUA", "VIML"})[math.floor(math.random()+1.5)]
 end
 
 ls.extend_env(MY, { NAME="LuaSnip",  LANG=random_lang })`
