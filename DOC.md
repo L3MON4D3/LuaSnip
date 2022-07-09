@@ -1114,28 +1114,25 @@ You can also add your own variables by using the `ls.env_namespace(name, opts)` 
 The four fields of `opts` are optional but you need to provide either `init` or  `vars`, and `eager` can't be without `vars`.
 Also you can't use namespaces that override default vars.
 
-You can also add your own variables by using the `ls.extend_env(namespace, vars)` where:
-
-* `namespace` is string that does not contains the character "_".
-* `vars` 
-  * is a function that receives a string and returns a value for the var with that name
-  * or a table from var name to a value 
-    (in this case, if the value is a function it will be executed  lazily once per snippet expansion)
 
 A simple example to make it more clear:
 
 ```lua
 local random_lang()
-    return ({"LUA", "VIML"})[math.floor(math.random()+1.5)]
+    return ({"LUA", "VIML", "VIML9"})[math.floor(math.random()/2 + 1.5)]
 end
 
-ls.extend_env(MY, { NAME="LuaSnip",  LANG=random_lang })`
+ls.env_namespace("MY", {vars={ NAME="LuaSnip",  LANG=random_lang }})`
 
 -- then you can use  $MY_NAME and $MY_LANG in your snippets
 
 ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
 
--- then you can use  $SYS_HOME and $SYS_USER (or any other system environment var) in your snippets
+-- then you can use  $SYS_HOME which was eagerly initialized but also $SYS_USER (or any other system environment var) in your snippets
+
+lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} end)
+
+-- then you can use  $POS_VAL in your snippets
 ```
 
 
