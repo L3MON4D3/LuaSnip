@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.5.0            Last change: 2022 July 02
+*luasnip.txt*             For NVIM v0.5.0            Last change: 2022 July 09
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
