@@ -195,14 +195,16 @@ describe("loaders:", function()
 		-- just the filetype the test-snippets are added for.
 		exec("set ft=prio")
 
-		exec_lua(string.format(
-			[[require("luasnip.loaders.from_snipmate").load({
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_snipmate").load({
 					paths={"%s"},
 					override_priority = 2000
 				})]],
-			os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/snipmate-snippets/snippets"
-		))
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets"
+			)
+		)
 
 		feed("iaaaa")
 		exec_lua("ls.expand()")
@@ -234,14 +236,16 @@ describe("loaders:", function()
 			{2:-- INSERT --}                                      |]],
 		})
 
-		exec_lua(string.format(
-			[[require("luasnip.loaders.from_snipmate").load({
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_snipmate").load({
 					paths={"%s"},
 					override_priority = 4000
 				})]],
-			os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/snipmate-snippets/snippets"
-		))
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets"
+			)
+		)
 
 		feed("<Cr>aaaa")
 		exec_lua("ls.expand()")
@@ -254,14 +258,16 @@ describe("loaders:", function()
 			{2:-- INSERT --}                                      |]],
 		})
 
-		exec_lua(string.format(
-			[[require("luasnip.loaders.from_lua").load({
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").load({
 					paths={"%s"},
 					default_priority = 5000
 				})]],
-			os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/lua-snippets/luasnippets"
-		))
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets"
+			)
+		)
 
 		feed("<Cr>aaaa")
 		exec_lua("ls.expand()")
@@ -275,14 +281,16 @@ describe("loaders:", function()
 		})
 
 		-- make sure that not just the last loaded snippet is triggered.
-		exec_lua(string.format(
-			[[require("luasnip.loaders.from_snipmate").load({
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_snipmate").load({
 					paths={"%s"},
 					default_priority = 4999
 				})]],
-			os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/snipmate-snippets/snippets"
-		))
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets"
+			)
+		)
 
 		feed("<Cr>aaaa")
 		exec_lua("ls.expand()")
@@ -346,14 +354,16 @@ describe("loaders:", function()
 			{2:-- INSERT --}                                      |]],
 		})
 
-		exec_lua(string.format(
-			[[require("luasnip.loaders.from_snipmate").load({
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_snipmate").load({
 					paths={"%s"},
 					default_priority = 2002
 				})]],
-			os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/snipmate-snippets/snippets"
-		))
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets"
+			)
+		)
 
 		feed("<Cr>bbbb")
 		exec_lua("ls.expand()")
