@@ -105,11 +105,8 @@ local function interpolate(fmt, args, opts)
 	-- iterate keeping a range from previous match, e.g. (not in_placeholder vs in_placeholder)
 	-- "Sample {2} string {3}."   OR  "Sample {2} string {3}."
 	--       left^--------^right  OR      left^-^right
-	local pattern = string.format(
-		"[%s%s]",
-		delimiters.esc_left,
-		delimiters.esc_right
-	)
+	local pattern =
+		string.format("[%s%s]", delimiters.esc_left, delimiters.esc_right)
 	local in_placeholder = false
 	local left = 0
 

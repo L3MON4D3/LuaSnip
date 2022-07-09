@@ -89,9 +89,7 @@ local function simple_var(text)
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
 		if last_text ~= nil and #last_text.static_text > 1 then
 			local last_line_indent =
-				last_text.static_text[#last_text.static_text]:match(
-					"^%s+$"
-				)
+				last_text.static_text[#last_text.static_text]:match("^%s+$")
 			if last_line_indent then
 				f = snipNode.ISN(
 					nil,
@@ -176,20 +174,16 @@ local function parse_placeholder(text, tab_stops, brackets)
 					end, {})
 				else
 					if session.config.parser_nested_assembler then
-						tab_stops[pos] = session.config.parser_nested_assembler(
-							pos,
-							snip
-						)
+						tab_stops[pos] =
+							session.config.parser_nested_assembler(pos, snip)
 					else
 						-- move placeholders' indices.
 						modify_nodes(snip)
 						snip:init_nodes()
 						snip.pos = nil
 
-						tab_stops[pos] = cNode.C(
-							pos,
-							{ snip, iNode.I(nil, { "" }) }
-						)
+						tab_stops[pos] =
+							cNode.C(pos, { snip, iNode.I(nil, { "" }) })
 					end
 				end
 				-- 0-node cannot be dynamic or choice, insert the actual 0-node behind it.
@@ -222,9 +216,8 @@ local function parse_choice(text, tab_stops)
 			if text_end then
 				if not is_escaped(text, text_end) then
 					-- exclude ','
-					nodes[#nodes + 1] = parse_text(
-						string.sub(text, text_start, text_end - 1)
-					)
+					nodes[#nodes + 1] =
+						parse_text(string.sub(text, text_start, text_end - 1))
 					indx = text_end + 1
 					text_start = indx
 				else
@@ -307,11 +300,8 @@ parse_snippet = function(context, body, tab_stops, brackets)
 				-- anything except text
 				if match_bracket then
 					-- nodestring excludes brackets.
-					local nodestring = string.sub(
-						body,
-						next_node + 2,
-						match_bracket - 1
-					)
+					local nodestring =
+						string.sub(body, next_node + 2, match_bracket - 1)
 					local node1, node2
 					for _, fn in ipairs(parse_functions) do
 						node1, node2 = fn(
@@ -333,22 +323,16 @@ parse_snippet = function(context, body, tab_stops, brackets)
 				elseif
 					string.find(body, "%d", next_node + 1) == next_node + 1
 				then
-					local _, last_char, match = string.find(
-						body,
-						"(%d+)",
-						next_node + 1
-					)
+					local _, last_char, match =
+						string.find(body, "(%d+)", next_node + 1)
 					-- Add insert- or copy-function-node.
 					nodes[#nodes + 1] = simple_tabstop(match, tab_stops)
 					indx = last_char + 1
 				elseif
 					string.find(body, "%w", next_node + 1) == next_node + 1
 				then
-					local _, last_char, match = string.find(
-						body,
-						"([%w_]+)",
-						next_node + 1
-					)
+					local _, last_char, match =
+						string.find(body, "([%w_]+)", next_node + 1)
 					-- Add var-node
 					nodes[#nodes + 1] = simple_var(match)
 					indx = last_char + 1

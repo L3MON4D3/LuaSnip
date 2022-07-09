@@ -109,11 +109,8 @@ function M.load(opts)
 
 	local add_opts = loader_util.add_opts(opts)
 
-	local collections = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"luasnippets",
-		"lua"
-	)
+	local collections =
+		loader_util.get_load_paths_snipmate_like(opts, "luasnippets", "lua")
 	for _, collection in ipairs(collections) do
 		local load_paths = collection.load_paths
 
@@ -132,11 +129,8 @@ function M.lazy_load(opts)
 
 	local add_opts = loader_util.add_opts(opts)
 
-	local collections = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"luasnippets",
-		"lua"
-	)
+	local collections =
+		loader_util.get_load_paths_snipmate_like(opts, "luasnippets", "lua")
 	for _, collection in ipairs(collections) do
 		local load_paths = collection.load_paths
 

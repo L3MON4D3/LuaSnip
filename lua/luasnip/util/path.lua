@@ -65,9 +65,8 @@ end
 MYCONFIG_ROOT = MYCONFIG_ROOT:gsub(("%s[^%s]+$"):format(sep, sep), "")
 
 function Path.expand(filepath)
-	local expanded = filepath
-		:gsub("^~", vim.env.HOME)
-		:gsub("^[.]", MYCONFIG_ROOT)
+	local expanded =
+		filepath:gsub("^~", vim.env.HOME):gsub("^[.]", MYCONFIG_ROOT)
 	return uv.fs_realpath(expanded)
 end
 

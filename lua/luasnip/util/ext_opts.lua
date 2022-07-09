@@ -92,11 +92,8 @@ end
 -- in-place adds opts of b to a, doesn't override.
 -- a/b: completed ext_opts, not nil.
 local function extend(opts_a, opts_b)
-	opts_a.snippet_passive = vim.tbl_extend(
-		"keep",
-		opts_a.snippet_passive,
-		opts_b.snippet_passive
-	)
+	opts_a.snippet_passive =
+		vim.tbl_extend("keep", opts_a.snippet_passive, opts_b.snippet_passive)
 	opts_a.passive = vim.tbl_extend("keep", opts_a.passive, opts_b.passive)
 	opts_a.active = vim.tbl_extend("keep", opts_a.active, opts_b.active)
 

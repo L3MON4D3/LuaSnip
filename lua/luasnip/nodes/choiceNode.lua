@@ -216,10 +216,8 @@ function ChoiceNode:set_choice(choice, current_node)
 
 	local insert_pre_cc = vim.fn.mode() == "i"
 	-- is byte-indexed! Doesn't matter here, but important to be aware of.
-	local cursor_pos_pre_relative = util.pos_sub(
-		util.get_cursor_0ind(),
-		current_node.mark:pos_begin_raw()
-	)
+	local cursor_pos_pre_relative =
+		util.pos_sub(util.get_cursor_0ind(), current_node.mark:pos_begin_raw())
 
 	self.active_choice:store()
 

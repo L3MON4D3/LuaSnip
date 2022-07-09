@@ -112,12 +112,8 @@ function Node:get_text()
 		local from_pos, to_pos = self.mark:pos_begin_end_raw()
 
 		-- end-exclusive indexing.
-		local lines = vim.api.nvim_buf_get_lines(
-			0,
-			from_pos[1],
-			to_pos[1] + 1,
-			false
-		)
+		local lines =
+			vim.api.nvim_buf_get_lines(0, from_pos[1], to_pos[1] + 1, false)
 
 		if #lines == 1 then
 			lines[1] = string.sub(lines[1], from_pos[2] + 1, to_pos[2])

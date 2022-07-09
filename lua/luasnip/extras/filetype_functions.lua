@@ -60,11 +60,8 @@ local function extend_load_ft(extend_fts)
 	end
 
 	return function(bufnr)
-		local fts = vim.split(
-			vim.api.nvim_buf_get_option(bufnr, "filetype"),
-			".",
-			true
-		)
+		local fts =
+			vim.split(vim.api.nvim_buf_get_option(bufnr, "filetype"), ".", true)
 		local res = {}
 
 		for _, ft in ipairs(fts) do

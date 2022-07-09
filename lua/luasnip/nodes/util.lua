@@ -112,9 +112,8 @@ local function init_node_opts(opts)
 	end
 
 	-- copy once here, the opts might be reused.
-	in_node.node_ext_opts = ext_util.complete(
-		vim.deepcopy(opts.node_ext_opts or {})
-	)
+	in_node.node_ext_opts =
+		ext_util.complete(vim.deepcopy(opts.node_ext_opts or {}))
 
 	if opts.merge_node_ext_opts == nil then
 		in_node.merge_node_ext_opts = true

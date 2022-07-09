@@ -211,13 +211,8 @@ function DynamicNode:update_static()
 			tmp = SnippetNode(nil, {})
 		else
 			-- also enter node here.
-			ok, tmp = pcall(
-				self.fn,
-				args,
-				self.parent,
-				nil,
-				unpack(self.user_args)
-			)
+			ok, tmp =
+				pcall(self.fn, args, self.parent, nil, unpack(self.user_args))
 		end
 	end
 	if not ok then
@@ -352,9 +347,8 @@ end
 
 function DynamicNode:init_insert_positions(position_so_far)
 	Node.init_insert_positions(self, position_so_far)
-	self.snip_absolute_insert_position = vim.deepcopy(
-		self.absolute_insert_position
-	)
+	self.snip_absolute_insert_position =
+		vim.deepcopy(self.absolute_insert_position)
 	-- nodes of current snippet should have a 0 before.
 	self.snip_absolute_insert_position[#self.snip_absolute_insert_position + 1] =
 		0

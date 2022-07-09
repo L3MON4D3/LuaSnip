@@ -143,12 +143,7 @@ local function cursor_set_keys(pos, before)
 			-- pos2 is set to last columnt of previous line.
 			-- # counts bytes, but win_set_cursor expects bytes, so all's good.
 			pos[2] =
-				#vim.api.nvim_buf_get_lines(
-					0,
-					pos[1],
-					pos[1] + 1,
-					false
-				)[1]
+				#vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)[1]
 		else
 			pos[2] = pos[2] - 1
 		end
@@ -369,10 +364,8 @@ local function store_selection()
 		if #min_indent > end_col then
 			select_dedent[#select_dedent] = ""
 		else
-			select_dedent[#select_dedent] = select_dedent[#select_dedent]:gsub(
-				"^" .. min_indent,
-				""
-			)
+			select_dedent[#select_dedent] =
+				select_dedent[#select_dedent]:gsub("^" .. min_indent, "")
 		end
 	else
 		-- in block: if indent is in block, remove the part of it that is inside

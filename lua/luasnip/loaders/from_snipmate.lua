@@ -22,9 +22,8 @@ local function parse_snipmate(buffer, filename)
 	local function _parse(snippet_type, snipmate_opts)
 		local line = lines[i]
 		-- "snippet" or "autosnippet"
-		local prefix, description = line:match(
-			"^" .. snippet_type .. [[%s+(%S+)%s*(.*)]]
-		)
+		local prefix, description =
+			line:match("^" .. snippet_type .. [[%s+(%S+)%s*(.*)]])
 		local body = {}
 
 		i = i + 1
@@ -165,11 +164,8 @@ function M.load(opts)
 
 	-- we need all paths available in the collection for `extends`.
 	-- only load_paths is influenced by in/exclude.
-	local collections_load_paths = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"snippets",
-		"snippets"
-	)
+	local collections_load_paths =
+		loader_util.get_load_paths_snipmate_like(opts, "snippets", "snippets")
 
 	for _, collection in ipairs(collections_load_paths) do
 		local load_paths = collection.load_paths
@@ -215,11 +211,8 @@ function M.lazy_load(opts)
 
 	local add_opts = loader_util.add_opts(opts)
 
-	local collections_load_paths = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"snippets",
-		"snippets"
-	)
+	local collections_load_paths =
+		loader_util.get_load_paths_snipmate_like(opts, "snippets", "snippets")
 
 	for _, collection in ipairs(collections_load_paths) do
 		local load_paths = collection.load_paths
