@@ -25,6 +25,7 @@ local cache = require("luasnip.loaders._caches").lua
 local path_mod = require("luasnip.util.path")
 local loader_util = require("luasnip.loaders.util")
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
 local ls = require("luasnip")
 
 local M = {}
@@ -57,7 +58,7 @@ local function load_files(ft, files, add_opts)
 				augroup END
 			]],
 			-- escape for autocmd-pattern.
-			file:gsub(" ", "\\ "),
+			str_util.aupatescape(file),
 			file
 		))
 
@@ -108,11 +109,8 @@ function M.load(opts)
 
 	local add_opts = loader_util.add_opts(opts)
 
-	local collections = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"luasnippets",
-		"lua"
-	)
+	local collections =
+		loader_util.get_load_paths_snipmate_like(opts, "luasnippets", "lua")
 	for _, collection in ipairs(collections) do
 		local load_paths = collection.load_paths
 
@@ -131,11 +129,8 @@ function M.lazy_load(opts)
 
 	local add_opts = loader_util.add_opts(opts)
 
-	local collections = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"luasnippets",
-		"lua"
-	)
+	local collections =
+		loader_util.get_load_paths_snipmate_like(opts, "luasnippets", "lua")
 	for _, collection in ipairs(collections) do
 		local load_paths = collection.load_paths
 
@@ -154,6 +149,9 @@ function M.lazy_load(opts)
 		load_paths.add_opts = add_opts
 		table.insert(cache.lazy_load_paths, load_paths)
 	end
+
+	-- load for current buffer on startup.
+	M._load_lazy_loaded(vim.api.nvim_get_current_buf())
 end
 
 function M.reload_file(filename)

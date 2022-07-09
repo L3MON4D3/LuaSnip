@@ -179,6 +179,19 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+	it("can parse lazy variables.", function()
+		local snip = '"a${LINE_COMMENT}a"'
+
+		ls_helpers.lsp_static_test(snip, { "a$LINE_COMMENTa" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			a//a^                                              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 
 	it("can parse variables as placeholder.", function()
 		local snip = '"a${1:$TM_LINE_INDEX}a"'

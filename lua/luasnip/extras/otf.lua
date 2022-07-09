@@ -13,7 +13,7 @@ local chunk = p.any(
 	p.map(p.literal("\n"), function()
 		return { T.EOL }
 	end),
-	p.map(p.seq(p.literal("$"), p.pattern("%w+")), function(c)
+	p.map(p.seq(p.literal("$"), p.pattern("%w*")), function(c)
 		return { T.INP, c[1] }
 	end),
 	p.map(p.pattern("[^\n$]*"), function(c)

@@ -39,4 +39,16 @@ describe("luasnip.extra.otf", function()
 			{ "INP", "someone" },
 		}
 	)
+
+	check(
+		"Empty placeholder",
+		"asdf $ asdf",
+		{ { "TXT", "asdf " }, { "INP", "" }, { "TXT", " asdf" } }
+	)
+
+	check(
+		"End with empty placeholder",
+		"asdf $",
+		{ { "TXT", "asdf " }, { "INP", "" } }
+	)
 end)

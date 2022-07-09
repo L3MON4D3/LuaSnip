@@ -211,13 +211,8 @@ function DynamicNode:update_static()
 			tmp = SnippetNode(nil, {})
 		else
 			-- also enter node here.
-			ok, tmp = pcall(
-				self.fn,
-				args,
-				self.parent,
-				nil,
-				unpack(self.user_args)
-			)
+			ok, tmp =
+				pcall(self.fn, args, self.parent, nil, unpack(self.user_args))
 		end
 	end
 	if not ok then
@@ -311,6 +306,17 @@ function DynamicNode:update_restore()
 		local tmp = self.stored_snip
 
 		tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp.ext_opts.passive))
+
+		-- position might (will probably!!) still have changed, so update it
+		-- here too (as opposed to only in update).
+		tmp:init_positions(self.snip_absolute_position)
+		tmp:init_insert_positions(self.snip_absolute_insert_position)
+
+		tmp:make_args_absolute()
+
+		tmp:set_dependents()
+		tmp:set_argnodes(self.parent.snippet.dependents_dict)
+
 		self.parent:enter_node(self.indx)
 		tmp:put_initial(self.mark:pos_begin_raw())
 		tmp:update_restore()
@@ -341,9 +347,8 @@ end
 
 function DynamicNode:init_insert_positions(position_so_far)
 	Node.init_insert_positions(self, position_so_far)
-	self.snip_absolute_insert_position = vim.deepcopy(
-		self.absolute_insert_position
-	)
+	self.snip_absolute_insert_position =
+		vim.deepcopy(self.absolute_insert_position)
 	-- nodes of current snippet should have a 0 before.
 	self.snip_absolute_insert_position[#self.snip_absolute_insert_position + 1] =
 		0

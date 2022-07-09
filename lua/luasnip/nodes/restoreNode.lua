@@ -225,7 +225,7 @@ end
 
 function RestoreNode:update_all_dependents()
 	self:_update_dependents()
-	self.snip:_update_dependents()
+	self.snip:update_all_dependents()
 end
 
 function RestoreNode:update_all_dependents_static()
@@ -235,9 +235,8 @@ end
 
 function RestoreNode:init_insert_positions(position_so_far)
 	Node.init_insert_positions(self, position_so_far)
-	self.snip_absolute_insert_position = vim.deepcopy(
-		self.absolute_insert_position
-	)
+	self.snip_absolute_insert_position =
+		vim.deepcopy(self.absolute_insert_position)
 	-- nodes of current snippet should have a 0 before.
 	self.snip_absolute_insert_position[#self.snip_absolute_insert_position + 1] =
 		0

@@ -112,12 +112,8 @@ function Node:get_text()
 		local from_pos, to_pos = self.mark:pos_begin_end_raw()
 
 		-- end-exclusive indexing.
-		local lines = vim.api.nvim_buf_get_lines(
-			0,
-			from_pos[1],
-			to_pos[1] + 1,
-			false
-		)
+		local lines =
+			vim.api.nvim_buf_get_lines(0, from_pos[1], to_pos[1] + 1, false)
 
 		if #lines == 1 then
 			lines[1] = string.sub(lines[1], from_pos[2] + 1, to_pos[2])
@@ -175,6 +171,10 @@ end
 -- This allows overriding update_dependents in a parent-node (eg. snippetNode)
 -- while still having access to the original function (for subsequent overrides).
 Node.update_dependents = Node._update_dependents
+-- update_all_dependents is used to update all nodes' dependents in a
+-- snippet-tree. Necessary in eg. set_choice (especially since nodes may have
+-- dependencies outside the tree itself, so update_all_dependents should take
+-- care of those too.)
 Node.update_all_dependents = Node._update_dependents
 
 function Node:_update_dependents_static()

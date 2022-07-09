@@ -126,9 +126,8 @@ local function init_snippetNode_opts(opts)
 
 	opts = opts or {}
 
-	in_node.child_ext_opts = ext_util.child_complete(
-		vim.deepcopy(opts.child_ext_opts or {})
-	)
+	in_node.child_ext_opts =
+		ext_util.child_complete(vim.deepcopy(opts.child_ext_opts or {}))
 
 	if opts.merge_child_ext_opts == nil then
 		in_node.merge_child_ext_opts = true
@@ -181,9 +180,8 @@ local function init_snippet_context(context)
 	context.name = context.name or context.trigger
 
 	-- context.dscr could be nil, string or table.
-	context.dscr = util.to_line_table(
-		util.wrap_value(context.dscr or context.trigger)
-	)
+	context.dscr =
+		util.to_line_table(util.wrap_value(context.dscr or context.trigger))
 
 	-- -1 for no prio, we cannot use nil because accessing a nil-value in a
 	-- snippetProxy will cause instantiation.
@@ -415,9 +413,12 @@ end
 
 function Snippet:trigger_expand(current_node, pos_id, env)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
-	self:event(events.pre_expand, { expand_pos = pos })
+	local pre_expand_res = self:event(events.pre_expand, { expand_pos = pos })
+		or {}
 	-- update pos, event-callback might have moved the extmark.
 	pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
+
+	Environ:override(env, pre_expand_res.env_override or {})
 
 	local indentstring = util.line_chars_before(pos):match("^%s*")
 	-- expand tabs before indenting to keep indentstring unmodified
@@ -1018,8 +1019,9 @@ end
 
 function Snippet:event(event, event_args)
 	local callback = self.callbacks[-1][event]
+	local cb_res
 	if callback then
-		callback(self, event_args)
+		cb_res = callback(self, event_args)
 	end
 	if self.type == types.snippetNode and self.pos then
 		-- if snippetNode, also do callback for position in parent.
@@ -1032,6 +1034,8 @@ function Snippet:event(event, event_args)
 	session.event_node = self
 	session.event_args = event_args
 	vim.cmd("doautocmd User Luasnip" .. events.to_string(self.type, event))
+
+	return cb_res
 end
 
 local function nodes_from_pattern(pattern)

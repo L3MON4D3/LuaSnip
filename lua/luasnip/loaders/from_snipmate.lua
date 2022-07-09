@@ -1,6 +1,7 @@
 local ls = require("luasnip")
 local cache = require("luasnip.loaders._caches").snipmate
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local session = require("luasnip.session")
@@ -21,9 +22,8 @@ local function parse_snipmate(buffer, filename)
 	local function _parse(snippet_type, snipmate_opts)
 		local line = lines[i]
 		-- "snippet" or "autosnippet"
-		local prefix, description = line:match(
-			"^" .. snippet_type .. [[%s+(%S+)%s*(.*)]]
-		)
+		local prefix, description =
+			line:match("^" .. snippet_type .. [[%s+(%S+)%s*(.*)]])
 		local body = {}
 
 		i = i + 1
@@ -117,7 +117,7 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 				augroup END
 			]],
 			-- escape for autocmd-pattern.
-			path:gsub(" ", "\\ "),
+			str_util.aupatescape(path),
 			-- args for reload.
 			add_ft,
 			path
@@ -164,11 +164,8 @@ function M.load(opts)
 
 	-- we need all paths available in the collection for `extends`.
 	-- only load_paths is influenced by in/exclude.
-	local collections_load_paths = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"snippets",
-		"snippets"
-	)
+	local collections_load_paths =
+		loader_util.get_load_paths_snipmate_like(opts, "snippets", "snippets")
 
 	for _, collection in ipairs(collections_load_paths) do
 		local load_paths = collection.load_paths
@@ -214,11 +211,8 @@ function M.lazy_load(opts)
 
 	local add_opts = loader_util.add_opts(opts)
 
-	local collections_load_paths = loader_util.get_load_paths_snipmate_like(
-		opts,
-		"snippets",
-		"snippets"
-	)
+	local collections_load_paths =
+		loader_util.get_load_paths_snipmate_like(opts, "snippets", "snippets")
 
 	for _, collection in ipairs(collections_load_paths) do
 		local load_paths = collection.load_paths
@@ -239,6 +233,9 @@ function M.lazy_load(opts)
 		load_paths.add_opts = add_opts
 		table.insert(cache.lazy_load_paths, load_paths)
 	end
+
+	-- load for current buffer on startup.
+	M._load_lazy_loaded(vim.api.nvim_get_current_buf())
 end
 
 function M.edit_snippet_files()

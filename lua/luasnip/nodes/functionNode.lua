@@ -41,9 +41,8 @@ function FunctionNode:update()
 		return
 	end
 	self.last_args = args
-	local text = util.wrap_value(
-		self.fn(args, self.parent, unpack(self.user_args))
-	)
+	local text =
+		util.wrap_value(self.fn(args, self.parent, unpack(self.user_args)))
 	if vim.bo.expandtab then
 		util.expand_tabs(text, util.tab_width(), #self.parent.indentstr)
 	end
@@ -68,12 +67,8 @@ function FunctionNode:update_static()
 	-- updates will fail aswell, if not the `fn` also doesn't always work
 	-- correctly in normal expansion.
 	self.last_args = args
-	local ok, static_text = pcall(
-		self.fn,
-		args,
-		self.parent,
-		unpack(self.user_args)
-	)
+	local ok, static_text =
+		pcall(self.fn, args, self.parent, unpack(self.user_args))
 	if not ok then
 		print(
 			update_errorstring:format(
@@ -84,10 +79,8 @@ function FunctionNode:update_static()
 		)
 		static_text = { "" }
 	end
-	self.static_text = util.indent(
-		util.wrap_value(static_text),
-		self.parent.indentstr
-	)
+	self.static_text =
+		util.indent(util.wrap_value(static_text), self.parent.indentstr)
 end
 
 function FunctionNode:update_restore()
@@ -115,10 +108,8 @@ end
 
 function FunctionNode:set_dependents()
 	local dict = self.parent.snippet.dependents_dict
-	local append_list = vim.list_extend(
-		{ "dependents" },
-		self.absolute_position
-	)
+	local append_list =
+		vim.list_extend({ "dependents" }, self.absolute_position)
 	append_list[#append_list + 1] = "dependent"
 
 	for _, arg in ipairs(self.args_absolute) do

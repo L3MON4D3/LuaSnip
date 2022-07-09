@@ -1,0 +1,46 @@
+name: Run tests
+
+on: pull_request_target
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+      # straight from neovim-CI.
+      - run: |
+          sudo add-apt-repository ppa:neovim-ppa/stable
+          sudo apt-get update
+          sudo apt-get install -y \
+          autoconf \
+          automake \
+          build-essential \
+          ccache \
+          cmake \
+          flake8 \
+          gettext \
+          libluajit-5.1-dev \
+          libmsgpack-dev \
+          libtermkey-dev \
+          libtool-bin \
+          libtree-sitter-dev \
+          libunibilium-dev \
+          libuv1-dev \
+          libvterm-dev \
+          locales \
+          lua-busted \
+          lua-check \
+          lua-filesystem \
+          lua-inspect \
+          lua-lpeg \
+          lua-luv-dev \
+          lua-nvim \
+          luajit \
+          ninja-build \
+          pkg-config
+
+
+      - run: make test

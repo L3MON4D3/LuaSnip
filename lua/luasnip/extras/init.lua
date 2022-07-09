@@ -90,12 +90,12 @@ local function match(index, _match, _then, _else)
 	_then = to_function(_then or function(args, snip)
 		local match_return = _match(args, snip)
 		return (
-				(
-					type(match_return) == "string"
-					-- _assume_ table of string.
-					or type(match_return) == "table"
-				) and match_return
-			) or ""
+			(
+				type(match_return) == "string"
+				-- _assume_ table of string.
+				or type(match_return) == "table"
+			) and match_return
+		) or ""
 	end)
 	_else = to_function(_else or "")
 

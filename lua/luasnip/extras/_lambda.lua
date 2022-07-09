@@ -346,10 +346,10 @@ function lambda.instantiate(e)
 
 	consts = concat(consts, ",")
 	rep = repr(e)
-	local fstr =
-		(
-			"return function(%s) return function(args) return %s end end"
-		):format(consts, rep)
+	local fstr = ("return function(%s) return function(args) return %s end end"):format(
+		consts,
+		rep
+	)
 	if _DEBUG then
 		print(fstr)
 	end

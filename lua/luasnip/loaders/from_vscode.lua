@@ -1,6 +1,7 @@
 local ls = require("luasnip")
 local cache = require("luasnip.loaders._caches").vscode
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local sp = require("luasnip.nodes.snippetProxy")
@@ -85,7 +86,7 @@ local function load_snippet_files(lang, files, add_opts)
 				augroup END
 			]],
 			-- escape for autocmd-pattern.
-			file:gsub(" ", "\\ "),
+			str_util.aupatescape(file),
 			-- args for reload.
 			lang,
 			file
@@ -250,6 +251,9 @@ function M.lazy_load(opts)
 
 	ft_files.add_opts = add_opts
 	table.insert(cache.lazy_load_paths, ft_files)
+
+	-- load for current buffer on startup.
+	M._load_lazy_loaded(vim.api.nvim_get_current_buf())
 end
 
 function M.edit_snippet_files()

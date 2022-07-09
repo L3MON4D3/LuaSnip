@@ -100,4 +100,13 @@ function M.unescaped_pairs(s, left, right)
 	end
 end
 
+function M.aupatescape(s)
+	if vim.fn.has("win32") or vim.fn.has("win64") then
+		-- windows: replace \ with / for au-pattern.
+		s, _ = s:gsub("\\", "/")
+	end
+	local escaped, _ = s:gsub(",", "\\,")
+	return vim.fn.fnameescape(escaped)
+end
+
 return M
