@@ -11,13 +11,11 @@ local eager_vars = {
 }
 -- These are the vars that have to be populated once the snippet starts to avoid any issue
 local function _fill_eager_vars(env, pos)
-	env.TM_CURRENT_LINE =
-		vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)[1]
-	env.TM_CURRENT_WORD = util.word_under_cursor(pos, env.TM_CURRENT_LINE)
-	env.TM_LINE_INDEX = tostring(pos[1])
-	env.TM_LINE_NUMBER = tostring(pos[1] + 1)
-	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT =
-		util.get_selection()
+    env.TM_CURRENT_LINE = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)[1]
+    env.TM_CURRENT_WORD = util.word_under_cursor(pos, env.TM_CURRENT_LINE)
+    env.TM_LINE_INDEX = tostring(pos[1])
+    env.TM_LINE_NUMBER = tostring(pos[1] + 1)
+    env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT = util.get_selection()
 end
 
 local lazy_vars = {}
@@ -34,15 +32,8 @@ local function _resolve_namespace_var(full_varname)
 
     local varname = full_varname:sub(#parts[1] + 2)
 
-    if type(nmsp) == "function" then return nmsp(varname) end
+    if nmsp then return nmsp(varname) end
 
-    local val = nmsp[varname]
-
-
-    if type(val) == "function" then
-        return val()
-    end
-    return val
 end
 
 local Environ = {}
@@ -54,6 +45,23 @@ function Environ:new(pos, o)
 end
 
 function Environ.extend_env(name, val)
+    assert(#name > 0 and not (name:find("_")), "Name can't be empty nor contain _")
+    local val_type = type(val)
+    assert(val_type == "function" or val_type == "table", "Value has to be a table or a function")
+
+    if val_type == "table" then
+        local nm_table = val
+        local function wrapper(varname)
+            local val_ = nm_table[varname]
+
+            if type(val_) == "function" then
+                return val_()
+            end
+            return val_
+        end
+
+        val = wrapper
+    end
     env_namespaces[name] = val
 end
 
