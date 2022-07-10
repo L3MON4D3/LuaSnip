@@ -114,7 +114,7 @@ local function apply_transform_format(nodes, captures)
 		else
 			local capture = captures[node.capture_index]
 			-- capture exists if it ..exists.. and is nonempty.
-			if capture and #capture > 1 then
+			if capture and #capture > 0 then
 				if node.if_text then
 					transformed = transformed .. node.if_text
 				elseif node.modifier then
