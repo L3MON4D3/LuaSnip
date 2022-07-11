@@ -102,7 +102,6 @@ local modifiers = setmetatable({
 	end,
 })
 local function apply_modifier(text, modifier)
-	Insp(modifier)
 	return modifiers[modifier](text)
 end
 
