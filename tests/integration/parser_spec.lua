@@ -44,6 +44,20 @@ describe("Parser", function()
 		})
 	end)
 
+	it("prevents invalid $0", function()
+		local snip = '""'
+
+		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			a0a^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
 	it("Can create snippets with tabstops.", function()
 		local snip = '"a$2 $0b$1 c"'
 
@@ -179,6 +193,51 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("can parse transformed variables.", function()
+		local snip = '"a${TM_LINE_INDEX/(.*)/asdf $1 asdf/g}a"'
+
+		-- /g matches as often as possible, hence two matches, but one with an
+		-- empty (eg. without a) group 1.
+		ls_helpers.lsp_static_test(snip, { "aasdf $TM_LINE_INDEX asdfasdf  asdfa" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			aasdf 0 asdfasdf  asdfa^                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("can parse transformed tabstop.", function()
+		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
+
+		ls_helpers.lsp_static_test(snip, { " a asdf  asdf a" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			^ a asdf  asdf a                                   |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("can modify groups in transform.", function()
+		local snip = '"$1 a ${1/(.*)/asdf ${1:/upcase} asdf/} a"'
+
+		ls_helpers.lsp_static_test(snip, { " a asdf  asdf a" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			^ a asdf  asdf a                                   |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		feed("rrrr")
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			rrrr a asdf RRRR asdf a^                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("can parse lazy variables.", function()
 		local snip = '"a${LINE_COMMENT}a"'
 
