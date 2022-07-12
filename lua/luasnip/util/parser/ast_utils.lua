@@ -54,6 +54,67 @@ local function replace_position(ast, p1, p2)
 	end
 end
 
+---Walks ast pre-order, from left to right, applying predicate fn.
+---The walk is aborted as soon as fn matches (eg. returns true).
+---The walk does not recurse into Transform or choice, eg. it only covers nodes
+---that will be turned into luasnip-nodes.
+---@param ast table: the tree.
+---@param fn function: the predicate.
+---@return boolean: whether the predicate matched.
+local function predicate_ltr_nodes(ast, fn)
+	if fn(ast) then
+		return true
+	end
+	if ast.type == types.PLACEHOLDER or ast.type == types.SNIPPET then
+		for _, node in ipairs(ast.children) do
+			if predicate_ltr_nodes(node, fn) then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+local is_interactive
+local has_interactive_children = function(node, root)
+	-- make sure all children are not interactive
+	for _, child in ipairs(node.children) do
+		if is_interactive(child, root) then
+			return false
+		end
+	end
+	return true
+end
+local type_is_interactive = {
+	[types.SNIPPET] = has_interactive_children,
+	[types.TEXT] = util.no,
+	[types.TABSTOP] = function(node, root)
+		local tabstop_is_copy = false
+		predicate_ltr_nodes(root, function(pred_node)
+			-- stop at this tabstop
+			if pred_node == node then
+				return true
+			end
+			-- stop if match found
+			if pred_node.tabstop == node.tabstop then
+				tabstop_is_copy = true
+				return true
+			end
+			-- otherwise, continue.
+			return false
+		end)
+		-- this tabstop is interactive if it is not a copy.
+		return not tabstop_is_copy
+	end,
+	[types.PLACEHOLDER] = has_interactive_children,
+	[types.VARIABLE] = util.no,
+	[types.CHOICE] = util.yes,
+}
+local function is_interactive(node, snippet)
+	return type_is_interactive[node.type](node, snippet)
+end
+
 function M.fix_zero(ast)
 	local zn, ast_child_with_0_indx = zero_node(ast)
 	-- if zn exists, is a tabstop and an immediate child of `ast`, the snippet can

@@ -542,6 +542,14 @@ local function id(a)
 	return a
 end
 
+local function no()
+	return false
+end
+
+local function yes()
+	return false
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -582,4 +590,6 @@ return {
 	key_sorted_pairs = key_sorted_pairs,
 	no_region_check_wrap = no_region_check_wrap,
 	id = id,
+	no = no,
+	yes = yes,
 }
