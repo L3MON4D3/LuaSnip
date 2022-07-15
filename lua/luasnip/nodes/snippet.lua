@@ -689,12 +689,7 @@ function Snippet:fake_expand(opts)
 	if opts.env then
 		self.env = opts.env
 	else
-		self.env = {}
-		setmetatable(self.env, {
-			__index = function(_, key)
-				return Environ.is_table(key) and { "$" .. key } or "$" .. key
-			end,
-		})
+		self.env = Environ.fake()
 	end
 
 	self.captures = {}

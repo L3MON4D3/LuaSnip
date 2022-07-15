@@ -107,11 +107,6 @@ function Environ:__index(key)
 ---@diagnostic disable-next-line: need-check-nil
     local val = nmsp.vars(varname) or ""
 
-    if val then
-        val = tostring(val)
-    else
-        val = ""
-    end
     rawset(self, key, val)
 
     return val
@@ -123,5 +118,28 @@ function Environ:override(env, new_env)
     end
 end
 
+local fake_var = {
+    __concat = function(a, b)
+            return tostring(a) .. tostring(b)
+    end,
+
+    __tostring = function(obj)
+        return obj[1]
+    end
+
+}
+
+local fake_env = {
+    __index = function(tbl, key)
+        local var = "$" .. key
+        rawset(tbl, key, var)
+        return var
+    end
+}
+function Environ.fake()
+    local o = {}
+    setmetatable(o, fake_env)
+    return o
+end
 
 return Environ
