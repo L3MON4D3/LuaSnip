@@ -150,6 +150,83 @@ function M.fix_zero(ast)
 	)
 end
 
+-- tested in vscode:
+-- in "${1|b,c|} ${1:aa}" ${1:aa} is the copy,
+-- in "${1:aa}, ${1|b,c|}" ${1|b,c} is the copy => with these two the position
+-- determines which is the real tabstop => they have the same priority.
+-- in "$1 ${1:aa}", $1 is the copy, so it has to have a lower priority.
+local type_real_tabstop_prio = {
+	[types.TABSTOP] = 1,
+	[types.PLACEHOLDER] = 2,
+	[types.CHOICE] = 2,
+}
+
+---The name of this function is horrible, but I can't come up with something
+---more succinct.
+---The idea here is to find which of two nodes is "smaller" in a
+---"real-tabstop"-ordering relation on all the nodes of a snippet.
+---REQUIREMENT!!! The nodes have to be passed in the order they appear in in
+---the snippet, eg. prev_node has to appear earlier in the text (or be a parent
+---of) current_node.
+---@param prev_node table: the ast node earlier in the text.
+---@param current_node table: the other ast node.
+---@return boolean: true if prev_node is less than (according to the
+---"real-tabstop"-ordering described above and in the docstring of
+---`add_dependents`), false otherwise.
+local function real_tabstop_order_less(prev_node, current_node)
+	local prio_prev = type_real_tabstop_prio[prev_node.type]
+	local prio_current = type_real_tabstop_prio[current_node.type]
+	-- if type-prio is the same, the one that appeared earlier is the real tabstop.
+	return prio_prev == prio_current and false or prio_prev < prio_current
+end
+
+---This function identifies which tabstops/placeholder/choices are copies, and
+---which are "real tabstops"(/choices/placeholders). The real tabstops are
+---extended with a list of their dependents.
+---
+---Rules for which node of any two nodes with the same tabstop-index is the
+---real tabstop:
+--- - if one is a tabstop and the other a placeholder/choice, the
+---   placeholder/choice is the real tabstop.
+--- - if they are both tabstop or both placeholder/choice, the one which
+---   appears earlier in the snippet is the real tabstop.
+---   (in "${1: ${1:lel}}" the outer ${1:...} appears earlier).
+---
+---@param ast table: the AST.
+function M.add_dependents(ast)
+	-- all nodes that have a tabstop.
+	-- map tabstop-index (number) -> node.
+	local tabstops = {}
+
+	-- nodes which copy some tabstop.
+	-- map tabstop-index (number) -> node[] (since there could be multiple copies of that one snippet).
+	local copies = {}
+
+	predicate_ltr_nodes(ast, function(node)
+		if not tabstops[node.tabstop] then
+			tabstops[node.tabstop] = node
+			-- continue, we want to find all dependencies.
+			return false
+		end
+		if real_tabstop_order_less(tabstops[node.tabstop], node) then
+			table.insert(copies, tabstops[node.tabstop])
+			tabstops[node.tabstop] = node
+		else
+			table.insert(copies, node)
+		end
+		-- continue.
+		return false
+	end)
+
+	-- associate real tabstop with its copies (by storing the copies in the real tabstop).
+	for i, real_tabstop in ipairs(tabstops) do
+		real_tabstop.dependents = {}
+		for _, copy in ipairs(copies[i] or {}) do
+			table.insert(real_tabstop.dependents, copy)
+		end
+	end
+end
+
 local modifiers = setmetatable({
 	upcase = string.upper,
 	downcase = string.lower,
