@@ -7,6 +7,28 @@ local jsregexp_ok, jsregexp = pcall(require, "jsregexp")
 
 local M = {}
 
+---Walks ast pre-order, from left to right, applying predicate fn.
+---The walk is aborted as soon as fn matches (eg. returns true).
+---The walk does not recurse into Transform or choice, eg. it only covers nodes
+---that can be jumped (in)to.
+---@param ast table: the tree.
+---@param fn function: the predicate.
+---@return boolean: whether the predicate matched.
+local function predicate_ltr_nodes(ast, fn)
+	if fn(ast) then
+		return true
+	end
+	if ast.type == types.PLACEHOLDER or ast.type == types.SNIPPET then
+		for _, node in ipairs(ast.children) do
+			if predicate_ltr_nodes(node, fn) then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
 --- Find type of 0-placeholder/choice/tabstop, if it exists.
 --- Ignores transformations.
 ---@param ast table: ast
@@ -33,47 +55,27 @@ local function zero_node(ast)
 end
 
 local function max_position(ast)
-	local max = ast.tabstop or -1
-
-	for _, child in ipairs(ast.children or {}) do
-		local mp = max_position(child)
-		if mp > max then
-			max = mp
+	local max = -1
+	predicate_ltr_nodes(ast, function(node)
+		local new_max = node.tabstop or -1
+		if new_max > max then
+			max = new_max
 		end
-	end
+		-- don't stop early.
+		return false
+	end)
 
 	return max
 end
 
 local function replace_position(ast, p1, p2)
-	if ast.tabstop == p1 then
-		ast.tabstop = p2
-	end
-	for _, child in ipairs(ast.children or {}) do
-		replace_position(child, p1, p2)
-	end
-end
-
----Walks ast pre-order, from left to right, applying predicate fn.
----The walk is aborted as soon as fn matches (eg. returns true).
----The walk does not recurse into Transform or choice, eg. it only covers nodes
----that will be turned into luasnip-nodes.
----@param ast table: the tree.
----@param fn function: the predicate.
----@return boolean: whether the predicate matched.
-local function predicate_ltr_nodes(ast, fn)
-	if fn(ast) then
-		return true
-	end
-	if ast.type == types.PLACEHOLDER or ast.type == types.SNIPPET then
-		for _, node in ipairs(ast.children) do
-			if predicate_ltr_nodes(node, fn) then
-				return true
-			end
+	predicate_ltr_nodes(ast, function(node)
+		if node.tabstop == p1 then
+			node.tabstop = p2
 		end
-	end
-
-	return false
+		-- look at all nodes.
+		return false
+	end)
 end
 
 local is_interactive
