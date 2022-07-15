@@ -133,6 +133,20 @@ local function expand_or_jumpable()
 	return expandable() or jumpable(1)
 end
 
+local function unlink_current()
+	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
+	if not node then
+		print("No active Snippet")
+		return
+	end
+	local snippet = node.parent.snippet
+
+	snippet:remove_from_jumplist()
+	-- prefer setting previous/outer insertNode as current node.
+	session.current_nodes[vim.api.nvim_get_current_buf()] = snippet.prev.prev
+		or snippet.next.next
+end
+
 local function in_snippet()
 	-- check if the cursor on a row inside a snippet.
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
@@ -140,7 +154,14 @@ local function in_snippet()
 		return false
 	end
 	local snippet = node.parent.snippet
-	local snip_begin_pos, snip_end_pos = snippet.mark:pos_begin_end()
+	local ok, snip_begin_pos, snip_end_pos = pcall(snippet.mark.pos_begin_end, snippet.mark)
+	if not ok then
+		-- if there was an error getting the position, the snippets text was
+		-- most likely removed, resulting in messed up extmarks -> error.
+		-- remove the snippet.
+		unlink_current()
+		return
+	end
 	local pos = vim.api.nvim_win_get_cursor(0)
 	if pos[1] - 1 >= snip_begin_pos[1] and pos[1] - 1 <= snip_end_pos[1] then
 		return true -- cursor not on row inside snippet
@@ -345,24 +366,6 @@ local function get_current_choices()
 	end
 
 	return choice_lines
-end
-
-local function unlink_current()
-	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
-	if not node then
-		print("No active Snippet")
-		return
-	end
-	local user_expanded_snip = node.parent
-	-- find 'outer' snippet.
-	while user_expanded_snip.parent do
-		user_expanded_snip = user_expanded_snip.parent
-	end
-
-	user_expanded_snip:remove_from_jumplist()
-	-- prefer setting previous/outer insertNode as current node.
-	session.current_nodes[vim.api.nvim_get_current_buf()] = user_expanded_snip.prev.prev
-		or user_expanded_snip.next.next
 end
 
 local function active_update_dependents()
