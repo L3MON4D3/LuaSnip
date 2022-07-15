@@ -154,7 +154,8 @@ local function in_snippet()
 		return false
 	end
 	local snippet = node.parent.snippet
-	local ok, snip_begin_pos, snip_end_pos = pcall(snippet.mark.pos_begin_end, snippet.mark)
+	local ok, snip_begin_pos, snip_end_pos =
+		pcall(snippet.mark.pos_begin_end, snippet.mark)
 	if not ok then
 		-- if there was an error getting the position, the snippets text was
 		-- most likely removed, resulting in messed up extmarks -> error.
