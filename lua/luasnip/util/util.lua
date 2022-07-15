@@ -550,6 +550,14 @@ local function yes()
 	return false
 end
 
+local function reverse_lookup(t)
+	local rev = {}
+	for k, v in pairs(t) do
+		rev[v] = k
+	end
+	return rev
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -592,4 +600,5 @@ return {
 	id = id,
 	no = no,
 	yes = yes,
+	reverse_lookup = reverse_lookup,
 }
