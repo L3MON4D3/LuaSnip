@@ -44,19 +44,19 @@ describe("Parser", function()
 		})
 	end)
 
-	it("prevents invalid $0", function()
-		local snip = '""'
+	-- it("prevents invalid $0", function()
+	-- 	local snip = '""'
 
-		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
+	-- 	ls_helpers.lsp_static_test(snip, { "" })
 
-		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect({
-			grid = [[
-			a0a^                                               |
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
-		})
-	end)
+	-- 	exec_lua("ls.lsp_expand(" .. snip .. ")")
+	-- 	screen:expect({
+	-- 		grid = [[
+	-- 		a0a^                                               |
+	-- 		{0:~                                                 }|
+	-- 		{2:-- INSERT --}                                      |]],
+	-- 	})
+	-- end)
 
 	it("Can create snippets with tabstops.", function()
 		local snip = '"a$2 $0b$1 c"'
