@@ -1369,6 +1369,10 @@ and then (if there are multiple) the associated file to edit.
   * filter files from some specific source/path
   * more aggressively shorten paths using symbolic names, e.g.
   	`"$FRIENDLY_SNIPPETS"`
+* `edit`: `fn(file:string)` This function is supposed to open the file for
+  editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
+  current buffer), but one could open the file in a split, a tab, or a floating
+  window, for example.
 
 One comfortable way to call this function is registering it as a command:
 ```vim
