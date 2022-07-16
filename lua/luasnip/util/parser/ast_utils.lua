@@ -54,6 +54,33 @@ local function zero_node(ast)
 	return nil, nil
 end
 
+local function count_tabstop(ast, tabstop_indx)
+	local count = 0
+
+	predicate_ltr_nodes(ast, function(node)
+		if node.tabstop == tabstop_indx then
+			count = count + 1
+		end
+		-- only stop once all nodes were looked at.
+		return false
+	end)
+
+	return count
+end
+
+local function text_only_placeholder(placeholder)
+	local only_text = true
+	predicate_ltr_nodes(placeholder, function(node)
+		if node.type ~= types.TEXT then
+			only_text = false
+			-- we found non-text, no need to search more.
+			return true
+		end
+	end)
+
+	return only_text
+end
+
 local function max_position(ast)
 	local max = -1
 	predicate_ltr_nodes(ast, function(node)
@@ -119,15 +146,22 @@ end
 
 function M.fix_zero(ast)
 	local zn, ast_child_with_0_indx = zero_node(ast)
-	-- if zn exists, is a tabstop and an immediate child of `ast`, the snippet can
-	-- be accurately represented by luasnip (also if zn does not exist, ofc).
-	-- Otherwise the ast needs to be modified as described below.
+	-- if zn exists, is a tabstop, an immediate child of `ast`, and does not
+	-- have to be copied, the snippet can be accurately represented by luasnip.
+	-- (also if zn just does not exist, ofc).
+	--
+	-- If the snippet can't be represented as-is, the ast needs to be modified
+	-- as described below.
 	if
 		not zn
 		or (
 			zn
-			and zn.type == types.TABSTOP
+			and (
+				zn.type == types.TABSTOP or
+				(zn.type == types.PLACEHOLDER and text_only_placeholder(zn))
+			)
 			and ast.children[ast_child_with_0_indx] == zn
+			and count_tabstop(ast, 0) <= 1
 		)
 	then
 		return
