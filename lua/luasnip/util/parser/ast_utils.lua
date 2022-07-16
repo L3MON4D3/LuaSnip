@@ -346,6 +346,42 @@ function M.apply_transform(transform)
 	end
 end
 
+---Variables need the text which is in front of them to determine whether they
+---have to be indented ("asdf\n\t$TM_SELECTED_TEXT": vscode indents all lines
+---of TM_SELECTED_TEXT).
+---@param ast table: the AST.
+function M.give_vars_previous_text(ast)
+	local last_text = {""}
+	-- important: predicate_ltr_nodes visits the node in the order they appear,
+	-- textually, in the snippet.
+	-- This is necessary to actually ensure the variables actually get the text just in front of them.
+	predicate_ltr_nodes(ast, function(node)
+		if node.children then
+			-- continue if this node is not a leaf.
+			-- Since predicate_ltr_nodes runs fn first for the placeholder, and
+			-- then for its' children, `last_text` would be reset wrongfully
+			-- (example: "asdf\n\t${1:$TM_SELECTED_TEXT}". Here the placeholder
+			-- is encountered before the variable -> no indentation).
+			--
+			-- ignoring non-leaf-nodes makes it so that only the nodes which
+			-- actually contribute text (placeholders are "invisible" in that
+			-- they don't add text themselves, they do it through their
+			-- children) are considered.
+			return false
+		end
+		if node.type == types.TEXT then
+			last_text = vim.gsplit(node.esc, "\n")
+		elseif node.type == types.VARIABLE then
+			node.previous_text = last_text
+		else
+			-- reset last_text when a different node is encountered.
+			last_text = {""}
+		end
+		-- continue..
+		return false
+	end)
+end
+
 M.types = types
 M.Node_mt = Node_mt
 return M
