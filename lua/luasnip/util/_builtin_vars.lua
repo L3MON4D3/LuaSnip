@@ -167,13 +167,14 @@ for name, _ in pairs(lazy_vars) do
     end
 end
 
-
-return {
-    is_table = {
+local _is_table = {
         TM_SELECTED_TEXT = true,
         SELECT_RAW = true,
         SELECT_DEDENT = true,
-    },
+    }
+
+return {
+    is_table = function(key) return _is_table[key] or false end,
     lazy = lazy_vars,
     eager = eager_vars,
     builtin_ns = builtin_ns,

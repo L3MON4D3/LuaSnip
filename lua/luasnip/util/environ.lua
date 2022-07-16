@@ -18,7 +18,8 @@ local namespaces = {
     [""] = {
         init = builtin_vars.eager,
         vars = tbl_to_lazy_env(builtin_vars.lazy),
-        eager = {}
+        eager = {},
+        is_table = builtin_vars.is_table
     }
 }
 
@@ -36,15 +37,16 @@ local function _resolve_namespace_var(full_varname)
         nmsp = namespaces[""]
         varname = full_varname
     end
-    return nmsp.vars(varname)
+    return nmsp, varname
 end
 
 local Environ = {}
 
--- returns nil, but that should be alright.
--- If not, use metatable.
-function Environ.is_table(key)
-    return builtin_vars.is_table[key]
+
+function Environ.is_table(var_fullname)
+    local nmsp, varname = _resolve_namespace_var(var_fullname)
+---@diagnostic disable-next-line: need-check-nil
+    return nmsp.is_table(varname)
 end
 
 function Environ:new(pos, o)
@@ -88,20 +90,45 @@ function Environ.env_namespace(name, namespace)
 
     assert(ns and type(ns) == 'table', ("Your namespace '%s' has to be a table"):format(name))
     assert(ns.init or ns.vars,( "Your namespace '%s' needs init or vars"):format(name))
-    assert(not namespace.eager and ns.vars, ("Your namespace %s can't set a `eager` field without the `vars` one"):format(name))
+
+    -- namespace.eager → ns.vars
+    assert(not ns.eager or ns.vars, ("Your namespace %s can't set a `eager` field without the `vars` one"):format(name))
 
     ns.eager = ns.eager or {}
+    local is_table = ns.is_table or false
+
+    local type_of_it = type(multiline_vars)
+
+    assert(type_of_it == "table" or type_of_it == "boolean" or type_of_it == "function", ("Your namespace %s can't have `is_table` of type %s"):format(name, type_of_it))
+
+    -- If type is function we don't have to override it
+    if type_of_it == "table" then
+        local is_table_set = {}
+
+        for _, key in ipairs(multiline_vars) do
+            is_table_set[key] = true
+        end
+
+        ns.is_table = function (key)
+            return is_table_set[key] or false
+        end
+
+    elseif type_of_it == "boolean" then
+        opts.is_table = function(_) return multiline_vars end
+    else -- is a function
+        opts.is_table = multiline_vars
+    end
+
 
     if ns.vars and type(ns.vars) == "table" then
         ns.vars = tbl_to_lazy_env(ns.vars)
     end
 
+
     namespaces[name] = ns
 end
 
 function Environ:__index(key)
-    local val = nil
-    local lv = lazy_vars[key]
 
     local nmsp, varname = _resolve_namespace_var(key)
 ---@diagnostic disable-next-line: need-check-nil
@@ -118,24 +145,19 @@ function Environ:override(env, new_env)
     end
 end
 
-local fake_var = {
-    __concat = function(a, b)
-            return tostring(a) .. tostring(b)
-    end,
-
-    __tostring = function(obj)
-        return obj[1]
-    end
-
-}
-
 local fake_env = {
     __index = function(tbl, key)
-        local var = "$" .. key
+        local var
+    if Environ.is_table(key) then
+         var = {"$" .. key}
+     else
+         var = "$" .. key
+     end
         rawset(tbl, key, var)
         return var
     end
 }
+
 function Environ.fake()
     local o = {}
     setmetatable(o, fake_env)
