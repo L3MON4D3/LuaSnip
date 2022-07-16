@@ -5,11 +5,11 @@ local M = {}
 
 local function default_format(path, _)
 	path = path:gsub(
-		vim.fn.stdpath("data") .. "/site/pack/packer/start",
+		vim.pesc(vim.fn.stdpath("data") .. "/site/pack/packer/start"),
 		"$PLUGINS"
 	)
 	if vim.env.HOME then
-		path = path:gsub(vim.env.HOME .. "/.config/nvim", "$CONFIG")
+		path = path:gsub(vim.pesc(vim.env.HOME .. "/.config/nvim"), "$CONFIG")
 	end
 	return path
 end
