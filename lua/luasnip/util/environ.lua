@@ -83,19 +83,18 @@ end
 
 local builtin_ns_names = vim.inspect(vim.tbl_keys(builtin_vars.builtin_ns))
 
-function Environ.env_namespace(name, namespace)
+function Environ.env_namespace(name, opts)
     assert(#name > 0 and not (name:find("_")), ("You can't create a namespace with name '%s' empty nor containing _"):format(name))
     assert(not builtin_vars.builtin_ns[name], ("You can't create a namespace with name '%s' because is one one of %s"):format(name, builtin_ns_names))
-    local ns = namespace
 
-    assert(ns and type(ns) == 'table', ("Your namespace '%s' has to be a table"):format(name))
-    assert(ns.init or ns.vars,( "Your namespace '%s' needs init or vars"):format(name))
+    assert(opts and type(opts) == 'table', ("Your namespace '%s' has to be a table"):format(name))
+    assert(opts.init or opts.vars,( "Your namespace '%s' needs init or vars"):format(name))
 
     -- namespace.eager → ns.vars
-    assert(not ns.eager or ns.vars, ("Your namespace %s can't set a `eager` field without the `vars` one"):format(name))
+    assert(not opts.eager or opts.vars, ("Your namespace %s can't set a `eager` field without the `vars` one"):format(name))
 
-    ns.eager = ns.eager or {}
-    local is_table = ns.is_table or false
+    opts.eager = opts.eager or {}
+    local multiline_vars = opts.multiline_vars or false
 
     local type_of_it = type(multiline_vars)
 
@@ -109,7 +108,7 @@ function Environ.env_namespace(name, namespace)
             is_table_set[key] = true
         end
 
-        ns.is_table = function (key)
+        opts.is_table = function (key)
             return is_table_set[key] or false
         end
 
@@ -120,12 +119,12 @@ function Environ.env_namespace(name, namespace)
     end
 
 
-    if ns.vars and type(ns.vars) == "table" then
-        ns.vars = tbl_to_lazy_env(ns.vars)
+    if opts.vars and type(opts.vars) == "table" then
+        opts.vars = tbl_to_lazy_env(opts.vars)
     end
 
 
-    namespaces[name] = ns
+    namespaces[name] = opts
 end
 
 function Environ:__index(key)
