@@ -210,6 +210,25 @@ describe("DynamicNode", function()
 		})
 	end)
 
+	-- from #491
+	it("dynamicNode propagates indent.", function()
+		local snip = [[
+			s("fails", d(1, function ()
+				return sn(nil, fmt("{}", {f(function () return {"a", "b"} end)}))
+			end))
+		]]
+		ls_helpers.static_docstring_test(
+			snip,
+			{ "a", "b" },
+			{ "${1:a", "b}$0" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			a                                                 |
+			b^                                                 |
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("dynamicNode works in dynamicNode.", function()
 		local snip = [[
 			s("trig", {

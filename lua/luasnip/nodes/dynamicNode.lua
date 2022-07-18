@@ -254,6 +254,14 @@ function DynamicNode:update_static()
 	tmp:set_dependents()
 	tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
+	-- do not expand tabs!! This is only necessary if the snippet is inserted
+	-- in a buffer, some information is lost if tabs (indent) is replaced with
+	-- whitespace.
+	-- This might make a difference when another f/dynamicNode depends on this
+	-- one, and the function expects expanded tabs... imo the function should
+	-- be adjusted to accept any whitespace.
+	tmp:indent(self.parent.indentstr)
+
 	tmp:static_init()
 
 	tmp:update_static()
