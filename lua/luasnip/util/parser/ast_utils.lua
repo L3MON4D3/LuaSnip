@@ -4,6 +4,7 @@ local Node_mt = getmetatable(
 )
 local util = require("luasnip.util.util")
 local jsregexp_ok, jsregexp = pcall(require, "jsregexp")
+local directed_graph = require("luasnip.util.directed_graph")
 
 local M = {}
 
@@ -216,7 +217,8 @@ end
 
 ---This function identifies which tabstops/placeholder/choices are copies, and
 ---which are "real tabstops"(/choices/placeholders). The real tabstops are
----extended with a list of their dependents.
+---extended with a list of their dependents (tabstop.dependents), the copies
+---with their real tabstop (copy.copies)
 ---
 ---Rules for which node of any two nodes with the same tabstop-index is the
 ---real tabstop:
@@ -257,6 +259,7 @@ function M.add_dependents(ast)
 		real_tabstop.dependents = {}
 		for _, copy in ipairs(copies[i] or {}) do
 			table.insert(real_tabstop.dependents, copy)
+			copy.copies = real_tabstop
 		end
 	end
 end
@@ -380,6 +383,49 @@ function M.give_vars_previous_text(ast)
 		-- continue..
 		return false
 	end)
+end
+
+function M.parse_order(ast)
+	M.add_dependents(ast)
+	-- build Directed Graph from ast-nodes.
+	-- vertices are ast-nodes, edges define has-to-be-parsed-before-relations
+	-- (a child of some placeholder would have an edge to it, real tabstops
+	-- have edges to their copies).
+	local g = directed_graph.new()
+	-- map node -> vertex.
+	local to_vert = {}
+
+	-- add one vertex for each node + create map node->vert.
+	predicate_ltr_nodes(ast, function(node)
+		to_vert[node] = g.add_vertex()
+	end)
+
+	predicate_ltr_nodes(ast, function(node)
+		if node.dependents then
+			-- if the node has dependents, it has to be parsed before they are.
+			for _, dep in ipairs(node.dependents) do
+				g.add_edge(to_vert[node], to_vert[dep])
+			end
+		end
+		if node.children then
+			-- if the node has children, they have to be parsed before it can
+			-- be parsed.
+			for _, child in ipairs(node.children) do
+				g.add_edge(to_vert[child], to_vert[node])
+			end
+		end
+	end)
+
+	local topsort = g:topological_sort()
+	if not topsort then
+		-- ast (with additional dependencies) contains circle.
+		return nil
+	end
+
+	local to_node = util.reverse_lookup(to_vert)
+	return vim.tbl_map(function(vertex)
+		return to_node[vertex]
+	end, topsort)
 end
 
 M.types = types
