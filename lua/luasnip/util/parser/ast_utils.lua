@@ -1,7 +1,4 @@
 local types = require("luasnip.util.parser.neovim_ast").node_type
-local Node_mt = getmetatable(
-	require("luasnip.util.parser.neovim_parser").parse("$0")
-)
 local util = require("luasnip.util.util")
 local jsregexp_ok, jsregexp = pcall(require, "jsregexp")
 local directed_graph = require("luasnip.util.directed_graph")
@@ -429,5 +426,5 @@ function M.parse_order(ast)
 end
 
 M.types = types
-M.Node_mt = Node_mt
+
 return M

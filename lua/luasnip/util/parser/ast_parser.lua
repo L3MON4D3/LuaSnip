@@ -208,8 +208,8 @@ local to_node_funcs = {
 ---   For now, only used when parsing snipmate-snippets.
 --- This should most likely be `{}`.
 ---@return table: node corresponding to `ast`.
-function _to_node(ast, state)
-	if getmetatable(ast) ~= ast_utils.Node_mt then
+function to_node(ast, state)
+	if not Ast.is_node(ast) then
 		-- ast is not an ast (probably a luasnip-node), return it as-is.
 		return ast
 	end
