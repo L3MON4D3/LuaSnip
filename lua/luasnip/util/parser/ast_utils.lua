@@ -236,23 +236,31 @@ function M.add_dependents(ast)
 	local copies = {}
 
 	predicate_ltr_nodes(ast, function(node)
+		if not node.tabstop then
+			-- not a tabstop-node -> continue.
+			return false
+		end
+
 		if not tabstops[node.tabstop] then
 			tabstops[node.tabstop] = node
 			-- continue, we want to find all dependencies.
 			return false
 		end
+		if not copies[node.tabstop] then
+			copies[node.tabstop] = {}
+		end
 		if real_tabstop_order_less(tabstops[node.tabstop], node) then
-			table.insert(copies, tabstops[node.tabstop])
+			table.insert(copies[node.tabstop], tabstops[node.tabstop])
 			tabstops[node.tabstop] = node
 		else
-			table.insert(copies, node)
+			table.insert(copies[node.tabstop], node)
 		end
 		-- continue.
 		return false
 	end)
 
 	-- associate real tabstop with its copies (by storing the copies in the real tabstop).
-	for i, real_tabstop in ipairs(tabstops) do
+	for i, real_tabstop in pairs(tabstops) do
 		real_tabstop.dependents = {}
 		for _, copy in ipairs(copies[i] or {}) do
 			table.insert(real_tabstop.dependents, copy)
@@ -349,6 +357,8 @@ end
 ---Variables need the text which is in front of them to determine whether they
 ---have to be indented ("asdf\n\t$TM_SELECTED_TEXT": vscode indents all lines
 ---of TM_SELECTED_TEXT).
+---
+---The text is accessible as ast_node.previous_text, a string[].
 ---@param ast table: the AST.
 function M.give_vars_previous_text(ast)
 	local last_text = {""}
@@ -370,7 +380,7 @@ function M.give_vars_previous_text(ast)
 			return false
 		end
 		if node.type == types.TEXT then
-			last_text = vim.gsplit(node.esc, "\n")
+			last_text = vim.split(node.esc, "\n")
 		elseif node.type == types.VARIABLE then
 			node.previous_text = last_text
 		else
@@ -394,21 +404,21 @@ function M.parse_order(ast)
 
 	-- add one vertex for each node + create map node->vert.
 	predicate_ltr_nodes(ast, function(node)
-		to_vert[node] = g.add_vertex()
+		to_vert[node] = g:add_vertex()
 	end)
 
 	predicate_ltr_nodes(ast, function(node)
 		if node.dependents then
 			-- if the node has dependents, it has to be parsed before they are.
 			for _, dep in ipairs(node.dependents) do
-				g.add_edge(to_vert[node], to_vert[dep])
+				g:add_edge(to_vert[node], to_vert[dep])
 			end
 		end
 		if node.children then
 			-- if the node has children, they have to be parsed before it can
 			-- be parsed.
 			for _, child in ipairs(node.children) do
-				g.add_edge(to_vert[child], to_vert[node])
+				g:add_edge(to_vert[child], to_vert[node])
 			end
 		end
 	end)
