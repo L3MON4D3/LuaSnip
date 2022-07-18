@@ -223,10 +223,12 @@ describe("DynamicNode", function()
 			{ "${1:a", "b}$0" }
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a                                                 |
 			b^                                                 |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("dynamicNode works in dynamicNode.", function()
