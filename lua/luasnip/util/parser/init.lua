@@ -23,20 +23,20 @@ function M.parse_snippet(context, body, opts)
 	else
 		ast = parse(body)
 	end
+
 	if type(context) == "number" then
-		return sNode.SN(context, ast_parser.to_node(ast))
+		return sNode.SN(context, ast_parser.to_luasnip_nodes(ast))
 	end
 	if type(context) == "nil" then
-		return ast_parser.to_node(ast)
+		return ast_parser.to_luasnip_nodes(ast)
 	end
 
-	ast_utils.fix_zero(ast)
 	if type(context) == "string" then
 		context = { trig = context }
 	end
 	context.docstring = body
 
-	return sNode.S(context, ast_parser.to_node(ast))
+	return sNode.S(context, ast_parser.to_luasnip_nodes(ast))
 end
 
 local function backticks_to_variable(body)

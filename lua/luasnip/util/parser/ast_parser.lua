@@ -1,4 +1,5 @@
 local ast_utils = require("luasnip.util.parser.ast_utils")
+local Ast = require("luasnip.util.parser.neovim_ast")
 local tNode = require("luasnip.nodes.textNode")
 local iNode = require("luasnip.nodes.insertNode")
 local fNode = require("luasnip.nodes.functionNode")
@@ -18,7 +19,7 @@ end
 
 local types = ast_utils.types
 
-local _to_node
+local to_node
 
 local function fix_node_indices(nodes)
 	local used_nodes = {}
@@ -34,10 +35,10 @@ local function fix_node_indices(nodes)
 	return nodes
 end
 
-local function to_nodes(ast_nodes, state)
+local function ast2luasnip_nodes(ast_nodes)
 	local nodes = {}
 	for i, ast_node in ipairs(ast_nodes) do
-		nodes[i] = _to_node(ast_node, state)
+		nodes[i] = ast_node.parsed
 	end
 
 	return fix_node_indices(nodes)
@@ -80,43 +81,49 @@ local function copy_func(tabstop)
 end
 -- these actually create nodes from any AST.
 local to_node_funcs = {
-	-- careful! this only returns a list of nodes, not a full snippet!
-	-- The table can be passed to the regular snippet-constructors.
-	[types.SNIPPET] = function(ast, state)
-		return to_nodes(ast.children, state)
+	-- careful! this parses the snippet into a list of nodes, not a full snippet!
+	-- The table can then be passed to the regular snippet-constructors.
+	[types.SNIPPET] = function(ast, _)
+		ast.parsed = ast2luasnip_nodes(ast.children)
 	end,
-	[types.TEXT] = function(ast, state)
+	[types.TEXT] = function(ast, _)
 		local text = _split(ast.esc)
-		-- store text for `VARIABLE`, might be needed for indentation.
-		state.last_text = text
-		return tNode.T(text)
+		ast.parsed = tNode.T(text)
 	end,
 	[types.CHOICE] = function(ast)
+		-- even choices may be copies.
+		local existing_tabstop_ast_node = ast.copies
+		if existing_tabstop_ast_node then
+			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
+			ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+			return
+		end
+
 		local choices = {}
 		for i, choice in ipairs(ast.items) do
 			choices[i] = tNode.T(_split(choice))
 		end
 
-		return cNode.C(ast.tabstop, choices)
+		ast.parsed = cNode.C(ast.tabstop, choices)
 	end,
-	[types.TABSTOP] = function(ast, state)
-		local existing_tabstop = state.tabstops[ast.tabstop]
-		if existing_tabstop then
+	[types.TABSTOP] = function(ast)
+		local existing_tabstop_ast_node = ast.copies
+		if existing_tabstop_ast_node then
 			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
-			return fNode.F(copy_func(ast), { existing_tabstop })
+			ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+			return
 		end
 
 		-- tabstops don't have placeholder-text.
-		local node = iNode.I(ast.tabstop)
-		state.tabstops[ast.tabstop] = node
-
-		return node
+		ast.parsed = iNode.I(ast.tabstop)
 	end,
 	[types.PLACEHOLDER] = function(ast, state)
 		-- check from TABSTOP.
-		local existing_tabstop = state.tabstops[ast.tabstop]
-		if existing_tabstop then
-			return fNode.F(functions.copy, { existing_tabstop })
+		local existing_tabstop_ast_node = ast.copies
+		if existing_tabstop_ast_node then
+			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
+			ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+			return
 		end
 
 		local node
@@ -126,7 +133,7 @@ local to_node_funcs = {
 			-- `"${1}"` are parsed as tabstops.
 			node = iNode.I(ast.tabstop, ast.children[1].esc)
 		else
-			local snip = sNode.SN(ast.tabstop, to_nodes(ast.children, state))
+			local snip = sNode.SN(ast.tabstop, ast2luasnip_nodes(ast.children))
 			if not snip:is_interactive() then
 				-- this placeholder only contains text or (transformed)
 				-- variables, so an insertNode can be generated from its
@@ -150,8 +157,7 @@ local to_node_funcs = {
 			end
 		end
 
-		state.tabstops[ast.tabstop] = node
-		return node
+		ast.parsed = node
 	end,
 	[types.VARIABLE] = function(ast, state)
 		local var = ast.name
@@ -162,17 +168,16 @@ local to_node_funcs = {
 			fn = state.var_functions[var]
 		else
 			-- if the variable is unknown, just insert an empty text-snippet.
-			-- maybe put this into `state.last_text`? otoh, this won't be visible.
-			-- Don't for now.
-			return tNode.T({ "" })
+			ast.parsed = tNode.T({ "" })
+			return
 		end
 
 		local f = fNode.F(fn, {})
 
 		-- if the variable is preceded by \n<indent>, the indent is applied to
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
-		if state.last_text ~= nil and #state.last_text > 1 then
-			local last_line_indent = state.last_text[#state.last_text]:match(
+		if ast.previous_text ~= nil and #ast.previous_text > 1 then
+			local last_line_indent = ast.previous_text[#ast.previous_text]:match(
 				"^%s+$"
 			)
 			if last_line_indent then
@@ -192,21 +197,16 @@ local to_node_funcs = {
 			end
 		end
 
-		return f
+		ast.parsed = f
 	end,
 }
 
---- Converts any ast into usable nodes.
---- Snippets return a table of nodes, those can be used like `fmt`.
+--- Converts any ast into luasnip-nodes.
+--- Snippets return a table of nodes, those can be used like the return-value of `fmt`.
 ---@param ast table: AST, as generated by `require("vim.lsp._snippet").parse`
 ---@param state table:
---- - `tabstops`: maps tabstop-position to already-parsed tabstops.
---- - `last_text`: stores last text, VARIABLE might have to be indented with
----   its contents (`"\n\t$SOMEVAR"`, all lines of $SOMEVAR have to be indented
----   with "\t").
 --- - `var_functions`: table, maps varname to custom function for that variable.
 ---   For now, only used when parsing snipmate-snippets.
---- This should most likely be `{}`.
 ---@return table: node corresponding to `ast`.
 function to_node(ast, state)
 	if not Ast.is_node(ast) then
@@ -216,15 +216,27 @@ function to_node(ast, state)
 	return to_node_funcs[ast.type](ast, state)
 end
 
-function M.to_node(ast, opts)
-	return _to_node(
-		ast,
-		vim.tbl_extend("keep", opts or {}, {
-			tabstops = {},
-			var_functions = {},
-			last_text = nil,
-		})
-	)
+--- Converts any ast into usable nodes.
+---@param ast table: AST, as generated by `require("vim.lsp._snippet").parse`
+---@param state table:
+--- - `var_functions`: table, maps varname to custom function for that variable.
+---   For now, only used when parsing snipmate-snippets.
+---@return table: list of luasnip-nodes.
+function M.to_luasnip_nodes(ast, state)
+	-- fix disallowed $0 in snippet.
+	-- TODO(logging): report changes here.
+	ast_utils.fix_zero(ast)
+
+	-- Variables need the text just in front of them to determine whether to
+	-- indent all lines of the Variable.
+	ast_utils.give_vars_previous_text(ast)
+
+	local ast_nodes_topsort = ast_utils.parse_order(ast)
+	for _, node in ipairs(ast_nodes_topsort) do
+		to_node(node, state)
+	end
+
+	return ast.parsed
 end
 
 return M
