@@ -1,4 +1,5 @@
-local types = require("luasnip.util.parser.neovim_ast").node_type
+local Ast = require("luasnip.util.parser.neovim_ast")
+local types = Ast.node_type
 local util = require("luasnip.util.util")
 local jsregexp_ok, jsregexp = pcall(require, "jsregexp")
 local directed_graph = require("luasnip.util.directed_graph")
@@ -63,29 +64,51 @@ local function real_tabstop_order_less(prev_node, current_node)
 	return prio_prev == prio_current and false or prio_prev < prio_current
 end
 
---- Find type of 0-placeholder/choice/tabstop, if it exists.
---- Ignores transformations.
+---Find the real (eg. the one that is not a copy) $0.
 ---@param ast table: ast
----@return number, number: first, the type of the node with position 0, then
---- the child of `ast` containing it.
-local function zero_node(ast)
-	-- find placeholder/tabstop/choice with position 0, but ignore those that
-	-- just apply transformations, this should return the node where the cursor
-	-- ends up on exit.
-	-- (this node should also exist in this snippet, as long as it was formatted
-	-- correctly).
-	if ast.tabstop == 0 and not ast.transform then
-		return ast
-	end
-	for indx, child in ipairs(ast.children or {}) do
-		local zn, _ = zero_node(child)
-		if zn then
-			return zn, indx
-		end
-	end
+---@return number, number, boolean: first, the type of the node with position 0, then
+--- the child of `ast` containing it and last whether the real $0 is copied.
+local function real_zero_node(ast)
+	local real_zero = nil
+	local real_zero_indx = nil
+	local is_copied = false
 
-	-- no 0-node in this ast.
-	return nil, nil
+	local _search_zero
+	_search_zero = function(node)
+		local had_zero = false
+		-- find placeholder/tabstop/choice with position 0
+		if node.tabstop == 0 then
+			if not real_zero then
+				real_zero = node
+				had_zero = true
+			else
+				if real_tabstop_order_less(real_zero, node) then
+					-- node has a higher prio than the current real_zero.
+					real_zero = node
+					had_zero = true
+				end
+				-- we already encountered a zero-node, since i(0) cannot be
+				-- copied this has to be reported to the caller.
+				is_copied = true
+			end
+		end
+		for indx, child in ipairs(node.children or {}) do
+			local zn, _ = _search_zero(child)
+			-- due to recursion, this will be called last in the loop of the
+			-- outermost snippet.
+			-- real_zero_indx will be the position of the child of snippet, in
+			-- which the real $0 is located.
+			if zn then
+				real_zero_indx = indx
+				had_zero = true
+			end
+		end
+
+		return had_zero
+	end
+	_search_zero(ast)
+
+	return real_zero, real_zero_indx, is_copied
 end
 
 local function count_tabstop(ast, tabstop_indx)
@@ -179,7 +202,7 @@ local function is_interactive(node, snippet)
 end
 
 function M.fix_zero(ast)
-	local zn, ast_child_with_0_indx = zero_node(ast)
+	local zn, ast_child_with_0_indx, is_copied = real_zero_node(ast)
 	-- if zn exists, is a tabstop, an immediate child of `ast`, and does not
 	-- have to be copied, the snippet can be accurately represented by luasnip.
 	-- (also if zn just does not exist, ofc).
@@ -190,12 +213,12 @@ function M.fix_zero(ast)
 		not zn
 		or (
 			zn
+			and not is_copied
 			and (
 				zn.type == types.TABSTOP or
 				(zn.type == types.PLACEHOLDER and text_only_placeholder(zn))
 			)
 			and ast.children[ast_child_with_0_indx] == zn
-			and count_tabstop(ast, 0) <= 1
 		)
 	then
 		return
@@ -207,15 +230,12 @@ function M.fix_zero(ast)
 	local max_pos = max_position(ast)
 	replace_position(ast, 0, max_pos + 1)
 
-	-- insert $0 as a direct child to snippet.
+	-- insert $0 as a direct child to snippet, just behind the original $0/the
+	-- node containing it.
 	table.insert(
 		ast.children,
 		ast_child_with_0_indx + 1,
-		setmetatable({
-			type = types.TABSTOP,
-			tabstop = 0,
-		}, Node_mt)
-	)
+		Ast.tabstop(0))
 end
 
 ---This function identifies which tabstops/placeholder/choices are copies, and
