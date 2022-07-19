@@ -220,6 +220,34 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]]}
 	end)
 
+	it("modifies invalid $0 with choice.", function()
+		-- this can't work in luasnip.
+		-- solution: add
+		local snip = '"$0   ${0|asdf,qwer,zxcv|} asdf"'
+
+		ls_helpers.lsp_static_test(snip, { "asdf   asdf asdf" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			asdf   ^asdf asdf                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- choice is copied
+		exec_lua("ls.change_choice(1)")
+		screen:expect{grid=[[
+			qwer   ^qwer asdf                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- make sure $0 is actually behind choice.
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			qwer   qwer^ asdf                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("can modify groups in transform.", function()
 		local snip = '"$1 a ${1/(.*)/asdf ${1:/upcase} asdf/} a"'
 
