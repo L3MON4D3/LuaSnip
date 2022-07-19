@@ -40,7 +40,8 @@ jobs:
           lua-nvim \
           luajit \
           ninja-build \
-          pkg-config
+          pkg-config \
+          liblua5.1-0-dev
 
 
       - run: make test
