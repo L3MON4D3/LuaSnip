@@ -79,6 +79,20 @@ local function copy_func(tabstop)
 		return transform_func(args[1])
 	end
 end
+
+---If this tabstop-node (CHOICE, TABSTOP or PLACEHOLDER) is a copy of another,
+---set that up and return, otherwise return false.
+---@param ast table: ast-node.
+---@return boolean: whether the node is now parsed.
+local function tabstop_node_copy_inst(ast)
+	local existing_tabstop_ast_node = ast.copies
+	if existing_tabstop_ast_node then
+		-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
+		ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+		return true
+	end
+	return false
+end
 -- these actually create nodes from any AST.
 local to_node_funcs = {
 	-- careful! this parses the snippet into a list of nodes, not a full snippet!
@@ -92,10 +106,7 @@ local to_node_funcs = {
 	end,
 	[types.CHOICE] = function(ast)
 		-- even choices may be copies.
-		local existing_tabstop_ast_node = ast.copies
-		if existing_tabstop_ast_node then
-			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
-			ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+		if tabstop_node_copy_inst(ast) then
 			return
 		end
 
@@ -107,22 +118,14 @@ local to_node_funcs = {
 		ast.parsed = cNode.C(ast.tabstop, choices)
 	end,
 	[types.TABSTOP] = function(ast)
-		local existing_tabstop_ast_node = ast.copies
-		if existing_tabstop_ast_node then
-			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
-			ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+		if tabstop_node_copy_inst(ast) then
 			return
 		end
-
 		-- tabstops don't have placeholder-text.
 		ast.parsed = iNode.I(ast.tabstop)
 	end,
 	[types.PLACEHOLDER] = function(ast, state)
-		-- check from TABSTOP.
-		local existing_tabstop_ast_node = ast.copies
-		if existing_tabstop_ast_node then
-			-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
-			ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+		if tabstop_node_copy_inst(ast) then
 			return
 		end
 
