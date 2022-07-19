@@ -27,6 +27,42 @@ local function predicate_ltr_nodes(ast, fn)
 	return false
 end
 
+-- tested in vscode:
+-- in "${1|b,c|} ${1:aa}" ${1:aa} is the copy,
+-- in "${1:aa}, ${1|b,c|}" ${1|b,c} is the copy => with these two the position
+-- determines which is the real tabstop => they have the same priority.
+-- in "$1 ${1:aa}", $1 is the copy, so it has to have a lower priority.
+local function type_real_tabstop_prio(node)
+	local _type_real_tabstop_prio = {
+		[types.TABSTOP] = 1,
+		[types.PLACEHOLDER] = 2,
+		[types.CHOICE] = 2,
+	}
+	if node.transform then
+		return 0
+	end
+	return _type_real_tabstop_prio[node.type]
+end
+
+---The name of this function is horrible, but I can't come up with something
+---more succinct.
+---The idea here is to find which of two nodes is "smaller" in a
+---"real-tabstop"-ordering relation on all the nodes of a snippet.
+---REQUIREMENT!!! The nodes have to be passed in the order they appear in in
+---the snippet, eg. prev_node has to appear earlier in the text (or be a parent
+---of) current_node.
+---@param prev_node table: the ast node earlier in the text.
+---@param current_node table: the other ast node.
+---@return boolean: true if prev_node is less than (according to the
+---"real-tabstop"-ordering described above and in the docstring of
+---`add_dependents`), false otherwise.
+local function real_tabstop_order_less(prev_node, current_node)
+	local prio_prev = type_real_tabstop_prio(prev_node)
+	local prio_current = type_real_tabstop_prio(current_node)
+	-- if type-prio is the same, the one that appeared earlier is the real tabstop.
+	return prio_prev == prio_current and false or prio_prev < prio_current
+end
+
 --- Find type of 0-placeholder/choice/tabstop, if it exists.
 --- Ignores transformations.
 ---@param ast table: ast
@@ -180,36 +216,6 @@ function M.fix_zero(ast)
 			tabstop = 0,
 		}, Node_mt)
 	)
-end
-
--- tested in vscode:
--- in "${1|b,c|} ${1:aa}" ${1:aa} is the copy,
--- in "${1:aa}, ${1|b,c|}" ${1|b,c} is the copy => with these two the position
--- determines which is the real tabstop => they have the same priority.
--- in "$1 ${1:aa}", $1 is the copy, so it has to have a lower priority.
-local type_real_tabstop_prio = {
-	[types.TABSTOP] = 1,
-	[types.PLACEHOLDER] = 2,
-	[types.CHOICE] = 2,
-}
-
----The name of this function is horrible, but I can't come up with something
----more succinct.
----The idea here is to find which of two nodes is "smaller" in a
----"real-tabstop"-ordering relation on all the nodes of a snippet.
----REQUIREMENT!!! The nodes have to be passed in the order they appear in in
----the snippet, eg. prev_node has to appear earlier in the text (or be a parent
----of) current_node.
----@param prev_node table: the ast node earlier in the text.
----@param current_node table: the other ast node.
----@return boolean: true if prev_node is less than (according to the
----"real-tabstop"-ordering described above and in the docstring of
----`add_dependents`), false otherwise.
-local function real_tabstop_order_less(prev_node, current_node)
-	local prio_prev = type_real_tabstop_prio[prev_node.type]
-	local prio_current = type_real_tabstop_prio[current_node.type]
-	-- if type-prio is the same, the one that appeared earlier is the real tabstop.
-	return prio_prev == prio_current and false or prio_prev < prio_current
 end
 
 ---This function identifies which tabstops/placeholder/choices are copies, and
