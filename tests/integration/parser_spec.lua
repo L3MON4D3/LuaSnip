@@ -44,20 +44,6 @@ describe("Parser", function()
 		})
 	end)
 
-	-- it("prevents invalid $0", function()
-	-- 	local snip = '""'
-
-	-- 	ls_helpers.lsp_static_test(snip, { "" })
-
-	-- 	exec_lua("ls.lsp_expand(" .. snip .. ")")
-	-- 	screen:expect({
-	-- 		grid = [[
-	-- 		a0a^                                               |
-	-- 		{0:~                                                 }|
-	-- 		{2:-- INSERT --}                                      |]],
-	-- 	})
-	-- end)
-
 	it("Can create snippets with tabstops.", function()
 		local snip = '"a$2 $0b$1 c"'
 
@@ -246,6 +232,53 @@ describe("Parser", function()
 			qwer   qwer^ asdf                                  |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("does not modify $0 which can be represented.", function()
+		local snip = '"${0:qwer} asdf"'
+
+		ls_helpers.lsp_static_test(snip, { "qwer asdf" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			^q{3:wer} asdf                                         |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			^q{3:wer} asdf                                         |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
+
+	it("turns the correct nodes into insert/functionNode", function()
+		local snip = '"${1} ${1:asdf} ${1:asdf}"'
+
+		ls_helpers.lsp_static_test(snip, { "asdf asdf asdf" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+
+		-- actually not sure if this is how it should be, vscode just spawns
+		-- multicursors :(
+		screen:expect{grid=[[
+			asdf ^a{3:sdf} asdf                                    |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
+
+	it("turns the correct nodes into insert/functionNode v2", function()
+		local snip = '"${1} ${1:asdf} ${1|a,b,c,d,e|}"'
+
+		ls_helpers.lsp_static_test(snip, { "asdf asdf asdf" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+
+		-- actually not sure if this is how it should be, vscode just spawns
+		-- multicursors :(
+		screen:expect{grid=[[
+			asdf ^a{3:sdf} asdf                                    |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
 	end)
 
 	it("can modify groups in transform.", function()
