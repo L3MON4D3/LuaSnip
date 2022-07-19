@@ -127,7 +127,12 @@ end
 
 local function text_only_placeholder(placeholder)
 	local only_text = true
+
 	predicate_ltr_nodes(placeholder, function(node)
+		if node == placeholder then
+			-- ignore placeholder.
+			return false
+		end
 		if node.type ~= types.TEXT then
 			only_text = false
 			-- we found non-text, no need to search more.
