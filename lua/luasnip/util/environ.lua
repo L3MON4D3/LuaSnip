@@ -1,4 +1,4 @@
-local builtin_vars = require("luasnip.util._builtin_vars")
+local builtin_namespace = require("luasnip.util._builtin_vars")
 
 
 
@@ -15,12 +15,6 @@ local function tbl_to_lazy_env(tbl)
 end
 
 local namespaces = {
-    [""] = {
-        init = builtin_vars.eager,
-        vars = tbl_to_lazy_env(builtin_vars.lazy),
-        eager = {},
-        is_table = builtin_vars.is_table
-    }
 }
 
 -- Namespaces allow users to define their own environmet variables
@@ -30,7 +24,8 @@ local function _resolve_namespace_var(full_varname)
     local nmsp = namespaces[parts[1]]
 
     local varname
-
+    -- Is safe to fallback to the buitin-unnamed namespace as the checks in _env_namespace
+    -- don't allow overriding those vars
     if nmsp then
         varname = full_varname:sub(#parts[1] + 2)
     else
@@ -71,34 +66,29 @@ function Environ:new(pos, o)
 
         for name, val in pairs(eager_vars) do
             name = prefix .. name
-            local val_type = type(val)
-            if val and val_type ~= "string" and val_type ~= "table" then
-                val = tostring(val)
-            end
             rawset(o, name, val)
         end
     end
     return o
 end
 
-local builtin_ns_names = vim.inspect(vim.tbl_keys(builtin_vars.builtin_ns))
+local builtin_ns_names = vim.inspect(vim.tbl_keys(builtin_namespace.builtin_ns))
 
-function Environ.env_namespace(name, opts)
-    assert(#name > 0 and not (name:find("_")), ("You can't create a namespace with name '%s' empty nor containing _"):format(name))
-    assert(not builtin_vars.builtin_ns[name], ("You can't create a namespace with name '%s' because is one one of %s"):format(name, builtin_ns_names))
 
-    assert(opts and type(opts) == 'table', ("Your namespace '%s' has to be a table"):format(name))
-    assert(opts.init or opts.vars,( "Your namespace '%s' needs init or vars"):format(name))
+local function _env_namespace(name, opts)
+
+    assert(opts and type(opts) == 'table', ("Your opts for '%s' has to be a table"):format(name))
+    assert(opts.init or opts.vars,( "Your opts for '%s' needs init or vars"):format(name))
 
     -- namespace.eager → ns.vars
-    assert(not opts.eager or opts.vars, ("Your namespace %s can't set a `eager` field without the `vars` one"):format(name))
+    assert(not opts.eager or opts.vars, ("Your opts for %s can't set a `eager` field without the `vars` one"):format(name))
 
     opts.eager = opts.eager or {}
     local multiline_vars = opts.multiline_vars or false
 
     local type_of_it = type(multiline_vars)
 
-    assert(type_of_it == "table" or type_of_it == "boolean" or type_of_it == "function", ("Your namespace %s can't have `is_table` of type %s"):format(name, type_of_it))
+    assert(type_of_it == "table" or type_of_it == "boolean" or type_of_it == "function", ("Your opts for %s can't have `multiline_vars` of type %s"):format(name, type_of_it))
 
     -- If type is function we don't have to override it
     if type_of_it == "table" then
@@ -126,6 +116,18 @@ function Environ.env_namespace(name, opts)
 
     namespaces[name] = opts
 end
+
+_env_namespace("", builtin_namespace)
+
+
+-- The exposed api checks for the names to avoid accidental overrides
+function Environ.env_namespace(name, opts)
+    assert(#name > 0 and not (name:find("_")), ("You can't create a namespace with name '%s' empty nor containing _"):format(name))
+    assert(not builtin_namespace.builtin_ns[name], ("You can't create a namespace with name '%s' because is one one of %s"):format(name, builtin_ns_names))
+
+    _env_namespace(name, opts)
+end
+
 
 function Environ:__index(key)
 

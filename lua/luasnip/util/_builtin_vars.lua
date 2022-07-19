@@ -175,7 +175,7 @@ local _is_table = {
 
 return {
     is_table = function(key) return _is_table[key] or false end,
-    lazy = lazy_vars,
-    eager = eager_vars,
+    vars = lazy_vars,
+    init = eager_vars,
     builtin_ns = builtin_ns,
 }
