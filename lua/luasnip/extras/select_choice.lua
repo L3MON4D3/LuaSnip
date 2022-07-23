@@ -6,6 +6,8 @@ local function set_choice_callback(_, indx)
 	if not indx then
 		return
 	end
+	-- feed+immediately execute i to enter INSERT after vim.ui.input closes.
+	vim.api.nvim_feedkeys("i", "x", false)
 	ls.set_choice(indx)
 end
 
