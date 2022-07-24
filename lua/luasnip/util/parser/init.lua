@@ -66,6 +66,9 @@ local function backticks_to_variable(body)
 		processed_to = to + 1
 	end
 
+	-- append remaining characters.
+	var_string = var_string .. body:sub(processed_to, -1)
+
 	return var_map, var_string
 end
 
@@ -73,9 +76,8 @@ function M.parse_snipmate(body)
 	local new_vars
 	new_vars, body = backticks_to_variable(body)
 	local ast = parse(body)
-	ast_utils.fix_zero(ast)
 
-	return ast_parser.to_node(ast, {
+	return ast_parser.to_luasnip_nodes(ast, {
 		var_functions = new_vars,
 	})
 end
