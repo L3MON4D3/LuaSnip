@@ -226,6 +226,11 @@ end
 ---   For now, only used when parsing snipmate-snippets.
 ---@return table: list of luasnip-nodes.
 function M.to_luasnip_nodes(ast, state)
+	state = state or {
+		-- default state-table.
+		var_functions = {}
+	}
+
 	-- fix disallowed $0 in snippet.
 	-- TODO(logging): report changes here.
 	ast_utils.fix_zero(ast)
@@ -235,6 +240,7 @@ function M.to_luasnip_nodes(ast, state)
 	ast_utils.give_vars_previous_text(ast)
 
 	local ast_nodes_topsort = ast_utils.parse_order(ast)
+	assert(ast_nodes_topsort, "cannot represent snippet: contains circular dependencies")
 	for _, node in ipairs(ast_nodes_topsort) do
 		to_node(node, state)
 	end
