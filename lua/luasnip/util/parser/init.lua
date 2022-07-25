@@ -82,6 +82,7 @@ local function backticks_to_variable(body)
 		-- don't include backticks in vimscript.
 		var_map[varname] = functions.eval_vim(body:sub(from + 1, to - 1))
 		processed_to = to + 1
+		variable_indx = variable_indx + 1
 	end
 
 	-- append remaining characters.
