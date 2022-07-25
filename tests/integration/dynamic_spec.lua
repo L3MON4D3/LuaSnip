@@ -294,4 +294,37 @@ describe("DynamicNode", function()
 			)
 		end
 	)
+
+	it(
+		"generates correct static text when using environment variables.",
+		function()
+		        exec_lua[[
+                             ls.env_namespace("DYN", {
+                                 vars = {ONE = "1", TWO = {"1", "2"}},
+                                 multiline_vars = {"TWO"}
+                              })
+                        ]]
+			local snip = [[
+
+			s("trig", {
+				d(1, function(args, parent)
+					return sn(nil, {
+                                            t(parent.snippet.env.DYN_ONE),
+                                            t"..", 
+                                            t(parent.snippet.env.DYN_TWO),
+                                            t"..",
+                                            t(tostring(#parent.snippet.env.DYN_TWO)), -- This one behaves as a table
+                                            t"..",
+                                            t(parent.snippet.env.WTF_YEA),  -- Unknow vars also work
+                                        })
+				end, {})
+			})
+                        ]]
+			ls_helpers.static_docstring_test(
+				snip,
+				{ "$DYN_ONE..$DYN_TWO..1..$WTF_YEA" },
+				{ "${1:$DYN_ONE..$DYN_TWO..1..$WTF_YEA}$0" }
+			)
+		end
+	)
 end)

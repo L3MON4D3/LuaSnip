@@ -1094,7 +1094,7 @@ To use any `*SELECT*` variable, the `store_selection_keys` must be set via
 hitting `<Tab>` while in Visualmode will populate the `*SELECT*`-vars for the next
 snippet and then clear them.
 
-## Environemt Namespaces
+## Environment Namespaces
 
 You can also add your own variables by using the `ls.env_namespace(name, opts)` where:
 

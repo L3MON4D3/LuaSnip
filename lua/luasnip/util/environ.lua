@@ -122,7 +122,7 @@ _env_namespace("", builtin_namespace)
 
 -- The exposed api checks for the names to avoid accidental overrides
 function Environ.env_namespace(name, opts)
-    assert(#name > 0 and not (name:find("_")), ("You can't create a namespace with name '%s' empty nor containing _"):format(name))
+    assert(name:match("^[a-zA-Z][a-zA-Z0-9]*$"), ("You can't create a namespace with name '%s' it has to contain only and at least a non alpha-numeric character"):format(name))
     assert(not builtin_namespace.builtin_ns[name], ("You can't create a namespace with name '%s' because is one one of %s"):format(name, builtin_ns_names))
 
     _env_namespace(name, opts)
