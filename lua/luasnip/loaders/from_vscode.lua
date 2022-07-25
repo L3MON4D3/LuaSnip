@@ -15,104 +15,104 @@ local function json_decode(data)
 	end
 end
 
+local function get_file_snippets(file)
+	local lang_snips = {}
+	local auto_lang_snips = {}
+
+	local data = Path.read_file(file)
+	local snippet_set_data = json_decode(data)
+	if snippet_set_data == nil then
+		return
+	end
+
+	for name, parts in pairs(snippet_set_data) do
+		local body = type(parts.body) == "string" and parts.body
+			or table.concat(parts.body, "\n")
+
+		-- There are still some snippets that fail while loading
+		pcall(function()
+			-- Sometimes it's a list of prefixes instead of a single one
+			local prefixes = type(parts.prefix) == "table"
+					and parts.prefix
+				or { parts.prefix }
+			for _, prefix in ipairs(prefixes) do
+				local ls_conf = parts.luasnip or {}
+
+				local snip = sp({
+					trig = prefix,
+					name = name,
+					dscr = parts.description or name,
+					wordTrig = true,
+					priority = ls_conf.priority,
+				}, body)
+
+				if ls_conf.autotrigger then
+					table.insert(auto_lang_snips, snip)
+				else
+					table.insert(lang_snips, snip)
+				end
+			end
+		end)
+	end
+
+	return lang_snips, auto_lang_snips
+end
+
 local function load_snippet_files(lang, files, add_opts)
 	for _, file in ipairs(files) do
-		if not Path.exists(file) then
-			goto continue
-		end
+		if Path.exists(file) then
+			local lang_snips, auto_lang_snips
 
-		-- TODO: make check if file was already parsed once, we can store+reuse the
-		-- snippets.
-
-		local lang_snips = {}
-		local auto_lang_snips = {}
-
-		local cached_path = cache.path_snippets[file]
-		if cached_path then
-			lang_snips = vim.deepcopy(cached_path.snippets)
-			auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
-		else
-			local data = Path.read_file(file)
-			local snippet_set_data = json_decode(data)
-			if snippet_set_data == nil then
-				return
+			local cached_path = cache.path_snippets[file]
+			if cached_path then
+				lang_snips = vim.deepcopy(cached_path.snippets)
+				auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
+			else
+				lang_snips, auto_lang_snips = get_file_snippets(file)
+				-- store snippets to prevent parsing the same file more than once.
+				cache.path_snippets[file] = {
+					snippets = vim.deepcopy(lang_snips),
+					autosnippets = vim.deepcopy(auto_lang_snips),
+					add_opts = add_opts,
+				}
 			end
 
-			for name, parts in pairs(snippet_set_data) do
-				local body = type(parts.body) == "string" and parts.body
-					or table.concat(parts.body, "\n")
+			-- difference to lua-loader: one file may contribute snippets to
+			-- multiple filetypes, so the ft has to be included in the
+			-- reload_file-call.
+			vim.cmd(string.format(
+				[[
+					augroup luasnip_watch_reload
+					autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_vscode").reload_file("%s", "%s")
+					augroup END
+				]],
+				-- escape for autocmd-pattern.
+				str_util.aupatescape(file),
+				-- args for reload.
+				lang,
+				file
+			))
 
-				-- There are still some snippets that fail while loading
-				pcall(function()
-					-- Sometimes it's a list of prefixes instead of a single one
-					local prefixes = type(parts.prefix) == "table"
-							and parts.prefix
-						or { parts.prefix }
-					for _, prefix in ipairs(prefixes) do
-						local ls_conf = parts.luasnip or {}
-
-						local snip = sp({
-							trig = prefix,
-							name = name,
-							dscr = parts.description or name,
-							wordTrig = true,
-							priority = ls_conf.priority,
-						}, body)
-
-						if ls_conf.autotrigger then
-							table.insert(auto_lang_snips, snip)
-						else
-							table.insert(lang_snips, snip)
-						end
-					end
-				end)
-			end
-
-			-- store snippets to prevent parsing the same file more than once.
-			cache.path_snippets[file] = {
-				snippets = vim.deepcopy(lang_snips),
-				autosnippets = vim.deepcopy(auto_lang_snips),
-				add_opts = add_opts,
-			}
+			ls.add_snippets(
+				lang,
+				lang_snips,
+				vim.tbl_extend("keep", {
+					type = "snippets",
+					-- again, include filetype, same reasoning as with augroup.
+					key = string.format("__%s_snippets_%s", lang, file),
+					refresh_notify = false,
+				}, add_opts)
+			)
+			ls.add_snippets(
+				lang,
+				auto_lang_snips,
+				vim.tbl_extend("keep", {
+					type = "autosnippets",
+					key = string.format("__%s_autosnippets_%s", lang, file),
+					refresh_notify = false,
+				}, add_opts)
+			)
 		end
-
-		-- difference to lua-loader: one file may contribute snippets to
-		-- multiple filetypes, so the ft has to be included in the unique!!
-		-- augroup.
-		vim.cmd(string.format(
-			[[
-				augroup luasnip_watch_reload
-				autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_vscode").reload_file("%s", "%s")
-				augroup END
-			]],
-			-- escape for autocmd-pattern.
-			str_util.aupatescape(file),
-			-- args for reload.
-			lang,
-			file
-		))
-
-		ls.add_snippets(
-			lang,
-			lang_snips,
-			vim.tbl_extend("keep", {
-				type = "snippets",
-				-- again, include filetype, same reasoning as with augroup.
-				key = string.format("__%s_snippets_%s", lang, file),
-				refresh_notify = false,
-			}, add_opts)
-		)
-		ls.add_snippets(
-			lang,
-			auto_lang_snips,
-			vim.tbl_extend("keep", {
-				type = "autosnippets",
-				key = string.format("__%s_autosnippets_%s", lang, file),
-				refresh_notify = false,
-			}, add_opts)
-		)
-
-		::continue::
 	end
 
 	ls.refresh_notify(lang)
