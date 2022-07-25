@@ -32,8 +32,7 @@ local function get_file_snippets(file)
 		-- There are still some snippets that fail while loading
 		pcall(function()
 			-- Sometimes it's a list of prefixes instead of a single one
-			local prefixes = type(parts.prefix) == "table"
-					and parts.prefix
+			local prefixes = type(parts.prefix) == "table" and parts.prefix
 				or { parts.prefix }
 			for _, prefix in ipairs(prefixes) do
 				local ls_conf = parts.luasnip or {}
