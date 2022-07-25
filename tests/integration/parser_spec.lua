@@ -411,7 +411,7 @@ describe("Parser", function()
 	it("can parse vim-stuff in snipmate-snippets.", function()
 		local snip = [["The year is ${1:`strftime('%Y')`}"]]
 
-		exec_lua("ls.snip_expand(ls.s('', ls.parser.parse_snipmate(" .. snip .. ")))")
+		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
 		screen:expect{grid=[[
 			The year is ^2{3:022}                                  |
 			{0:~                                                 }|

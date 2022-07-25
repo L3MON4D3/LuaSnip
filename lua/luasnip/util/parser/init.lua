@@ -8,6 +8,20 @@ local functions = require("luasnip.util.functions")
 
 local M = {}
 
+---Parse snippet represented by `body`.
+---@param context (table|string|number|nil):
+--- - table|string: treated like the first argument to `ls.snippet`,
+---   returns a snippet.
+--- - number: Returns a snippetNode, `context` is its' jump-position.
+--- - nil: Returns a flat list of luasnip-nodes, to be used however.
+---@param body string: the representation of the snippet.
+---@param opts table: optional parameters. Valid keys:
+--- - `trim_empty`: boolean, remove empty lines from the snippet.
+--- - `dedent`: boolean, remove common indent from the snippet's lines.
+--- - `variables`: map[string-> (fn()->string)], variables to be used only in this
+---   snippet.
+---@return table: the snippet, in the representation dictated by the value of
+---`context`.
 function M.parse_snippet(context, body, opts)
 	opts = opts or {}
 
@@ -24,11 +38,15 @@ function M.parse_snippet(context, body, opts)
 		ast = parse(body)
 	end
 
+	local nodes = ast_parser.to_luasnip_nodes(ast, {
+		var_functions = opts.variables
+	})
+
 	if type(context) == "number" then
-		return sNode.SN(context, ast_parser.to_luasnip_nodes(ast))
+		return sNode.SN(context, nodes)
 	end
 	if type(context) == "nil" then
-		return ast_parser.to_luasnip_nodes(ast)
+		return nodes
 	end
 
 	if type(context) == "string" then
@@ -36,7 +54,7 @@ function M.parse_snippet(context, body, opts)
 	end
 	context.docstring = body
 
-	return sNode.S(context, ast_parser.to_luasnip_nodes(ast))
+	return sNode.S(context, nodes)
 end
 
 local function backticks_to_variable(body)
@@ -72,14 +90,13 @@ local function backticks_to_variable(body)
 	return var_map, var_string
 end
 
-function M.parse_snipmate(body)
+function M.parse_snipmate(context, body, opts)
 	local new_vars
 	new_vars, body = backticks_to_variable(body)
-	local ast = parse(body)
 
-	return ast_parser.to_luasnip_nodes(ast, {
-		var_functions = new_vars,
-	})
+	opts = opts or {}
+	opts.variables = new_vars
+	return M.parse_snippet(context, body, opts)
 end
 
 return M
