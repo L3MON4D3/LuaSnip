@@ -298,12 +298,12 @@ describe("DynamicNode", function()
 	it(
 		"generates correct static text when using environment variables.",
 		function()
-		        exec_lua[[
+			exec_lua([[
                              ls.env_namespace("DYN", {
                                  vars = {ONE = "1", TWO = {"1", "2"}},
                                  multiline_vars = {"TWO"}
                               })
-                        ]]
+                        ]])
 			local snip = [[
 
 			s("trig", {
