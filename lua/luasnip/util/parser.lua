@@ -81,32 +81,24 @@ end
 
 local last_text = nil
 local function simple_var(text)
-	if Environ.is_valid_var(text) then
-		local f = fNode.F(functions.var, {})
-		f.user_args = { f, text }
+	local f = fNode.F(functions.var, {})
+	f.user_args = { f, text }
 
-		-- if the variable is preceded by \n<indent>, the indent is applied to
-		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
-		if last_text ~= nil and #last_text.static_text > 1 then
-			local last_line_indent =
-				last_text.static_text[#last_text.static_text]:match("^%s+$")
-			if last_line_indent then
-				f = snipNode.ISN(
-					nil,
-					{ f },
-					"$PARENT_INDENT" .. last_line_indent
-				)
-			end
-		end
-		if text == "TM_SELECTED_TEXT" then
-			-- Don't indent visual.
-			return snipNode.ISN(nil, f, "")
-		else
-			return f
+	-- if the variable is preceded by \n<indent>, the indent is applied to
+	-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
+	if last_text ~= nil and #last_text.static_text > 1 then
+		local last_line_indent =
+			last_text.static_text[#last_text.static_text]:match("^%s+$")
+		if last_line_indent then
+			f = snipNode.ISN(nil, { f }, "$PARENT_INDENT" .. last_line_indent)
 		end
 	end
-	-- if the function is unknown, just insert an empty text-snippet.
-	return tNode.T({ "" })
+	if text == "TM_SELECTED_TEXT" then
+		-- Don't indent visual.
+		return snipNode.ISN(nil, f, "")
+	else
+		return f
+	end
 end
 
 -- Inserts a insert(1) before all other nodes, decreases node.pos's as indexing is "wrong".

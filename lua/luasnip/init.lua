@@ -679,6 +679,7 @@ ls = {
 	session = session,
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,
+	env_namespace = Environ.env_namespace,
 }
 
 return ls

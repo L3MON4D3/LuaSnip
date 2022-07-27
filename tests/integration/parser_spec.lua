@@ -193,6 +193,35 @@ describe("Parser", function()
 		})
 	end)
 
+	it("can parse user defined variable without namespace.", function()
+		local snip = '"a${MISSING_VAR}a"'
+
+		ls_helpers.lsp_static_test(snip, { "a$MISSING_VARa" })
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			aa^                                                |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
+	it("can parse user defined variable with namespace.", function()
+		local snip = '"a${USER_VAR}a"'
+
+		ls_helpers.lsp_static_test(snip, { "a$USER_VARa" })
+		exec_lua([[
+                ls.env_namespace('USER', {vars={VAR="the content"}})
+                ls.lsp_expand(
+                ]] .. snip .. ")")
+		screen:expect({
+			grid = [[
+			athe contenta^                                     |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
 	it("can parse variables as placeholder.", function()
 		local snip = '"a${1:$TM_LINE_INDEX}a"'
 
