@@ -44,14 +44,17 @@ local function ast2luasnip_nodes(ast_nodes)
 	return fix_node_indices(nodes)
 end
 
-local function var_func(varname, variable)
+local function var_func(ast)
+	local varname = ast.name
+
 	local transform_func
-	if variable.transform then
-		transform_func = ast_utils.apply_transform(variable.transform)
+	if ast.transform then
+		transform_func = ast_utils.apply_transform(ast.transform)
 	else
 		transform_func = util.id
 	end
-	return function(_, parent)
+
+	return function(_, parent, _, variable_default)
 		local v = parent.snippet.env[varname]
 		local lines
 		if type(v) == "table" then
@@ -64,7 +67,24 @@ local function var_func(varname, variable)
 		else
 			lines = { v }
 		end
-		return transform_func(lines)
+
+		-- quicker than checking lines in some way.
+		if not v then
+			-- the variable is not defined:
+			-- insert the variable's name as a placeholder.
+			return sNode.SN(nil, { iNode.I(1, varname) })
+		end
+		if #lines == 1 and #lines[1] == 0 then
+			-- The variable is empty.
+
+			-- default passed as user_arg, rationale described in
+			-- types.VARIABLE-to_node_func.
+			return variable_default
+		end
+
+		-- v exists and is nonempty, return the variable.
+		-- happy path :)
+		return sNode.SN(nil, { tNode.T(transform_func(lines)) })
 	end
 end
 
@@ -168,10 +188,38 @@ local to_node_funcs = {
 		if state.var_functions[var] then
 			fn = state.var_functions[var]
 		else
-			fn = var_func(var, ast)
+			fn = var_func(ast)
 		end
 
-		local f = fNode.F(fn, {})
+		local default
+		if ast.children then
+			default = sNode.SN(nil, ast2luasnip_nodes(ast.children))
+		else
+			-- no default -> empty snippetNode.
+			default = sNode.SN(nil, {tNode.T("")})
+		end
+
+		local d = dNode.D(ast.potential_tabstop, fn, {}, {
+			-- TRICKY!!!! Pass default in user_args! This is so the
+			-- copy-routine, which will run on expansion, can associate these
+			-- nodes inside the passed nodes with the ones that are inside the
+			-- snippet.
+			-- For example, if `default` contains a functionNode which relies on
+			-- an insertNode within the snippet, it has the insertNode as an
+			-- argnode stored inside it. During copy, the copied insertNode (eg
+			-- a pointer to it) has to be inserted at this position as well,
+			-- otherwise there might be bugs (the snippet thinks the argnode is
+			-- present, but it isn't).
+			--
+			-- This means that these nodes may not be passed as a simple
+			-- lambda-capture (!!).
+			-- I don't really like this, it can lead to very subtle errors (not
+			-- in this instance, but needing to do this in general).
+			--
+			-- TODO: think about ways to avoid this. OTOH, this is almost okay,
+			-- just needs to be documented a bit.
+			user_args = {default}
+		})
 
 		-- if the variable is preceded by \n<indent>, the indent is applied to
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
@@ -192,11 +240,11 @@ local to_node_funcs = {
 					and "$PARENT_INDENT" .. last_line_indent
 					or last_line_indent
 
-				f = sNode.ISN(nil, { f }, indentstring)
+				d = sNode.ISN(nil, { d }, indentstring)
 			end
 		end
 
-		ast.parsed = f
+		ast.parsed = d
 	end,
 }
 
@@ -224,6 +272,8 @@ end
 function M.to_luasnip_nodes(ast, state)
 	state = state or {}
 	state.var_functions = state.var_functions or {}
+
+	ast_utils.give_vars_potential_tabstop(ast)
 
 	-- fix disallowed $0 in snippet.
 	-- TODO(logging): report changes here.

@@ -421,6 +421,27 @@ function M.give_vars_previous_text(ast)
 	end)
 end
 
+---Variables are turned into placeholders if the Variable is undefined or not set.
+---Since in luasnip, variables can be added at runtime, the decision whether a
+---variable is just some text, inserts its default, or its variable-name has to
+---be deferred to runtime.
+---So, each variable is a dynamicNode, and needs a tabstop.
+---In vscode the variables are visited 
+--- 1) after all other tabstops/placeholders/choices and
+--- 2) in the order they appear in the snippet-body.
+---We mimic this behaviour.
+---@param ast table: The AST.
+function M.give_vars_potential_tabstop(ast)
+	local last_tabstop = max_position(ast)
+
+	predicate_ltr_nodes(ast, function(node)
+		if node.type == types.VARIABLE then
+			last_tabstop = last_tabstop + 1
+			node.potential_tabstop = last_tabstop
+		end
+	end)
+end
+
 function M.parse_order(ast)
 	M.add_dependents(ast)
 	-- build Directed Graph from ast-nodes.
