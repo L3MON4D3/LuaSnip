@@ -1,39 +1,165 @@
-local util = require("luasnip.util.util")
+local builtin_namespace = require("luasnip.util._builtin_vars")
 
-local eager_vars = {
-	["TM_CURRENT_LINE"] = true,
-	["TM_CURRENT_WORD"] = true,
-	["TM_LINE_INDEX"] = true,
-	["TM_LINE_NUMBER"] = true,
-	["TM_SELECTED_TEXT"] = true,
-	["SELECT_RAW"] = true,
-	["SELECT_DEDENT"] = true,
-}
--- These are the vars that have to be populated once the snippet starts to avoid any issue
-local function _fill_eager_vars(env, pos)
-	env.TM_CURRENT_LINE =
-		vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)[1]
-	env.TM_CURRENT_WORD = util.word_under_cursor(pos, env.TM_CURRENT_LINE)
-	env.TM_LINE_INDEX = tostring(pos[1])
-	env.TM_LINE_NUMBER = tostring(pos[1] + 1)
-	env.SELECT_RAW, env.SELECT_DEDENT, env.TM_SELECTED_TEXT =
-		util.get_selection()
+local function tbl_to_lazy_env(tbl)
+	local function wrapper(varname)
+		local val_ = tbl[varname]
+		if type(val_) == "function" then
+			return val_()
+		end
+		return val_
+	end
+
+	return wrapper
 end
 
-local lazy_vars = {}
+local namespaces = {}
+
+-- Namespaces allow users to define their own environmet variables
+local function _resolve_namespace_var(full_varname)
+	local parts = vim.split(full_varname, "_")
+	if #parts < 2 then
+		return nil
+	end
+	local nmsp = namespaces[parts[1]]
+
+	local varname
+	-- Is safe to fallback to the buitin-unnamed namespace as the checks in _env_namespace
+	-- don't allow overriding those vars
+	if nmsp then
+		varname = full_varname:sub(#parts[1] + 2)
+	else
+		nmsp = namespaces[""]
+		varname = full_varname
+	end
+	return nmsp, varname
+end
 
 local Environ = {}
+
+function Environ.is_table(var_fullname)
+	local nmsp, varname = _resolve_namespace_var(var_fullname)
+	---@diagnostic disable-next-line: need-check-nil
+	return nmsp.is_table(varname)
+end
+
 function Environ:new(pos, o)
 	o = o or {}
 	setmetatable(o, self)
-	_fill_eager_vars(o, pos)
+
+	for ns_name, ns in pairs(namespaces) do
+		local eager_vars = {}
+		if ns.init then
+			eager_vars = ns.init(pos)
+		end
+		for _, eager in ipairs(ns.eager) do
+			if not eager_vars[eager] then
+				eager_vars[eager] = ns.vars(eager)
+			end
+		end
+
+		local prefix = ""
+		if ns_name ~= "" then
+			prefix = ns_name .. "_"
+		end
+
+		for name, val in pairs(eager_vars) do
+			name = prefix .. name
+			rawset(o, name, val)
+		end
+	end
 	return o
 end
 
+local builtin_ns_names = vim.inspect(vim.tbl_keys(builtin_namespace.builtin_ns))
+
+local function _env_namespace(name, opts)
+	assert(
+		opts and type(opts) == "table",
+		("Your opts for '%s' has to be a table"):format(name)
+	)
+	assert(
+		opts.init or opts.vars,
+		("Your opts for '%s' needs init or vars"):format(name)
+	)
+
+	-- namespace.eager → ns.vars
+	assert(
+		not opts.eager or opts.vars,
+		("Your opts for %s can't set a `eager` field without the `vars` one"):format(
+			name
+		)
+	)
+
+	opts.eager = opts.eager or {}
+	local multiline_vars = opts.multiline_vars or false
+
+	local type_of_it = type(multiline_vars)
+
+	assert(
+		type_of_it == "table"
+			or type_of_it == "boolean"
+			or type_of_it == "function",
+		("Your opts for %s can't have `multiline_vars` of type %s"):format(
+			name,
+			type_of_it
+		)
+	)
+
+	-- If type is function we don't have to override it
+	if type_of_it == "table" then
+		local is_table_set = {}
+
+		for _, key in ipairs(multiline_vars) do
+			is_table_set[key] = true
+		end
+
+		opts.is_table = function(key)
+			return is_table_set[key] or false
+		end
+	elseif type_of_it == "boolean" then
+		opts.is_table = function(_)
+			return multiline_vars
+		end
+	else -- is a function
+		opts.is_table = multiline_vars
+	end
+
+	if opts.vars and type(opts.vars) == "table" then
+		opts.vars = tbl_to_lazy_env(opts.vars)
+	end
+
+	namespaces[name] = opts
+end
+
+_env_namespace("", builtin_namespace)
+
+-- The exposed api checks for the names to avoid accidental overrides
+function Environ.env_namespace(name, opts)
+	assert(
+		name:match("^[a-zA-Z][a-zA-Z0-9]*$"),
+		(
+			"You can't create a namespace with name '%s' it has to contain only and at least a non alpha-numeric character"
+		):format(name)
+	)
+	assert(
+		not builtin_namespace.builtin_ns[name],
+		("You can't create a namespace with name '%s' because is one one of %s"):format(
+			name,
+			builtin_ns_names
+		)
+	)
+
+	_env_namespace(name, opts)
+end
+
 function Environ:__index(key)
-	local v = lazy_vars[key]()
-	rawset(self, key, v)
-	return v
+	local nmsp, varname = _resolve_namespace_var(key)
+	---@diagnostic disable-next-line: need-check-nil
+	local val = nmsp.vars(varname) or ""
+
+	rawset(self, key, val)
+
+	return val
 end
 
 function Environ:override(env, new_env)
@@ -42,149 +168,23 @@ function Environ:override(env, new_env)
 	end
 end
 
--- Variables defined in https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variables
-
--- Inherited from TextMate
-function lazy_vars.TM_FILENAME()
-	return vim.fn.expand("%:t")
-end
-
-function lazy_vars.TM_FILENAME_BASE()
-	return vim.fn.expand("%:t:s?\\.[^\\.]\\+$??")
-end
-
-function lazy_vars.TM_DIRECTORY()
-	return vim.fn.expand("%:p:h")
-end
-function lazy_vars.TM_FILEPATH()
-	return vim.fn.expand("%:p")
-end
-
--- Vscode only
-
-function lazy_vars.CLIPBOARD() -- The contents of your clipboard
-	return vim.fn.getreg('"', 1, true)
-end
-
-local function buf_to_ws_part()
-	local LSP_WORSKPACE_PARTS = "LSP_WORSKPACE_PARTS"
-	local ok, ws_parts = pcall(vim.api.nvim_buf_get_var, 0, LSP_WORSKPACE_PARTS)
-	if not ok then
-		local file_path = vim.fn.expand("%:p")
-
-		for _, ws in pairs(vim.lsp.buf.list_workspace_folders()) do
-			if file_path:find(ws, 1, true) == 1 then
-				ws_parts = { ws, file_path:sub(#ws + 2, -1) }
-				break
-			end
+local fake_env = {
+	__index = function(tbl, key)
+		local var
+		if Environ.is_table(key) then
+			var = { "$" .. key }
+		else
+			var = "$" .. key
 		end
-		-- If it can't be extracted from lsp, then we use the file path
-		if not ok and not ws_parts then
-			ws_parts = { vim.fn.expand("%:p:h"), vim.fn.expand("%:p:t") }
-		end
-		vim.api.nvim_buf_set_var(0, LSP_WORSKPACE_PARTS, ws_parts)
-	end
-	return ws_parts
-end
-
-function lazy_vars.RELATIVE_FILEPATH() -- The relative (to the opened workspace or folder) file path of the current document
-	return buf_to_ws_part()[2]
-end
-
-function lazy_vars.WORKSPACE_FOLDER() -- The path of the opened workspace or folder
-	return buf_to_ws_part()[1]
-end
-
-function lazy_vars.WORKSPACE_NAME() -- The name of the opened workspace or folder
-	local parts = vim.split(buf_to_ws_part()[1] or "", "[\\/]")
-	return parts[#parts]
-end
-
--- DateTime Related
-function lazy_vars.CURRENT_YEAR()
-	return os.date("%Y")
-end
-function lazy_vars.CURRENT_YEAR_SHORT()
-	return os.date("%y")
-end
-function lazy_vars.CURRENT_MONTH()
-	return os.date("%m")
-end
-function lazy_vars.CURRENT_MONTH_NAME()
-	return os.date("%B")
-end
-function lazy_vars.CURRENT_MONTH_NAME_SHORT()
-	return os.date("%b")
-end
-function lazy_vars.CURRENT_DATE()
-	return os.date("%d")
-end
-function lazy_vars.CURRENT_DAY_NAME()
-	return os.date("%A")
-end
-function lazy_vars.CURRENT_DAY_NAME_SHORT()
-	return os.date("%a")
-end
-function lazy_vars.CURRENT_HOUR()
-	return os.date("%H")
-end
-function lazy_vars.CURRENT_MINUTE()
-	return os.date("%M")
-end
-function lazy_vars.CURRENT_SECOND()
-	return os.date("%S")
-end
-function lazy_vars.CURRENT_SECONDS_UNIX()
-	return tostring(os.time())
-end
-
--- For inserting random values
-
-math.randomseed(os.time())
-
-function lazy_vars.RANDOM()
-	return string.format("%06d", math.random(999999))
-end
-
-function lazy_vars.RANDOM_HEX()
-	return string.format("%06x", math.random(16777216)) --16^6
-end
-
-function lazy_vars.UUID()
-	local random = math.random
-	local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-	local out
-	local function subs(c)
-		local v = (((c == "x") and random(0, 15)) or random(8, 11))
-		return string.format("%x", v)
-	end
-	out = template:gsub("[xy]", subs)
-	return out
-end
-
-function lazy_vars.LINE_COMMENT()
-	return util.buffer_comment_chars()[1]
-end
-function lazy_vars.BLOCK_COMMENT_START()
-	return util.buffer_comment_chars()[2]
-end
-function lazy_vars.BLOCK_COMMENT_END()
-	return util.buffer_comment_chars()[3]
-end
-
-function Environ.is_valid_var(key)
-	return (eager_vars[key] or lazy_vars[key]) and true
-end
-
-local table_env_vars = {
-	TM_SELECTED_TEXT = true,
-	SELECT_RAW = true,
-	SELECT_DEDENT = true,
+		rawset(tbl, key, var)
+		return var
+	end,
 }
--- returns nil, but that should be alright.
--- If not, use metatable.
-function Environ.is_table(key)
-	return table_env_vars[key]
+
+function Environ.fake()
+	local o = {}
+	setmetatable(o, fake_env)
+	return o
 end
 
 return Environ

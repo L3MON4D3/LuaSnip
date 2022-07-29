@@ -210,6 +210,27 @@ describe("DynamicNode", function()
 		})
 	end)
 
+	-- from #491
+	it("dynamicNode propagates indent.", function()
+		local snip = [[
+			s("fails", d(1, function ()
+				return sn(nil, fmt("{}", {f(function () return {"a", "b"} end)}))
+			end))
+		]]
+		ls_helpers.static_docstring_test(
+			snip,
+			{ "a", "b" },
+			{ "${1:a", "b}$0" }
+		)
+		exec_lua("ls.snip_expand(" .. snip .. ")")
+		screen:expect({
+			grid = [[
+			a                                                 |
+			b^                                                 |
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
+
 	it("dynamicNode works in dynamicNode.", function()
 		local snip = [[
 			s("trig", {
@@ -270,6 +291,39 @@ describe("DynamicNode", function()
 				snip,
 				{ "argnode-textargnode-text" },
 				{ "argnode-text${1:${1:argnode-text}}$0" }
+			)
+		end
+	)
+
+	it(
+		"generates correct static text when using environment variables.",
+		function()
+			exec_lua([[
+                             ls.env_namespace("DYN", {
+                                 vars = {ONE = "1", TWO = {"1", "2"}},
+                                 multiline_vars = {"TWO"}
+                              })
+                        ]])
+			local snip = [[
+
+			s("trig", {
+				d(1, function(args, parent)
+					return sn(nil, {
+                                            t(parent.snippet.env.DYN_ONE),
+                                            t"..", 
+                                            t(parent.snippet.env.DYN_TWO),
+                                            t"..",
+                                            t(tostring(#parent.snippet.env.DYN_TWO)), -- This one behaves as a table
+                                            t"..",
+                                            t(parent.snippet.env.WTF_YEA),  -- Unknow vars also work
+                                        })
+				end, {})
+			})
+                        ]]
+			ls_helpers.static_docstring_test(
+				snip,
+				{ "$DYN_ONE..$DYN_TWO..1..$WTF_YEA" },
+				{ "${1:$DYN_ONE..$DYN_TWO..1..$WTF_YEA}$0" }
 			)
 		end
 	)

@@ -5,13 +5,17 @@ local M = {}
 
 local function default_format(path, _)
 	path = path:gsub(
-		vim.fn.stdpath("data") .. "/site/pack/packer/start",
+		vim.pesc(vim.fn.stdpath("data") .. "/site/pack/packer/start"),
 		"$PLUGINS"
 	)
 	if vim.env.HOME then
-		path = path:gsub(vim.env.HOME .. "/.config/nvim", "$CONFIG")
+		path = path:gsub(vim.pesc(vim.env.HOME .. "/.config/nvim"), "$CONFIG")
 	end
 	return path
+end
+
+local function default_edit(file)
+	vim.cmd("edit " .. file)
 end
 
 --- Quickly jump to snippet-file from any source for the active filetypes.
@@ -21,9 +25,13 @@ end
 ---   May be used to format the displayed items. For example, replace the
 ---   excessively long packer-path with something shorter.
 ---   If format returns nil for some item, the item will not be displayed.
+--- - edit: fn(file:string): this function is called with the snippet-file as
+---   the lone argument.
+---   The default is a function which just calls `vim.cmd("edit " .. file)`.
 function M.edit_snippet_files(opts)
 	opts = opts or {}
 	local format = opts.format or default_format
+	local edit = opts.edit or default_edit
 
 	local fts = util.get_snippet_filetypes()
 	vim.ui.select(fts, {
@@ -50,11 +58,11 @@ function M.edit_snippet_files(opts)
 					prompt = "Multiple files for this filetype, choose one:",
 				}, function(_, indx)
 					if indx and ft_paths[indx] then
-						vim.cmd("edit " .. ft_paths[indx])
+						edit(ft_paths[indx])
 					end
 				end)
 			elseif ft_paths[1] then
-				vim.cmd("edit " .. ft_paths[1])
+				edit(ft_paths[1])
 			end
 		end
 	end)
