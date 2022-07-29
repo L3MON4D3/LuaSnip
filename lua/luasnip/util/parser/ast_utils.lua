@@ -17,11 +17,9 @@ local function predicate_ltr_nodes(ast, fn)
 	if fn(ast) then
 		return true
 	end
-	if ast.type == types.PLACEHOLDER or ast.type == types.SNIPPET then
-		for _, node in ipairs(ast.children) do
-			if predicate_ltr_nodes(node, fn) then
-				return true
-			end
+	for _, node in ipairs(ast.children or {}) do
+		if predicate_ltr_nodes(node, fn) then
+			return true
 		end
 	end
 
