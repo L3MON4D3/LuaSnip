@@ -17,9 +17,6 @@ local namespaces = {}
 -- Namespaces allow users to define their own environmet variables
 local function _resolve_namespace_var(full_varname)
 	local parts = vim.split(full_varname, "_")
-	if #parts < 2 then
-		return nil
-	end
 	local nmsp = namespaces[parts[1]]
 
 	local varname
