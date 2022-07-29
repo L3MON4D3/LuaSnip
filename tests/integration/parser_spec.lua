@@ -438,21 +438,21 @@ describe("Parser", function()
 	end)
 
 	it("can parse vim-stuff in snipmate-snippets.", function()
-		local snip = [["The year is ${1:`strftime('%Y')`}"]]
+		local snip = [["The year is ${1:`'lel' . 'lol'`}"]]
 
 		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
 		screen:expect{grid=[[
-			The year is ^2{3:022}                                  |
+			The year is ^l{3:ellol}                                |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]]}
 	end)
 
 	it("can parse multiple vim-stuff in snipmate-snippets.", function()
-		local snip = [["The year is ${1:`strftime('%Y')`} `strftime('%D')` "]]
+		local snip = [["The year is ${1:`'rrr' . 'adsf'`} ` 'leeeee' . 'l'` "]]
 
 		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
 		screen:expect{grid=[[
-			The year is ^2{3:022} 07/25/22                         |
+			The year is ^r{3:rradsf} leeeeel                       |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]]}
 	end)
