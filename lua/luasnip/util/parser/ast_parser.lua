@@ -240,7 +240,7 @@ local to_node_funcs = {
 					and "$PARENT_INDENT" .. last_line_indent
 					or last_line_indent
 
-				d = sNode.ISN(nil, { d }, indentstring)
+				d = sNode.ISN(ast.potential_tabstop, { d }, indentstring)
 			end
 		end
 
