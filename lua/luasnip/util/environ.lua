@@ -152,7 +152,7 @@ end
 function Environ:__index(key)
 	local nmsp, varname = _resolve_namespace_var(key)
 	---@diagnostic disable-next-line: need-check-nil
-	local val = nmsp.vars(varname) or ""
+	local val = nmsp.vars(varname)
 
 	rawset(self, key, val)
 
