@@ -1,3 +1,6 @@
+local sn = require("luasnip.nodes.snippet").SN
+local t = require("luasnip.nodes.textNode").T
+
 return {
 	var = function(_, _, node, text)
 		local v = node.parent.snippet.env[text]
@@ -27,13 +30,13 @@ return {
 			end
 		end
 	end,
-	eval_vim = function(vimstring)
+	eval_vim_dynamic = function(vimstring)
 		return function()
 			-- 'echo'd string is returned to lua.
-			return vim.split(
+			return sn(nil, {t(vim.split(
 				vim.api.nvim_exec("echo " .. vimstring, true),
 				"\n"
-			)
+			))})
 		end
 	end,
 	copy = function(args)
