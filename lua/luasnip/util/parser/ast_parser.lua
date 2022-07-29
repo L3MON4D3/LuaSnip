@@ -165,14 +165,10 @@ local to_node_funcs = {
 	[types.VARIABLE] = function(ast, state)
 		local var = ast.name
 		local fn
-		if Environ.is_valid_var(var) then
-			fn = var_func(var, ast)
-		elseif state.var_functions[var] then
+		if state.var_functions[var] then
 			fn = state.var_functions[var]
 		else
-			-- if the variable is unknown, just insert an empty text-snippet.
-			ast.parsed = tNode.T({ "" })
-			return
+			fn = var_func(var, ast)
 		end
 
 		local f = fNode.F(fn, {})
@@ -226,10 +222,8 @@ end
 ---   For now, only used when parsing snipmate-snippets.
 ---@return table: list of luasnip-nodes.
 function M.to_luasnip_nodes(ast, state)
-	state = state or {
-		-- default state-table.
-		var_functions = {}
-	}
+	state = state or {}
+	state.var_functions = state.var_functions or {}
 
 	-- fix disallowed $0 in snippet.
 	-- TODO(logging): report changes here.
