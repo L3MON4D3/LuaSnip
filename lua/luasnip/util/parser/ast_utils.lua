@@ -144,9 +144,9 @@ local function text_only_placeholder(placeholder)
 end
 
 local function max_position(ast)
-	local max = -1
+	local max = 0
 	predicate_ltr_nodes(ast, function(node)
-		local new_max = node.tabstop or -1
+		local new_max = node.tabstop or 0
 		if new_max > max then
 			max = new_max
 		end
