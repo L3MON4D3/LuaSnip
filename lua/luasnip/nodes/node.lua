@@ -144,19 +144,25 @@ function Node:input_leave()
 	self.mark:update_opts(self.ext_opts.passive)
 end
 
-local function find_dependents(position_self, dict)
+local function find_dependents(self, position_self, dict)
+	local nodes = {}
+
 	position_self[#position_self + 1] = "dependents"
-	local nodes = dict:find_all(position_self, "dependent")
+	vim.list_extend(nodes, dict:find_all(position_self, "dependent") or {})
 	position_self[#position_self] = nil
+
+	vim.list_extend(nodes, dict:find_all({self, "dependents"}, "dependent") or {})
+
 	return nodes
 end
 
 function Node:_update_dependents()
 	local dependent_nodes = find_dependents(
+		self,
 		self.absolute_insert_position,
 		self.parent.snippet.dependents_dict
 	)
-	if not dependent_nodes then
+	if #dependent_nodes == 0 then
 		return
 	end
 	for _, node in ipairs(dependent_nodes) do
@@ -179,10 +185,11 @@ Node.update_all_dependents = Node._update_dependents
 
 function Node:_update_dependents_static()
 	local dependent_nodes = find_dependents(
+		self,
 		self.absolute_insert_position,
 		self.parent.snippet.dependents_dict
 	)
-	if not dependent_nodes then
+	if #dependent_nodes == 0 then
 		return
 	end
 	for _, node in ipairs(dependent_nodes) do
@@ -244,7 +251,11 @@ local function get_args(node, get_text_func_name)
 			-- the node is not (yet, maybe) visible.
 			return nil
 		end
-		local arg_node = node.parent.snippet.dependents_dict:get(arg.absolute_insert_position).node
+		local arg_table = node.parent.snippet.dependents_dict:get(arg.absolute_insert_position)
+		if not arg_table then
+			return nil
+		end
+		local arg_node = arg_table.node
 		-- maybe the node is part of a dynamicNode and not yet generated.
 		if not arg_node then
 			return nil
