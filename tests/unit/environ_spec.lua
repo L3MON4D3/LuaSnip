@@ -41,7 +41,7 @@ describe("luasnip.util.environ", function()
 			)
 		end)
 	end
-	local function check_empty(test_name, namespace_setup, var_name)
+	local function check_undefined(test_name, namespace_setup, var_name)
 		it(test_name, function()
 			assert.is_true(
 				exec_lua(
@@ -49,7 +49,7 @@ describe("luasnip.util.environ", function()
 					local Environ = require("luasnip.util.environ")
                                         %s
                                         local env = Environ:new({0, 0})
-                                        return #(env["%s"]) == 0
+                                        return env["%s"] == nil
                                         ]=]):format(
 						namespace_setup,
 						var_name
@@ -72,19 +72,19 @@ describe("luasnip.util.environ", function()
 					local Environ = require("luasnip.util.environ")
                                         %s
                                         local env = Environ:new({0, 0})
-                                        return rawget(env, "%s")  == nil
+                                        return rawget(env, "%s") ~= nil
                                         ]=]):format(
 						namespace_setup,
 						var_name
 					)
 				),
-				not eager
+				eager
 			)
 		end)
 	end
 
 	local function check(test_name, namespace_setup, var_name, eager, value)
-		check_empty(test_name .. " without initialization", [[]], var_name)
+		check_undefined(test_name .. " without initialization", [[]], var_name)
 		check_var_is_eager(
 			test_name .. " lazyness",
 			namespace_setup,
