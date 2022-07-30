@@ -449,6 +449,95 @@ describe("Parser", function()
 			{2:-- SELECT --}                                      |]]}
 	end)
 
+	it("Inserts default when the variable is empty", function()
+		local snip = "${SELECT_DEDENT: a ${2:default}}"
+
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		screen:expect{grid=[[
+			 a ^d{3:efault}                                        |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		feed("<Esc>ccSELECTED TEXT<Esc>V<Tab>")
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+		screen:expect{grid=[[
+			SELECTED TEXT^                                     |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("handles default correctly inside placeholder", function()
+		local snip = "${1: ${SELECT_DEDENT: a ${2:default}} }"
+
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		-- variable with default is parsed into choice
+		screen:expect{grid=[[
+			^  a default                                       |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			  a ^d{3:efault}                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		exec_lua("ls.change_choice()")
+		screen:expect{grid=[[
+			^                                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("handles copy-source inside default.", function()
+		local snip = "${1: ${SELECT_DEDENT: a ${2:default} ${3:copied}}} $3"
+
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		-- variable with default is parsed into choice
+		screen:expect{grid=[[
+			^  a default copied copied                         |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		exec_lua("ls.jump(1)")
+		exec_lua("ls.jump(1)")
+		feed("still copied")
+		exec_lua("ls.active_update_dependents()")
+		screen:expect{grid=[[
+			  a default still copied^ still copied             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		exec_lua("ls.change_choice()")
+		-- this is somewhat debatable, should the functionNode disappear if
+		-- there is no source? Right now it just doesn't update, I think that's
+		-- okay.
+		screen:expect{grid=[[
+			^ still copied                                     |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("handles copy inside default", function()
+		local snip = "$1 ${2: ${SELECT_DEDENT: a ${3:default} $1} }"
+
+		-- indent, insert text, SELECT.
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+		screen:expect{grid=[[
+			^   a default                                      |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		feed("third_tabstop")
+
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			third_tabstop ^  a default third_tabstop           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("can parse vim-stuff in snipmate-snippets.", function()
 		local snip = [["The year is ${1:`'lel' . 'lol'`}"]]
 
