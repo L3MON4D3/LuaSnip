@@ -638,9 +638,24 @@ function Snippet:is_interactive()
 	for _, node in ipairs(self.nodes) do
 		-- return true if any node depends on another node or is an insertNode.
 		if
+			-- nodes can be forced not-interactive. This is useful for
+			-- dynamicNodes, which __might__ be interactive, to signalize that
+			-- they for sure aren't (if it is known).
+			not node.__not_interactive_override
+			and (
+			-- insertNodes are always interactive.
 			node.type == types.insertNode
-			or ((node.type == types.functionNode or node.type == types.dynamicNode) and #node.args ~= 0)
-			or node.type == types.choiceNode
+			-- functionNodes are only interactive if they depend on other
+			-- nodes, otherwise their content can be determined once, at the
+			-- beginning, and it won't change.
+			or ((node.type == types.functionNode) and #node.args ~= 0)
+			-- dynamicNodes have to be considered interactive (they could
+			-- contain an insertNode), maybe we could do some stuff here with
+			-- static_update and then check the generated snippet, but for now
+			-- just consider them interactive.
+			or node.type == types.dynamicNode
+			-- choiceNodes are also interactive, of course.
+			or node.type == types.choiceNode )
 		then
 			return true
 			-- node is snippet, recurse.
