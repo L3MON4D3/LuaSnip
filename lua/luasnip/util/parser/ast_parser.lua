@@ -240,6 +240,10 @@ local to_node_funcs = {
 					and "$PARENT_INDENT" .. last_line_indent
 					or last_line_indent
 
+				-- adjust current d's jump-position..
+				d.pos = 1
+				-- ..so it has the correct position when wrapped inside a
+				-- snippetNode.
 				d = sNode.ISN(ast.potential_tabstop, { d }, indentstring)
 			end
 		end
