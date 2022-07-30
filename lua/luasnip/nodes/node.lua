@@ -237,9 +237,14 @@ local function get_args(node, get_text_func_name)
 	local args = {}
 
 	-- Insp(node.parent.snippet.dependents_dict)
-	for _, arg in ipairs(node.args_absolute) do
-		-- Insp(arg)
-		local arg_node = node.parent.snippet.dependents_dict:get(arg).node
+	for _, arg in pairs(node.args_absolute) do
+		-- since arg may be a node, it may not be initialized in the snippet
+		-- and therefore not have an absolute_insert_position. Check for that.
+		if not arg.absolute_insert_position then
+			-- the node is not (yet, maybe) visible.
+			return nil
+		end
+		local arg_node = node.parent.snippet.dependents_dict:get(arg.absolute_insert_position).node
 		-- maybe the node is part of a dynamicNode and not yet generated.
 		if not arg_node then
 			return nil

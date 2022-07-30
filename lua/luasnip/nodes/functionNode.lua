@@ -113,8 +113,10 @@ function FunctionNode:set_dependents()
 	append_list[#append_list + 1] = "dependent"
 
 	for _, arg in ipairs(self.args_absolute) do
-		-- mutates arg! Contains key for dict and this node, from now on.
-		dict:set(vim.list_extend(vim.deepcopy(arg), append_list), self)
+		-- copy arg, list_extend mutates.
+		if arg.absolute_insert_position then
+			dict:set(vim.list_extend(vim.deepcopy(arg.absolute_insert_position), append_list), self)
+		end
 	end
 end
 
