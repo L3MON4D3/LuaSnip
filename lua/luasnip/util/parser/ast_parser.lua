@@ -200,8 +200,9 @@ local to_node_funcs = {
 		end
 
 		local d = dNode.D(ast.potential_tabstop, fn, {}, {
-			-- TRICKY!!!! Pass default in user_args! This is so the
-			-- copy-routine, which will run on expansion, can associate these
+			-- TRICKY!!!!
+			-- Problem: if the default is passed to the dynamicNode-function via lambda-capture, the
+			-- copy-routine, which will run on expansion, cannot associate these
 			-- nodes inside the passed nodes with the ones that are inside the
 			-- snippet.
 			-- For example, if `default` contains a functionNode which relies on
@@ -220,6 +221,8 @@ local to_node_funcs = {
 			-- just needs to be documented a bit.
 			user_args = {default}
 		})
+		-- if the variable has no default, it is guaranteed to be non-interactive.
+		d.__not_interactive_override = (ast.children == nil)
 
 		-- if the variable is preceded by \n<indent>, the indent is applied to
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
