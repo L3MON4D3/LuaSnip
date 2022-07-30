@@ -318,12 +318,10 @@ describe("Parser", function()
 
 		ls_helpers.lsp_static_test(snip, { "a$MISSING_VARa" })
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect({
-			grid = [[
-			aa^                                                |
+		screen:expect{grid=[[
+			a^M{3:ISSING_VAR}a                                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
-		})
+			{2:-- SELECT --}                                      |]]}
 	end)
 
 	it("can parse user defined variable with namespace.", function()
@@ -409,7 +407,8 @@ describe("Parser", function()
 		feed("i<Tab><Tab>asdf<Cr>asdf<Esc>Vk<Tab> ")
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
-		-- the \t in front of $1 is extended to both lines of $TM_SELECTED_TEXT.
+		-- the \t is extended to both lines of $TM_SELECTED_TEXT (not just the
+		-- first!).
 		screen:expect({
 			grid = [[
 			        asdf                                      |
@@ -435,6 +434,19 @@ describe("Parser", function()
 
 		-- just make sure this also works.
 		snip = "b\n\t$TM_SELECTED_TEXTb"
+	end)
+
+	it("Inserts variable as placeholder on unknown varname.", function()
+		local snip = "${A_VARIABLE_DOES_IT_EXIST_QUESTION_MARK}"
+
+		-- indent, insert text, SELECT.
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		-- the \t in front of $1 is extended to both lines of $TM_SELECTED_TEXT.
+		screen:expect{grid=[[
+			^A{3:_VARIABLE_DOES_IT_EXIST_QUESTION_MARK}            |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
 	end)
 
 	it("can parse vim-stuff in snipmate-snippets.", function()
