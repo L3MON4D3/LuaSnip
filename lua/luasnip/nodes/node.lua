@@ -291,11 +291,11 @@ function Node:set_dependents() end
 
 function Node:set_argnodes(dict)
 	if self.absolute_insert_position then
-		local value = dict:get(self.absolute_insert_position)
-
-		if value and value.dependents then
-			value.node = self
-		end
+		-- append+remove "node" from absolute_insert_position to quickly create
+		-- key for dict.
+		table.insert(self.absolute_insert_position, "node")
+		dict:set(self.absolute_insert_position, self)
+		self.absolute_insert_position[#self.absolute_insert_position] = nil
 	end
 end
 
