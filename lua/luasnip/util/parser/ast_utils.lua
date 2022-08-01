@@ -362,15 +362,15 @@ function M.apply_transform(transform)
 			-- it's initialized with 1.
 			local prev_match_end = 1
 			for _, match in ipairs(matches) do
-				-- -1: begin_ind is inclusive.
+				-- begin_ind and end_ind are inclusive.
 				transformed = transformed
-					.. lines:sub(prev_match_end, match.begin_ind - 1)
+					.. lines:sub(prev_match_end+1, match.begin_ind - 1)
 					.. apply_transform_format(transform.format, match.groups)
 
-				-- end-exclusive
+				-- end-inclusive
 				prev_match_end = match.end_ind
 			end
-			transformed = transformed .. lines:sub(prev_match_end, #lines)
+			transformed = transformed .. lines:sub(prev_match_end+1, #lines)
 
 			return vim.split(transformed, "\n")
 		end

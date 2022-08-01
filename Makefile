@@ -5,7 +5,8 @@ nvim:
 JSREGEXP_PATH=deps/jsregexp
 jsregexp:
 	# rebuild on new pull, accept otherwise.
-	(git clone --depth 1 https://github.com/kmarius/jsregexp ${JSREGEXP_PATH} && make -C ${JSREGEXP_PATH}) || true
+	git clone --depth 1 https://github.com/kmarius/jsregexp ${JSREGEXP_PATH} || (cd ${JSREGEXP_PATH}; git fetch --depth 1; git checkout origin/master)
+	make -C ${JSREGEXP_PATH}
 
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
 test: nvim jsregexp
