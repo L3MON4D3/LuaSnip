@@ -1164,7 +1164,27 @@ lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} e
 
 -- then you can use  $POS_VAL in your snippets
 ```
+## LSP-Variables
 
+All variables, even ones added via `env_namespace`, can be accessed in
+lsp-snippets as `$VAR_NAME`.
+
+The lsp-spec states:
+
+----
+
+With `$name` or `${name:default}` you can insert the value of a variable.  
+When a variable isn’t set, its default or the empty string is inserted.
+When a variable is unknown (that is, its name isn’t defined) the name of the variable is inserted and it is transformed into a placeholder.
+
+----
+
+The above necessiates a differentiation between `unknown` and `unset` variables:
+
+For Luasnip, a variable `VARNAME` is `unknown` when `env.VARNAME` returns `nil` and `unset`
+if it returns an empty string.
+
+Consider this when adding env-variables which might be used in lsp-snippets.
 
 # LOADERS
 
