@@ -234,6 +234,34 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]]}
 	end)
 
+	it("modifies invalid $0 with choice nested in placeholder.", function()
+		-- this can't work in luasnip.
+		-- solution: add
+		local snip = '"$0   ${1: ${0|asdf,qwer,zxcv|}} asdf"'
+
+		ls_helpers.lsp_static_test(snip, { "asdf    asdf asdf" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			asdf   ^ asdf asdf                                 |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- jump to choice..
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			asdf    ^asdf asdf                                 |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- and to new $0.
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			asdf    asdf^ asdf                                 |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("does not modify $0 which can be represented.", function()
 		local snip = '"${0:qwer} asdf"'
 
@@ -295,6 +323,24 @@ describe("Parser", function()
 		exec_lua("ls.jump(1)")
 		screen:expect{grid=[[
 			rrrr a asdf RRRR asdf a^                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("handle multiple captures in transform.", function()
+		local snip = '"${1:bbb} a ${1/(.)b(.)/${1:/upcase} $2/g} a"'
+
+		ls_helpers.lsp_static_test(snip, { "bbb a B b a" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			^b{3:bb} a B b a                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+		feed("bbbbbb")
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			bbbbbb a B bB b a^                                 |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]]}
 	end)
