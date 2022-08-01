@@ -1064,12 +1064,42 @@ Luasnip is capable of parsing lsp-style snippets using
 ls.parser.parse_snippet({trig = "lsp"}, "$1 is ${2|hard,easy,challenging|}")
 ```
 
+`context` can be:
+  - `string|table`: treated like the first argument to `ls.s`, `parse_snippet`
+    returns a snippet.
+  - `number`: `parse_snippet` returns a snippetNode, with the position
+    `context`.
+  - `nil`: `parse_snippet` returns a flat table of nodes. This can be used
+    like `fmt`.
+
 Nested placeholders(`"${1:this is ${2:nested}}"`) will be turned into
 choiceNode's with:
-	- the given snippet(`"this is ${1:nested}"`) and
-	- an empty insertNode
+  - the given snippet(`"this is ${1:nested}"`) and
+  - an empty insertNode
+
+This behaviour can be modified by changing `parser_nested_assembler` in
+`ls.setup()`.
 
 
+Luasnip will also modify some snippets it's incapable of representing
+accurately:
+  - if the `$0` is a placeholder with something other than just text inside
+  - if the `$0` is a choice
+  - if the `$0` is not an immediate child of the snippet (it could be inside a
+    placeholder: `"${1: $0 }"`)
+
+To remedy those incompatibilities, the invalid `$0` will be replaced with a
+tabstop/placeholder/choice which will be visited just before the new `$0`. This
+new `$0` will be inserted at the (textually) earliest valid position behind the
+invalid `$0`.
+
+It is furthermore possible to parse snipmate-snippets (this includes support for
+vimscript-evaluation!!)  
+Snipmate-snippets have to be parsed with a different function,
+`ls.parser.parse_snipmate`:
+```lua
+ls.parser.parse_snipmate("year", "The year is `strftime('%Y')`")
+```
 
 # VARIABLES
 
@@ -1439,6 +1469,13 @@ local sp = require("luasnip.nodes.snippetProxy")
 sp("trig", "a snippet $1")
 ```
 
+`sp(context, body, opts) -> snippetProxy`
+  - `context`: exactly the same as the first argument passed to `ls.s`.
+  - `body`: the snippet-body.
+  - `opts`: accepts the same `opts` as `ls.s`, with some additions:
+    - `parse_fn`: the function for parsing the snippet. Defaults to
+	  `ls.parser.parse_snippet` (the parser for lsp-snippets), an alternative is
+	  the parser for snipmate-snippets (`ls.parser.parse_snipmate`).
 
 # EXT\_OPTS
 
