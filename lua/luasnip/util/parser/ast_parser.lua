@@ -68,22 +68,26 @@ local function var_func(ast)
 			lines = { v }
 		end
 
-		-- quicker than checking lines in some way.
+		-- quicker than checking `lines` in some way.
 		if not v then
 			-- the variable is not defined:
 			-- insert the variable's name as a placeholder.
 			return sNode.SN(nil, { iNode.I(1, varname) })
 		end
-		if #lines == 1 and #lines[1] == 0 then
+		if #lines == 0 or (#lines == 1 and #lines[1] == 0) then
 			-- The variable is empty.
 
 			-- default passed as user_arg, rationale described in
 			-- types.VARIABLE-to_node_func.
-			return variable_default
+			if variable_default then
+				return variable_default
+			else
+				-- lines might still just be {} (#lines == 0).
+				lines = {""}
+			end
 		end
 
-		-- v exists and is nonempty, return the variable.
-		-- happy path :)
+		-- v exists and has no default, return the (maybe modified) lines.
 		return sNode.SN(nil, { tNode.T(transform_func(lines)) })
 	end
 end
@@ -194,9 +198,6 @@ local to_node_funcs = {
 		local default
 		if ast.children then
 			default = sNode.SN(nil, ast2luasnip_nodes(ast.children))
-		else
-			-- no default -> empty snippetNode.
-			default = sNode.SN(nil, {tNode.T("")})
 		end
 
 		local d = dNode.D(ast.potential_tabstop, fn, {}, {
@@ -219,6 +220,8 @@ local to_node_funcs = {
 			--
 			-- TODO: think about ways to avoid this. OTOH, this is almost okay,
 			-- just needs to be documented a bit.
+			--
+			-- `default` is potentially nil.
 			user_args = {default}
 		})
 		-- if the variable has no default, it is guaranteed to be non-interactive.

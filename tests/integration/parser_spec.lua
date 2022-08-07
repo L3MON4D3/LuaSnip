@@ -513,6 +513,17 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]]}
 	end)
 
+	it("Applies transform to empty variable.", function()
+		local snip = "${TM_SELECTED_TEXT/(.*)/ asd /}"
+
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		screen:expect{grid=[[
+			 asd ^                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("handles default correctly inside placeholder", function()
 		local snip = "${1: ${SELECT_DEDENT: a ${2:default}} }"
 
