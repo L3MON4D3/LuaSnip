@@ -225,7 +225,7 @@ local to_node_funcs = {
 			user_args = {default}
 		})
 		-- if the variable has no default, it is guaranteed to be non-interactive.
-		d.__not_interactive_override = (ast.children == nil)
+		-- d.__not_interactive_override = (ast.children == nil)
 
 		-- if the variable is preceded by \n<indent>, the indent is applied to
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
