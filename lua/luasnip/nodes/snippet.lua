@@ -186,6 +186,20 @@ local function init_snippet_context(context)
 	-- might be nil, but whitelisted in snippetProxy.
 	context.priority = context.priority
 
+	-- might be nil, but whitelisted in snippetProxy.
+	-- shall be a string, allowed values: "snippet", "autosnippet"
+	assert(
+		not context.snippetType
+			or context.snippetType == "snippet"
+			or context.snippetType == "autosnippet",
+		"snippetType has to be either 'snippet' or 'autosnippet' (or unset)"
+	)
+	-- switch to plural forms so that we can use this for indexing
+	context.snippetType = context.snippetType == "autosnippet"
+			and "autosnippets"
+		or context.snippetType == "snippet" and "snippets"
+		or nil
+
 	-- maybe do this in a better way when we have more parameters, but this is
 	-- fine for now.
 
