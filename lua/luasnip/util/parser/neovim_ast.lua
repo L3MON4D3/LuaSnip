@@ -175,4 +175,29 @@ function M.text(esc, raw)
 	})
 end
 
+function M.merge_adjacent_text(ast)
+	if ast.children then
+		-- build new table of children.
+		local new_children = {}
+		-- last_child shall always point to the last entry in new_children.
+		local last_child
+
+		for _, child in ipairs(ast.children) do
+			-- first, recurse into children.
+			-- When we do this is not important, since it does not change the TEXT-nodes, here is just comfortable.
+			M.merge_adjacent_text(child)
+
+			if child.type == node_type.TEXT and last_child and last_child.type == node_type.TEXT then
+				last_child.raw = last_child.raw .. child.raw
+				last_child.esc = last_child.esc .. child.esc
+			else
+				table.insert(new_children, child)
+				last_child = child
+			end
+		end
+
+		ast.children = new_children
+	end
+end
+
 return M

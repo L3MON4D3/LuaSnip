@@ -212,6 +212,11 @@ S.text = function(targets, specials)
 		return ast.text(value.esc, value.raw)
 	end)
 end
+S.patterntext = function(pattern)
+	return P.map(P.pattern(pattern), function(value)
+		return ast.text(value, value)
+	end)
+end
 
 S.toplevel = P.lazy(function()
 	return P.any(S.placeholder, S.tabstop, S.variable, S.choice)
@@ -318,7 +323,7 @@ S.transform = P.map(
 		S.slash,
 		P.take_until({ "/" }, { "\\" }),
 		S.slash,
-		P.many(P.any(S.format, S.text({ "$", "/" }, { "\\" }))),
+		P.many(P.any(S.format, S.text({ "$", "/" }, { "\\" }), S.patterntext("[^/]"))),
 		S.slash,
 		P.opt(P.pattern("[ig]+"))
 	),
@@ -346,7 +351,7 @@ S.placeholder = P.any(
 			S.open,
 			S.int,
 			S.colon,
-			P.opt(P.many(P.any(S.toplevel, S.text({ "$", "}" }, { "\\" })))),
+			P.opt(P.many(P.any(S.toplevel, S.text({ "$", "}" }, { "\\" }), S.patterntext("[^}]")))),
 			S.close
 		),
 		function(values)
@@ -391,7 +396,7 @@ S.variable = P.any(
 			S.open,
 			S.var,
 			S.colon,
-			P.many(P.any(S.toplevel, S.text({ "$", "}" }, { "\\" }))),
+			P.many(P.any(S.toplevel, S.text({ "$", "}" }, { "\\" }), S.patterntext("[^}]"))),
 			S.close
 		),
 		function(values)
@@ -401,8 +406,9 @@ S.variable = P.any(
 )
 
 S.snippet = P.map(
-	P.many(P.any(S.toplevel, S.text({ "$" }, { "}", "\\" }))),
+	P.many(P.any(S.toplevel, S.text({ "$" }, { "}", "\\" }), S.patterntext("."))),
 	function(values)
+		-- Insp(values)
 		return ast.snippet(values)
 	end
 )
@@ -418,6 +424,8 @@ function M.parse(input)
 	if not result.parsed then
 		error("snippet parsing failed.")
 	end
+
+	ast.merge_adjacent_text(result.value)
 	return result.value
 end
 

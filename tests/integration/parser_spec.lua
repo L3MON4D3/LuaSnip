@@ -614,4 +614,31 @@ describe("Parser", function()
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]]}
 	end)
+
+	it("Correctly parses unescaped characters.", function()
+		local snip = "${} asdf"
+
+		-- indent, insert text, SELECT.
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+		screen:expect{grid=[[
+			${} asdf^                                          |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		feed("<Esc>cc")
+		snip = "${1: asdf ${\\}}"
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+		screen:expect{grid=[[
+			^ {3:asdf ${}}                                         |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+
+		feed("<Esc>cc")
+		snip = "${TM_LINE_NUMBER/(.*)/ ${} aaaa/}"
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+		screen:expect{grid=[[
+			 ${} aaaa^                                         |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)
