@@ -42,7 +42,7 @@ function FunctionNode:update()
 	end
 	self.last_args = args
 	local text =
-		util.wrap_value(self.fn(args, self.parent, unpack(self.user_args)))
+		util.to_string_table(self.fn(args, self.parent, unpack(self.user_args)))
 	if vim.bo.expandtab then
 		util.expand_tabs(text, util.tab_width(), #self.parent.indentstr)
 	end
@@ -80,7 +80,7 @@ function FunctionNode:update_static()
 		static_text = { "" }
 	end
 	self.static_text =
-		util.indent(util.wrap_value(static_text), self.parent.indentstr)
+		util.indent(util.to_string_table(static_text), self.parent.indentstr)
 end
 
 function FunctionNode:update_restore()

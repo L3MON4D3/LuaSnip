@@ -233,12 +233,21 @@ local function put(text, pos)
 	pos[2] = (#text > 1 and 0 or pos[2]) + #text[#text]
 end
 
--- Wrap a value in a table if it isn't one already
-local function wrap_value(value)
-	if not value or type(value) == "table" then
-		return value
+--[[ Wraps the value in a table if it's not one, makes
+  the first element an empty str if the table is empty]]
+local function to_string_table(value)
+	if not value then
+		return { "" }
 	end
-	return { value }
+	if type(value) == "string" then
+		return { value }
+	end
+	-- at this point it's a table
+	if #value == 0 then
+		return { "" }
+	end
+	-- non empty table
+	return value
 end
 
 -- Wrap node in a table if it is not one
@@ -425,7 +434,7 @@ local function buffer_comment_chars()
 end
 
 local function to_line_table(table_or_string)
-	local tbl = wrap_value(table_or_string)
+	local tbl = to_string_table(table_or_string)
 
 	-- split entries at \n.
 	local line_table = {}
@@ -552,7 +561,7 @@ return {
 	multiline_equal = multiline_equal,
 	word_under_cursor = word_under_cursor,
 	put = put,
-	wrap_value = wrap_value,
+	to_string_table = to_string_table,
 	wrap_nodes = wrap_nodes,
 	store_selection = store_selection,
 	get_selection = get_selection,
