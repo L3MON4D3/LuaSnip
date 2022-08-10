@@ -24,13 +24,13 @@ describe("Simple Nodes", function()
 		screen:detach()
 	end)
 
-	it("Allow empty table as input placeholder" , function()
+	it("Allow empty table as input placeholder", function()
 		local snip = [[
 			s("trig", {
 				i(1, {})
 			})
 		]]
-		ls_helpers.static_docstring_test(snip, { "" }, { '$1$0'})
+		ls_helpers.static_docstring_test(snip, { "" }, { "$1$0" })
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
@@ -40,5 +40,4 @@ describe("Simple Nodes", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
-
 end)
