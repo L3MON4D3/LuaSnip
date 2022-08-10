@@ -32,8 +32,9 @@ local r = ls.restore_node
 local events = require("luasnip.util.events")
 local ai = require("luasnip.nodes.absolute_indexer")
 local fmt = require("luasnip.extras.fmt").fmt
+local extras = require("luasnip.extras")
 local m = require("luasnip.extras").m
-local lambda = require("luasnip.extras").l
+local l = require("luasnip.extras").l
 local postfix = require("luasnip.extras.postfix").postfix
 ```
 
@@ -872,11 +873,11 @@ The complete signature for the node is `match(argnodes, condition, then, else)`,
   * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
     "PALINDROME" if the nth jumpable node is a palindrome.
 
-  * ```lua
+    ```lua
     s("trig", {
     	i(1), t":",
     	i(2), t"::",
-    	m({1, 2}, lambda._1:match("^"..lambda._2.."$"), lambda._1:gsub("a", "e"))
+    	m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
     })
     ```
     This inserts the text of the first insertNode, with all occurences of `a`
@@ -889,7 +890,7 @@ of the first insert.
 `partial(os.date, "%Y")` (arguments passed after the function are passed to it).
 
 - `nonempty`: inserts text if the insert at the given index doesn't contain any
-text. `nonempty(n, "empty!", "not empty!")` inserts "empty!" if insert n is
+text. `nonempty(n, "not empty!", "empty!")` inserts "empty!" if insert n is
 empty, "not empty!" if it isn't.
 
 - `dynamic_lambda`: Operates almost exactly like `lambda`, only that it can be
@@ -898,6 +899,25 @@ jumped to, and it's contents therefore be easily overridden.
 insert 1 appended to itself, but the second jump will lead to it, making it
 easy to override the generated text.
 The text will only be changed when a argnode updates it.
+
+```lua
+ls.add_snippets("all", {
+  s("extras1", {
+    i(1), t { "", "" }, m(1, "^ABC$", "A")
+  }),
+  s("extras2", {
+    i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
+  }),
+  s("extras3", {
+    i(1), t { "", "" }, i(2), t { "", "" },
+    m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
+  }),
+  s("extras4", { i(1), t { "", "" }, extras.rep(1) }),
+  s("extras5", { extras.partial(os.date, "%Y") }),
+  s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") }),
+  s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) }),
+})
+```
 
 ## FMT
 
@@ -908,28 +928,28 @@ Simple example:
 
 ```lua
 ls.add_snippets("all", {
-	-- important! fmt does not return a snippet, it returns a table of nodes.
-	s("example1", fmt("just an {iNode1}", {
-		iNode1 = i(1, "example")
-	}),
-	s("example2", fmt([[
-		if {} then
-			{}
-		end
-	]], {
-		-- i(1) is at nodes[1], i(2) at nodes[2].
-		i(1, "not now"), i(2, "when")
-	}),
-	s("example3", fmt([[
-		if <> then
-			<>
-		end
-	]], {
-		-- i(1) is at nodes[1], i(2) at nodes[2].
-		i(1, "not now"), i(2, "when")
-	}, {
-		delimiters = "<>"
-	}),
+  -- important! fmt does not return a snippet, it returns a table of nodes.
+  s("example1", fmt("just an {iNode1}", {
+    iNode1 = i(1, "example")
+  })),
+  s("example2", fmt([[
+  if {} then
+    {}
+  end
+  ]], {
+    -- i(1) is at nodes[1], i(2) at nodes[2].
+    i(1, "not now"), i(2, "when")
+  })),
+  s("example3", fmt([[
+  if <> then
+    <>
+  end
+  ]], {
+    -- i(1) is at nodes[1], i(2) at nodes[2].
+    i(1, "not now"), i(2, "when")
+  }, {
+    delimiters = "<>"
+  })),
 })
 ```
 
@@ -978,13 +998,13 @@ Notice that you can use your own mapping instead of <c-f>, and you can pick anot
 instead of `"p`. You can even use it several times, as if it where a macro if you add several
 mapppings like:
 ```vim
-; For register a
-vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr
+" For register a
+vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
 inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
 
 
-; For register b
-vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr
+" For register b
+vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
 inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
 ```
 
@@ -1062,11 +1082,12 @@ the point where selection started (or when doing transformations on selected tex
 All variables can be used outside of lsp-parsed snippets as their values are
 stored in a snippets' `snip.env`-table:
 ```lua
-s("selected_text", {
-	-- the surrounding snippet is passed in args after all argnodes (none,
-	-- in this case).
-	f(function(args, snip) return snip.env.SELECT_RAW end, {})
-})
+s("selected_text", f(function(args, snip)
+  local res, env = {}, snip.env
+  table.insert(res, "Selected Text (current line is " .. env.TM_LINE_NUMBER .. "):")
+  for _, ele in ipairs(env.SELECT_RAW) do table.insert(res, ele) end
+  return res
+end, {}))
 ```
 
 To use any `*SELECT*` variable, the `store_selection_keys` must be set via
@@ -1088,8 +1109,10 @@ You can also add your own variables by using the `ls.env_namespace(name, opts)` 
         a table of variables that will set to the environment of the snippet on expansion,
         use this for vars that have to be calculated in that moment or that depend on each other.
     * `eager`: `list[string]` names of variables that will be taken from `vars` and appended eagerly (like those in init)
-    * `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool` Says if certain vars are a table or just a string, can be a function that get's the name of the var and returns
-        true if the var is a key, a list of vars that are tables or a boolean for the full namespace, it's false by default.
+    * `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool|string[]` Says if certain vars are a table or just a string,
+        can be a function that get's the name of the var and returns true if the var is a key,
+        a list of vars that are tables or a boolean for the full namespace, it's false by default. Refer to
+        [issue#510](https://github.com/L3MON4D3/LuaSnip/issues/510#issuecomment-1209333698) for more information.
 
 The four fields of `opts` are optional but you need to provide either `init` or  `vars`, and `eager` can't be without `vars`.
 Also you can't use namespaces that override default vars.
@@ -1113,8 +1136,18 @@ ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
 lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} end)
 
 -- then you can use  $POS_VAL in your snippets
-```
 
+s("custom_env", d(1, function(args, parent)
+  local env = parent.snippet.env
+  return sn(nil, t {
+    "NAME: " .. env.MY_NAME,
+    "LANG: " .. env.MY_LANG,
+    "HOME: " .. env.SYS_HOME,
+    "USER: " .. env.SYS_USER,
+    "VAL: " .. env.POS_VAL
+  })
+end, {}))
+```
 
 # LOADERS
 
