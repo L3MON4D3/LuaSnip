@@ -351,6 +351,11 @@ function Node:resolve_node_ext_opts(base_prio, parent_ext_opts)
 	)
 end
 
+function Node:is_interactive()
+	-- safe default.
+	return true
+end
+
 return {
 	Node = Node,
 }

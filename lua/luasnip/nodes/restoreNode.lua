@@ -254,6 +254,12 @@ function RestoreNode:resolve_position(position)
 	return self.snip
 end
 
+function RestoreNode:is_interactive()
+	-- shouldn't be called, but revisit this once is_interactive is used in
+	-- places other than lsp-snippets.
+	return true
+end
+
 return {
 	R = R,
 }

@@ -34,6 +34,11 @@ end
 
 function TextNode:update_all_dependents() end
 
+function TextNode:is_interactive()
+	-- a resounding false.
+	return false
+end
+
 return {
 	T = T,
 	textNode = TextNode,

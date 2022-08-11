@@ -126,6 +126,12 @@ function FunctionNode:set_dependents()
 	end
 end
 
+function FunctionNode:is_interactive()
+	-- the function node is only evaluated once if it has no argnodes -> it's
+	-- not interactive then.
+	return #self.args ~= 0
+end
+
 return {
 	F = F,
 	FunctionNode = FunctionNode,
