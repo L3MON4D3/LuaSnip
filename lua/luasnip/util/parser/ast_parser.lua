@@ -104,6 +104,29 @@ local function copy_func(tabstop)
 	end
 end
 
+local function placeholder_func(_, parent, _, placeholder_snip)
+	local env = parent.snippet.env
+	-- is_interactive needs env to determine interactiveness.
+	-- env is passed through to all following is_interactive calls.
+	if not placeholder_snip:is_interactive(env) then
+		-- this placeholder only contains text or (transformed)
+		-- variables, so an insertNode can be generated from its
+		-- contents.
+		-- create new snippet that only contains the parsed snippetNode, so we
+		-- can `fake_expand` and `get_static_text()` it.
+		local snippet = sNode.S("", placeholder_snip)
+
+		-- get active env from snippet.
+		snippet:fake_expand({ env = env })
+		local iText = snippet:get_static_text()
+
+		-- no need to un-escape iText, that was already done.
+		return sNode.SN(nil, iNode.I(1, iText))
+	end
+
+	return sNode.SN(nil, session.config.parser_nested_assembler(1, placeholder_snip))
+end
+
 ---If this tabstop-node (CHOICE, TABSTOP or PLACEHOLDER) is a copy of another,
 ---set that up and return, otherwise return false.
 ---@param ast table: ast-node.
@@ -154,50 +177,67 @@ local to_node_funcs = {
 		end
 
 		local node
-
 		if #ast.children == 1 and ast.children[1].type == types.TEXT then
-			-- placeholder only contains text, like `"${1:adsf}"`.
-			-- `"${1}"` are parsed as tabstops.
-			node = iNode.I(ast.tabstop, ast.children[1].esc)
+			-- we cannot place a dynamicNode as $0.
+			-- But all valid ${0:some nodes here} contain just text inside
+			-- them, so this works :)
+			node = iNode.I(ast.tabstop, _split(ast.children[1].esc))
 		else
-			local snip = sNode.SN(ast.tabstop, ast2luasnip_nodes(ast.children))
-			if not snip:is_interactive() then
-				-- this placeholder only contains text or (transformed)
-				-- variables, so an insertNode can be generated from its
-				-- contents on expansion.
-				node = dNode.D(ast.tabstop, function(_, parent)
-					-- create new snippet that only contains the parsed
-					-- snippetNode.
-					-- The children have to be copied to prevent every
-					-- expansion getting the same object.
-					local snippet = sNode.S("", snip:copy())
-
-					-- get active env from snippet.
-					snippet:fake_expand({ env = parent.snippet.env })
-					local iText = snippet:get_static_text()
-
-					-- no need to un-escape iText, that was already done.
-					return sNode.SN(nil, iNode.I(1, iText))
-				end, {})
-			else
-				node = session.config.parser_nested_assembler(ast.tabstop, snip)
-			end
+			local snip = sNode.SN(1, ast2luasnip_nodes(ast.children))
+			node = dNode.D(ast.tabstop, placeholder_func, {}, {
+				-- pass snip here, again to preserve references to other tables.
+				user_args = {snip}
+			})
 		end
 
 		ast.parsed = node
 	end,
 	[types.VARIABLE] = function(ast, state)
 		local var = ast.name
-		local fn
-		if state.var_functions[var] then
-			fn = state.var_functions[var]
-		else
-			fn = var_func(ast)
-		end
 
 		local default
 		if ast.children then
 			default = sNode.SN(nil, ast2luasnip_nodes(ast.children))
+		end
+
+		local fn
+		local is_interactive_fn
+		if state.var_functions[var] then
+			fn, is_interactive_fn = unpack(state.var_functions[var])
+		else
+			fn = var_func(ast)
+			-- override the regular `is_interactive` to accurately determine
+			-- whether the snippet produced by the dynamicNode is interactive
+			-- or not. This is important when a variable is wrapped inside a
+			-- placeholder: ${1:$TM_SELECTED_TEXT}
+			-- With variable-environments we cannot tell at parse-time whether
+			-- the dynamicNode will be just text, an insertNode or some other
+			-- nodes(the default), so that has to happen at runtime now.
+			is_interactive_fn = function(_, env)
+				local var_value = env[var]
+
+				if not var_value then
+					-- inserts insertNode.
+					return true
+				end
+
+				-- just wrap it for more uniformity.
+				if type(var_value) == "string" then
+					var_value = {var_value}
+				end
+
+				if
+					(#var_value == 1 and #var_value[1] == 0)
+					or #var_value == 0 then
+
+					-- var is empty, default is inserted.
+					-- if no default, it's not interactive (an empty string is inserted).
+					return default and default:is_interactive()
+				end
+
+				-- variable is just inserted, not interactive.
+				return false
+			end
 		end
 
 		local d = dNode.D(ast.potential_tabstop, fn, {}, {
@@ -224,8 +264,7 @@ local to_node_funcs = {
 			-- `default` is potentially nil.
 			user_args = {default}
 		})
-		-- if the variable has no default, it is guaranteed to be non-interactive.
-		-- d.__not_interactive_override = (ast.children == nil)
+		d.is_interactive = is_interactive_fn
 
 		-- if the variable is preceded by \n<indent>, the indent is applied to
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
@@ -262,7 +301,7 @@ local to_node_funcs = {
 --- Snippets return a table of nodes, those can be used like the return-value of `fmt`.
 ---@param ast table: AST, as generated by `require("vim.lsp._snippet").parse`
 ---@param state table:
---- - `var_functions`: table, maps varname to custom function for that variable.
+--- - `var_functions`: table, string -> {dNode-fn, is_interactive_fn}
 ---   For now, only used when parsing snipmate-snippets.
 ---@return table: node corresponding to `ast`.
 function to_node(ast, state)
@@ -276,7 +315,7 @@ end
 --- Converts any ast into usable nodes.
 ---@param ast table: AST, as generated by `require("vim.lsp._snippet").parse`
 ---@param state table:
---- - `var_functions`: table, maps varname to custom function for that variable.
+--- - `var_functions`: table, string -> {dNode-fn, is_interactive_fn}
 ---   For now, only used when parsing snipmate-snippets.
 ---@return table: list of luasnip-nodes.
 function M.to_luasnip_nodes(ast, state)

@@ -5,6 +5,7 @@ local parse = require("luasnip.util.parser.neovim_parser").parse
 local Ast = require("luasnip.util.parser.neovim_ast")
 local Str = require("luasnip.util.str")
 local functions = require("luasnip.util.functions")
+local util = require("luasnip.util.util")
 
 local M = {}
 
@@ -96,7 +97,11 @@ function M.parse_snipmate(context, body, opts)
 	new_vars, body = backticks_to_variable(body)
 
 	opts = opts or {}
-	opts.variables = new_vars
+	opts.variables = {}
+	for name, fn in pairs(new_vars) do
+		-- created dynamicNode is not interactive.
+		opts.variables[name] = {fn, util.no}
+	end
 	return M.parse_snippet(context, body, opts)
 end
 
