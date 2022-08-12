@@ -1093,6 +1093,8 @@ tabstop/placeholder/choice which will be visited just before the new `$0`. This
 new `$0` will be inserted at the (textually) earliest valid position behind the
 invalid `$0`.
 
+## Snipmate
+
 It is furthermore possible to parse snipmate-snippets (this includes support for
 vimscript-evaluation!!)  
 Snipmate-snippets have to be parsed with a different function,
@@ -1100,6 +1102,25 @@ Snipmate-snippets have to be parsed with a different function,
 ```lua
 ls.parser.parse_snipmate("year", "The year is `strftime('%Y')`")
 ```
+
+`parse_snipmate` is the same as `parse_snippet`, only the snippet-body is parsed
+differently.
+
+## Transformations
+
+To apply
+[Variable/Placeholder-transformations](https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms),
+luasnip needs to apply ECMAScrip-regexes.  
+This is implemented by relying on [`jsregexp`](https://github.com/kmarius/jsregexp).  
+`jsregexp` is available as a luarock, and, as such, can be installed by
+`packer.nvim` (although actual usage may require a small workaround, see
+[here](https://github.com/wbthomason/packer.nvim/issues/593) or
+[here](https://github.com/wbthomason/packer.nvim/issues/358)).  
+Alternatively, the repo can be cloned, `make`d, and the resulting `jsregexp.so`
+placed in some place where nvim can find it (probably `~/.config/nvim/lua/`).
+
+If `jsregexp` cannot be found, luasnip and omits the transformation and just
+inserts the input.
 
 # VARIABLES
 
