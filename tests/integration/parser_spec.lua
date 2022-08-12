@@ -368,6 +368,26 @@ describe("Parser", function()
 			a^M{3:ISSING_VAR}a                                     |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]]}
+
+	end)
+
+	it("can parse missing user defined variable in placeholder.", function()
+		local snip = '"a${1:$MISSING_VAR}a"'
+
+		ls_helpers.lsp_static_test(snip, { "a$MISSING_VARa" })
+
+
+		-- Assure this is parsed into choice+insertNode.
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			a^MISSING_VARa                                     |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			a^M{3:ISSING_VAR}a                                     |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
 	end)
 
 	it("can parse user defined variable with namespace.", function()
@@ -521,6 +541,19 @@ describe("Parser", function()
 		screen:expect{grid=[[
 			 asd ^                                             |
 			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("correctly transforms multiline-values.", function()
+		local snip = "${TM_SELECTED_TEXT/([^]*)/a ${1} a/}"
+
+		-- expand snippet with selected multiline-text.
+		feed("iasdf<Cr>asdf<Esc>Vk<Tab>")
+		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+
+		screen:expect{grid=[[
+			a asdf                                            |
+			asdf a^                                            |
 			{2:-- INSERT --}                                      |]]}
 	end)
 

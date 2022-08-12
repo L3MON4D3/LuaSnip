@@ -353,7 +353,7 @@ function M.apply_transform(transform)
 		-- can be passed to functionNode!
 		return function(lines)
 			-- luasnip expects+passes lines as list, but regex needs one string.
-			lines = table.concat(lines, "\\n")
+			lines = table.concat(lines, "\n")
 			local matches = reg_compiled(lines)
 
 			local transformed = ""
