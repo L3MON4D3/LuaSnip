@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 10
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 12
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -80,6 +80,10 @@ All code-snippets in this help assume that
     local postfix = require("luasnip.extras.postfix").postfix
 <
 
+
+Note: the source code of snippets in GIFs is actually here
+<https://github.com/zjp-CN/neovim0.6-blogs/commit/2bff84ef53f8da5db9dcf2c3d97edb11b2bf68cd>,
+and it’s slightly different with the code below.
 
 ==============================================================================
 1. BASICS                                                     *luasnip-basics*
@@ -276,6 +280,11 @@ The functionality is best demonstrated with an example:
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359293-7248c2af-81b4-4754-8a85-7a2459f69cfc.gif" title="fig:"/>
+<p class="caption">InsertNode</p>
+</div>
+
 The InsertNodes are jumped over in order from `1 to n`. The 0-th node is
 special as it’s always the last one. So the order of InsertNode jump is as
 follows:
@@ -324,6 +333,11 @@ detail is that the jump-positions restart at 1 in nested snippets:
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359299-c813b3d2-5445-47c9-af88-d9106e78fa77.gif" title="fig:"/>
+<p class="caption">InsertNode2</p>
+</div>
+
 as opposed to e.g. the textmate-syntax, where tabstops are snippet-global:
 
 >
@@ -365,6 +379,11 @@ user-defined function:
      })
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359234-2c2da69e-4c3f-4906-9346-52ab4cab58a7.gif" title="fig:"/>
+<p class="caption">FunctionNode</p>
+</div>
 
 The first parameter of `f` is the function. Its parameters are:
 
@@ -414,6 +433,11 @@ exist to more easily reuse functionNode-functions, when applicable:
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359244-ef83b8f7-28a3-45ff-a2af-5b564f213749.gif" title="fig:"/>
+<p class="caption">FunctionNode2</p>
+</div>
+
 Examples: Use captures from the regex-trigger using a functionNode:
 
 >
@@ -423,6 +447,11 @@ Examples: Use captures from the regex-trigger using a functionNode:
     )
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359248-6b13a80c-f644-4979-a566-958c65a4e047.gif" title="fig:"/>
+<p class="caption">FunctionNode3</p>
+</div>
 
 The table passed to functionNode:
 
@@ -437,6 +466,11 @@ The table passed to functionNode:
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359259-ebb7cfc0-e30b-4735-9627-9ead45d9f27c.gif" title="fig:"/>
+<p class="caption">FunctionNode4</p>
+</div>
+
 At `--here`, `args` would look as follows (provided no text was changed after
 expansion):
 
@@ -447,6 +481,11 @@ expansion):
     }
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359263-89323682-6128-40ea-890e-b184a1accf80.gif" title="fig:"/>
+<p class="caption">FunctionNode5</p>
+</div>
 
 One more example to show usage of `absolute_indexer`:
 
@@ -460,6 +499,11 @@ One more example to show usage of `absolute_indexer`:
         end, {ai[2], ai[1]} )})
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359271-018a703d-a9c8-4c9d-8833-b16495be5b08.gif" title="fig:"/>
+<p class="caption">FunctionNode6</p>
+</div>
 
 If the function only performs simple operations on text, consider using the
 `lambda` from |luasnip-`luasnip.extras`|
@@ -484,6 +528,11 @@ brackets `[]`, looks like:
           })
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359322-d8547259-653e-4ada-86e8-666da2c52010.gif" title="fig:"/>
+<p class="caption">postfix</p>
+</div>
 
 and is triggered with `xxx.br` and expands to `[xxx]`.
 
@@ -510,6 +559,11 @@ This field can also be used within lambdas and dynamic nodes.
         }),
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359323-1b250b6d-7b23-43a3-846f-b6cc2c9df9fc.gif" title="fig:"/>
+<p class="caption">postfix2</p>
+</div>
 
 The arguments to `postfix` are identical to the arguments to `s` but with a few
 extra options.
@@ -575,6 +629,11 @@ ChoiceNodes allow choosing between multiple nodes.
      }))
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359378-09d83ec0-2580-4a0e-8f75-61bd168903ba.gif" title="fig:"/>
+<p class="caption">ChoiceNode</p>
+</div>
 
 `c()` expects as its first arg, as with any jumpable node, its position in the
 jumplist, and as its second a table with nodes, the choices. This table can
@@ -650,6 +709,11 @@ number, as they too are jumpable:
 
 Note that snippetNodes don’t expect an `i(0)`.
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359349-2127147e-2f57-4612-bdb5-4c9eafc93fad.gif" title="fig:"/>
+<p class="caption">SnippetNode</p>
+</div>
+
 ==============================================================================
 10. INDENTSNIPPETNODE                              *luasnip-indentsnippetnode*
 
@@ -665,6 +729,11 @@ nodes it’s possible to override that behaviour:
     })
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359281-acc62f04-f130-48b6-9ad8-c0775726507a.gif" title="fig:"/>
+<p class="caption">IndentSnippetNode</p>
+</div>
 
 (Note the empty string passed to isn).
 
@@ -682,6 +751,11 @@ comment- string before the nodes of the snippet:
     })
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359286-e29ba70e-4ccc-472a-accb-af849ca1a68d.gif" title="fig:"/>
+<p class="caption">IndentSnippetNode2</p>
+</div>
 
 Here the `//` before `This is` is important, once again, because indent is only
 applied after linebreaks. To enable such usage, `$PARENT_INDENT` in the
@@ -749,6 +823,11 @@ first `insertNode`.
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359404-c1081b6c-99e5-4eb1-85c7-7f2e875d7296.gif" title="fig:"/>
+<p class="caption">DynamicNode</p>
+</div>
+
 This snippet makes use of `old_state` to count the number of updates. To
 store/restore values generated by the `dynamicNode` or entered into
 `insert/choiceNode`, consider using the shortly-introduced `restoreNode`
@@ -781,6 +860,11 @@ instead of `old_state`.
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359408-8d6df582-2a9e-4e6c-8937-5424bf7f6ecb.gif" title="fig:"/>
+<p class="caption">DynamicNode2</p>
+</div>
+
 As with `functionNode`, `user_args` can be used to reuse similar `dynamicNode`-
 functions.
 
@@ -805,6 +889,11 @@ example:
     })
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359328-3715912a-8a32-43b6-91b7-6b012c9c3ccd.gif" title="fig:"/>
+<p class="caption">RestoreNode</p>
+</div>
 
 Here the text entered into `user_text` is preserved upon changing choice.
 
@@ -843,6 +932,11 @@ The `restoreNode` is also useful for storing user-input across updates of a
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359337-0962dd5e-a18b-4df1-8c74-3d04a17998ab.gif" title="fig:"/>
+<p class="caption">RestoreNode2</p>
+</div>
+
 Every time the `i(1)` in the outer snippet is changed, the text inside the
 `dynamicNode` is reset to `"user_text"`. This can be prevented by using a
 `restoreNode`:
@@ -863,6 +957,11 @@ Now the entered text is stored.
 
 `RestoreNode`s indent is not influenced by `indentSnippetNodes` right now. If
 that really bothers you feel free to open an issue.
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359340-35c24160-10b0-4f72-849e-1015f59ed599.gif" title="fig:"/>
+<p class="caption">RestoreNode3</p>
+</div>
 
 ==============================================================================
 13. ABSOLUTE_INDEXER                                *luasnip-absolute_indexer*
@@ -897,6 +996,11 @@ Using `absolute_indexer`, it’s possible to do so:
     })
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359369-3bbd2b30-33d1-4a5d-9474-19367867feff.gif" title="fig:"/>
+<p class="caption">AbsoluteIndexer</p>
+</div>
 
 There are some quirks in addressing nodes:
 
@@ -1064,6 +1168,11 @@ Simple example:
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359228-d30df745-0fe8-49df-b28d-662e7eb050ec.gif" title="fig:"/>
+<p class="caption">fmt</p>
+</div>
+
 `fmt(format:string, nodes:table of nodes, opts:table|nil) -> table of nodes`
 
 
@@ -1125,6 +1234,11 @@ where a macro if you add several mapppings like:
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359312-8e368393-7be3-4dc4-ae08-1ff1bf17b309.gif" title="fig:"/>
+<p class="caption">otf</p>
+</div>
+
 SELECT_CHOICE                                          *luasnip-select_choice*
 
 It’s possible to leverage `vim.ui.select` for selecting a choice directly,
@@ -1138,6 +1252,11 @@ without cycling through choices. All that is needed for this is calling
 
 , while inside a choiceNode. The `opts.kind` hint for `vim.ui.select` will be
 set to `luasnip`.
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359342-c8d79d50-103c-44b7-805f-fe75294e62df.gif" title="fig:"/>
+<p class="caption">select_choice</p>
+</div>
 
 FILETYPE_FUNCTIONS                                *luasnip-filetype_functions*
 
@@ -1184,9 +1303,19 @@ Luasnip is capable of parsing lsp-style snippets using
 <
 
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359304-eb9c9eb4-bd38-4db9-b412-792391e9c21d.gif" title="fig:"/>
+<p class="caption">lsp</p>
+</div>
+
 Nested placeholders(`"${1:this is ${2:nested}}"`) will be turned into
 choiceNode’s with: - the given snippet(`"this is ${1:nested}"`) and - an
 empty insertNode
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359306-c669d3fa-7ae5-4c07-b11a-34ae8c4a17ac.gif" title="fig:"/>
+<p class="caption">lsp2</p>
+</div>
 
 ==============================================================================
 16. VARIABLES                                              *luasnip-variables*
@@ -1214,6 +1343,11 @@ To use any `*SELECT*` variable, the `store_selection_keys` must be set via
 `require("luasnip").config.setup({store_selection_keys="<Tab>"})`. In this
 case, hitting `<Tab>` while in Visualmode will populate the `*SELECT*`-vars for
 the next snippet and then clear them.
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359360-17cc75cd-a8a0-4385-a6cb-8fa321c14558.gif" title="fig:"/>
+<p class="caption">variable</p>
+</div>
 
 ENVIRONMENT NAMESPACES                        *luasnip-environment-namespaces*
 
@@ -1272,6 +1406,11 @@ A simple example to make it more clear:
     end, {}))
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359382-2b2a357b-37a6-4cc4-9c8f-930f26457888.gif" title="fig:"/>
+<p class="caption">custom_variable</p>
+</div>
 
 ==============================================================================
 17. LOADERS                                                  *luasnip-loaders*
@@ -1566,6 +1705,11 @@ can be quickly edited via
 will open a `vim.ui.select`-dialog to select first a filetype, and then (if
 there are multiple) the associated file to edit.
 
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359412-e6a1238c-d733-411c-b05d-8334ea993fbf.gif" title="fig:"/>
+<p class="caption">edit-select</p>
+</div>
+
 `opts` currently only contains one setting:
 
 
@@ -1579,7 +1723,21 @@ there are multiple) the associated file to edit.
     this can be extended to
     - filter files from some specific source/path
     - more aggressively shorten paths using symbolic names, e.g.
-        `"$FRIENDLY_SNIPPETS"`
+        `"$FRIENDLY_SNIPPETS"`. Example: hide the `*.lua` snippet files, and shorten
+        the path with `$LuaSnip`:
+        >
+            require "luasnip.loaders" .edit_snippet_files {
+              format = function(file, source_name)
+                if source_name == "lua" then return nil
+                else return file:gsub("/root/.config/nvim/luasnippets", "$LuaSnip")
+                end
+              end
+            }
+        <
+        <div class="figure">
+        <img src="https://user-images.githubusercontent.com/25300418/184359420-3bc22d67-1f90-49d9-ac4e-3ea2524bcf0d.gif" title="fig:"/>
+        <p class="caption">edit-select-format</p>
+        </div>
 - `edit`: `fn(file:string)` This function is supposed to open the file for
     editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
     current buffer), but one could open the file in a split, a tab, or a floating
@@ -1660,6 +1818,11 @@ nodes:
     })
 <
 
+
+<div class="figure">
+<img src="https://user-images.githubusercontent.com/25300418/184359424-f3ae2e85-7863-437b-b360-0e3794c8fa1b.gif" title="fig:"/>
+<p class="caption">ext_opt</p>
+</div>
 
 In the above example the text inside the insertNodes is higlighted in red while
 inside them, and the virtual text "virtual text!!" is visible as long as the
@@ -1865,6 +2028,9 @@ Other issues will have to be handled manually by checking the contents of e.g.
     }),
 <
 
+
+A better example to understand `docTrig` and `docstring` can refer to #515
+<https://github.com/L3MON4D3/LuaSnip/pull/515>.
 
 ==============================================================================
 21. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
@@ -2106,7 +2272,7 @@ empty the snippets table and the caches of the lazy_load.
     should be searched as well. `extend_filetypes` is a lua-array (`{ft1, ft2,
     ft3}`). `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand
     c-and cpp-snippets for lua-files.
-- `filetype_set(filetype:string, replace_filetypes:table of string):` Similar to
+- `filetype_set(filetype:string, replace_filetypes:table of string)`: Similar to
     `filetype_extend`, but where _append_ appended filetypes, _set_ sets them:
     `filetype_set("lua", {"c"})` causes only c-snippets to be expanded in
     lua-files, lua-snippets aren’t even searched.
