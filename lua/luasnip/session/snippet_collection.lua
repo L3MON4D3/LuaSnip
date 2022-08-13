@@ -216,7 +216,7 @@ function M.add_snippets(snippets, opts)
 		-- it, preferably.
 		for _, snip in ipairs(ft_snippets) do
 			snip.priority = opts.override_priority
-				or (snip.priority ~= -1 and snip.priority)
+				or (snip.priority and snip.priority)
 				or opts.default_priority
 				or 1000
 
