@@ -46,7 +46,7 @@ end
 
 -- some values of the snippet are nil by default, list them here so snippets
 -- aren't instantiated because of them.
-local license_to_nil = {priority = true}
+local license_to_nil = { priority = true }
 
 -- context and opts are the same objects as in s(contex, nodes, opts), snippet
 -- is a string representing the snippet.
