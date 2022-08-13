@@ -44,7 +44,12 @@ function SnippetProxy:instantiate()
 	return snippet
 end
 
--- context and opts are the same objects as in s(contex, nodes, opts), snippet is a string representing the snippet.
+-- some values of the snippet are nil by default, list them here so snippets
+-- aren't instantiated because of them.
+local license_to_nil = {priority = true}
+
+-- context and opts are the same objects as in s(contex, nodes, opts), snippet
+-- is a string representing the snippet.
 local function new(context, snippet, opts)
 	-- "error": there should not be duplicate keys, don't silently overwrite/keep.
 	local sp = vim.tbl_extend(
@@ -61,16 +66,20 @@ local function new(context, snippet, opts)
 
 	setmetatable(sp, {
 		__index = function(t, k)
+			if license_to_nil[k] then
+				-- k might be nil, return it.
+				return nil
+			end
+
 			if SnippetProxy[k] then
 				-- if it is possible to perform this operation without actually parsing the snippet, just do it.
 				return SnippetProxy[k]
+			end
+			local snip = SnippetProxy.instantiate(t)
+			if k == "_snippet" then
+				return snip
 			else
-				local snip = SnippetProxy.instantiate(t)
-				if k == "_snippet" then
-					return snip
-				else
-					return snip[k]
-				end
+				return snip[k]
 			end
 		end,
 	})

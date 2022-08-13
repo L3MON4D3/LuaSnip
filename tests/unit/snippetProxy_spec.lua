@@ -34,6 +34,7 @@ describe("snippetProxy", function()
 		".condition",
 		".show_condition",
 		".stored",
+		".priority",
 		':matches("asd")',
 		":get_docstring()",
 	}) do
