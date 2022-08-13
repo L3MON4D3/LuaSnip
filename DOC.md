@@ -32,10 +32,19 @@ local r = ls.restore_node
 local events = require("luasnip.util.events")
 local ai = require("luasnip.nodes.absolute_indexer")
 local fmt = require("luasnip.extras.fmt").fmt
+local extras = require("luasnip.extras")
 local m = require("luasnip.extras").m
-local lambda = require("luasnip.extras").l
+local l = require("luasnip.extras").l
 local postfix = require("luasnip.extras.postfix").postfix
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+Note: the source code of snippets in GIFs is actually
+[here](https://github.com/zjp-CN/neovim0.6-blogs/commit/2bff84ef53f8da5db9dcf2c3d97edb11b2bf68cd),
+and it's slightly different with the code below.
+
+<!-- panvimdoc-ignore-end -->
 
 # BASICS
 In LuaSnip, snippets are made up of `nodes`. These can contain either
@@ -212,6 +221,12 @@ s("trigger", {
 })
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![InsertNode](https://user-images.githubusercontent.com/25300418/184359293-7248c2af-81b4-4754-8a85-7a2459f69cfc.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 The InsertNodes are jumped over in order from `1 to n`.
 The 0-th node is special as it's always the last one.
 So the order of InsertNode jump is as follows:
@@ -251,6 +266,12 @@ s("trigger", {
 })
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![InsertNode2](https://user-images.githubusercontent.com/25300418/184359299-c813b3d2-5445-47c9-af88-d9106e78fa77.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 as opposed to e.g. the textmate-syntax, where tabstops are snippet-global:
 ```snippet
 ${1:First jump} :: ${2: ${3:Third jump} : ${4:Fourth jump}}
@@ -284,6 +305,13 @@ user-defined function:
  	i(0)
  })
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![FunctionNode](https://user-images.githubusercontent.com/25300418/184359234-2c2da69e-4c3f-4906-9346-52ab4cab58a7.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 The first parameter of `f` is the function. Its parameters are:
 
 1. A table of the text of currently contained in the argnodes.
@@ -298,7 +326,8 @@ The first parameter of `f` is the function. Its parameters are:
       parent (a `snippetNode`) will contain neither `captures` nor `env`. Those
       are only stored in the `snippet`, which can be accessed as `parent.snippet`.
 
-3. The `user_args` passed in `opts`. Note that there may be multiple user_args (e.g. `user_args1, ..., user_argsn`).
+3. The `user_args` passed in `opts`. Note that there may be multiple user_args
+      (e.g. `user_args1, ..., user_argsn`).
 
 The function shall return a string, which will be inserted as-is, or a table
 of strings for multiline-string, here all lines following the first will be
@@ -334,6 +363,12 @@ s("trig", {
 })
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![FunctionNode2](https://user-images.githubusercontent.com/25300418/184359244-ef83b8f7-28a3-45ff-a2af-5b564f213749.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 Examples:
 Use captures from the regex-trigger using a functionNode:
 
@@ -343,6 +378,12 @@ s({trig = "b(%d)", regTrig = true},
 		"Captured Text: " .. snip.captures[1] .. "." end, {})
 )
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![FunctionNode3](https://user-images.githubusercontent.com/25300418/184359248-6b13a80c-f644-4979-a566-958c65a4e047.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 The table passed to functionNode:
 
@@ -356,6 +397,12 @@ s("trig", {
 	end, {2, 1} )})
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![FunctionNode4](https://user-images.githubusercontent.com/25300418/184359259-ebb7cfc0-e30b-4735-9627-9ead45d9f27c.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 At `--here`, `args` would look as follows (provided no text was changed after
 expansion):
 ```lua
@@ -364,6 +411,12 @@ args = {
 	{"text_of_first"}
 }
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![FunctionNode5](https://user-images.githubusercontent.com/25300418/184359263-89323682-6128-40ea-890e-b184a1accf80.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 One more example to show usage of `absolute_indexer`:
 ```lua
@@ -375,6 +428,12 @@ s("trig", {
 		return args[1][1] .. args[2][1]
 	end, {ai[2], ai[1]} )})
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![FunctionNode6](https://user-images.githubusercontent.com/25300418/184359271-018a703d-a9c8-4c9d-8833-b16495be5b08.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 If the function only performs simple operations on text, consider using
 the `lambda` from [`luasnip.extras`](#extras)
@@ -399,6 +458,12 @@ brackets `[]`, looks like:
       })
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![postfix](https://user-images.githubusercontent.com/25300418/184359322-d8547259-653e-4ada-86e8-666da2c52010.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 and is triggered with `xxx.br` and expands to `[xxx]`.
 
 Note the `parent.snippet.env.POSTFIX_MATCH` in the function node. This is additional
@@ -422,6 +487,12 @@ This field can also be used within lambdas and dynamic nodes.
 	  end)
 	}),
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![postfix2](https://user-images.githubusercontent.com/25300418/184359323-1b250b6d-7b23-43a3-846f-b6cc2c9df9fc.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 The arguments to `postfix` are identical to the arguments to `s` but with a few
 extra options.
@@ -480,6 +551,12 @@ ChoiceNodes allow choosing between multiple nodes.
  	f(function(args) return "Still only counts as text!!" end, {})
  }))
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![ChoiceNode](https://user-images.githubusercontent.com/25300418/184359378-09d83ec0-2580-4a0e-8f75-61bd168903ba.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 `c()` expects as its first arg, as with any jumpable node, its position in the
 jumplist, and as its second a table with nodes, the choices. This table can
@@ -556,7 +633,11 @@ number, as they too are jumpable:
 
 Note that snippetNodes don't expect an `i(0)`.
 
+<!-- panvimdoc-ignore-start -->
 
+![SnippetNode](https://user-images.githubusercontent.com/25300418/184359349-2127147e-2f57-4612-bdb5-4c9eafc93fad.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 # INDENTSNIPPETNODE
 
@@ -572,6 +653,12 @@ s("isn", {
 })
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![IndentSnippetNode](https://user-images.githubusercontent.com/25300418/184359281-acc62f04-f130-48b6-9ad8-c0775726507a.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 (Note the empty string passed to isn).
 
 Indent is only applied after linebreaks, so it's not possible to remove indent
@@ -586,6 +673,12 @@ s("isn2", {
 	isn(1, t({"//This is", "A multiline", "comment"}), "$PARENT_INDENT//")
 })
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![IndentSnippetNode2](https://user-images.githubusercontent.com/25300418/184359286-e29ba70e-4ccc-472a-accb-af849ca1a68d.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 Here the `//` before `This is` is important, once again, because indent is only
 applied after linebreaks.
@@ -631,6 +724,8 @@ The prototype for the dynamicNodes' constructor is
 
 Examples:
 
+This `dynamicNode` inserts an `insertNode` which copies the text inside the
+first `insertNode`.
 ```lua
 s("trig", {
 	t"text: ", i(1), t{"", "copy: "},
@@ -646,61 +741,51 @@ s("trig", {
 })
 ```
 
-This `dynamicNode` inserts an `insertNode` which copies the text inside the
-first `insertNode`.
+<!-- panvimdoc-ignore-start -->
+
+![DynamicNode](https://user-images.githubusercontent.com/25300418/184359404-c1081b6c-99e5-4eb1-85c7-7f2e875d7296.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+This snippet makes use of `old_state` to count the number of updates.  
+To store/restore values generated by the `dynamicNode` or entered into
+`insert/choiceNode`, consider using the shortly-introduced `restoreNode` instead
+of `old_state`.
 
 ```lua
-local function lines(args, parent, old_state, initial_text)
-	local nodes = {}
-	old_state = old_state or {}
+local function count(_, _, old_state)
+	old_state = old_state or {
+		updates = 0
+	}
 
-	-- count is nil for invalid input.
-	local count = tonumber(args[1][1])
-	-- Make sure there's a number in args[1].
-	if count then
-		for j=1, count do
-			local iNode
-			if old_state and old_state[j] then
-				-- old_text is used internally to determine whether
-				-- dependents should be updated. It is updated whenever the
-				-- node is left, but remains valid when the node is no
-				-- longer 'rendered', whereas node:get_text() grabs the text
-				-- directly from the node.
-				iNode = i(j, old_state[j].old_text)
-			else
-			  iNode = i(j, initial_text)
-			end
-			nodes[2*j-1] = iNode
+	old_state.updates = old_state.updates + 1
 
-			-- linebreak
-			nodes[2*j] = t({"",""})
-			-- Store insertNode in old_state, potentially overwriting older
-			-- nodes.
-			old_state[j] = iNode
-		end
-	else
-		nodes[1] = t("Enter a number!")
-	end
+	local snip = sn(nil, {
+		t(tostring(old_state.updates))
+	})
 
-	local snip = sn(nil, nodes)
 	snip.old_state = old_state
 	return snip
 end
 
 ...
 
-s("trig", {
-	i(1, "1"),
-	-- pos, function, argnodes, opts (containing the user_arg).
-	d(2, lines, {1}, {user_args = {"Sample Text"}})
-})
+ls.add_snippets("all",
+	s("trig", {
+		i(1, "change to update"),
+		d(2, count, {1})
+	})
+)
 ```
-This snippet would start out as `"1\nSample Text"` and, upon changing the 1 to
-e.g. 3, it would change to `"3\nSample Text\nSample Text\nSample Text"`. Text
-that was inserted into any of the dynamicNodes insertNodes is kept when
-changing to a bigger number.
-(`old_state` is no longer the best way to preserve user-input across multiple
-recreations: the shortly-explained `restoreNode` is much more user-friendly)
+
+<!-- panvimdoc-ignore-start -->
+
+![DynamicNode2](https://user-images.githubusercontent.com/25300418/184359408-8d6df582-2a9e-4e6c-8937-5424bf7f6ecb.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+As with `functionNode`, `user_args` can be used to reuse similar `dynamicNode`-
+functions.
 
 # RESTORENODE
 
@@ -721,6 +806,12 @@ s("paren_change", {
 	}
 })
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![RestoreNode](https://user-images.githubusercontent.com/25300418/184359328-3715912a-8a32-43b6-91b7-6b012c9c3ccd.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 Here the text entered into `user_text` is preserved upon changing choice.
 
@@ -760,6 +851,12 @@ s("rest", {
 }),
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![RestoreNode2](https://user-images.githubusercontent.com/25300418/184359337-0962dd5e-a18b-4df1-8c74-3d04a17998ab.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 Every time the `i(1)` in the outer snippet is changed, the text inside the
 `dynamicNode` is reset to `"user_text"`. This can be prevented by using a
 `restoreNode`:
@@ -778,6 +875,12 @@ Now the entered text is stored.
 
 `RestoreNode`s indent is not influenced by `indentSnippetNodes` right now. If
 that really bothers you feel free to open an issue.
+
+<!-- panvimdoc-ignore-start -->
+
+![RestoreNode3](https://user-images.githubusercontent.com/25300418/184359340-35c24160-10b0-4f72-849e-1015f59ed599.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 # ABSOLUTE_INDEXER
 
@@ -808,6 +911,12 @@ s("trig", {
 	})
 })
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![AbsoluteIndexer](https://user-images.githubusercontent.com/25300418/184359369-3bbd2b30-33d1-4a5d-9474-19367867feff.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 There are some quirks in addressing nodes:
 ```lua
@@ -892,11 +1001,11 @@ The complete signature for the node is `match(argnodes, condition, then, else)`,
   * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
     "PALINDROME" if the nth jumpable node is a palindrome.
 
-  * ```lua
+    ```lua
     s("trig", {
     	i(1), t":",
     	i(2), t"::",
-    	m({1, 2}, lambda._1:match("^"..lambda._2.."$"), lambda._1:gsub("a", "e"))
+    	m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
     })
     ```
     This inserts the text of the first insertNode, with all occurences of `a`
@@ -909,7 +1018,7 @@ of the first insert.
 `partial(os.date, "%Y")` (arguments passed after the function are passed to it).
 
 - `nonempty`: inserts text if the insert at the given index doesn't contain any
-text. `nonempty(n, "empty!", "not empty!")` inserts "empty!" if insert n is
+text. `nonempty(n, "not empty!", "empty!")` inserts "empty!" if insert n is
 empty, "not empty!" if it isn't.
 
 - `dynamic_lambda`: Operates almost exactly like `lambda`, only that it can be
@@ -918,6 +1027,43 @@ jumped to, and it's contents therefore be easily overridden.
 insert 1 appended to itself, but the second jump will lead to it, making it
 easy to override the generated text.
 The text will only be changed when a argnode updates it.
+
+```lua
+ls.add_snippets("all", {
+  s("extras1", {
+    i(1), t { "", "" }, m(1, "^ABC$", "A")
+  }),
+  s("extras2", {
+    i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
+  }),
+  s("extras3", {
+    i(1), t { "", "" }, i(2), t { "", "" },
+    m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
+  }),
+  s("extras4", { i(1), t { "", "" }, extras.rep(1) }),
+  s("extras5", { extras.partial(os.date, "%Y") }),
+  s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") }),
+  s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) }),
+})
+```
+
+<!-- panvimdoc-ignore-start -->
+
+extras1: ![extras1](https://user-images.githubusercontent.com/25300418/184359431-50f90599-3db0-4df0-a3a9-27013e663649.gif)
+
+extras2: ![extras2](https://user-images.githubusercontent.com/25300418/184359435-21e4de9f-c56b-4ee1-bff4-331b68e1c537.gif)
+
+extras3: ![extras3](https://user-images.githubusercontent.com/25300418/184359436-515ca1cc-207f-400d-98ba-39fa166e22e4.gif)
+
+extras4: ![extras4](https://user-images.githubusercontent.com/25300418/184359193-6525d60d-8fd8-4fbd-9d3f-e3e7d5a0259f.gif)
+
+extras5: ![extras5](https://user-images.githubusercontent.com/25300418/184359206-6c25fc3b-69e1-4529-9ebf-cb92148f3597.gif)
+
+extras6: ![extras6](https://user-images.githubusercontent.com/25300418/184359213-79a71d1e-079c-454d-a092-c231ac5a98f9.gif)
+
+extras7: ![extras7](https://user-images.githubusercontent.com/25300418/184359221-1f090895-bc59-44b0-a984-703bf8d278a3.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 ## FMT
 
@@ -928,30 +1074,36 @@ Simple example:
 
 ```lua
 ls.add_snippets("all", {
-	-- important! fmt does not return a snippet, it returns a table of nodes.
-	s("example1", fmt("just an {iNode1}", {
-		iNode1 = i(1, "example")
-	}),
-	s("example2", fmt([[
-		if {} then
-			{}
-		end
-	]], {
-		-- i(1) is at nodes[1], i(2) at nodes[2].
-		i(1, "not now"), i(2, "when")
-	}),
-	s("example3", fmt([[
-		if <> then
-			<>
-		end
-	]], {
-		-- i(1) is at nodes[1], i(2) at nodes[2].
-		i(1, "not now"), i(2, "when")
-	}, {
-		delimiters = "<>"
-	}),
+  -- important! fmt does not return a snippet, it returns a table of nodes.
+  s("example1", fmt("just an {iNode1}", {
+    iNode1 = i(1, "example")
+  })),
+  s("example2", fmt([[
+  if {} then
+    {}
+  end
+  ]], {
+    -- i(1) is at nodes[1], i(2) at nodes[2].
+    i(1, "not now"), i(2, "when")
+  })),
+  s("example3", fmt([[
+  if <> then
+    <>
+  end
+  ]], {
+    -- i(1) is at nodes[1], i(2) at nodes[2].
+    i(1, "not now"), i(2, "when")
+  }, {
+    delimiters = "<>"
+  })),
 })
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![fmt](https://user-images.githubusercontent.com/25300418/184359228-d30df745-0fe8-49df-b28d-662e7eb050ec.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 `fmt(format:string, nodes:table of nodes, opts:table|nil) -> table of nodes`
 
@@ -998,15 +1150,21 @@ Notice that you can use your own mapping instead of <c-f>, and you can pick anot
 instead of `"p`. You can even use it several times, as if it where a macro if you add several
 mapppings like:
 ```vim
-; For register a
-vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr
+" For register a
+vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
 inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
 
 
-; For register b
-vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr
+" For register b
+vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
 inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![otf](https://user-images.githubusercontent.com/25300418/184359312-8e368393-7be3-4dc4-ae08-1ff1bf17b309.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 ## Select_choice
 
@@ -1020,6 +1178,11 @@ inoremap <c-u> <cmd>lua require("luasnip.extras.select_choice")()<cr>
 ```
 , while inside a choiceNode. The `opts.kind` hint for `vim.ui.select` will be set to `luasnip`.
 
+<!-- panvimdoc-ignore-start -->
+
+![select_choice](https://user-images.githubusercontent.com/25300418/184359342-c8d79d50-103c-44b7-805f-fe75294e62df.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 ## filetype_functions
 
@@ -1064,6 +1227,12 @@ Luasnip is capable of parsing lsp-style snippets using
 ls.parser.parse_snippet({trig = "lsp"}, "$1 is ${2|hard,easy,challenging|}")
 ```
 
+<!-- panvimdoc-ignore-start -->
+
+![lsp](https://user-images.githubusercontent.com/25300418/184359304-eb9c9eb4-bd38-4db9-b412-792391e9c21d.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 `context` can be:
   - `string|table`: treated like the first argument to `ls.s`, `parse_snippet`
     returns a snippet.
@@ -1076,6 +1245,12 @@ Nested placeholders(`"${1:this is ${2:nested}}"`) will be turned into
 choiceNode's with:
   - the given snippet(`"this is ${1:nested}"`) and
   - an empty insertNode
+
+<!-- panvimdoc-ignore-start -->
+
+![lsp2](https://user-images.githubusercontent.com/25300418/184359306-c669d3fa-7ae5-4c07-b11a-34ae8c4a17ac.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 This behaviour can be modified by changing `parser_nested_assembler` in
 `ls.setup()`.
@@ -1133,17 +1308,24 @@ the point where selection started (or when doing transformations on selected tex
 All variables can be used outside of lsp-parsed snippets as their values are
 stored in a snippets' `snip.env`-table:
 ```lua
-s("selected_text", {
-	-- the surrounding snippet is passed in args after all argnodes (none,
-	-- in this case).
-	f(function(args, snip) return snip.env.SELECT_RAW end, {})
-})
+s("selected_text", f(function(args, snip)
+  local res, env = {}, snip.env
+  table.insert(res, "Selected Text (current line is " .. env.TM_LINE_NUMBER .. "):")
+  for _, ele in ipairs(env.SELECT_RAW) do table.insert(res, ele) end
+  return res
+end, {}))
 ```
 
 To use any `*SELECT*` variable, the `store_selection_keys` must be set via
 `require("luasnip").config.setup({store_selection_keys="<Tab>"})`. In this case,
 hitting `<Tab>` while in Visualmode will populate the `*SELECT*`-vars for the next
 snippet and then clear them.
+
+<!-- panvimdoc-ignore-start -->
+
+![variable](https://user-images.githubusercontent.com/25300418/184359360-17cc75cd-a8a0-4385-a6cb-8fa321c14558.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 ## Environment Namespaces
 
@@ -1159,8 +1341,10 @@ You can also add your own variables by using the `ls.env_namespace(name, opts)` 
         a table of variables that will set to the environment of the snippet on expansion,
         use this for vars that have to be calculated in that moment or that depend on each other.
     * `eager`: `list[string]` names of variables that will be taken from `vars` and appended eagerly (like those in init)
-    * `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool` Says if certain vars are a table or just a string, can be a function that get's the name of the var and returns
-        true if the var is a key, a list of vars that are tables or a boolean for the full namespace, it's false by default.
+    * `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool|string[]` Says if certain vars are a table or just a string,
+        can be a function that get's the name of the var and returns true if the var is a key,
+        a list of vars that are tables or a boolean for the full namespace, it's false by default. Refer to
+        [issue#510](https://github.com/L3MON4D3/LuaSnip/issues/510#issuecomment-1209333698) for more information.
 
 The four fields of `opts` are optional but you need to provide either `init` or  `vars`, and `eager` can't be without `vars`.
 Also you can't use namespaces that override default vars.
@@ -1184,7 +1368,25 @@ ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
 lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} end)
 
 -- then you can use  $POS_VAL in your snippets
+
+s("custom_env", d(1, function(args, parent)
+  local env = parent.snippet.env
+  return sn(nil, t {
+    "NAME: " .. env.MY_NAME,
+    "LANG: " .. env.MY_LANG,
+    "HOME: " .. env.SYS_HOME,
+    "USER: " .. env.SYS_USER,
+    "VAL: " .. env.POS_VAL
+  })
+end, {}))
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![custom_variable](https://user-images.githubusercontent.com/25300418/184359382-2b2a357b-37a6-4cc4-9c8f-930f26457888.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 ## LSP-Variables
 
 All variables, even ones added via `env_namespace`, can be accessed in
@@ -1468,6 +1670,12 @@ can be quickly edited via
 When called, it will open a `vim.ui.select`-dialog to select first a filetype,
 and then (if there are multiple) the associated file to edit.
 
+<!-- panvimdoc-ignore-start -->
+
+![edit-select](https://user-images.githubusercontent.com/25300418/184359412-e6a1238c-d733-411c-b05d-8334ea993fbf.gif)
+
+<!-- panvimdoc-ignore-end -->
+
 `opts` currently only contains one setting:
 
 * `format`: `fn(file:string, source_name:string) -> string|nil`  
@@ -1480,7 +1688,18 @@ and then (if there are multiple) the associated file to edit.
   this can be extended to
   * filter files from some specific source/path
   * more aggressively shorten paths using symbolic names, e.g.
-  	`"$FRIENDLY_SNIPPETS"`
+  	`"$FRIENDLY_SNIPPETS"`.  
+  	Example: hide the `*.lua` snippet files, and shorten the path with `$LuaSnip`:
+    ```lua
+    require "luasnip.loaders" .edit_snippet_files {
+      format = function(file, source_name)
+        if source_name == "lua" then return nil
+        else return file:gsub("/root/.config/nvim/luasnippets", "$LuaSnip")
+        end
+      end
+    }
+    ```
+    ![edit-select-format](https://user-images.githubusercontent.com/25300418/184359420-3bc22d67-1f90-49d9-ac4e-3ea2524bcf0d.gif)
 * `edit`: `fn(file:string)` This function is supposed to open the file for
   editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
   current buffer), but one could open the file in a split, a tab, or a floating
@@ -1558,6 +1777,12 @@ s("trig", {
 	})
 })
 ```
+
+<!-- panvimdoc-ignore-start -->
+
+![ext_opt](https://user-images.githubusercontent.com/25300418/184359424-f3ae2e85-7863-437b-b360-0e3794c8fa1b.gif)
+
+<!-- panvimdoc-ignore-end -->
 
 In the above example the text inside the insertNodes is higlighted in red while
 inside them, and the virtual text "virtual text!!" is visible as long as the
@@ -1753,7 +1978,8 @@ s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
 }),
 ```
 
-
+A better example to understand `docTrig` and `docstring` can refer to
+[#515](https://github.com/L3MON4D3/LuaSnip/pull/515).
 
 # DOCSTRING-CACHE
 
@@ -2023,7 +2249,7 @@ the lazy_load.
   `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand c-and
   cpp-snippets for lua-files.
 
-- `filetype_set(filetype:string, replace_filetypes:table of string):` Similar
+- `filetype_set(filetype:string, replace_filetypes:table of string)`: Similar
   to `filetype_extend`, but where _append_ appended filetypes, _set_ sets them:
   `filetype_set("lua", {"c"})` causes only c-snippets to be expanded in
   lua-files, lua-snippets aren't even searched.

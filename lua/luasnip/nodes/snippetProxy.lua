@@ -44,6 +44,10 @@ function SnippetProxy:instantiate(parse_fn)
 	return snippet
 end
 
+-- some values of the snippet are nil by default, list them here so snippets
+-- aren't instantiated because of them.
+local license_to_nil = {priority = true}
+
 -- context and opts are (almost) the same objects as in s(contex, nodes, opts), snippet is a string representing the snippet.
 -- opts can aditionally contain the key `parse_fn`, which will be used to parse
 -- the snippet. This is useful, since snipmate-snippets are parsed with a
@@ -69,16 +73,20 @@ local function new(context, snippet, opts)
 
 	setmetatable(sp, {
 		__index = function(t, k)
+			if license_to_nil[k] then
+				-- k might be nil, return it.
+				return nil
+			end
+
 			if SnippetProxy[k] then
 				-- if it is possible to perform this operation without actually parsing the snippet, just do it.
 				return SnippetProxy[k]
+			end
+			local snip = SnippetProxy.instantiate(t, parse_fn)
+			if k == "_snippet" then
+				return snip
 			else
-				local snip = SnippetProxy.instantiate(t, parse_fn)
-				if k == "_snippet" then
-					return snip
-				else
-					return snip[k]
-				end
+				return snip[k]
 			end
 		end,
 	})

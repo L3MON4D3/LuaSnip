@@ -10,6 +10,8 @@ jsregexp:
 
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
 test: nvim jsregexp
+	# unset both to prevent env leaking into the neovim-build.
+	unset LUA_PATH LUA_CPATH
 	# add helper-functions to lpath.
 	# ";;" in CPATH appends default.
 	LUASNIP_SOURCE=$(shell pwd) LUA_CPATH="$(shell pwd)/${JSREGEXP_PATH}/?.so;;" TEST_FILE=$(realpath tests) BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua make -C ${NVIM_PATH} functionaltest

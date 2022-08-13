@@ -6,11 +6,12 @@ local events = require("luasnip.util.events")
 local session = require("luasnip.session")
 
 local function I(pos, static_text, opts)
-	static_text = util.wrap_value(static_text)
+	static_text = util.to_string_table(static_text)
+
 	if pos == 0 then
 		return ExitNode:new({
 			pos = pos,
-			static_text = static_text or { "" },
+			static_text = static_text,
 			mark = nil,
 			dependents = {},
 			type = types.exitNode,
@@ -20,7 +21,7 @@ local function I(pos, static_text, opts)
 	else
 		return InsertNode:new({
 			pos = pos,
-			static_text = static_text or { "" },
+			static_text = static_text,
 			mark = nil,
 			dependents = {},
 			type = types.insertNode,

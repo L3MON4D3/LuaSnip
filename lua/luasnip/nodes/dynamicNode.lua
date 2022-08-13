@@ -170,7 +170,7 @@ function DynamicNode:update()
 	tmp:put_initial(self.mark:pos_begin_raw())
 
 	-- Update, tbh no idea how that could come in handy, but should be done.
-	-- Both are needed, becaus
+	-- Both are needed, because
 	-- - a node could only depend on nodes outside of tmp
 	-- - a node outside of tmp could depend on one inside of tmp
 	tmp:update()
