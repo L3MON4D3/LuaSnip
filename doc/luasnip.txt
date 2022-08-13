@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 *luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 10
+=======
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 12
+>>>>>>> zjp/doc
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -74,8 +78,9 @@ All code-snippets in this help assume that
     local events = require("luasnip.util.events")
     local ai = require("luasnip.nodes.absolute_indexer")
     local fmt = require("luasnip.extras.fmt").fmt
+    local extras = require("luasnip.extras")
     local m = require("luasnip.extras").m
-    local lambda = require("luasnip.extras").l
+    local l = require("luasnip.extras").l
     local postfix = require("luasnip.extras.postfix").postfix
 <
 
@@ -983,12 +988,12 @@ is only a short outline, their usage is shown more expansively in
         exactly, nothing otherwise.
     - `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
         "PALINDROME" if the nth jumpable node is a palindrome.
-    - >
-              s("trig", {
-                  i(1), t":",
-                  i(2), t"::",
-                  m({1, 2}, lambda._1:match("^"..lambda._2.."$"), lambda._1:gsub("a", "e"))
-              })
+        >
+            s("trig", {
+                i(1), t":",
+                i(2), t"::",
+                m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
+            })
         <
         This inserts the text of the first insertNode, with all occurences of `a`
         replaced with `e` if the second insertNode matches the first exactly.
@@ -998,7 +1003,7 @@ is only a short outline, their usage is shown more expansively in
     `partial(os.date, "%Y")` (arguments passed after the function are passed to
     it).
 - `nonempty`: inserts text if the insert at the given index doesn’t contain any
-    text. `nonempty(n, "empty!", "not empty!")` inserts "empty!" if insert n is
+    text. `nonempty(n, "not empty!", "empty!")` inserts "empty!" if insert n is
     empty, "not empty!" if it isn’t.
 - `dynamic_lambda`: Operates almost exactly like `lambda`, only that it can be
     jumped to, and it’s contents therefore be easily overridden.
@@ -1006,6 +1011,26 @@ is only a short outline, their usage is shown more expansively in
     insert 1 appended to itself, but the second jump will lead to it, making it
     easy to override the generated text. The text will only be changed when a
     argnode updates it.
+
+
+>
+    ls.add_snippets("all", {
+      s("extras1", {
+        i(1), t { "", "" }, m(1, "^ABC$", "A")
+      }),
+      s("extras2", {
+        i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
+      }),
+      s("extras3", {
+        i(1), t { "", "" }, i(2), t { "", "" },
+        m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
+      }),
+      s("extras4", { i(1), t { "", "" }, extras.rep(1) }),
+      s("extras5", { extras.partial(os.date, "%Y") }),
+      s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") }),
+      s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) }),
+    })
+<
 
 
 FMT                                                              *luasnip-fmt*
@@ -1017,28 +1042,28 @@ Simple example:
 
 >
     ls.add_snippets("all", {
-        -- important! fmt does not return a snippet, it returns a table of nodes.
-        s("example1", fmt("just an {iNode1}", {
-            iNode1 = i(1, "example")
-        }),
-        s("example2", fmt([[
-            if {} then
-                {}
-            end
-        ]], {
-            -- i(1) is at nodes[1], i(2) at nodes[2].
-            i(1, "not now"), i(2, "when")
-        }),
-        s("example3", fmt([[
-            if <> then
-                <>
-            end
-        ]], {
-            -- i(1) is at nodes[1], i(2) at nodes[2].
-            i(1, "not now"), i(2, "when")
-        }, {
-            delimiters = "<>"
-        }),
+      -- important! fmt does not return a snippet, it returns a table of nodes.
+      s("example1", fmt("just an {iNode1}", {
+        iNode1 = i(1, "example")
+      })),
+      s("example2", fmt([[
+      if {} then
+        {}
+      end
+      ]], {
+        -- i(1) is at nodes[1], i(2) at nodes[2].
+        i(1, "not now"), i(2, "when")
+      })),
+      s("example3", fmt([[
+      if <> then
+        <>
+      end
+      ]], {
+        -- i(1) is at nodes[1], i(2) at nodes[2].
+        i(1, "not now"), i(2, "when")
+      }, {
+        delimiters = "<>"
+      })),
     })
 <
 
@@ -1093,13 +1118,13 @@ another register instead of `"p`. You can even use it several times, as if it
 where a macro if you add several mapppings like:
 
 >
-    ; For register a
-    vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr
+    " For register a
+    vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
     
     
-    ; For register b
-    vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr
+    " For register b
+    vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
 <
 
@@ -1180,11 +1205,12 @@ All variables can be used outside of lsp-parsed snippets as their values are
 stored in a snippets’ `snip.env`-table:
 
 >
-    s("selected_text", {
-        -- the surrounding snippet is passed in args after all argnodes (none,
-        -- in this case).
-        f(function(args, snip) return snip.env.SELECT_RAW end, {})
-    })
+    s("selected_text", f(function(args, snip)
+      local res, env = {}, snip.env
+      table.insert(res, "Selected Text (current line is " .. env.TM_LINE_NUMBER .. "):")
+      for _, ele in ipairs(env.SELECT_RAW) do table.insert(res, ele) end
+      return res
+    end, {}))
 <
 
 
@@ -1209,8 +1235,10 @@ where:
         a table of variables that will set to the environment of the snippet on expansion,
         use this for vars that have to be calculated in that moment or that depend on each other.
     - `eager`: `list[string]` names of variables that will be taken from `vars` and appended eagerly (like those in init)
-    - `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool` Says if certain vars are a table or just a string, can be a function that get’s the name of the var and returns
-        true if the var is a key, a list of vars that are tables or a boolean for the full namespace, it’s false by default.
+    - `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool|string[]` Says if certain vars are a table or just a string,
+        can be a function that get’s the name of the var and returns true if the var is a key,
+        a list of vars that are tables or a boolean for the full namespace, it’s false by default. Refer to
+        issue#510 <https://github.com/L3MON4D3/LuaSnip/issues/510#issuecomment-1209333698> for more information.
 
 
 The four fields of `opts` are optional but you need to provide either `init` or
@@ -1235,6 +1263,17 @@ A simple example to make it more clear:
     lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} end)
     
     -- then you can use  $POS_VAL in your snippets
+    
+    s("custom_env", d(1, function(args, parent)
+      local env = parent.snippet.env
+      return sn(nil, t {
+        "NAME: " .. env.MY_NAME,
+        "LANG: " .. env.MY_LANG,
+        "HOME: " .. env.SYS_HOME,
+        "USER: " .. env.SYS_USER,
+        "VAL: " .. env.POS_VAL
+      })
+    end, {}))
 <
 
 
@@ -1544,7 +1583,21 @@ there are multiple) the associated file to edit.
     this can be extended to
     - filter files from some specific source/path
     - more aggressively shorten paths using symbolic names, e.g.
-        `"$FRIENDLY_SNIPPETS"`
+        `"$FRIENDLY_SNIPPETS"`. Example: hide the `*.lua` snippet files, and shorten
+        the path with `$LuaSnip`:
+        >
+            require "luasnip.loaders" .edit_snippet_files {
+              format = function(file, source_name)
+                if source_name == "lua" then return nil
+                else return file:gsub("/root/.config/nvim/luasnippets", "$LuaSnip")
+                end
+              end
+            }
+        <
+        <div class="figure">
+        <img src="https://user-images.githubusercontent.com/25300418/184359420-3bc22d67-1f90-49d9-ac4e-3ea2524bcf0d.gif" title="fig:"/>
+        <p class="caption">edit-select-format</p>
+        </div>
 - `edit`: `fn(file:string)` This function is supposed to open the file for
     editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
     current buffer), but one could open the file in a split, a tab, or a floating
@@ -1831,6 +1884,9 @@ Other issues will have to be handled manually by checking the contents of e.g.
 <
 
 
+A better example to understand `docTrig` and `docstring` can refer to #515
+<https://github.com/L3MON4D3/LuaSnip/pull/515>.
+
 ==============================================================================
 21. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
 
@@ -2071,7 +2127,7 @@ empty the snippets table and the caches of the lazy_load.
     should be searched as well. `extend_filetypes` is a lua-array (`{ft1, ft2,
     ft3}`). `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand
     c-and cpp-snippets for lua-files.
-- `filetype_set(filetype:string, replace_filetypes:table of string):` Similar to
+- `filetype_set(filetype:string, replace_filetypes:table of string)`: Similar to
     `filetype_extend`, but where _append_ appended filetypes, _set_ sets them:
     `filetype_set("lua", {"c"})` causes only c-snippets to be expanded in
     lua-files, lua-snippets aren’t even searched.
