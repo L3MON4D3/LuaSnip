@@ -111,19 +111,6 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 			}
 		end
 
-		-- ++once: the autocommand will be re-added because this file will run again.
-		vim.cmd(string.format(
-			[[
-				augroup luasnip_watch_reload
-				autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_snipmate").reload_file("%s")
-				augroup END
-			]],
-			-- escape for autocmd-pattern.
-			str_util.aupatescape(path),
-			-- args for reload.
-			path
-		))
-
 		ls.add_snippets(
 			add_ft,
 			snippet,

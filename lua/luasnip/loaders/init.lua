@@ -1,5 +1,6 @@
 local Cache = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
+local Path = require("luasnip.util.path")
 
 local M = {}
 
@@ -70,13 +71,6 @@ end
 
 function M.cleanup()
 	Cache.cleanup()
-
-	-- remove reload-autocommands.
-	vim.cmd([[
-		augroup luasnip_watch_reload
-		autocmd!
-		augroup END
-	]])
 end
 
 --- explicitly load lazy-loaded snippets for some filetypes.
@@ -94,6 +88,20 @@ function M.load_lazy_loaded(fts)
 		require("luasnip.loaders.from_vscode")._load_lazy_loaded_ft(ft)
 		Cache.vscode.lazy_loaded_ft[ft] = true
 	end
+end
+
+
+vim.cmd([[
+		augroup luasnip_watch_reload
+		autocmd BufWritePost * lua require("luasnip.loaders").reload_file(vim.fn.expand("<afile>"))
+		augroup END
+	]]
+)
+function M.reload_file(filename)
+	filename = Path.normalize(filename)
+	require("luasnip.loaders.from_lua").reload_file(filename)
+	require("luasnip.loaders.from_vscode").reload_file(filename)
+	require("luasnip.loaders.from_snipmate").reload_file(filename)
 end
 
 return M

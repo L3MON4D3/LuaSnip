@@ -78,21 +78,6 @@ local function load_snippet_files(lang, files, add_opts)
 				}
 			end
 
-			-- difference to lua-loader: one file may contribute snippets to
-			-- multiple filetypes, so the ft has to be included in the
-			-- reload_file-call.
-			vim.cmd(string.format(
-				[[
-					augroup luasnip_watch_reload
-					autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_vscode").reload_file("%s")
-					augroup END
-				]],
-				-- escape for autocmd-pattern.
-				str_util.aupatescape(file),
-				-- args for reload.
-				file
-			))
-
 			ls.add_snippets(
 				lang,
 				lang_snips,
@@ -124,6 +109,7 @@ end
 ---@param filter function that filters filetypes, generate from in/exclude-list
 --- via loader_util.ft_filter.
 ---@return table, string -> string[] (ft -> files).
+--- Paths are normalized.
 local function package_files(root, filter)
 	local package = Path.join(root, "package.json")
 	local data = Path.read_file(package)
