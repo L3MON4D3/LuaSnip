@@ -66,6 +66,7 @@ local function load_snippet_files(lang, files, add_opts)
 			if cached_path then
 				lang_snips = vim.deepcopy(cached_path.snippets)
 				auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
+				cached_path.fts[lang] = true
 			else
 				lang_snips, auto_lang_snips = get_file_snippets(file)
 				-- store snippets to prevent parsing the same file more than once.
@@ -73,6 +74,7 @@ local function load_snippet_files(lang, files, add_opts)
 					snippets = vim.deepcopy(lang_snips),
 					autosnippets = vim.deepcopy(auto_lang_snips),
 					add_opts = add_opts,
+					fts = { [lang] = true},
 				}
 			end
 
@@ -82,13 +84,12 @@ local function load_snippet_files(lang, files, add_opts)
 			vim.cmd(string.format(
 				[[
 					augroup luasnip_watch_reload
-					autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_vscode").reload_file("%s", "%s")
+					autocmd BufWritePost %s ++once lua require("luasnip.loaders.from_vscode").reload_file("%s")
 					augroup END
 				]],
 				-- escape for autocmd-pattern.
 				str_util.aupatescape(file),
 				-- args for reload.
-				lang,
 				file
 			))
 
@@ -259,11 +260,19 @@ function M.edit_snippet_files()
 	loader_util.edit_snippet_files(cache.ft_paths)
 end
 
-function M.reload_file(ft, file)
-	if cache.path_snippets[file] then
-		local add_opts = cache.path_snippets[file].add_opts
-		cache.path_snippets[file] = nil
-		load_snippet_files(ft, { file }, add_opts)
+function M.reload_file(filename)
+	local cached_data = cache.path_snippets[filename]
+	if not cached_data then
+		-- file is not loaded by this loader.
+		return
+	end
+
+	cache.path_snippets[filename] = nil
+	local add_opts = cached_data.add_opts
+
+	-- reload file for all filetypes it occurs in.
+	for ft, _ in pairs(cached_data.fts) do
+		load_snippet_files(ft, { filename }, add_opts)
 
 		ls.clean_invalidated({ inv_limit = 100 })
 	end
