@@ -154,6 +154,7 @@ function M.lazy_load(opts)
 	M._load_lazy_loaded(vim.api.nvim_get_current_buf())
 end
 
+-- Make sure filename is normalized
 function M.reload_file(filename)
 	local file_cache = cache.path_snippets[filename]
 	-- only clear and load(!!! snippets may not actually be loaded, lazy_load)

@@ -115,4 +115,6 @@ function Path.basename(filepath, ext)
 	end
 end
 
+Path.normalize = uv.fs_realpath
+
 return Path

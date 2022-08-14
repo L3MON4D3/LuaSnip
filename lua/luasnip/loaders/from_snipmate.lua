@@ -243,6 +243,7 @@ function M.edit_snippet_files()
 	loader_util.edit_snippet_files(cache.ft_paths)
 end
 
+-- Make sure filename is normalized.
 function M.reload_file(filename)
 	local cached_data = cache.path_snippets[filename]
 	if not cached_data then
@@ -251,7 +252,6 @@ function M.reload_file(filename)
 
 	local add_opts = cached_data.add_opts
 	cache.path_snippets[filename] = nil
-	Insp(cached_data.fts)
 
 	for ft, _ in pairs(cached_data.fts) do
 		-- we can safely set collection to empty, the `extends` are already

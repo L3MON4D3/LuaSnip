@@ -153,7 +153,7 @@ local function package_files(root, filter)
 				if not ft_files[ft] then
 					ft_files[ft] = {}
 				end
-				table.insert(ft_files[ft], Path.join(root, snippet_entry.path))
+				table.insert(ft_files[ft], Path.normalize(Path.join(root, snippet_entry.path)))
 			end
 		end
 	end
@@ -260,6 +260,7 @@ function M.edit_snippet_files()
 	loader_util.edit_snippet_files(cache.ft_paths)
 end
 
+-- Make sure filename is normalized.
 function M.reload_file(filename)
 	local cached_data = cache.path_snippets[filename]
 	if not cached_data then
