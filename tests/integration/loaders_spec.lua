@@ -120,6 +120,43 @@ describe("loaders:", function()
 		screen:detach()
 	end)
 
+	local function reload_test(message, load_fn, snippet_file, edit_keys)
+		it(message, function()
+			load_fn()
+
+			-- check unmodified.
+			feed("iall1")
+			exec_lua("ls.expand()")
+
+			screen:expect{grid=[[
+				expands? jumps? ^  !                               |
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]]}
+
+			-- edit snippet-file to ensure hot-reload works.
+			exec(([[
+				edit %s
+			]]):format(os.getenv("LUASNIP_SOURCE") .. snippet_file))
+
+			-- edit snippet-file, and check for reload.
+			feed(edit_keys)
+
+			exec_lua("ls.expand()")
+			screen:expect{grid=[[
+				replaces? jumps? ^  !                              |
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]]}
+
+			-- undo changes to snippet-file.
+			feed("<Esc><C-I>u:w<Cr>")
+		end)
+	end
+
+
 	for_all_loaders("loads `all`-(autotriggered) snippet", function()
 		-- expand loaded snippet manually.
 		feed("iall1")
@@ -376,4 +413,23 @@ describe("loaders:", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	reload_test(
+		"snipmate-reload works",
+		loaders["snipmate(rtp)"],
+		"/tests/data/snipmate-snippets/snippets/all.snippets",
+		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1" )
+
+	reload_test(
+		"vscode-reload works",
+		loaders["vscode(rtp)"],
+		"/tests/data/vscode-snippets/snippets/all.json",
+		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1" )
+
+	reload_test(
+		"lua-reload works",
+		loaders["lua(rtp)"],
+		"/tests/data/lua-snippets/luasnippets/all.lua",
+		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1" )
+
 end)
