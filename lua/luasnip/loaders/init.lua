@@ -99,9 +99,9 @@ vim.cmd([[
 )
 function M.reload_file(filename)
 	filename = Path.normalize(filename)
-	require("luasnip.loaders.from_lua").reload_file(filename)
-	require("luasnip.loaders.from_vscode").reload_file(filename)
-	require("luasnip.loaders.from_snipmate").reload_file(filename)
+	require("luasnip.loaders.from_lua")._reload_file(filename)
+	require("luasnip.loaders.from_vscode")._reload_file(filename)
+	require("luasnip.loaders.from_snipmate")._reload_file(filename)
 end
 
 return M

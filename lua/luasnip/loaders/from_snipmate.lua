@@ -231,7 +231,7 @@ function M.edit_snippet_files()
 end
 
 -- Make sure filename is normalized.
-function M.reload_file(filename)
+function M._reload_file(filename)
 	local cached_data = cache.path_snippets[filename]
 	if not cached_data then
 		return
