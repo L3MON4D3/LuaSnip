@@ -51,18 +51,13 @@ function Path.read_file(path)
 	return buf
 end
 
-local MYCONFIG_ROOT = vim.env.MYVIMRC
--- if MYVIMRC is not set then it means nvim was called with -u
--- therefore the first script is the configuration
--- in case of calling -u NONE the plugin won't be loaded so we don't
--- have to handle that
+local MYCONFIG_ROOT
 
-if not MYCONFIG_ROOT then
-	MYCONFIG_ROOT = vim.fn.execute("scriptnames"):match("1: ([^\n]+)")
+if vim.env.MYVIMRC then
+	MYCONFIG_ROOT = vim.fn.fnamemodify(vim.env.MYVIMRC, ":p:h")
+else
+	MYCONFIG_ROOT = vim.fn.getcwd()
 end
--- remove the filename of the script  to optain where is it (most of the time it will be ~/.config/nvim/)
-
-MYCONFIG_ROOT = MYCONFIG_ROOT:gsub(("%s[^%s]+$"):format(sep, sep), "")
 
 function Path.expand(filepath)
 	local expanded =
