@@ -74,7 +74,7 @@ local function load_snippet_files(lang, files, add_opts)
 					snippets = vim.deepcopy(lang_snips),
 					autosnippets = vim.deepcopy(auto_lang_snips),
 					add_opts = add_opts,
-					fts = { [lang] = true},
+					fts = { [lang] = true },
 				}
 			end
 
@@ -139,7 +139,10 @@ local function package_files(root, filter)
 				if not ft_files[ft] then
 					ft_files[ft] = {}
 				end
-				table.insert(ft_files[ft], Path.normalize(Path.join(root, snippet_entry.path)))
+				table.insert(
+					ft_files[ft],
+					Path.normalize(Path.join(root, snippet_entry.path))
+				)
 			end
 		end
 	end

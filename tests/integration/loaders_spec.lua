@@ -128,12 +128,14 @@ describe("loaders:", function()
 			feed("iall1")
 			exec_lua("ls.expand()")
 
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				expands? jumps? ^  !                               |
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 
 			-- edit snippet-file to ensure hot-reload works.
 			exec(([[
@@ -144,18 +146,19 @@ describe("loaders:", function()
 			feed(edit_keys)
 
 			exec_lua("ls.expand()")
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				replaces? jumps? ^  !                              |
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 
 			-- undo changes to snippet-file.
 			feed("<Esc><C-I>u:w<Cr>")
 		end)
 	end
-
 
 	for_all_loaders("loads `all`-(autotriggered) snippet", function()
 		-- expand loaded snippet manually.
@@ -418,18 +421,20 @@ describe("loaders:", function()
 		"snipmate-reload works",
 		loaders["snipmate(rtp)"],
 		"/tests/data/snipmate-snippets/snippets/all.snippets",
-		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1" )
+		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
 
 	reload_test(
 		"vscode-reload works",
 		loaders["vscode(rtp)"],
 		"/tests/data/vscode-snippets/snippets/all.json",
-		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1" )
+		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
 
 	reload_test(
 		"lua-reload works",
 		loaders["lua(rtp)"],
 		"/tests/data/lua-snippets/luasnippets/all.lua",
-		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1" )
-
+		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
 end)

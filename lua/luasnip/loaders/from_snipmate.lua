@@ -107,7 +107,7 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 				extends = extends,
 				-- store for reload.
 				add_opts = add_opts,
-				fts = {[add_ft] = true},
+				fts = { [add_ft] = true },
 			}
 		end
 

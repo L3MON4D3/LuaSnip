@@ -42,9 +42,9 @@ local function new_cache()
 		-- key is file type, value are normalized!! paths of .snippets files.
 		ft_paths = {},
 
-		 -- key is _normalized!!!!_ file path, value are loader-specific.
-		 -- Might contain the snippets from the file, or the filetype(s) it
-		 -- contributes to.
+		-- key is _normalized!!!!_ file path, value are loader-specific.
+		-- Might contain the snippets from the file, or the filetype(s) it
+		-- contributes to.
 		path_snippets = {},
 	}, {
 		__index = Cache,
