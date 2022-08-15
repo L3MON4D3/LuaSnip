@@ -239,7 +239,12 @@ local function to_string_table(value)
 	if not value then
 		return { "" }
 	end
-	if type(value) == "string" or type(value) == "number" or type(value) == "bool" or type(value) == "function" then
+	if
+		type(value) == "string"
+		or type(value) == "number"
+		or type(value) == "bool"
+		or type(value) == "function"
+	then
 		return { value }
 	end
 	-- at this point it's a table
