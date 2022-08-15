@@ -254,4 +254,8 @@ return {
 		opts = vim.tbl_extend("force", opts or {}, { delimiters = "<>" })
 		return format_nodes(str, nodes, opts)
 	end,
+	fmts = function(str, nodes, opts) -- fmt with square brackets
+		opts = vim.tbl_extend("force", opts or {}, { delimiters = "[]" })
+		return format_nodes(str, nodes, opts)
+	end,
 }

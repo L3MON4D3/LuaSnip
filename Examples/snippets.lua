@@ -16,6 +16,7 @@ local n = require("luasnip.extras").nonempty
 local dl = require("luasnip.extras").dynamic_lambda
 local fmt = require("luasnip.extras.fmt").fmt
 local fmta = require("luasnip.extras.fmt").fmta
+local fmts = require("luasnip.extras.fmt").fmts
 local types = require("luasnip.util.types")
 local conds = require("luasnip.extras.expand_conditions")
 
@@ -279,12 +280,14 @@ ls.add_snippets("all", {
 		})
 	),
 	-- The delimiters can be changed from the default `{}` to something else.
-	s("fmt4", fmt("foo() { return []; }", i(1, "x"), { delimiters = "[]" })),
+	s("fmt4", fmt("foo() { return (); }", i(1, "x"), { delimiters = "()" })),
 	-- `fmta` is a convenient wrapper that uses `<>` instead of `{}`.
 	s("fmt5", fmta("foo() { return <>; }", i(1, "x"))),
+	-- `fmts` is a convenient wrapper that uses `[]` instead of `{}`.
+	s("fmt6", fmts("foo() { return []; }", i(1, "x"))),
 	-- By default all args must be used. Use strict=false to disable the check
 	s(
-		"fmt6",
+		"fmt7",
 		fmt("use {} only", { t("this"), t("not this") }, { strict = false })
 	),
 	-- Use a dynamic_node to interpolate the output of a

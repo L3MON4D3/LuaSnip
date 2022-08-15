@@ -98,6 +98,7 @@ local defaults = {
 		dl = require("luasnip.extras").dynamic_lambda,
 		fmt = require("luasnip.extras.fmt").fmt,
 		fmta = require("luasnip.extras.fmt").fmta,
+		fmts = require("luasnip.extras.fmt").fmts,
 		conds = require("luasnip.extras.expand_conditions"),
 		types = require("luasnip.util.types"),
 		events = require("luasnip.util.events"),

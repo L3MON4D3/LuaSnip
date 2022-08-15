@@ -1128,8 +1128,9 @@ ls.add_snippets("all", {
   * `dedent`: remove indent common to all lines in `format`. Again, makes
   	passing multiline-strings a bit nicer (default true).
 
-There is also `require("luasnip.extras.fmt").fmta`. This only differs from `fmt`
-by using angle-brackets (`<>`) as the default-delimiter.
+Also `require("luasnip.extras.fmt").fmta` and `require("luasnip.extras.fmt").fmts`. This is
+fmt`, using the default delimiters of the angle-brackets (`<>`) for fmta and the
+square-brackets (`[]`) for fmts, respectively.
 
 
 ## On The Fly snippets

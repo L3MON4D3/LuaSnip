@@ -38,6 +38,7 @@ function M.session_setup_luasnip()
 	events = require("luasnip.util.events")
 	fmt = require("luasnip.extras.fmt").fmt
 	fmta = require("luasnip.extras.fmt").fmta
+	fmts = require("luasnip.extras.fmt").fmts
 	parse = ls.parser.parse_snippet
 	n = require("luasnip.extras").nonempty
 	m = require("luasnip.extras").match
