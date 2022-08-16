@@ -402,7 +402,7 @@ exist to more easily reuse functionNode-functions, when applicable:
     local function reused_func(_,_, user_arg1)
         return user_arg1
     end
-    
+
     s("trig", {
         f(reused_func, {}, {
             user_args = {"text"}
@@ -476,7 +476,7 @@ The simplest example, which surrounds the text preceeding the `.br` with
 brackets `[]`, looks like:
 
 >
-    
+
           postfix(".br", {
                   f(function(_, parent)
                         return "[" .. parent.snippet.env.POSTFIX_MATCH .. "]"
@@ -548,7 +548,7 @@ below) it will get run after the builtin callback. This means that your
 callback will have access to the `POSTFIX_MATCH` field as well.
 
 >
-    
+
           {
             callbacks = {
                   [-1] = {
@@ -759,19 +759,19 @@ instead of `old_state`.
         old_state = old_state or {
             updates = 0
         }
-    
+
         old_state.updates = old_state.updates + 1
-    
+
         local snip = sn(nil, {
             t(tostring(old_state.updates))
         })
-    
+
         snip.old_state = old_state
         return snip
     end
-    
+
     ...
-    
+
     ls.add_snippets("all",
         s("trig", {
             i(1, "change to update"),
@@ -835,7 +835,7 @@ The `restoreNode` is also useful for storing user-input across updates of a
     local function simple_restore(args, _)
         return sn(nil, {i(1, args[1]), i(2, "user_text")})
     end
-    
+
     s("rest", {
         i(1, "preset"), t{"",""},
         d(2, simple_restore, 1)
@@ -851,7 +851,7 @@ Every time the `i(1)` in the outer snippet is changed, the text inside the
     local function simple_restore(args, _)
         return sn(nil, {i(1, args[1]), r(2, "dyn", i(nil, "user_text"))})
     end
-    
+
     s("rest", {
         i(1, "preset"), t{"",""},
         d(2, simple_restore, 1)
@@ -1089,9 +1089,8 @@ Simple example:
         passing multiline-strings a bit nicer (default true).
 
 
-Also `require("luasnip.extras.fmt").fmta` and
-`require("luasnip.extras.fmt").fmts`. This is fmt`, using the
-default-delimiters of the angle-brackets (`<>`) for fmta and the
+There are also `require("luasnip.extras.fmt").fmta` and `require("luasnip.extras.fmt").fmts`.
+This is `fmt`,　using the default-delimiters of the angle-brackets (`<>`) for fmta and the
 square-brackets (`[]`) for fmts, respectively.
 
 ON THE FLY SNIPPETS                              *luasnip-on-the-fly-snippets*
@@ -1119,8 +1118,8 @@ where a macro if you add several mapppings like:
     " For register a
     vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
-    
-    
+
+
     " For register b
     vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
@@ -1249,19 +1248,19 @@ A simple example to make it more clear:
     local random_lang()
         return ({"LUA", "VIML", "VIML9"})[math.floor(math.random()/2 + 1.5)]
     end
-    
+
     ls.env_namespace("MY", {vars={ NAME="LuaSnip",  LANG=random_lang }})`
-    
+
     -- then you can use  $MY_NAME and $MY_LANG in your snippets
-    
+
     ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
-    
+
     -- then you can use  $SYS_HOME which was eagerly initialized but also $SYS_USER (or any other system environment var) in your snippets
-    
+
     lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} end)
-    
+
     -- then you can use  $POS_VAL in your snippets
-    
+
     s("custom_env", d(1, function(args, parent)
       local env = parent.snippet.env
       return sn(nil, t {
@@ -1486,7 +1485,7 @@ luasnips more advanced capabilities:
 
 >
     extends c
-    
+
     snippet cpp cpp-snippet
         cpp!
 <
@@ -1648,7 +1647,7 @@ nodes:
     local ext_opts = {
         -- these ext_opts are applied when the node is active (e.g. it has been
         -- jumped into, and not out yet).
-        active = 
+        active =
         -- this is the table actually passed to `nvim_buf_set_extmark`.
         {
             -- highlight the text inside the node red.
@@ -1663,9 +1662,9 @@ nodes:
         -- and these are applied when both the node and the snippet are inactive.
         snippet_passive = {}
     }
-    
+
     ...
-    
+
     s("trig", {
         i(1, "text1", {
             node_ext_opts = ext_opts
@@ -1697,7 +1696,7 @@ set of `ext_opts` should be applied to:
 
 >
     local types = require("luasnip.util.types")
-    
+
     ls.config.setup({
         ext_opts = {
             [types.insertNode] = {
@@ -1721,7 +1720,7 @@ snippets…
 
 >
     local types = require("luasnip.util.types")
-    
+
     s("trig", { i(1, "text1"), i(2, "text2") }, {
         child_ext_opts = {
             [types.insertNode] = {
@@ -1755,9 +1754,9 @@ It’s possible to prevent both of these merges by passing
             }
         }
     })
-    
+
     ...
-    
+
     s("trig", {
         i(1, "text1", {
             node_ext_opts = {
@@ -1783,7 +1782,7 @@ highlight-groups:
 >
     vim.cmd("hi link LuasnipInsertNodePassive GruvboxRed")
     vim.cmd("hi link LuasnipSnippetPassive GruvboxBlue")
-    
+
     -- needs to be called for resolving the actual ext_opts.
     ls.config.setup({})
 <
@@ -1986,7 +1985,7 @@ or some information about expansions
             local snippet = require("luasnip").session.event_node
             local expand_position =
                 require("luasnip").session.event_args.expand_pos
-    
+
             print(string.format("expanding snippet %s at %s:%s",
                 table.concat(snippet:get_docstring(), "\n"),
                 expand_position[1],
