@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 16
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 17
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -61,7 +61,7 @@ the README.
 All code-snippets in this help assume that
 
 >
-    local ls = require"luasnip"
+    local ls = require("luasnip")
     local s = ls.snippet
     local sn = ls.snippet_node
     local isn = ls.indent_snippet_node
@@ -75,8 +75,9 @@ All code-snippets in this help assume that
     local ai = require("luasnip.nodes.absolute_indexer")
     local fmt = require("luasnip.extras.fmt").fmt
     local extras = require("luasnip.extras")
-    local m = require("luasnip.extras").m
-    local l = require("luasnip.extras").l
+    local m = extras.m
+    local l = extras.l
+    local rep = extras.rep
     local postfix = require("luasnip.extras.postfix").postfix
 <
 
