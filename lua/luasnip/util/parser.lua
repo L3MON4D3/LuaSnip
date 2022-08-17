@@ -8,6 +8,7 @@ local Environ = require("luasnip.util.environ")
 local functions = require("luasnip.util.functions")
 local util = require("luasnip.util.util")
 local session = require("luasnip.session")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local function is_escaped(text, indx)
 	local count = 0
@@ -367,6 +368,24 @@ parse_snippet = function(context, body, tab_stops, brackets)
 		end
 	end
 end
+local function context_extend(arg, extend)
+	local argtype = type(arg)
+	if argtype == "string" then
+		arg = { trig = arg }
+	end
+
+	if argtype == "table" then
+		return vim.tbl_extend("keep", arg, extend or {})
+	end
+
+	-- fall back to unchanged arg.
+	-- log this, probably.
+	return arg
+end
+extend_decorator.register(
+	parse_snippet,
+	{ arg_indx = 1, extend = context_extend }
+)
 
 return {
 	parse_snippet = parse_snippet,

@@ -7,6 +7,7 @@ local events = require("luasnip.util.events")
 local mark = require("luasnip.util.mark").mark
 local session = require("luasnip.session")
 local sNode = require("luasnip.nodes.snippet").SN
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 function ChoiceNode:init_nodes()
 	for i, choice in ipairs(self.choices) do
@@ -73,6 +74,7 @@ local function C(pos, choices, opts)
 	c:init_nodes()
 	return c
 end
+extend_decorator.register(C, { arg_indx = 3 })
 
 function ChoiceNode:subsnip_init()
 	node_util.subsnip_init_children(self.parent, self.choices)

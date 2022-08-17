@@ -1,5 +1,6 @@
 local text_node = require("luasnip.nodes.textNode").T
 local wrap_nodes = require("luasnip.util.util").wrap_nodes
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
 local function copy3(obj, seen)
@@ -244,14 +245,12 @@ local function format_nodes(str, nodes, opts)
 		end
 	end, parts)
 end
+extend_decorator.register(format_nodes, { arg_indx = 3 })
 
 return {
 	interpolate = interpolate,
 	format_nodes = format_nodes,
 	-- alias
 	fmt = format_nodes,
-	fmta = function(str, nodes, opts) -- fmt with angle brackets
-		opts = vim.tbl_extend("force", opts or {}, { delimiters = "<>" })
-		return format_nodes(str, nodes, opts)
-	end,
+	fmta = extend_decorator.apply(format_nodes, { delimiters = "<>" }),
 }

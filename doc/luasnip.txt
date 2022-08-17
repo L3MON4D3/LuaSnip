@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 13
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 25
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -22,22 +22,23 @@ Table of Contents                                  *luasnip-table-of-contents*
   - On The Fly snippets                          |luasnip-on-the-fly-snippets|
   - Select_choice                                      |luasnip-select_choice|
   - filetype_functions                            |luasnip-filetype_functions|
-15. LSP-SNIPPETS                                        |luasnip-lsp-snippets|
-16. VARIABLES                                              |luasnip-variables|
+15. EXTEND_DECORATOR                                |luasnip-extend_decorator|
+16. LSP-SNIPPETS                                        |luasnip-lsp-snippets|
+17. VARIABLES                                              |luasnip-variables|
   - Environment Namespaces                    |luasnip-environment-namespaces|
-17. LOADERS                                                  |luasnip-loaders|
+18. LOADERS                                                  |luasnip-loaders|
   - Troubleshooting                                  |luasnip-troubleshooting|
   - VSCODE                                                    |luasnip-vscode|
   - SNIPMATE                                                |luasnip-snipmate|
   - LUA                                                          |luasnip-lua|
   - EDIT_SNIPPETS                                      |luasnip-edit_snippets|
-18. SNIPPETPROXY                                        |luasnip-snippetproxy|
-19. EXT_OPTS                                                |luasnip-ext_opts|
-20. DOCSTRING                                              |luasnip-docstring|
-21. DOCSTRING-CACHE                                  |luasnip-docstring-cache|
-22. EVENTS                                                    |luasnip-events|
-23. CLEANUP                                                  |luasnip-cleanup|
-24. API-REFERENCE                                      |luasnip-api-reference|
+19. SNIPPETPROXY                                        |luasnip-snippetproxy|
+20. EXT_OPTS                                                |luasnip-ext_opts|
+21. DOCSTRING                                              |luasnip-docstring|
+22. DOCSTRING-CACHE                                  |luasnip-docstring-cache|
+23. EVENTS                                                    |luasnip-events|
+24. CLEANUP                                                  |luasnip-cleanup|
+25. API-REFERENCE                                      |luasnip-api-reference|
 
 >
                 __                       ____
@@ -1174,7 +1175,77 @@ Contains some utility-functions that can be passed to the `ft_func` or
 
 
 ==============================================================================
-15. LSP-SNIPPETS                                        *luasnip-lsp-snippets*
+15. EXTEND_DECORATOR                                *luasnip-extend_decorator*
+
+Most of luasnip’s functions have some arguments to control their behaviour.
+Examples include `s`, where `wordTrig`, `regTrig`, … can be set in the first
+argument to the function, or `fmt`, where the delimiter can be set in the third
+argument. This is all good and well, but if these functions are often used with
+non-default settings, it can become cumbersome to always explicitly set them.
+
+This is where the `extend_decorator` comes in: It can be used to create
+decorated functions which always extend the arguments passed directly with
+other, previously defined ones. An example:
+
+>
+    local fmt = require("luasnip.extras.fmt").fmt
+    
+    fmt("{}", {i(1)}) -- -> list of nodes, containing just the i(1).
+    
+    -- when authoring snippets for some filetype where `{` and `}` are common, they
+    -- would always have to be escaped in the format-string. It might be preferable
+    -- to use other delimiters, like `<` and `>`.
+    
+    fmt("<>", {i(1)}, {delimiters = "<>"}) -- -> same as above.
+    
+    -- but it's quite annoying to always pass the `{delimiters = "<>"}`.
+    
+    -- with extend_decorator:
+    local fmt_angle = ls.extend_decorator.apply(fmt, {delimiters = "<>"})
+    fmt_angle("<>", {i(1)}) -- -> same as above.
+    
+    -- the same also works with other functions provided by luasnip, for example all
+    -- node/snippet-constructors and `parse_snippet`.
+<
+
+
+`extend_decorator.apply(fn, ...)` requires that `fn` is previously registered
+via `extend_decorator.register`. (This is not limited to luasnip’s
+functions!) (although, for usage outside of luasnip, best copy the source-file
+`/lua/luasnip/util/extend_decorator.lua`).
+
+`register(fn, ...)`: * `fn`: the function. * `...`: any number of tables. Each
+specifies how to extend an argument of `fn`. The tables accept: * arg_indx,
+`number` (required): the position of the parameter to override. * extend,
+`fn(arg, extend_value) -> effective_arg` (optional): this function is used to
+extend the args passed to the decorated function. It defaults to a function
+which just extends the the arg-table with the extend-table (accepts `nil`).
+This extend-behaviour is adaptable to accomodate `s`, where the first argument
+may be string or table.
+
+`apply(fn, ...) -> decorated_fn`: * `fn`: the function to decorate. * `...`:
+The values to extend with. These should match the descriptions passed in
+`register` (the argument first passed to `register` will be extended with the
+first value passed here).
+
+One more example for registering a new function:
+
+>
+    local function somefn(arg1, arg2, opts1, opts2)
+        ... -- not important
+    end
+    
+    -- note the reversed arg_indx!!
+    extend_decorator.register(somefn, {arg_indx=4}, {arg_indx=3})
+    local extended = extend_decorator.apply(somefn,
+        {key = "opts2 is extended with this"},
+        {key = "and opts1 with this"})
+    extended(...)
+<
+
+
+==============================================================================
+16. LSP-SNIPPETS                                        *luasnip-lsp-snippets*
 
 Luasnip is capable of parsing lsp-style snippets using
 `ls.parser.parse_snippet(context, snippet_string)`:
@@ -1189,7 +1260,7 @@ choiceNode’s with: - the given snippet(`"this is ${1:nested}"`) and - an
 empty insertNode
 
 ==============================================================================
-16. VARIABLES                                              *luasnip-variables*
+17. VARIABLES                                              *luasnip-variables*
 
 All `TM_something`-variables are supported with two additions: `SELECT_RAW` and
 `SELECT_DEDENT`. These were introduced because `TM_SELECTED_TEXT` is designed
@@ -1274,7 +1345,7 @@ A simple example to make it more clear:
 
 
 ==============================================================================
-17. LOADERS                                                  *luasnip-loaders*
+18. LOADERS                                                  *luasnip-loaders*
 
 Luasnip is capable of loading snippets from different formats, including both
 the well-established vscode- and snipmate-format, as well as plain lua-files
@@ -1608,7 +1679,7 @@ One comfortable way to call this function is registering it as a command:
 
 
 ==============================================================================
-18. SNIPPETPROXY                                        *luasnip-snippetproxy*
+19. SNIPPETPROXY                                        *luasnip-snippetproxy*
 
 `SnippetProxy` is used internally to alleviate the upfront-cost of loading
 snippets from e.g. a snipmate-library or a vscode-package. This is achieved by
@@ -1632,7 +1703,7 @@ This will parse the snippet on startup…
 
 
 ==============================================================================
-19. EXT_OPTS                                                *luasnip-ext_opts*
+20. EXT_OPTS                                                *luasnip-ext_opts*
 
 `ext_opts` can be used to set the `opts` (see `nvim_buf_set_extmark`) of the
 extmarks used for marking node-positions, either globally, per-snippet or
@@ -1831,7 +1902,7 @@ Here the highlight of an insertNode nested directly inside a choiceNode is
 always visible on top of it.
 
 ==============================================================================
-20. DOCSTRING                                              *luasnip-docstring*
+21. DOCSTRING                                              *luasnip-docstring*
 
 Snippet-docstrings can be queried using `snippet:get_docstring()`. The function
 evaluates the snippet as if it was expanded regularly, which can be problematic
@@ -1884,7 +1955,7 @@ A better example to understand `docTrig` and `docstring` can refer to #515
 <https://github.com/L3MON4D3/LuaSnip/pull/515>.
 
 ==============================================================================
-21. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
+22. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
 
 Although generation of docstrings is pretty fast, it’s preferable to not redo
 it as long as the snippets haven’t changed. Using
@@ -1901,7 +1972,7 @@ The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 `~/.cache/nvim/luasnip/docstrings.json`).
 
 ==============================================================================
-22. EVENTS                                                    *luasnip-events*
+23. EVENTS                                                    *luasnip-events*
 
 Events can be used to react to some action inside snippets. These callbacks can
 be defined per-snippet (`callbacks`-key in snippet constructor) or globally
@@ -1996,14 +2067,14 @@ or some information about expansions
 
 
 ==============================================================================
-23. CLEANUP                                                  *luasnip-cleanup*
+24. CLEANUP                                                  *luasnip-cleanup*
 
 The function ls.cleanup() triggers the `LuasnipCleanup` user-event, that you
 can listen to do some kind of cleaning in your own snippets, by default it will
 empty the snippets table and the caches of the lazy_load.
 
 ==============================================================================
-24. API-REFERENCE                                      *luasnip-api-reference*
+25. API-REFERENCE                                      *luasnip-api-reference*
 
 `require("luasnip")`:
 

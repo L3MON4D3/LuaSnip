@@ -2,6 +2,7 @@ local node_mod = require("luasnip.nodes.node")
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local TextNode = node_mod.Node:new()
 
@@ -12,6 +13,7 @@ local function T(static_text, opts)
 		type = types.textNode,
 	}, opts)
 end
+extend_decorator.register(T, { arg_indx = 2 })
 
 function TextNode:input_enter(no_move)
 	self.mark:update_opts(self.ext_opts.active)
