@@ -19,7 +19,7 @@ For basic setup like mappings and installing, check the README.
 All code-snippets in this help assume that
 
 ```lua
-local ls = require"luasnip"
+local ls = require("luasnip")
 local s = ls.snippet
 local sn = ls.snippet_node
 local isn = ls.indent_snippet_node
@@ -33,8 +33,9 @@ local events = require("luasnip.util.events")
 local ai = require("luasnip.nodes.absolute_indexer")
 local fmt = require("luasnip.extras.fmt").fmt
 local extras = require("luasnip.extras")
-local m = require("luasnip.extras").m
-local l = require("luasnip.extras").l
+local m = extras.m
+local l = extras.l
+local rep = extras.rep
 local postfix = require("luasnip.extras.postfix").postfix
 ```
 
