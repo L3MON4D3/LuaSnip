@@ -1294,8 +1294,8 @@ This is implemented by relying on [`jsregexp`](https://github.com/kmarius/jsrege
 Alternatively, the repo can be cloned, `make`d, and the resulting `jsregexp.so`
 placed in some place where nvim can find it (probably `~/.config/nvim/lua/`).
 
-If `jsregexp` cannot be found, luasnip and omits the transformation and just
-inserts the input.
+If `jsregexp` cannot be found, luasnip omits the transformation and just inserts
+its' input.
 
 # VARIABLES
 
