@@ -28,7 +28,8 @@ Neovim >= 0.5 (extmarks)
 
 # Setup
 ## Install 
-Ie. With [vim-plug](https://github.com/junegunn/vim-plug)
+* With your preferred plugin manager i.e. [vim-plug](https://github.com/junegunn/vim-plug) or [packer](https://github.com/wbthomason/packer.nvim) (recommended).
+  
 ## Keymaps
 ```vim
 " press <Tab> to expand or jump in a snippet. These can also be mapped separately
