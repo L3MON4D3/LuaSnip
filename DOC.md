@@ -297,19 +297,29 @@ reasons, check out Luasnip#110).
 
 Function Nodes insert text based on the content of other nodes using a
 user-defined function:
+
 ```lua
- s("trig", {
- 	i(1),
- 	f(function(args, snip, user_arg_1) return args[1][1] .. user_arg_1 end,
- 		{1},
- 		{ user_args = {"Will be appended to text from i(0)"}}),
- 	i(0)
- })
+local function fn(
+  args,     -- text from i(2) in this example i.e. { { "456" } }
+  parent,   -- parent snippet or parent node
+  user_args -- user_args from opts.user_args 
+)
+   return '[' .. args[1][1] .. user_args .. ']'
+end
+
+s("trig", {
+  i(1), t '<-i(1) ',
+  f(fn,  -- callback (args, parent, user_args) -> string
+    {2}, -- node indice(s) whose text is passed to fn, i.e. i(2)
+    { user_args = { "user_args_value" }} -- opts
+  ),
+  t ' i(2)->', i(2), t '<-i(2) i(0)->', i(0)
+})
 ```
 
 <!-- panvimdoc-ignore-start -->
 
-![FunctionNode](https://user-images.githubusercontent.com/25300418/184359234-2c2da69e-4c3f-4906-9346-52ab4cab58a7.gif)
+![f_node_example](https://user-images.githubusercontent.com/3051781/185458218-5aad8099-c808-4772-95ed-febac0b5c5ff.gif)
 
 <!-- panvimdoc-ignore-end -->
 
