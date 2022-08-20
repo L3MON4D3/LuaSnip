@@ -169,6 +169,8 @@ c = {
 		end
 	end,
 }
+
+-- Keep these two for backward compativility
 c.setup = c.set_config
 
 return c

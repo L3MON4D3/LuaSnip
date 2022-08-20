@@ -19,7 +19,7 @@ function M.session_setup_luasnip()
 	vim.env.MYVIMRC = "/.vimrc"
 
 	ls = require("luasnip")
-	ls.config.setup({})
+	ls.setup({})
 
 	s = ls.s
 	sn = ls.sn

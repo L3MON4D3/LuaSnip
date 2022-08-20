@@ -4,6 +4,7 @@ local session = require("luasnip.session")
 local snippet_collection = require("luasnip.session.snippet_collection")
 local Environ = require("luasnip.util.environ")
 
+
 local loader = require("luasnip.loaders")
 
 local next_expand = nil
@@ -680,6 +681,7 @@ ls = {
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,
 	env_namespace = Environ.env_namespace,
+        setup = require("luasnip.config").setup,
 }
 
 return ls

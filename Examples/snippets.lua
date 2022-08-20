@@ -23,7 +23,7 @@ local conds = require("luasnip.extras.expand_conditions")
 -- where the actual snippet-definitions start.
 
 -- Every unspecified option will be set to the default.
-ls.config.set_config({
+ls.setup({
 	history = true,
 	-- Update more often, :h events for more info.
 	update_events = "TextChanged,TextChangedI",
