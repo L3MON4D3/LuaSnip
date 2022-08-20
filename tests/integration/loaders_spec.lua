@@ -504,8 +504,7 @@ describe("loaders:", function()
 			exec_lua(
 				string.format(
 					[[require("luasnip.loaders.from_vscode").lazy_load({paths="%s"})]],
-					os.getenv("LUASNIP_SOURCE")
-						.. "/tests/data/vscode-snippets"
+					os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
 				)
 			)
 		end,
