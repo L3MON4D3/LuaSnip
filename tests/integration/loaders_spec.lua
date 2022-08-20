@@ -146,17 +146,21 @@ describe("loaders:", function()
 			feed(edit_keys)
 
 			exec_lua("ls.expand()")
-			screen:expect({
-				grid = [[
+
+			-- undo changes to snippet-file before checking results.
+			feed("<Esc><C-I>u:w<Cr><C-O>")
+
+			-- re-enter current placeholder
+			exec_lua("ls.jump(-1)")
+			exec_lua("ls.jump(1)")
+
+			screen:expect({grid=[[
 				replaces? jumps? ^  !                              |
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{2:-- INSERT --}                                      |]],
 			})
-
-			-- undo changes to snippet-file.
-			feed("<Esc><C-I>u:w<Cr>")
 		end)
 	end
 
