@@ -437,4 +437,94 @@ describe("loaders:", function()
 		"/tests/data/lua-snippets/luasnippets/all.lua",
 		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
 	)
+
+	reload_test(
+		"snipmate-reload: load symlinked and edit real",
+		function()
+			exec_lua(
+				string.format(
+					[[require("luasnip.loaders.from_snipmate").lazy_load({paths="%s"})]],
+					os.getenv("LUASNIP_SOURCE")
+						.. "/tests/symlinked_data/snipmate-snippets/snippets"
+				)
+			)
+		end,
+		"/tests/data/snipmate-snippets/snippets/all.snippets",
+		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
+
+	reload_test(
+		"vscode-reload: load symlinked and edit real",
+		function()
+			exec_lua(
+				string.format(
+					[[require("luasnip.loaders.from_vscode").lazy_load({paths="%s"})]],
+					os.getenv("LUASNIP_SOURCE")
+						.. "/tests/symlinked_data/vscode-snippets"
+				)
+			)
+		end,
+		"/tests/data/vscode-snippets/snippets/all.json",
+		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
+
+	reload_test(
+		"lua-reload: load symlinked and edit real",
+		function()
+			exec_lua(
+				string.format(
+					[[require("luasnip.loaders.from_lua").lazy_load({paths="%s"})]],
+					os.getenv("LUASNIP_SOURCE")
+						.. "/tests/symlinked_data/lua-snippets/luasnippets"
+				)
+			)
+		end,
+		"/tests/data/lua-snippets/luasnippets/all.lua",
+		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
+
+	reload_test(
+		"snipmate-reload: load real and edit symlinked",
+		function()
+			exec_lua(
+				string.format(
+					[[require("luasnip.loaders.from_snipmate").lazy_load({paths="%s"})]],
+					os.getenv("LUASNIP_SOURCE")
+						.. "/tests/data/snipmate-snippets/snippets"
+				)
+			)
+		end,
+		"/tests/symlinked_data/snipmate-snippets/snippets/all.snippets",
+		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
+
+	reload_test(
+		"vscode-reload: load real and edit symlinked",
+		function()
+			exec_lua(
+				string.format(
+					[[require("luasnip.loaders.from_vscode").lazy_load({paths="%s"})]],
+					os.getenv("LUASNIP_SOURCE")
+						.. "/tests/data/vscode-snippets"
+				)
+			)
+		end,
+		"/tests/symlinked_data/vscode-snippets/snippets/all.json",
+		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
+
+	reload_test(
+		"lua-reload: load real and edit symlinked",
+		function()
+			exec_lua(
+				string.format(
+					[[require("luasnip.loaders.from_lua").lazy_load({paths="%s"})]],
+					os.getenv("LUASNIP_SOURCE")
+						.. "/tests/data/lua-snippets/luasnippets"
+				)
+			)
+		end,
+		"/tests/symlinked_data/lua-snippets/luasnippets/all.lua",
+		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
 end)
