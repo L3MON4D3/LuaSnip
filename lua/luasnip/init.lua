@@ -680,6 +680,7 @@ ls = {
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,
 	env_namespace = Environ.env_namespace,
+	setup = require("luasnip.config").setup,
 }
 
 return ls

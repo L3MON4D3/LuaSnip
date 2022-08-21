@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 18
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 21
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1170,7 +1170,7 @@ Contains some utility-functions that can be passed to the `ft_func` or
     filetypes that should be loaded additionaly returns a function that can be
     passed to `load_ft_func` and takes care of extending the filetypes properly.
     >
-        ls.config.setup({
+        ls.setup({
           load_ft_func =
               -- Also load both lua and json when a markdown-file is opened,
               -- javascript for html.
@@ -1706,7 +1706,7 @@ set of `ext_opts` should be applied to:
 >
     local types = require("luasnip.util.types")
     
-    ls.config.setup({
+    ls.setup({
         ext_opts = {
             [types.insertNode] = {
                 active = {...},
@@ -1756,7 +1756,7 @@ It’s possible to prevent both of these merges by passing
 `merge_node/child_ext_opts=false` to the snippet/node-opts:
 
 >
-    ls.config.setup({
+    ls.setup({
         ext_opts = {
             [types.insertNode] = {
                 active = {...}
@@ -1793,7 +1793,7 @@ highlight-groups:
     vim.cmd("hi link LuasnipSnippetPassive GruvboxBlue")
     
     -- needs to be called for resolving the actual ext_opts.
-    ls.config.setup({})
+    ls.setup({})
 <
 
 
@@ -1815,7 +1815,7 @@ Both the initial base-priority and its’ increase and can be controlled using
 `ext_base_prio` and `ext_prio_increase`:
 
 >
-    ls.config.setup({
+    ls.setup({
         ext_opts = {
             [types.insertNode] = {
                 active = {

@@ -1218,7 +1218,7 @@ Contains some utility-functions that can be passed to the `ft_func` or
   extending the filetypes properly.
 
   ```lua
-  ls.config.setup({
+  ls.setup({
   	load_ft_func =
   		-- Also load both lua and json when a markdown-file is opened,
   		-- javascript for html.
@@ -1734,7 +1734,7 @@ set of `ext_opts` should be applied to:
 ```lua
 local types = require("luasnip.util.types")
 
-ls.config.setup({
+ls.setup({
 	ext_opts = {
 		[types.insertNode] = {
 			active = {...},
@@ -1781,7 +1781,7 @@ It's possible to prevent both of these merges by passing
 `merge_node/child_ext_opts=false` to the snippet/node-opts:
 
 ```lua
-ls.config.setup({
+ls.setup({
 	ext_opts = {
 		[types.insertNode] = {
 			active = {...}
@@ -1817,7 +1817,7 @@ vim.cmd("hi link LuasnipInsertNodePassive GruvboxRed")
 vim.cmd("hi link LuasnipSnippetPassive GruvboxBlue")
 
 -- needs to be called for resolving the actual ext_opts.
-ls.config.setup({})
+ls.setup({})
 ```
 The names for the used highlight groups are
 `"Luasnip<node>{Passive,Active,SnippetPassive}"`, where `<node>` can be any kind of
@@ -1835,7 +1835,7 @@ is increased for each nesting level of snippets.
 Both the initial base-priority and its' increase and can be controlled using
 `ext_base_prio` and `ext_prio_increase`:
 ```lua
-ls.config.setup({
+ls.setup({
 	ext_opts = {
 		[types.insertNode] = {
 			active = {
