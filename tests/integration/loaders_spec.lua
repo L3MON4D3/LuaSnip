@@ -154,7 +154,8 @@ describe("loaders:", function()
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(1)")
 
-			screen:expect({grid=[[
+			screen:expect({
+				grid = [[
 				replaces? jumps? ^  !                              |
 				{0:~                                                 }|
 				{0:~                                                 }|
