@@ -89,7 +89,8 @@ local function get_ft_paths(root, extension)
 		files, _ = Path.scandir(dir)
 		for _, file in ipairs(files) do
 			if vim.endswith(file, extension) then
-				_append(ft_path, ft, file)
+				-- produce normalized filenames.
+				_append(ft_path, ft, Path.normalize(file))
 			end
 		end
 	end
@@ -120,6 +121,8 @@ end
 --- entries:
 --- - collection_paths: ft->files for the entire collection and
 --- - load_paths: ft->files for only the files that should be loaded.
+--- All produced filenames are normalized, eg. links are resolved and
+--- unnecessary . or .. removed.
 local function get_load_paths_snipmate_like(opts, rtp_dirname, extension)
 	local collections_load_paths = {}
 
