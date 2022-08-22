@@ -1,7 +1,13 @@
 local Ast = require("luasnip.util.parser.neovim_ast")
 local types = Ast.node_type
 local util = require("luasnip.util.util")
-local jsregexp_ok, jsregexp = pcall(require, "jsregexp")
+
+-- jsregexp: first try loading the version installed by luasnip, then global ones.
+local jsregexp_ok, jsregexp = pcall(require, "luasnip-jsregexp")
+if not jsregexp_ok then
+	jsregexp_ok, jsregexp = pcall(require, "jsregexp")
+end
+
 local directed_graph = require("luasnip.util.directed_graph")
 
 local M = {}
