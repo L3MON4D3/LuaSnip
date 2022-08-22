@@ -2,20 +2,16 @@ local Path = {}
 
 local uv = vim.loop
 
-local sep = (function()
-	if jit then
-		local os = jit.os:lower()
-		if vim.tbl_contains({ "linux", "osx", "bsd" }, os) then
-			return "/"
-		else
-			return "\\"
-		end
+-- In windows, unix style paths are also valid
+function Path.unixfy(path)
+	if path:match("^[A-Z]:") then
+		return path:gsub("\\", "/")
 	end
-	return package.config:sub(1, 1)
-end)()
+	return path
+end
 
 function Path.join(...)
-	return table.concat({ ... }, sep)
+	return Path.unixfy(table.concat({ ... }, "/"))
 end
 
 function Path.exists(filepath)
@@ -60,8 +56,9 @@ else
 end
 
 function Path.expand(filepath)
-	local expanded =
+	local expanded = Path.unixfy(
 		filepath:gsub("^~", vim.env.HOME):gsub("^[.]", MYCONFIG_ROOT)
+	)
 	return uv.fs_realpath(expanded)
 end
 
@@ -104,10 +101,7 @@ end
 ---         Path.basename("~/.config/nvim/init.lua") -> init.lua
 ---         Path.basename("~/.config/nvim/init.lua", true) -> init, lua
 function Path.basename(filepath, ext)
-	local base = filepath
-	if base:find(sep) then
-		base = base:match(("%s([^%s]+)$"):format(sep, sep))
-	end
+	local base = vim.fn.fnamemodify(filepath, ":t")
 	if ext then
 		return base:match("(.*)%.(.+)")
 	else
