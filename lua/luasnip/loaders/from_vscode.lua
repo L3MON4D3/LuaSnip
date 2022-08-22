@@ -141,12 +141,10 @@ local function package_files(root, filter)
 				end
 				-- the file might not exist.
 				-- TODO: log this.
-				local normalized_snippet_file = Path.normalize(Path.join(root, snippet_entry.path))
+				local normalized_snippet_file =
+					Path.normalize(Path.join(root, snippet_entry.path))
 				if normalized_snippet_file then
-					table.insert(
-						ft_files[ft],
-						normalized_snippet_file
-					)
+					table.insert(ft_files[ft], normalized_snippet_file)
 				end
 			end
 		end
