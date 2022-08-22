@@ -139,10 +139,15 @@ local function package_files(root, filter)
 				if not ft_files[ft] then
 					ft_files[ft] = {}
 				end
-				table.insert(
-					ft_files[ft],
-					Path.normalize(Path.join(root, snippet_entry.path))
-				)
+				-- the file might not exist.
+				-- TODO: log this.
+				local normalized_snippet_file = Path.normalize(Path.join(root, snippet_entry.path))
+				if normalized_snippet_file then
+					table.insert(
+						ft_files[ft],
+						normalized_snippet_file
+					)
+				end
 			end
 		end
 	end

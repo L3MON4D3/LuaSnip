@@ -19,6 +19,12 @@
 					"lua"
 				],
 				"path": "./lua.json"
+			},
+			{
+				"language": [
+					"lua"
+				],
+				"path": "./thisfiledoesnotexist.json"
 			}
 		]
 	}

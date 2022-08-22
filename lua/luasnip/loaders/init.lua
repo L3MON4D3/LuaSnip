@@ -97,6 +97,11 @@ vim.cmd([[
 	]])
 function M.reload_file(filename)
 	filename = Path.normalize(filename)
+	if not filename then
+		-- file does not exist.
+		-- log here, maybe.
+		return
+	end
 	require("luasnip.loaders.from_lua")._reload_file(filename)
 	require("luasnip.loaders.from_vscode")._reload_file(filename)
 	require("luasnip.loaders.from_snipmate")._reload_file(filename)

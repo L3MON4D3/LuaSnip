@@ -90,7 +90,10 @@ local function get_ft_paths(root, extension)
 		for _, file in ipairs(files) do
 			if vim.endswith(file, extension) then
 				-- produce normalized filenames.
-				_append(ft_path, ft, Path.normalize(file))
+				local normalized_fname = Path.normalize(file)
+				if normalized_fname then
+					_append(ft_path, ft, normalized_fname)
+				end
 			end
 		end
 	end
