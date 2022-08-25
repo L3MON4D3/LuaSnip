@@ -5,6 +5,7 @@ local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local tNode = require("luasnip.nodes.textNode").textNode
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local function F(fn, args, opts)
 	opts = opts or {}
@@ -17,6 +18,7 @@ local function F(fn, args, opts)
 		user_args = opts.user_args or {},
 	}, opts)
 end
+extend_decorator.register(F, { arg_indx = 3 })
 
 FunctionNode.input_enter = tNode.input_enter
 

@@ -8,6 +8,7 @@ local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local util = require("luasnip.util.util")
 local mark = require("luasnip.util.mark").mark
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local function R(pos, key, nodes, opts)
 	-- don't create nested snippetNodes, unnecessary.
@@ -24,6 +25,7 @@ local function R(pos, key, nodes, opts)
 		active = false,
 	}, opts)
 end
+extend_decorator.register(R, { arg_indx = 4 })
 
 function RestoreNode:exit()
 	self.visible = false

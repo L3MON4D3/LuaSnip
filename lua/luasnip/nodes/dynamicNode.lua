@@ -6,6 +6,7 @@ local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
 local SnippetNode = require("luasnip.nodes.snippet").SN
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local function D(pos, fn, args, opts)
 	opts = opts or {}
@@ -21,6 +22,7 @@ local function D(pos, fn, args, opts)
 		active = false,
 	}, opts)
 end
+extend_decorator.register(D, { arg_indx = 4 })
 
 function DynamicNode:input_enter()
 	self.active = true

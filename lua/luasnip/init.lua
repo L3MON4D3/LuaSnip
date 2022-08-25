@@ -3,6 +3,7 @@ local util = require("luasnip.util.util")
 local session = require("luasnip.session")
 local snippet_collection = require("luasnip.session.snippet_collection")
 local Environ = require("luasnip.util.environ")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local loader = require("luasnip.loaders")
 
@@ -681,6 +682,7 @@ ls = {
 	refresh_notify = refresh_notify,
 	env_namespace = Environ.env_namespace,
 	setup = require("luasnip.config").setup,
+	extend_decorator = extend_decorator,
 }
 
 return ls

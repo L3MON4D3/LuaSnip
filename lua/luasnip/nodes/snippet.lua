@@ -12,6 +12,7 @@ local session = require("luasnip.session")
 local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 local dict = require("luasnip.util.dict")
 local snippet_collection = require("luasnip.session.snippet_collection")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local true_func = function()
 	return true
@@ -259,6 +260,11 @@ local function S(context, nodes, opts)
 
 	return _S(snip, nodes, opts)
 end
+extend_decorator.register(
+	S,
+	{ arg_indx = 1, extend = node_util.snippet_extend_context },
+	{ arg_indx = 3 }
+)
 
 function SN(pos, nodes, opts)
 	local snip = Snippet:new(
@@ -278,6 +284,7 @@ function SN(pos, nodes, opts)
 
 	return snip
 end
+extend_decorator.register(SN, { arg_indx = 3 })
 
 local function ISN(pos, nodes, indent_text, opts)
 	local snip = SN(pos, nodes, opts)
@@ -321,6 +328,7 @@ local function ISN(pos, nodes, indent_text, opts)
 
 	return snip
 end
+extend_decorator.register(ISN, { arg_indx = 4 })
 
 function Snippet:remove_from_jumplist()
 	-- prev is i(-1)(startNode), prev of that is the outer/previous snippet.

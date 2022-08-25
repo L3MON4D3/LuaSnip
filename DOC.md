@@ -1230,6 +1230,78 @@ Contains some utility-functions that can be passed to the `ft_func` or
   })
   ```
 
+# EXTEND_DECORATOR
+
+Most of luasnip's functions have some arguments to control their behaviour.  
+Examples include `s`, where `wordTrig`, `regTrig`, ... can be set in the first
+argument to the function, or `fmt`, where the delimiter can be set in the third
+argument.  
+This is all good and well, but if these functions are often used with
+non-default settings, it can become cumbersome to always explicitly set them.
+
+This is where the `extend_decorator` comes in:  
+It can be used to create decorated functions which always extend the arguments
+passed directly with other, previously defined ones.  
+An example:
+```lua
+local fmt = require("luasnip.extras.fmt").fmt
+
+fmt("{}", {i(1)}) -- -> list of nodes, containing just the i(1).
+
+-- when authoring snippets for some filetype where `{` and `}` are common, they
+-- would always have to be escaped in the format-string. It might be preferable
+-- to use other delimiters, like `<` and `>`.
+
+fmt("<>", {i(1)}, {delimiters = "<>"}) -- -> same as above.
+
+-- but it's quite annoying to always pass the `{delimiters = "<>"}`.
+
+-- with extend_decorator:
+local fmt_angle = ls.extend_decorator.apply(fmt, {delimiters = "<>"})
+fmt_angle("<>", {i(1)}) -- -> same as above.
+
+-- the same also works with other functions provided by luasnip, for example all
+-- node/snippet-constructors and `parse_snippet`.
+```
+
+`extend_decorator.apply(fn, ...)` requires that `fn` is previously registered
+via `extend_decorator.register`.  
+(This is not limited to luasnip's functions!)  
+(although, for usage outside of luasnip, best copy the source-file
+`/lua/luasnip/util/extend_decorator.lua`).
+
+`register(fn, ...)`:
+* `fn`: the function.
+* `...`: any number of tables. Each specifies how to extend an argument of `fn`.
+  The tables accept:
+  * arg_indx, `number` (required): the position of the parameter to override.
+  * extend, `fn(arg, extend_value) -> effective_arg` (optional): this function
+    is used to extend the args passed to the decorated function.
+    It defaults to a function which just extends the the arg-table with the
+    extend-table (accepts `nil`).
+    This extend-behaviour is adaptable to accomodate `s`, where the first
+    argument may be string or table.
+
+`apply(fn, ...) -> decorated_fn`:
+* `fn`: the function to decorate.
+* `...`: The values to extend with. These should match the descriptions passed
+  in `register` (the argument first passed to `register` will be extended with
+  the first value passed here).
+
+One more example for registering a new function:
+```lua
+local function somefn(arg1, arg2, opts1, opts2)
+	... -- not important
+end
+
+-- note the reversed arg_indx!!
+extend_decorator.register(somefn, {arg_indx=4}, {arg_indx=3})
+local extended = extend_decorator.apply(somefn,
+	{key = "opts2 is extended with this"},
+	{key = "and opts1 with this"})
+extended(...)
+```
+
 # LSP-SNIPPETS
 
 Luasnip is capable of parsing lsp-style snippets using

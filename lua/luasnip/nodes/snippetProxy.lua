@@ -9,6 +9,7 @@
 local parse = require("luasnip.util.parser").parse_snippet
 local snip_mod = require("luasnip.nodes.snippet")
 local node_util = require("luasnip.nodes.util")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local SnippetProxy = {}
 
@@ -93,5 +94,10 @@ local function new(context, snippet, opts)
 
 	return sp
 end
+extend_decorator.register(
+	new,
+	{ arg_indx = 1, extend = node_util.snippet_extend_context },
+	{ arg_indx = 3 }
+)
 
 return new

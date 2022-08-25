@@ -124,6 +124,15 @@ local function init_node_opts(opts)
 	return in_node
 end
 
+local function snippet_extend_context(arg, extend)
+	if type(arg) == "string" then
+		arg = { trig = arg }
+	end
+
+	-- both are table or nil now.
+	return vim.tbl_extend("keep", arg or {}, extend or {})
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -135,4 +144,5 @@ return {
 	select_node = select_node,
 	print_dict = print_dict,
 	init_node_opts = init_node_opts,
+	snippet_extend_context = snippet_extend_context,
 }

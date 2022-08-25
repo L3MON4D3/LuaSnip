@@ -4,6 +4,7 @@ local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local session = require("luasnip.session")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local function I(pos, static_text, opts)
 	static_text = util.to_string_table(static_text)
@@ -29,6 +30,7 @@ local function I(pos, static_text, opts)
 		}, opts)
 	end
 end
+extend_decorator.register(I, { arg_indx = 3 })
 
 function ExitNode:input_enter(no_move)
 	-- Don't enter node for -1-node, it isn't in the node-table.
