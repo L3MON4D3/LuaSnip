@@ -714,8 +714,8 @@ Very similar to functionNode, but returns a snippetNode instead of just text,
 which makes them very powerful as parts of the snippet can be changed based on
 user-input.
 
-The prototype for the dynamicNodes’ constructor is `d(position:int, function,
-argnodes:table of nodes, opts: table)`:
+The prototype for the dynamicNodes’ constructor is `d(jump_index:int,
+function, argnodes:table of nodes, opts: table)`:
 
 
 1. `position`: just like all jumpable nodes, when this node will be jumped into.

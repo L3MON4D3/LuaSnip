@@ -63,7 +63,32 @@ Snippets are always created using the `s(trigger:string, nodes:table)`-function.
 It is explained in more detail in [SNIPPETS](#snippets), but the gist is that
 it creates a snippet that contains the nodes specified in `nodes`, which will be
 inserted into a buffer if the text before the cursor matches `trigger` when
-`expand` is called.
+`ls.expand` is called.  
+
+## Jump-index
+Nodes that can be jumped to (`insertNode`, `choiceNode`, `dynamicNode`,
+`restoreNode`, `snippetNode`) all require a "jump-index" so luasnip knows the
+order in which these nodes are supposed to be visited ("jumped to").  
+
+```lua
+s("trig", {
+	i(1), t"text", i(2), t"text again", i(3)
+})
+```
+
+These indices don't "run" through the entire snippet, like they do in
+textmate-snippets (`"$1 ${2: $3 $4}"`), they restart at 1 in each nested
+snippetNode:
+```lua
+s("trig", {
+	i(1), t" ", sn(2, {
+		t" ", i(1), t" ", i(2)
+	})
+})
+```
+(roughly equivalent to the given textmate-snippet).
+
+## Adding Snippets
 The snippets for a given filetype have to be added to luasnip via
 `ls.add_snippets(filetype, snippets)`. Snippets that should be accessible
 globally (in all filetypes) have to be added to the special filetype `all`.
@@ -92,95 +117,111 @@ The most direct way to define snippets is `s`:
 ```lua
 s({trig="trigger"}, {})
 ```
+(This snippet is useless beyond serving as a minimal example)
 
-(This snippet is useless beyond being a minimal example)
+`s(context, nodes, opts) -> snippet`
 
-`s` accepts, as the first argument, a table with the following possible
-entries:
+- `context`: Either table or a string. Passing a string is equivalent to passing
 
-- `trig`: string, plain text by default. The only entry that must be given.
-- `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
-- `dscr`: string, description of the snippet, \n-separated or table
-  for multiple lines.
-- `wordTrig`: boolean, if true, the snippet is only expanded if the word
-  (`[%w_]+`) before the cursor matches the trigger entirely.
-  True by default.
-- `regTrig`: boolean, whether the trigger should be interpreted as a
-  lua pattern. False by default.
-- `docstring`: string, textual representation of the snippet, specified like
-  `dscr`. Overrides docstrings loaded from json.
-- `docTrig`: string, for snippets triggered using a lua pattern: define the
-  trigger that is used during docstring-generation.
-- `hidden`: hint for completion-engines, if set, the snippet should not show
-  up when querying snippets.
-- `priority`: Priority of the snippet, a positive number, 1000 by default.
-  Snippets with high priority will be matched to a trigger before those with a
-  lower one.
-  The priority for multiple snippets can also be set in `add_snippets`.
-- `snippetType`: string, should be either `snippet` or `autosnippet` (ATTENTION:
-  singular form is used), decides whether this snippet has to be triggered by
-  `ls.expand()` or whether is triggered automatically (don't forget to set
-  `ls.config.setup({ enable_autosnippets = true })` if you want to use this
-  feature). If unset it depends on how the snippet is added of which type the
-  snippet will be.
-
-`s` can also be a single string, in which case it is used instead of `trig`, all
-other values being defaulted:
-
-```lua
-s("trigger", {})
-```
-
-The second argument to `s` is a table containing all nodes that belong to the
-snippet. If the table only has a single node, it can be passed directly
-without wrapping it in a table.
-
-The third argument (`opts`) is a table with the following valid keys:
-
-- `condition`: the condition-function `fn(line_to_cursor, matched_trigger,
-  captures) -> bool`.
-  The snippet will be expanded only if it returns true (default is a function
-  that just returns `true`).
-  The function is called before the text is modified in any way.
-  Some parameters are passed to the function: The line up to the cursor, the
-  matched trigger, and the captures (table).
-- `show_condition`: Function with signature `f(line_to_cursor) -> bool`.
-  It is a hint for completion-engines, indicating when the snippet should be
-  included in current completion candidates.
-  Defaults to a function returning `true`.
-  This is different from `condition` because `condition` is evaluated by
-  LuaSnip on snippet expansion (and thus has access to the matched trigger and
-  captures), while `show_condition` is evaluated by the completion-engine when
-  scanning for available snippet candidates.
-- `callbacks`: Contains functions that are called upon enterin/leaving a node
-  of this snippet.
-  To print text upon entering the _second_ node of a snippet, `callbacks`
-  should be set as follows:
   ```lua
   {
-  	-- position of the node, not the jump-position!!
-  	-- s("trig", {t"first node", t"second node", i(1, "third node")}).
-  	[2] = {
-  		[events.enter] = function(node, _event_args) print("2!") end
-  	}
+  	trig = context
   }
   ```
-  To register a callback for the snippets' own events, the key `[-1]` may
-  be used.
-  More info on events [here](#here)
-- `child_ext_opts`, `merge_child_ext_opts`: `ext_opts` applied to the children
-  of this snippet. More info [here](#ext_opts).
 
-This `opts`-table can also be passed to e.g.	`snippetNode` or `indentSnippetNode`,
-but only `callbacks` and the `ext_opts`-related options are used there.
+  The following keys are valid:
+  - `trig`: string, plain text by default. The only entry that must be given.
+  - `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
+  - `dscr`: string, description of the snippet, \n-separated or table
+    for multiple lines.
+  - `wordTrig`: boolean, if true, the snippet is only expanded if the word
+    (`[%w_]+`) before the cursor matches the trigger entirely.
+    True by default.
+  - `regTrig`: boolean, whether the trigger should be interpreted as a
+    lua pattern. False by default.
+  - `docstring`: string, textual representation of the snippet, specified like
+    `dscr`. Overrides docstrings loaded from json.
+  - `docTrig`: string, for snippets triggered using a lua pattern: define the
+    trigger that is used during docstring-generation.
+  - `hidden`: boolean, hint for completion-engines.
+    If set, the snippet should not show up when querying snippets.
+  - `priority`: positive number, Priority of the snippet, 1000 by default.  
+	Snippets with high priority will be matched to a trigger before those with a
+	lower one.
+    The priority for multiple snippets can also be set in `add_snippets`.
+  - `snippetType`: string, should be either `snippet` or `autosnippet` (ATTENTION:
+    singular form is used), decides whether this snippet has to be triggered by
+    `ls.expand()` or whether is triggered automatically (don't forget to set
+    `ls.config.setup({ enable_autosnippets = true })` if you want to use this
+    feature). If unset it depends on how the snippet is added of which type the
+    snippet will be.
 
-Snippets contain some interesting tables, e.g. `snippet.env` contains variables
-used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
-`snippet.captures`, where capture-groups of regex-triggers are stored.
-Additionally, the string that was used to trigger the snippet is stored in
-`snippet.trigger`. These variables/tables are primarily useful in
-dynamic/functionNodes, where the snippet can be accessed through the immediate
-parent (`parent.snippet`), which is passed to the function.
+- `nodes`: A single node, or a list of nodes. The nodes that make up the
+  snippet.
+
+- `opts`: A table, with the following valid keys:
+
+  - `condition`: `fn(line_to_cursor, matched_trigger, captures) -> bool`, where
+      - `line_to_cursor`: `string`, the line up to the cursor.
+      - `matched_trigger`: `string`, the fully matched trigger (can be retrieved
+      	from `line_to_cursor`, but we already have that info here :D)
+      - `captures`: if the trigger is pattern, this list contains the
+      	capture-groups. Again, could be computed from `line_to_cursor`, but we
+      	already did so.
+
+	The snippet will be expanded only if this function returns true (default is
+	a function that just returns `true`).  
+    The function is called before the text on the line is modified in any way.
+  - `show_condition`: `f(line_to_cursor) -> bool`.  
+    - `line_to_cursor`: `string`, the line up to the cursor.  
+
+	This function is (should be) evaluated by completion-engines, indicating
+	whether the snippet should be included in current completion candidates.  
+    Defaults to a function returning `true`.  
+    This is different from `condition` because `condition` is evaluated by
+    LuaSnip on snippet expansion (and thus has access to the matched trigger and
+	captures), while `show_condition` is (should be) evaluated by the
+	completion-engine when scanning for available snippet candidates.
+  - `callbacks`: Contains functions that are called upon enterin/leaving a node
+    of this snippet.  
+	For example: to print text upon entering the _second_ node of a snippet,
+	`callbacks` should be set as follows:
+    ```lua
+    {
+    	-- position of the node, not the jump-index!!
+    	-- s("trig", {t"first node", t"second node", i(1, "third node")}).
+    	[2] = {
+    		[events.enter] = function(node, _event_args) print("2!") end
+    	}
+    }
+    ```
+    To register a callback for the snippets' own events, the key `[-1]` may
+    be used.
+    More info on events [here](#events)
+  - `child_ext_opts`, `merge_child_ext_opts`: Control `ext_opts` applied to the
+  	children of this snippet. More info on those [here](#ext_opts).
+
+The `opts`-table can also be passed to e.g. `snippetNode` and
+`indentSnippetNode`, but only `callbacks` and the `ext_opts`-related options are
+used there.
+
+### Snippet-Data
+
+Snippets contain some interesting tables during runtime:
+- `snippet.env`: Contains variables used in the LSP-protocol, for example
+  `TM_CURRENT_LINE` or `TM_FILENAME`. It's possible to add customized variables
+  here too, check [Environment Namespaces](#environment-namespaces)
+- `snippet.captures`: If the snippet was triggered by a pattern (`regTrig`), and
+  the pattern contained capture-groups, they can be retrieved here.
+- `snippet.trigger`: The string that triggered this snippet. Again, only
+  interesting if the snippet was triggered through `regTrig`, for getting the
+  full match.
+
+These variables/tables primarily come in handy in `dynamic/functionNodes`, where
+the snippet can be accessed through the immediate parent (`parent.snippet`),
+which is passed to the function.
+(in most cases `parent == parent.snippet`, but the `parent` of the dynamicNode
+is not always the surrounding snippet, it could be a `snippetNode`).
 
 ## Api:
 
@@ -212,11 +253,14 @@ s("trigger", {
 })
 ```
 
+`t(text, node_opts)`:
+- `text`: `string` or `string[]`
+- `node_opts`: `table`, see [here](#node)
 
 # INSERTNODE
 
 These Nodes contain editable text and can be jumped to- and from (e.g.
-traditional placeholders, like `$1` in textmate-snippets).
+traditional placeholders and tabstops, like `$1` in textmate-snippets).
 
 The functionality is best demonstrated with an example:
 
@@ -234,18 +278,18 @@ s("trigger", {
 
 <!-- panvimdoc-ignore-end -->
 
-The InsertNodes are jumped over in order from `1 to n`.
-The 0-th node is special as it's always the last one.
-So the order of InsertNode jump is as follows:
+The InsertNodes are visited in order `1,2,3,..,n,0`.  
+(The jump-index 0 also _has_ to belong to an `insertNode`!)
+So the order of InsertNode-jumps is as follows:
 
-1. After expansion, we will be at InsertNode 1.
-2. After jumping forward, we will be at InsertNode 2.
-3. After jumping forward again, we will be at InsertNode 0.
+1. After expansion, the cursor is at InsertNode 1,
+2. after jumping forward once at InsertNode 2,
+3. and after jumping forward again at InsertNode 0.
 
 If no 0-th InsertNode is found in a snippet, one is automatically inserted
 after all other nodes.
 
-The jumping-order doesn't have to follow the "textual" order of the nodes:
+The jump-order doesn't have to follow the "textual" order of the nodes:
 ```lua
 s("trigger", {
 	t({"After jumping forward once, cursor is here ->"}), i(2),
@@ -260,7 +304,7 @@ The above snippet will behave as follows:
 3. After jumping forward again, we will be at InsertNode 0.
 
 An **important** (because here luasnip differs from other snippet-engines) detail
-is that the jump-positions restart at 1 in nested snippets:
+is that the jump-indices restart at 1 in nested snippets:
 ```lua
 s("trigger", {
 	i(1, "First jump"),
@@ -285,18 +329,18 @@ ${1:First jump} :: ${2: ${3:Third jump} : ${4:Fourth jump}}
 ```
 (this is not exactly the same snippet of course, but as close as possible)
 (the restart-rule only applies when defining snippets in lua, the above
-textmate-snippet will expand correctly).
+textmate-snippet will expand correctly when parsed).
 
-It's possible to have initial text inside an InsertNode, which is comfortable
-for potentially keeping some default-value:
-```lua
-	s("trigger", i(1, "This text is SELECTed after expanding the snippet."))
-```
-This initial text is defined the same way as textNodes, e.g. can be multiline.
+`i(jump_index, text, node_opts)`
 
-`i(0)`s can have initial text, but do note that when the SELECTed text is
-replaced, its' replacement won't end up in the `i(0)`, but behind it (for
-reasons, check out Luasnip#110).
+- [`jump_index`](#jump-index): `number`, this determines when this node will be jumped to.
+- `text`: `string|string[]`, a single string for just one line, a list with >1
+  entries for multiple lines.
+  This text will be SELECTed when the `insertNode` is jumped into.
+- `node_opts`: `table`, see [here](#node)
+
+If the `jump_index` is `0`, replacing its' `text` will leave it outside the
+`insertNode` (for reasons, check out Luasnip#110).
 
 
 # FUNCTIONNODE
@@ -329,133 +373,1012 @@ s("trig", {
 
 <!-- panvimdoc-ignore-end -->
 
-The first parameter of `f` is the function. Its parameters are:
+`f(fn, argnode_references, node_opts)`:
+- `fn`: `function(argnode_text, parent, user_args1,...,user_argsn) -> text`  
+  - `argnode_text`: `string[][]`, the text currently contained in the argnodes
+    (e.g. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
+    all lines following the first.
 
-1. A table of the text of currently contained in the argnodes.
-      (e.g. `{{line1}, {line1, line2}}`). The snippet-indent will be removed from
-      all lines following the first.
+  - `parent`: The immediate parent of the `functionNode`.  
+    It is included here as it allows easy access to some information that could
+    be useful in functionNodes (see [here](#snippet-data) for some examples).  
+    Many snippets access the surrounding snippet just as `parent`, but if the
+    `functionNode` is nested within a `snippetNode`, the immediate parent is a
+    `snippetNode`, not the surrounding snippet (only the surrounding snippet
+    contains data like `env` or `captures`).
 
-2. The immediate parent of the `functionNode`. It is included here as it allows
-      easy access to anything that could be useful in functionNodes (i.e.
-      `parent.snippet.env` or `parent.snippet.captures`, which contains capture
-      groups of regex-triggered snippets). In most cases `parent.env` works,
-      but if a `functionNode` is nested within a `snippetNode`, the immediate
-      parent (a `snippetNode`) will contain neither `captures` nor `env`. Those
-      are only stored in the `snippet`, which can be accessed as `parent.snippet`.
+  - `user_args`: The `user_args` passed in `opts`. Note that there may be multiple user_args
+    (e.g. `user_args1, ..., user_argsn`).
+  
+  `fn` shall return a string, which will be inserted as-is, or a table of
+  strings for multiline-string, here all lines following the first will be
+  prefixed with the snippets' indentation.
 
-3. The `user_args` passed in `opts`. Note that there may be multiple user_args
-      (e.g. `user_args1, ..., user_argsn`).
+- `argnode_references`: `node_reference[]|node_refernce|nil`.  
+  Either no, a single, or multiple [node-references](#node_reference).
+  Changing any of these will trigger a re-evaluation of `fn`, and insertion of
+  the updated text.  
+  If no node-reference is passed, the `functionNode` is evaluated once upon
+  expansion.
 
-The function shall return a string, which will be inserted as-is, or a table
-of strings for multiline-string, here all lines following the first will be
-prefixed with the snippets' indentation.
+- `node_opts`: `table`, see [here](#node). One additional key is supported:
+  - `user_args`: `any[]`, these will be passed to `fn` as `user_arg1`-`user_argn`.
+    These make it easier to reuse similar functions, for example a functionNode
+    that wraps some text in different delimiters (`()`, `[]`, ...).
 
+    ```lua
+    local function reused_func(_,_, user_arg1)
+        return user_arg1
+    end
 
-The second parameter is a table of indices of jumpable nodes whose text is
-passed to the function.
-The table may be empty, in this case the function is evaluated once upon
-snippet-expansion.
-If the table only has a single node, it can be passed directly without wrapping
-it in a table.
-The indices can be specified either as relative to the functionNodes' parent
-using numbers or as absolute, using the [`absolute_indexer`](#absolute_indexer).
+    s("trig", {
+        f(reused_func, {}, {
+            user_args = {"text"}
+        }),
+        f(reused_func, {}, {
+            user_args = {"different text"}
+        }),
+    })
+    ```
 
-The last parameter is, as with any node, `opts`.
-`functionNode` accepts one additional option: `user_args`, a table of values
-passed to the function.
-These exist to more easily reuse functionNode-functions, when applicable:
+    <!-- panvimdoc-ignore-start -->
+    
+    ![FunctionNode2](https://user-images.githubusercontent.com/25300418/184359244-ef83b8f7-28a3-45ff-a2af-5b564f213749.gif)
+    
+    <!-- panvimdoc-ignore-end -->
+
+**Examples**:
+
+- Use captures from the regex-trigger using a functionNode:
+
+  ```lua
+  s({trig = "b(%d)", regTrig = true},
+  	f(function(args, snip) return
+  		"Captured Text: " .. snip.captures[1] .. "." end, {})
+  )
+  ```
+  
+  <!-- panvimdoc-ignore-start -->
+  
+  ![FunctionNode3](https://user-images.githubusercontent.com/25300418/184359248-6b13a80c-f644-4979-a566-958c65a4e047.gif)
+  
+  <!-- panvimdoc-ignore-end -->
+
+- `argnodes_text` during function-evaluation:
+
+  ```lua
+  s("trig", {
+  	i(1, "text_of_first"),
+  	i(2, {"first_line_of_second", "second_line_of_second"}),
+  	f(function(args, snip)
+  		--here
+  	-- order is 2,1, not 1,2!!
+  	end, {2, 1} )})
+  ```
+  
+  <!-- panvimdoc-ignore-start -->
+  
+  ![FunctionNode4](https://user-images.githubusercontent.com/25300418/184359259-ebb7cfc0-e30b-4735-9627-9ead45d9f27c.gif)
+  
+  <!-- panvimdoc-ignore-end -->
+  
+  At `--here`, `args` would look as follows (provided no text was changed after
+  expansion):
+  ```lua
+  args = {
+  	{"first_line_of_second", "second_line_of_second"},
+  	{"text_of_first"}
+  }
+  ```
+  
+  <!-- panvimdoc-ignore-start -->
+  
+  ![FunctionNode5](https://user-images.githubusercontent.com/25300418/184359263-89323682-6128-40ea-890e-b184a1accf80.gif)
+  
+  <!-- panvimdoc-ignore-end -->
+
+- [`absolute_indexer`](#absolute_indexer):
+
+  ```lua
+  s("trig", {
+  	i(1, "text_of_first"),
+  	i(2, {"first_line_of_second", "second_line_of_second"}),
+  	f(function(args, snip)
+  		-- just concat first lines of both.
+  		return args[1][1] .. args[2][1]
+  	end, {ai[2], ai[1]} )})
+  ```
+  
+  <!-- panvimdoc-ignore-start -->
+  
+  ![FunctionNode6](https://user-images.githubusercontent.com/25300418/184359271-018a703d-a9c8-4c9d-8833-b16495be5b08.gif)
+  
+  <!-- panvimdoc-ignore-end -->
+
+If the function only performs simple operations on text, consider using
+the `lambda` from [`luasnip.extras`](#extras)
+
+## NODE_REFERENCE
+Node-references are used to refer to other nodes in various parts of luasnip's
+API.  
+For example, argnodes in functionNode, dynamicNode or lambda are
+node-references.  
+These references can be either of:
+  - `number`: the jump-index of the node.
+  This will be resolved relative to the parent of the node this is passed to.
+  (So, only nodes with the same parent can be referenced. This is very easy to
+  grasp, but also limiting)
+  - [`absolute_indexer`](#absolute_indexer): the absolute position of the
+  node. This will come in handy if the referred-to node is not in the same
+  snippet/snippetNode as the one this node-reference is passed to.
+  - `node`: just the node. Usage of this is discouraged, since it can lead to
+  subtle errors (for example if the node passed here is captured in a closure
+  and therefore not copied with the remaining tables in the snippet (there's a
+  big comment about just this in commit 8bfbd61)).
+
+# CHOICENODE
+
+ChoiceNodes allow choosing between multiple nodes.
 
 ```lua
-local function reused_func(_,_, user_arg1)
-	return user_arg1
-end
+ s("trig", c(1, {
+ 	t("Ugh boring, a text node"),
+ 	i(nil, "At least I can edit something now..."),
+ 	f(function(args) return "Still only counts as text!!" end, {})
+ }))
+```
 
-s("trig", {
-	f(reused_func, {}, {
-		user_args = {"text"}
-	}),
-	f(reused_func, {}, {
-		user_args = {"different text"}
-	}),
+<!-- panvimdoc-ignore-start -->
+
+![ChoiceNode](https://user-images.githubusercontent.com/25300418/184359378-09d83ec0-2580-4a0e-8f75-61bd168903ba.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+`c(jump_index, choices, node_opts)`
+- [`jump_index`](#jump-index): `number`, since choiceNodes can be jumped to, they need their
+  jump-indx.
+- `choices`: `node[]|node`, the choices. The first will be initialliy active.
+  A list of nodes will be turned into a `snippetNode`.
+- `node_opts`: `table`. `choiceNode` supports the keys common to all nodes
+  described [here](#node), and one additional key:
+  - `restore_cursor`: `false` by default. If it is set, and the node that was
+    being edited also appears in the switched-to choice (can be the case if a
+    `restoreNode` is present in both choice) the cursor is restored relative to
+    that node.  
+    The default is `false` as enabling might lead to decreased performance. It's
+    possible to override the default by wrapping the `choiceNode`-constructor
+    in another function that sets `opts.restore_cursor` to `true` and then using
+    that to construct `choiceNode`s:
+      ```lua
+      local function restore_cursor_choice(pos, choices, opts)
+          if opts then
+              opts.restore_cursor = true
+          else
+              opts = {restore_cursor = true}
+          end
+          return c(pos, choices, opts)
+      end
+      ```
+
+Jumpable nodes that normally expect an index as their first parameter don't
+need one inside a choiceNode; their jump-index is the same as the choiceNodes'.
+
+As it is only possible (for now) to change choices from within the choiceNode,
+make sure that all of the choices have some place for the cursor to stop at!  
+This means that in `sn(nil, {...nodes...})` `nodes` has to contain e.g. an
+`i(1)`, otherwise luasnip will just "jump through" the nodes, making it
+impossible to change the choice.
+
+```lua
+c(1, {
+	t"some text", -- textNodes are just stopped at.
+	i(nil, "some text"), -- likewise.
+	sn(nil, {t"some text"}) -- this will not work!
+	sn(nil, {i(1), t"some text"}) -- this will.
+})
+```
+
+The active choice for a choiceNode can be changed by either calling one of
+`ls.change_choice(1)` (forwards) or `ls.change_choice(-1)` (backwards), or by
+calling `ls.set_choice(choice_indx)`.  
+One way to easily interact with choiceNodes is binding `change_choice(1/-1)` to
+keys:
+
+```lua
+-- set keybinds for both INSERT and VISUAL.
+vim.api.nvim_set_keymap("i", "<C-n>", "<Plug>luasnip-next-choice", {})
+vim.api.nvim_set_keymap("s", "<C-n>", "<Plug>luasnip-next-choice", {})
+vim.api.nvim_set_keymap("i", "<C-p>", "<Plug>luasnip-prev-choice", {})
+vim.api.nvim_set_keymap("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
+```
+
+Apart from this, there is also a [picker](#select_choice) where no cycling is necessary and any
+choice can be selected right away, via `vim.ui.select`.
+
+# SNIPPETNODE
+
+SnippetNodes directly insert their contents into the surrounding snippet.
+This is useful for `choiceNode`s, which only accept one child, or
+`dynamicNode`s, where nodes are created at runtime and inserted as a
+`snippetNode`.
+
+Their syntax is similar to `s`, however, where snippets require a table
+specifying when to expand, `snippetNode`s, similar to `insertNode`s, expect
+a jump-index.
+
+```lua
+ s("trig", sn(1, {
+ 	t("basically just text "),
+ 	i(1, "And an insertNode.")
+ }))
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![SnippetNode](https://user-images.githubusercontent.com/25300418/184359349-2127147e-2f57-4612-bdb5-4c9eafc93fad.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+`sn(jump_index, nodes, node_opts)`
+
+- [`jump_index`](#jump-index): `number`, the usual.
+- `nodes`: `node[]|node`, just like for `s`.  
+  Note that `snippetNode`s don't accept an `i(0)`, so the jump-indices of the nodes
+  inside them have to be in `1,2,...,n`.
+- `node_opts`: `table`: again, all [common](#node) keys are supported, but also
+  - `callbacks`,
+  - `child_ext_opts` and
+  - `merge_child_ext_opts`,
+
+  which are further explained in [`SNIPPETS`](#snippets).
+
+# INDENTSNIPPETNODE
+
+By default, all nodes are indented at least as deep as the trigger. With these
+nodes it's possible to override that behaviour:
+
+```lua
+s("isn", {
+	isn(1, {
+		t({"This is indented as deep as the trigger",
+		"and this is at the beginning of the next line"})
+	}, "")
 })
 ```
 
 <!-- panvimdoc-ignore-start -->
 
-![FunctionNode2](https://user-images.githubusercontent.com/25300418/184359244-ef83b8f7-28a3-45ff-a2af-5b564f213749.gif)
+![IndentSnippetNode](https://user-images.githubusercontent.com/25300418/184359281-acc62f04-f130-48b6-9ad8-c0775726507a.gif)
 
 <!-- panvimdoc-ignore-end -->
 
-Examples:
-Use captures from the regex-trigger using a functionNode:
+(Note the empty string passed to isn).
+
+Indent is only applied after linebreaks, so it's not possible to remove indent
+on the line where the snippet was triggered using `ISN` (That is possible via
+regex-triggers where the entire line before the trigger is matched).
+
+Another nice usecase for `ISN` is inserting text, e.g. `//` or some other comment-
+string before the nodes of the snippet:
 
 ```lua
-s({trig = "b(%d)", regTrig = true},
-	f(function(args, snip) return
-		"Captured Text: " .. snip.captures[1] .. "." end, {})
+s("isn2", {
+	isn(1, t({"//This is", "A multiline", "comment"}), "$PARENT_INDENT//")
+})
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![IndentSnippetNode2](https://user-images.githubusercontent.com/25300418/184359286-e29ba70e-4ccc-472a-accb-af849ca1a68d.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+Here the `//` before `This is` is important, once again, because indent is only
+applied after linebreaks.
+To enable such usage, `$PARENT_INDENT` in the indentstring is replaced by the
+parent's indent (duh).
+
+`isn(jump_index, nodes, indentstring, node_opts)`
+
+All of these except `indentstring` are exactly the same as [`snippetNode`](#snippetnode).
+
+- `indentstring`: `string`, will be used to indent the nodes inside this
+  `snippetNode`.  
+  All occurences of `"$PARENT_INDENT"` are replaced with the actual indent of
+  the parent.
+
+# DYNAMICNODE
+
+Very similar to functionNode, but returns a snippetNode instead of just text,
+which makes them very powerful as parts of the snippet can be changed based on
+user-input.
+
+`d(jump_index, function, node-references, opts)`:
+
+- [`jump_index`](#jump-index): `number`, just like all jumpable nodes, its' position in the
+   jump-list.
+- `function`: `fn(args, parent, old_state, user_args) -> snippetNode`
+   This function is called when the argnodes' text changes. It should generate
+   and returns (wrapped inside a `snippetNode`) nodes, these will be inserted at
+   the dynamicNodes place.  
+   `args`, `parent` and `user_args` are also explained in
+   [FUNCTIONNODE](#functionnode)
+   - `args`: `table of text` (`{{"node1line1", "node1line2"}, {"node2line1"}}`)
+     from nodes the `dynamicNode` depends on.
+   - `parent`: the immediate parent of the `dynamicNode`.
+   - `old_state`: a user-defined table. This table may contain anything, its
+   	 intended usage is to preserve information from the previously generated
+   	 `snippetNode`: If the `dynamicNode` depends on other nodes it may be
+   	 reconstructed, which means all user input (text inserted in `insertNodes`,
+   	 changed choices) to the previous dynamicNode is lost.  
+     The `old_state` table must be stored in `snippetNode` returned by
+     the function (`snippetNode.old_state`).  
+     The second example below illustrates the usage of `old_state`.
+   - `user_args`: passed through from `dynamicNode`-opts, may be more than one
+   	 argument.
+- `node_references`: `node_reference[]|node_references|nil`,
+  [References](#node_reference) to the nodes the dynamicNode depends on: if any
+  of these trigger an update (for example if the text inside them
+  changes), the `dynamicNode`s' function will be executed, and the result
+  inserted at the `dynamicNodes` place.  
+  (`dynamicNode` behaves exactly the same as `functionNode` in this regard).
+
+- `opts`: In addition to the [usual](#node) keys, there is, again, 
+  - `user_args`, which is described in [FUNCTIONNODE](#functionnode).
+
+**Examples**:
+
+This `dynamicNode` inserts an `insertNode` which copies the text inside the
+first `insertNode`.
+```lua
+s("trig", {
+	t"text: ", i(1), t{"", "copy: "},
+	d(2, function(args)
+			-- the returned snippetNode doesn't need a position; it's inserted
+			-- "inside" the dynamicNode.
+			return sn(nil, {
+				-- jump-indices are local to each snippetNode, so restart at 1.
+				i(1, args[1])
+			})
+		end,
+	{1})
+})
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![DynamicNode](https://user-images.githubusercontent.com/25300418/184359404-c1081b6c-99e5-4eb1-85c7-7f2e875d7296.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+This snippet makes use of `old_state` to count the number of updates.  
+To store/restore values generated by the `dynamicNode` or entered into
+`insert/choiceNode`, consider using the shortly-introduced `restoreNode` instead
+of `old_state`.
+
+```lua
+local function count(_, _, old_state)
+	old_state = old_state or {
+		updates = 0
+	}
+
+	old_state.updates = old_state.updates + 1
+
+	local snip = sn(nil, {
+		t(tostring(old_state.updates))
+	})
+
+	snip.old_state = old_state
+	return snip
+end
+
+...
+
+ls.add_snippets("all",
+	s("trig", {
+		i(1, "change to update"),
+		d(2, count, {1})
+	})
 )
 ```
 
 <!-- panvimdoc-ignore-start -->
 
-![FunctionNode3](https://user-images.githubusercontent.com/25300418/184359248-6b13a80c-f644-4979-a566-958c65a4e047.gif)
+![DynamicNode2](https://user-images.githubusercontent.com/25300418/184359408-8d6df582-2a9e-4e6c-8937-5424bf7f6ecb.gif)
 
 <!-- panvimdoc-ignore-end -->
 
-The table passed to functionNode:
+As with `functionNode`, `user_args` can be used to reuse similar `dynamicNode`-
+functions.
+
+# RESTORENODE
+
+This node can store and restore a snippetNode as-is. This includes changed
+choices and changed text. Its' usage is best demonstrated by an example:
+
+```lua
+s("paren_change", {
+	c(1, {
+		sn(nil, { t("("), r(1, "user_text"), t(")") }),
+		sn(nil, { t("["), r(1, "user_text"), t("]") }),
+		sn(nil, { t("{"), r(1, "user_text"), t("}") }),
+	}),
+}, {
+	stored = {
+		-- key passed to restoreNodes.
+		["user_text"] = i(1, "default_text")
+	}
+})
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![RestoreNode](https://user-images.githubusercontent.com/25300418/184359328-3715912a-8a32-43b6-91b7-6b012c9c3ccd.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+Here the text entered into `user_text` is preserved upon changing choice.
+
+`r(jump_index, key, nodes, node_opts)`:
+
+- [`jump_index`](#jump-index), when to jump to this node.
+- `key`, `string`: `restoreNode`s with the same key share their content.
+- `nodes`, `node[]|node`: the content of the `restoreNode`.  
+  Can either be a single node, or a table of nodes (both of which will be
+  wrapped inside a `snippetNode`, except if the single node already is a
+  `snippetNode`).  
+  The content for a given key may be defined multiple times, but if the
+  contents differ, it's undefined which will actually be used.  
+  If a key's content is defined in a `dynamicNode`, it will not be initially
+  used for `restoreNodes` outside that `dynamicNode`. A way around this
+  limitation is defining the content in the `restoreNode` outside the
+  `dynamicNode`.
+
+The content for a key may also be defined in the `opts`-parameter of the
+snippet-constructor, as seen in the example above. The `stored`-table accepts
+the same values as the `nodes`-parameter passed to `r`.
+If no content is defined for a key, it defaults to the empty `insertNode`.
+
+An important-to-know limitation of `restoreNode` is that, for a given key, only
+one may be visible at a time. See
+[this issue](https://github.com/L3MON4D3/LuaSnip/issues/234) for details.
+
+The `restoreNode` is especially useful for storing input across updates of a
+`dynamicNode`. Consider this:
+
+```lua
+local function simple_restore(args, _)
+	return sn(nil, {i(1, args[1]), i(2, "user_text")})
+end
+
+s("rest", {
+	i(1, "preset"), t{"",""},
+	d(2, simple_restore, 1)
+}),
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![RestoreNode2](https://user-images.githubusercontent.com/25300418/184359337-0962dd5e-a18b-4df1-8c74-3d04a17998ab.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+Every time the `i(1)` in the outer snippet is changed, the text inside the
+`dynamicNode` is reset to `"user_text"`. This can be prevented by using a
+`restoreNode`:
+
+```lua
+local function simple_restore(args, _)
+	return sn(nil, {i(1, args[1]), r(2, "dyn", i(nil, "user_text"))})
+end
+
+s("rest", {
+	i(1, "preset"), t{"",""},
+	d(2, simple_restore, 1)
+}),
+```
+Now the entered text is stored.
+
+`RestoreNode`s indent is not influenced by `indentSnippetNodes` right now. If
+that really bothers you feel free to open an issue.
+
+<!-- panvimdoc-ignore-start -->
+
+![RestoreNode3](https://user-images.githubusercontent.com/25300418/184359340-35c24160-10b0-4f72-849e-1015f59ed599.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+# ABSOLUTE_INDEXER
+
+A more capable way of [referencing nodes](#node_reference)!  
+Using only [`jump indices`](#jump-index), accessing an outer `i(1)` isn't possible
+from inside e.g. a snippetNode, since only nodes with the same parent can be
+referenced (jump indices are interpreted relative to the parent of the node
+that's passed the reference).  
+The `absolute_indexer` can be used to reference nodes based on their absolute
+position in the snippet, which lifts this restriction.  
 
 ```lua
 s("trig", {
-	i(1, "text_of_first"),
-	i(2, {"first_line_of_second", "second_line_of_second"}),
-	-- order is 2,1, not 1,2!!
-	f(function(args, snip)
-		--here
-	end, {2, 1} )})
+	i(1), c(2, {
+		sn(nil, {
+			t"cannot access the argnode :(", f(function(args) return args[1] end, {???})
+		}),
+		t"sample_text"
+	})
+})
 ```
 
-<!-- panvimdoc-ignore-start -->
-
-![FunctionNode4](https://user-images.githubusercontent.com/25300418/184359259-ebb7cfc0-e30b-4735-9627-9ead45d9f27c.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-At `--here`, `args` would look as follows (provided no text was changed after
-expansion):
-```lua
-args = {
-	{"first_line_of_second", "second_line_of_second"},
-	{"text_of_first"}
-}
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![FunctionNode5](https://user-images.githubusercontent.com/25300418/184359263-89323682-6128-40ea-890e-b184a1accf80.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-One more example to show usage of `absolute_indexer`:
+Using `absolute_indexer`, it's possible to do so:
 ```lua
 s("trig", {
-	i(1, "text_of_first"),
-	i(2, {"first_line_of_second", "second_line_of_second"}),
-	f(function(args, snip)
-		-- just concat first lines of both.
-		return args[1][1] .. args[2][1]
-	end, {ai[2], ai[1]} )})
+	i(1), c(2, {
+		sn(nil, { i(1),
+			t"can access the argnode :)", f(function(args) return args[1] end, ai[1])
+		}),
+		t"sample_text"
+	})
+})
 ```
 
 <!-- panvimdoc-ignore-start -->
 
-![FunctionNode6](https://user-images.githubusercontent.com/25300418/184359271-018a703d-a9c8-4c9d-8833-b16495be5b08.gif)
+![AbsoluteIndexer](https://user-images.githubusercontent.com/25300418/184359369-3bbd2b30-33d1-4a5d-9474-19367867feff.gif)
 
 <!-- panvimdoc-ignore-end -->
 
-If the function only performs simple operations on text, consider using
-the `lambda` from [`luasnip.extras`](#extras)
+There are some quirks in addressing nodes:
+```lua
+s("trig", {
+	i(2), -- ai[2]: indices based on jump-index, not position.
+	sn(1, { -- ai[1]
+		i(1), -- ai[1][1]
+		t"lel", -- not addressable.
+		i(2) -- ai[1][2]
+	}),
+	c(3, { -- ai[3]
+		i(nil), -- ai[3][1]
+		t"lel", -- ai[3][2]: choices are always addressable.
+	}),
+	d(4, function() -- ai[4]
+		return sn(nil, { -- ai[4][0]
+			i(1), -- ai[4][0][1]
+		})
+	end, {})
+	}))
+	r(5, "restore_key", -- ai[5]
+		i(1) -- ai[5][0][1]: restoreNodes always store snippetNodes.
+	)
+	r(6, "restore_key_2", -- ai[6]
+		sn(nil, { -- ai[6][0]
+			i(1) -- ai[6][0][1]
+		})
+	)
+	}))
+})
+```
 
-# POSTFIX SNIPPET
+Note specifically that the index of a dynamicNode differs from that of the
+generated snippetNode, and that restoreNodes (internally) always store a
+snippetNode, so even if the restoreNode only contains one node, that node has
+to be accessed as `ai[restoreNodeIndx][0][1]`.
+
+`absolute_indexer`s' can be constructed in different ways:
+```lua
+ai[1][2][3] == ai(1, 2, 3) == ai{1, 2, 3}
+```
+
+# EXTRAS
+
+## Lambda
+A shortcut for `functionNode`s that only do very basic string-
+manipulation.  
+`l(lambda, argnodes)`:
+- `lambda`: An object created by applying string-operations to `l._n`, objects
+  representing the `n`th argnode.  
+  For example: 
+  - `l._1:gsub("a", "e")` replaces all occurences of "a" in the text of the
+  first argnode with "e", or
+  - `l._1 .. l._2` concats text of the first and second argnode.
+  If an argnode contains multiple lines of text, they are concatenated with
+  `"\n"` prior to any operation.  
+- `argnodes`, [`node-references`](#node_reference), just like in function- and
+  dynamicNode.
+
+There are many examples for `lamda` in `Examples/snippets.lua`
+
+## Match
+`match` can insert text based on a predicate (again, a shorthand for `functionNode`).
+
+`match(argnodes, condition, then, else)`, where
+  * `argnode`: A single [`node-reference`](#node_reference). May not be nil, or
+  	a table.
+  * `condition` may be either of
+    * `string`: interpreted as a lua-pattern. Matched on the `\n`-joined (in case
+      it's multiline) text of the first argnode (`args[1]:match(condition)`).
+    * `function`: `fn(args, snip) -> bool`: takes the same parameters as the
+      `functionNode`-function, any value other than nil or false is interpreted
+      as a match.
+    * `lambda`: `l._n` is the `\n`-joined text of the nth argnode.  
+      Useful if string-manipulations have to be performed before the string is matched.  
+	  Should end with `match`, but any other truthy result will be interpreted
+	  as matching.
+
+  * `then` is inserted if the condition matches,
+  * `else` if it does not.  
+
+Both `then` and `else` can be either text, lambda or function (with the same parameters as
+specified above).  
+`then`'s default-value depends on the `condition`:
+  * `pattern`: Simply the return value from the `match`, e.g. the entire match,
+  or, if there were capture groups, the first capture group.
+  * `function`: the return value of the function if it is either a string, or a
+  table (if there is no `then`, the function cannot return a table containing
+  something other than strings).
+  * `lambda`: Simply the first value returned by the lambda.
+
+Examples:
+* `match(n, "^ABC$", "A")` .
+* `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` 
+
+  ```lua
+  s("trig", {
+  	i(1), t":",
+  	i(2), t"::",
+  	m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
+  })
+  ```
+
+
+* ```lua
+    s("extras1", {
+      i(1), t { "", "" }, m(1, "^ABC$", "A")
+    }),
+  ```
+  Inserts "A" if the node with jump-index `n` matches "ABC" exactly, nothing otherwise.
+
+  <!-- panvimdoc-ignore-start -->
+  
+  ![extras1](https://user-images.githubusercontent.com/25300418/184359431-50f90599-3db0-4df0-a3a9-27013e663649.gif)
+  
+  <!-- panvimdoc-ignore-end -->
+
+* ```lua
+  s("extras2", {
+    i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
+  }),
+  ```
+  Inserts `"PALINDROME"` if i(1) contains a palindrome.
+
+  <!-- panvimdoc-ignore-start -->
+
+  ![extras2](https://user-images.githubusercontent.com/25300418/184359435-21e4de9f-c56b-4ee1-bff4-331b68e1c537.gif)
+
+  <!-- panvimdoc-ignore-end -->
+* ```lua
+  s("extras3", {
+    i(1), t { "", "" }, i(2), t { "", "" },
+    m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
+  }),
+  ```
+  This inserts the text of the node with jump-index 1, with all occurences of
+  `a` replaced with `e`, if the second insertNode matches the first exactly.
+
+  <!-- panvimdoc-ignore-start -->
+
+  ![extras3](https://user-images.githubusercontent.com/25300418/184359436-515ca1cc-207f-400d-98ba-39fa166e22e4.gif)
+
+  <!-- panvimdoc-ignore-end -->
+
+## Repeat
+
+Inserts the text of the passed node.
+
+`rep(node_reference)`
+- `node_reference`, a single [`node-reference`](#node_reference).
+
+```lua
+s("extras4", { i(1), t { "", "" }, extras.rep(1) }),
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![extras4](https://user-images.githubusercontent.com/25300418/184359193-6525d60d-8fd8-4fbd-9d3f-e3e7d5a0259f.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+## Partial
+
+Evaluates a function on expand and inserts its' value.
+
+`partial(fn, params...)`
+- `fn`: any function
+- `params`: varargs, any, will be passed to `fn`.
+
+For example `partial(os.date, "%Y")` inserts the current year on expansion.
+
+
+```lua
+s("extras5", { extras.partial(os.date, "%Y") }),
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![extras5](https://user-images.githubusercontent.com/25300418/184359206-6c25fc3b-69e1-4529-9ebf-cb92148f3597.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+## Nonempty
+Inserts text if the referenced node doesn't contain any text.  
+`nonempty(node_reference, not_empty, empty)`
+- `node_reference`, a single [node-reference](#node_reference).  
+- `not_empty`, `string`: inserted if the node is not empty.
+- `empty`, `string`: inserted if the node is empty.
+
+```lua
+s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") }),
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![extras6](https://user-images.githubusercontent.com/25300418/184359213-79a71d1e-079c-454d-a092-c231ac5a98f9.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+## Dynamic Lambda
+
+Pretty much the same as lambda, it just inserts the resulting text as an
+insertNode, and, as such, it can be quickly overridden.
+
+`dynamic_lambda(jump_indx, lambda, node_references)`
+- `jump_indx`, as usual, the jump-indx.
+
+The remaining arguments carry over from lambda.
+
+```lua
+s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) }),
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![extras7](https://user-images.githubusercontent.com/25300418/184359221-1f090895-bc59-44b0-a984-703bf8d278a3.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+## FMT
+
+Authoring snippets can be quite clunky, especially since every second node is
+probably a `textNode`, inserting a small number of characters between two more
+complicated nodes.  
+`fmt` can be used to define snippets in a much more readable way. This is
+achieved by borrowing (as the name implies) from `format`-functionality (our
+syntax is very similar to
+[python's](https://docs.python.org/3/library/stdtypes.html#str.format)).  
+`fmt` accepts a string and a table of nodes. Each occurrence of a delimiter-pair
+in the string is replaced by one node from the table, while text outside the
+delimiters is turned into textNodes.
+
+Simple example:
+
+```lua
+ls.add_snippets("all", {
+  -- important! fmt does not return a snippet, it returns a table of nodes.
+  s("example1", fmt("just an {iNode1}", {
+    iNode1 = i(1, "example")
+  })),
+  s("example2", fmt([[
+  if {} then
+    {}
+  end
+  ]], {
+    -- i(1) is at nodes[1], i(2) at nodes[2].
+    i(1, "not now"), i(2, "when")
+  })),
+  s("example3", fmt([[
+  if <> then
+    <>
+  end
+  ]], {
+    -- i(1) is at nodes[1], i(2) at nodes[2].
+    i(1, "not now"), i(2, "when")
+  }, {
+    delimiters = "<>"
+  })),
+})
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![fmt](https://user-images.githubusercontent.com/25300418/184359228-d30df745-0fe8-49df-b28d-662e7eb050ec.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+One important detail here is that the position of the delimiters does not, in
+any way, correspond to the jump-index of the nodes!
+
+`fmt(format:string, nodes:table of nodes, opts:table|nil) -> table of nodes`
+
+* `format`: a string. Occurences of `{<somekey>}` ( `{,}` are customizable, more
+  on that later) are replaced with `content[<somekey>]` (which should be a
+  node), while surrounding text becomes `textNode`s.  
+  To escape a delimiter, repeat it (`"{{"`).  
+  If no key is given (`{}`) are numbered automatically:  
+  `"{} ? {} : {}"` becomes `"{1} ? {2} : {3}"`, while
+  `"{} ? {3} : {}"` becomes `"{1} ? {3} : {4}"` (the count restarts at each
+  numbered placeholder).
+  If a key appears more than once in `format`, the node in
+  `content[<duplicate_key>]` is inserted for the first, and copies of it for
+  subsequent occurences.
+* `nodes`: just a table of nodes.
+* `opts`: optional arguments:
+  * `delimiters`: string, two characters. Change `{,}` to some other pair, e.g.
+  	`"<>"`.
+  * `strict`: Warn about unused nodes (default true).
+  * `trim_empty`: remove empty (`"%s*"`) first and last line in `format`. Useful
+  	when passing multiline strings via `[[]]` (default true).
+  * `dedent`: remove indent common to all lines in `format`. Again, makes
+  	passing multiline-strings a bit nicer (default true).
+
+There is also `require("luasnip.extras.fmt").fmta`. This only differs from `fmt`
+by using angle-brackets (`<>`) as the default-delimiter.
+
+## Conditions
+
+This module (`luasnip.extras.condition`) contains function that can be passed to
+a snippet's `condition` or `show_condition`. These are grouped accordingly into
+`luasnip.extras.conditions.expand` and `luasnip.extras.conditions.show`:
+
+**`expand`**:
+- `line_begin`: only expand if the cursor is at the beginning of the line.
+
+**`show`**:
+- `line_end`: only expand at the end of the line.
+
+`expand` contains, additionally, all conditions provided by `show`.
+
+### Condition-Objects
+
+`luasnip.extras.conditions` also contains condition-objects. These can, just
+like functions, be passed to `condition` or `show_condition`, but can also be
+combined with each other into logical expressions:
+
+- `c1 + c2 -> c1 or c2`
+- `c1 * c2 -> c1 and c2`
+- `-c1 -> not c1`
+- `c1 ^ c2 -> c1 xor(!=) c2`
+- `c1 % c2 -> c1 xnor(==) c2`: This decision may seem weird, considering how
+  there is an overload for the `==`-operator. Unfortunately, it's not possible
+  to use this for our purposes (some info
+  [here](https://github.com/L3MON4D3/LuaSnip/pull/612#issuecomment-1264487743)),
+  so we decided to make use of a more obscure symbol (which will hopefully avoid
+  false assumptions about its meaning).
+
+This makes logical combinations of conditions very readable. Compare
+```lua
+condition = conditions.expand.line_end + conditions.expand.line_begin
+```
+
+with the more verbose
+
+```lua
+condition = function(...) return conditions.expand.line_end(...) or conditions.expand.line_begin(...) end
+```
+
+The conditions provided in `show` and `expand` are already condition-objects. To
+create new ones, use
+`require("luasnip.extras.conditions").make_condition(condition_fn)`
+
+
+## On The Fly snippets
+
+Sometimes it's desirable to create snippets tailored for exactly the current
+situation. For example inserting repetitive, but just slightly different
+invocations of some function, or supplying data in some schema.  
+On The Fly-snippets enable exactly this usecase: they can be quickly created
+and expanded, with as little disruption as possible.  
+
+Since they should mainly fast to write, and don't necessarily need all bells and
+whistles, they don't make use of lsp/textmate-syntax, but a more simplistic one:  
+* `$anytext` denotes a placeholder (`insertNode`) with text "anytext". The text
+  also serves as a unique key: if there are multiple placeholders with the same
+  key, only the first will be editable, the others will just mirror it.  
+* ... That's it. `$` can be escaped by preceding it with a second `$`, all other
+  symbols will be interpreted literally.
+
+There is currently only one way to expand On The Fly-snippets:  
+`require('luasnip.extras.otf').on_the_fly("<some-register>")` will interpret
+whatever text is in the register `<some-register>` as a snippet, and expand it
+immediately.  
+The idea behind this mechanism is that it enables a very immediate way of
+supplying and retrieving (expanding) the snippet: write the snippet-body into
+the buffer, cut/yank it into some register, and call `on_the_fly("<register>")`
+to expand the snippet.  
+
+Here's one set of example-keybindings:
+
+```vim
+" in the first call: passing the register is optional since `on_the_fly`
+" defaults to the unnamed register, which will always contain the previously cut
+" text.
+vnoremap <c-f>  "ec<cmd>lua require('luasnip.extras.otf').on_the_fly("e")<cr>
+inoremap <c-f>  <cmd>lua require('luasnip.extras.otf').on_the_fly("e")<cr>
+```
+
+Obviously, `<c-f>` is arbritary, and can be changed to any other key-combo.
+Another interesting application is allowing multiple on the fly-snippets at the
+same time, by retrieving snippets from multiple registers:
+```vim
+" For register a
+vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
+inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
+
+
+" For register b
+vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
+inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
+```
+
+<!-- panvimdoc-ignore-start -->
+
+![otf](https://user-images.githubusercontent.com/25300418/184359312-8e368393-7be3-4dc4-ae08-1ff1bf17b309.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+## Select_choice
+
+It's possible to leverage `vim.ui.select` for selecting a choice directly,
+without cycling through the available choices.  
+All that is needed for this is calling
+`require("luasnip.extras.select_choice")`, most likely via some keybind, e.g.
+
+```vim
+inoremap <c-u> <cmd>lua require("luasnip.extras.select_choice")()<cr>
+```
+while inside a choiceNode.  
+The `opts.kind` hint for `vim.ui.select` will be set to `luasnip`.
+
+<!-- panvimdoc-ignore-start -->
+
+![select_choice](https://user-images.githubusercontent.com/25300418/184359342-c8d79d50-103c-44b7-805f-fe75294e62df.gif)
+
+<!-- panvimdoc-ignore-end -->
+
+## filetype_functions
+
+Contains some utility-functions that can be passed to the `ft_func` or
+`load_ft_func`-settings.
+
+* `from_filetype`: the default for `ft_func`. Simply returns the filetype(s) of
+  the buffer.
+* `from_cursor_pos`: uses treesitter to determine the filetype at the cursor.
+  With that, it's possible to expand snippets in injected regions, as long as
+  the treesitter-parser supports them.
+  If this is used in conjuction with `lazy_load`, extra care must be taken that
+  all the filetypes that can be expanded in a given buffer are also returned by
+  `load_ft_func` (otherwise their snippets may not be loaded).
+  This can easily be achieved with `extend_load_ft`.
+* `extend_load_ft`: `fn(extend_ft:map) -> fn`
+  A simple solution to the problem described above is loading more filetypes
+  than just that of the target-buffer when `lazy_load`ing. This can be done
+  ergonomically via `extend_load_ft`: calling it with a table where the keys are
+  filetypes, and the values are the filetypes that should be loaded additionaly
+  returns a function that can be passed to `load_ft_func` and takes care of
+  extending the filetypes properly.
+
+  ```lua
+  ls.setup({
+  	load_ft_func =
+  		-- Also load both lua and json when a markdown-file is opened,
+  		-- javascript for html.
+  		-- Other filetypes just load themselves.
+  		require("luasnip.extras.filetype_functions").extend_load_ft({
+  			markdown = {"lua", "json"},
+  			html = {"javascript"}
+  		})
+  })
+  ```
+
+## POSTFIX SNIPPET
 
 Postfix snippets, famously used in 
 [rust analyzer](https://rust-analyzer.github.io/) and various IDEs, are a type
@@ -557,709 +1480,6 @@ callback will have access to the `POSTFIX_MATCH` field as well.
         }
 ```
 
-# CHOICENODE
-
-ChoiceNodes allow choosing between multiple nodes.
-
-```lua
- s("trig", c(1, {
- 	t("Ugh boring, a text node"),
- 	i(nil, "At least I can edit something now..."),
- 	f(function(args) return "Still only counts as text!!" end, {})
- }))
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![ChoiceNode](https://user-images.githubusercontent.com/25300418/184359378-09d83ec0-2580-4a0e-8f75-61bd168903ba.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-`c()` expects as its first arg, as with any jumpable node, its position in the
-jumplist, and as its second a table with nodes, the choices. This table can
-either contain a single node or a table of nodes. In the latter case the table
-will be converted into a `snippetNode`.
-The third parameter is a table of options with the following keys:
-
-- `restore_cursor`: `false` by default. If it is set, and the node that was
-	being edited also appears in the switched-to choice (can be the case if a
-	`restoreNode` is present in both choice) the cursor is restored relative to
-	that node.
-	The default is `false` as enabling might lead to worse performance. It's
-	possible to override the default by wrapping the `choiceNode`-constructor
-	in another function that sets `opts.restore_cursor` to `true` and then using
-	that to construct `choiceNode`s:
-    ```lua
-    local function restore_cursor_choice(pos, choices, opts)
-        if opts then
-            opts.restore_cursor = true
-        else
-            opts = {restore_cursor = true}
-        end
-        return c(pos, choices, opts)
-    end
-    ```
-
-Jumpable nodes that normally expect an index as their first parameter don't
-need one inside a choiceNode; their index is the same as the choiceNodes'.
-
-As it is only possible (for now) to change choices from within the choiceNode,
-make sure that all of the choices have some place for the cursor to stop at.
-This means that in `sn(nil, {...nodes...})` `nodes` has to contain e.g. an
-`i(1)`, otherwise luasnip will just "jump through" the nodes, making it
-impossible to change the choice.
-
-```lua
-c(1, {
-	t"some text", -- textNodes are just stopped at.
-	i(nil, "some text"), -- likewise.
-	sn(nil, {t"some text"}) -- this will not work!
-	sn(nil, {i(1), t"some text"}) -- this will.
-})
-```
-
-The active choice for a choiceNode can be changed by calling `ls.change_choice(1)`
-(forwards) or `ls.change_choice(-1)` (backwards), for example via
-
-```lua
--- set keybinds for both INSERT and VISUAL.
-vim.api.nvim_set_keymap("i", "<C-n>", "<Plug>luasnip-next-choice", {})
-vim.api.nvim_set_keymap("s", "<C-n>", "<Plug>luasnip-next-choice", {})
-vim.api.nvim_set_keymap("i", "<C-p>", "<Plug>luasnip-prev-choice", {})
-vim.api.nvim_set_keymap("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
-```
-
-Apart from this, there is also a [picker](#select_choice) where no cycling is necessary and any
-choice can be selected right away, via `vim.ui.select`.
-
-# SNIPPETNODE
-
-SnippetNodes directly insert their contents into the surrounding snippet.
-This is useful for choiceNodes, which only accept one child, or dynamicNodes,
-where nodes are created at runtime and inserted as a snippetNode.
-
-Syntax is similar to snippets, however, where snippets require a table
-specifying when to expand, snippetNodes, similar to insertNodes, expect a
-number, as they too are jumpable:
-```lua
- s("trig", sn(1, {
- 	t("basically just text "),
- 	i(1, "And an insertNode.")
- }))
-```
-
-Note that snippetNodes don't expect an `i(0)`.
-
-<!-- panvimdoc-ignore-start -->
-
-![SnippetNode](https://user-images.githubusercontent.com/25300418/184359349-2127147e-2f57-4612-bdb5-4c9eafc93fad.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-# INDENTSNIPPETNODE
-
-By default, all nodes are indented at least as deep as the trigger. With these
-nodes it's possible to override that behaviour:
-
-```lua
-s("isn", {
-	isn(1, {
-		t({"This is indented as deep as the trigger",
-		"and this is at the beginning of the next line"})
-	}, "")
-})
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![IndentSnippetNode](https://user-images.githubusercontent.com/25300418/184359281-acc62f04-f130-48b6-9ad8-c0775726507a.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-(Note the empty string passed to isn).
-
-Indent is only applied after linebreaks, so it's not possible to remove indent
-on the line where the snippet was triggered using `ISN` (That is possible via
-regex-triggers where the entire line before the trigger is matched).
-
-Another nice usecase for `ISN` is inserting text, e.g. `//` or some other comment-
-string before the nodes of the snippet:
-
-```lua
-s("isn2", {
-	isn(1, t({"//This is", "A multiline", "comment"}), "$PARENT_INDENT//")
-})
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![IndentSnippetNode2](https://user-images.githubusercontent.com/25300418/184359286-e29ba70e-4ccc-472a-accb-af849ca1a68d.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-Here the `//` before `This is` is important, once again, because indent is only
-applied after linebreaks.
-To enable such usage, `$PARENT_INDENT` in the indentstring is replaced by the
-parents' indent (duh).
-
-
-
-# DYNAMICNODE
-
-Very similar to functionNode, but returns a snippetNode instead of just text,
-which makes them very powerful as parts of the snippet can be changed based on
-user-input.
-
-The prototype for the dynamicNodes' constructor is 
-`d(position:int, function, argnodes:table of nodes, opts: table)`:
-
-1. `position`: just like all jumpable nodes, when this node will be jumped into.
-2. `function`: `fn(args, parent, old_state, user_args1, ..., user_argsn) -> snippetNode`
-   This function is called when the argnodes' text changes. It generates and
-   returns (wrapped inside a `snippetNode`) the nodes that should be inserted
-   at the dynamicNodes place.
-   `args`, `parent` and `user_args` are also explained in
-   [functionNode](#functionnode)
-   * `args`: `table of text` (`{{"node1line1", "node1line2"}, {"node2line1"}}`)
-     from nodes the dynamicNode depends on.
-   * `parent`: the immediate parent of the `dynamicNode`).
-   * `old_state`: a user-defined table. This table may contain
-     anything, its intended usage is to preserve information from the previously
-     generated `snippetNode`: If the `dynamicNode` depends on other nodes it may
-     be reconstructed, which means all user input (text inserted in `insertNodes`,
-     changed choices) to the previous dynamicNode is lost.
-     The `old_state` table must be stored in `snippetNode` returned by
-     the function (`snippetNode.old_state`).
-     The second example below illustrates the usage of `old_state`.
-   * `user_args1, ..., user_argsn`: passed through from `dynamicNode`-opts.
-3. `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
-   update, the `dynamicNode`s' function will be executed, and the result inserted at
-   the `dynamicNodes` place.
-   Can be a single index or a table of indices.
-4. `opts`: Just like `functionNode`, `dynamicNode` also accepts `user_args` in
-   addition to options common to all nodes.
-
-Examples:
-
-This `dynamicNode` inserts an `insertNode` which copies the text inside the
-first `insertNode`.
-```lua
-s("trig", {
-	t"text: ", i(1), t{"", "copy: "},
-	d(2, function(args)
-			-- the returned snippetNode doesn't need a position; it's inserted
-			-- "inside" the dynamicNode.
-			return sn(nil, {
-				-- jump-indices are local to each snippetNode, so restart at 1.
-				i(1, args[1])
-			})
-		end,
-	{1})
-})
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![DynamicNode](https://user-images.githubusercontent.com/25300418/184359404-c1081b6c-99e5-4eb1-85c7-7f2e875d7296.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-This snippet makes use of `old_state` to count the number of updates.  
-To store/restore values generated by the `dynamicNode` or entered into
-`insert/choiceNode`, consider using the shortly-introduced `restoreNode` instead
-of `old_state`.
-
-```lua
-local function count(_, _, old_state)
-	old_state = old_state or {
-		updates = 0
-	}
-
-	old_state.updates = old_state.updates + 1
-
-	local snip = sn(nil, {
-		t(tostring(old_state.updates))
-	})
-
-	snip.old_state = old_state
-	return snip
-end
-
-...
-
-ls.add_snippets("all",
-	s("trig", {
-		i(1, "change to update"),
-		d(2, count, {1})
-	})
-)
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![DynamicNode2](https://user-images.githubusercontent.com/25300418/184359408-8d6df582-2a9e-4e6c-8937-5424bf7f6ecb.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-As with `functionNode`, `user_args` can be used to reuse similar `dynamicNode`-
-functions.
-
-# RESTORENODE
-
-This node can store and restore a snippetNode that was modified (changed
-choices, inserted text) by the user. Its usage is best demonstrated by an
-example:
-
-```lua
-s("paren_change", {
-	c(1, {
-		sn(nil, { t("("), r(1, "user_text"), t(")") }),
-		sn(nil, { t("["), r(1, "user_text"), t("]") }),
-		sn(nil, { t("{"), r(1, "user_text"), t("}") }),
-	}),
-}, {
-	stored = {
-		user_text = i(1, "default_text")
-	}
-})
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![RestoreNode](https://user-images.githubusercontent.com/25300418/184359328-3715912a-8a32-43b6-91b7-6b012c9c3ccd.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-Here the text entered into `user_text` is preserved upon changing choice.
-
-The constructor for the restoreNode, `r`, takes (at most) three parameters:
-- `pos`, when to jump to this node.
-- `key`, the key that identifies which `restoreNode`s should share their
-  content.
-- `nodes`, the contents of the `restoreNode`. Can either be a single node, or
-  a table of nodes (both of which will be wrapped inside a `snippetNode`,
-  except if the single node already is a `snippetNode`).
-  The content of a given key may be defined multiple times, but if the
-  contents differ, it's undefined which will actually be used.
-  If a keys content is defined in a `dynamicNode`, it will not be used for
-  `restoreNodes` outside that `dynamicNode`. A way around this limitation is
-  defining the content in the `restoreNode` outside the `dynamicNode`.
-
-The content for a key may also be defined in the `opts`-parameter of the
-snippet-constructor, as seen in the example above. The `stored`-table accepts
-the same values as the `nodes`-parameter passed to `r`.
-If no content is defined for a key, it defaults to the empty `insertNode`.
-
-An important-to-know limitation of `restoreNode` is that, for a given key, only
-one may be visible at a time. See
-[this issue](https://github.com/L3MON4D3/LuaSnip/issues/234) for details.
-
-The `restoreNode` is also useful for storing user-input across updates of a
-`dynamicNode`. Consider this:
-
-```lua
-local function simple_restore(args, _)
-	return sn(nil, {i(1, args[1]), i(2, "user_text")})
-end
-
-s("rest", {
-	i(1, "preset"), t{"",""},
-	d(2, simple_restore, 1)
-}),
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![RestoreNode2](https://user-images.githubusercontent.com/25300418/184359337-0962dd5e-a18b-4df1-8c74-3d04a17998ab.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-Every time the `i(1)` in the outer snippet is changed, the text inside the
-`dynamicNode` is reset to `"user_text"`. This can be prevented by using a
-`restoreNode`:
-
-```lua
-local function simple_restore(args, _)
-	return sn(nil, {i(1, args[1]), r(2, "dyn", i(nil, "user_text"))})
-end
-
-s("rest", {
-	i(1, "preset"), t{"",""},
-	d(2, simple_restore, 1)
-}),
-```
-Now the entered text is stored.
-
-`RestoreNode`s indent is not influenced by `indentSnippetNodes` right now. If
-that really bothers you feel free to open an issue.
-
-<!-- panvimdoc-ignore-start -->
-
-![RestoreNode3](https://user-images.githubusercontent.com/25300418/184359340-35c24160-10b0-4f72-849e-1015f59ed599.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-# ABSOLUTE_INDEXER
-
-The `absolute_indexer` can be used to pass text of nodes to a function/dynamicNode
-that it doesn't share a parent with.
-Normally, accessing the outer `i(1)` isn't possible from inside e.g. a
-snippetNode (nested inside a choiceNode to make this example more practical):
-
-```lua
-s("trig", {
-	i(1), c(2, {
-		sn(nil, {
-			t"cannot access the argnode :(", f(function(args) return args[1] end, {???})
-		}),
-		t"sample_text"
-	})
-})
-```
-
-Using `absolute_indexer`, it's possible to do so:
-```lua
-s("trig", {
-	i(1), c(2, {
-		sn(nil, { i(1),
-			t"can access the argnode :)", f(function(args) return args[1] end, ai[1])
-		}),
-		t"sample_text"
-	})
-})
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![AbsoluteIndexer](https://user-images.githubusercontent.com/25300418/184359369-3bbd2b30-33d1-4a5d-9474-19367867feff.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-There are some quirks in addressing nodes:
-```lua
-s("trig", {
-	i(2), -- ai[2]: indices based on insert-order, not position.
-	sn(1, { -- ai[1]
-		i(1), -- ai[1][1]
-		t"lel", -- not addressable.
-		i(2) -- ai[1][2]
-	}),
-	c(3, { -- ai[3]
-		i(nil), -- ai[3][1]
-		t"lel", -- ai[3][2]: choices are always addressable.
-	}),
-	d(4, function() -- ai[4]
-		return sn(nil, { -- ai[4][0]
-			i(1), -- ai[4][0][1]
-		})
-	end, {})
-	}))
-	r(5, "restore_key", -- ai[5]
-		i(1) -- ai[5][0][1]: restoreNodes always store snippetNodes.
-	)
-	r(6, "restore_key_2", -- ai[6]
-		sn(nil, { -- ai[6][0]
-			i(1) -- ai[6][0][1]
-		})
-	)
-	}))
-})
-```
-
-Note specifically that the index of a dynamicNode differs from that of the
-generated snippetNode, and that restoreNodes (internally) always store a
-snippetNode, so even if the restoreNode only contains one node, that node has
-to be accessed as `ai[restoreNodeIndx][0][1]`.
-
-`absolute_indexer`s' can be constructed in different ways:
-```lua
-ai[1][2][3] == ai(1, 2, 3) == ai{1, 2, 3}
-```
-
-# EXTRAS
-
-The module `"luasnip.extras"` contains nodes that ease writing snippets (This
-is only a short outline, their usage is shown more expansively in
-`Examples/snippets.lua`):
-
-- `lambda`: A shortcut for `functionNode`s that only do very basic string-
-manipulation. For example, to replace all occurences of "a" in the nth insert
-with "e", one could use `lambda(lambda._1:gsub("a", "e"), n)` (signature is
-similar to that of `functionNode`).
-If a node has multiple lines, they will be concatenated using "\n".
-
-- `match`: Can insert text based on a predicate (shorthand for `functionNode`s).
-The complete signature for the node is `match(argnodes, condition, then, else)`, where
-  * `argnodes` can be specified as in `functionNode`,
-  * `condition` may be a
-    * string: interpreted as a lua-pattern. Matched on the `\n`-joined (in case
-      it's multiline) text of the first argnode (`args[1]:match(condition)`).
-    * function: `fn(args, snip) -> bool`: takes the same parameters as the
-      `functionNode`-function, any value other than nil or false is interpreted
-      as a match.
-    * lambda: `l._n` is the `\n`-joined text of the nth argnode.
-      Useful if string-manipulations have to be performed before the string is matched.
-
-  * `then` is inserted if the condition matches, `else` if it doesn't. They can
-  	both be either text, lambda or function (with the same parameters as
-  	specified above).
-  If `then` is not given, the `then`-value depends on what was specified as the
-  `condition`:
-    * pattern: Simply the return value from the `match`, e.g. the entire match,
-    or, if there were capture groups, the first capture group.
-    * function: the return value of the function if it is either a string, or a
-    table (if there is no `then`, the function cannot return a table containing
-    something other than strings).
-    * lambda: Simply the first value returned by the lambda.
-
-  Examples:
-  * `match(n, "^ABC$", "A")` inserts "A" if the `n`th jumpable node matches
-    "ABC" exactly, nothing otherwise.
-  * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
-    "PALINDROME" if the nth jumpable node is a palindrome.
-
-    ```lua
-    s("trig", {
-    	i(1), t":",
-    	i(2), t"::",
-    	m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
-    })
-    ```
-    This inserts the text of the first insertNode, with all occurences of `a`
-    replaced with `e` if the second insertNode matches the first exactly.
-
-- `rep`: repeats the node with the passed index. `rep(1)` to repeat the content
-of the first insert.
-
-- `partial`: directly inserts the output of a function. Useful for e.g.
-`partial(os.date, "%Y")` (arguments passed after the function are passed to it).
-
-- `nonempty`: inserts text if the insert at the given index doesn't contain any
-text. `nonempty(n, "not empty!", "empty!")` inserts "empty!" if insert n is
-empty, "not empty!" if it isn't.
-
-- `dynamic_lambda`: Operates almost exactly like `lambda`, only that it can be
-jumped to, and it's contents therefore be easily overridden.
-`dynamic_lambda(2, lambda._1..lambda._1, 1)` will first contain the content of
-insert 1 appended to itself, but the second jump will lead to it, making it
-easy to override the generated text.
-The text will only be changed when a argnode updates it.
-
-```lua
-ls.add_snippets("all", {
-  s("extras1", {
-    i(1), t { "", "" }, m(1, "^ABC$", "A")
-  }),
-  s("extras2", {
-    i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
-  }),
-  s("extras3", {
-    i(1), t { "", "" }, i(2), t { "", "" },
-    m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
-  }),
-  s("extras4", { i(1), t { "", "" }, extras.rep(1) }),
-  s("extras5", { extras.partial(os.date, "%Y") }),
-  s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") }),
-  s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) }),
-})
-```
-
-- `conditions.show`: Contains typical predicates/functions used as
-  `show`-condition. Currently this is just `line_end`
-- `conditions.expand`: Contains typical predicates/functions used as
-  `expand`-condition. Currently this is just `line_begin`
-  Contains everything from `conditions.show` as well.
-- `conditions`: Provides a function `make_condition(foo)` which takes a function
-  as argument and returns a *condition object* for which several operators are
-  defined:
-  - `c1 + c2 -> c1 or c2`
-  - `c1 * c2 -> c1 and c2`
-  - `-c1 -> not c1`
-  - `c1 ^ c2 -> c1 xor/!= c2`
-  - `c1 % c2 -> c1 xnor/== c2`: This decision may look weird but as we weren't
-	able to use `==`, we decided to take something that makes one scratch ones
-	head (and thus avoid making false assumptions).
-	For more details look at [this comment](https://github.com/L3MON4D3/LuaSnip/pull/612#issuecomment-1264487743).
-
-  `conditions.show`s and `conditions.expand`s members all are also condition
-  objects so you can work with those too.
-
-  Thus you can easily combine existing predicates. Like in
-  `conditions.expand.line_end + conditions.expand.line_begin` instead of doing
-  something like
-  `function(...) return conditions.expand.line_end(...) or conditions.expand.line_begin(...) end`.
-
-<!-- panvimdoc-ignore-start -->
-
-extras1: ![extras1](https://user-images.githubusercontent.com/25300418/184359431-50f90599-3db0-4df0-a3a9-27013e663649.gif)
-
-extras2: ![extras2](https://user-images.githubusercontent.com/25300418/184359435-21e4de9f-c56b-4ee1-bff4-331b68e1c537.gif)
-
-extras3: ![extras3](https://user-images.githubusercontent.com/25300418/184359436-515ca1cc-207f-400d-98ba-39fa166e22e4.gif)
-
-extras4: ![extras4](https://user-images.githubusercontent.com/25300418/184359193-6525d60d-8fd8-4fbd-9d3f-e3e7d5a0259f.gif)
-
-extras5: ![extras5](https://user-images.githubusercontent.com/25300418/184359206-6c25fc3b-69e1-4529-9ebf-cb92148f3597.gif)
-
-extras6: ![extras6](https://user-images.githubusercontent.com/25300418/184359213-79a71d1e-079c-454d-a092-c231ac5a98f9.gif)
-
-extras7: ![extras7](https://user-images.githubusercontent.com/25300418/184359221-1f090895-bc59-44b0-a984-703bf8d278a3.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-## FMT
-
-`require("luasnip.extras.fmt").fmt` can be used to create snippets in a more
-readable way.
-
-Simple example:
-
-```lua
-ls.add_snippets("all", {
-  -- important! fmt does not return a snippet, it returns a table of nodes.
-  s("example1", fmt("just an {iNode1}", {
-    iNode1 = i(1, "example")
-  })),
-  s("example2", fmt([[
-  if {} then
-    {}
-  end
-  ]], {
-    -- i(1) is at nodes[1], i(2) at nodes[2].
-    i(1, "not now"), i(2, "when")
-  })),
-  s("example3", fmt([[
-  if <> then
-    <>
-  end
-  ]], {
-    -- i(1) is at nodes[1], i(2) at nodes[2].
-    i(1, "not now"), i(2, "when")
-  }, {
-    delimiters = "<>"
-  })),
-})
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![fmt](https://user-images.githubusercontent.com/25300418/184359228-d30df745-0fe8-49df-b28d-662e7eb050ec.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-`fmt(format:string, nodes:table of nodes, opts:table|nil) -> table of nodes`
-
-* `format`: a string. Occurences of `{<somekey>}` ( `{,}` are customizable, more
-  on that later) are replaced with `content[<somekey>]` (which should be a
-  node), while surrounding text becomes `textNode`s.  
-  To escape a delimiter, repeat it (`"{{"`).  
-  If no key is given (`{}`) are numbered automatically:  
-  `"{} ? {} : {}"` becomes `"{1} ? {2} : {3}"`, while
-  `"{} ? {3} : {}"` becomes `"{1} ? {3} : {4}"` (the count restarts at each
-  numbered placeholder).
-  If a key appears more than once in `format`, the node in
-  `content[<duplicate_key>]` is inserted for the first, and copies of it for
-  subsequent occurences.
-* `nodes`: just a table of nodes.
-* `opts`: optional arguments:
-  * `delimiters`: string, two characters. Change `{,}` to some other pair, e.g.
-  	`"<>"`.
-  * `strict`: Warn about unused nodes (default true).
-  * `trim_empty`: remove empty (`"%s*"`) first and last line in `format`. Useful
-  	when passing multiline strings via `[[]]` (default true).
-  * `dedent`: remove indent common to all lines in `format`. Again, makes
-  	passing multiline-strings a bit nicer (default true).
-
-There is also `require("luasnip.extras.fmt").fmta`. This only differs from `fmt`
-by using angle-brackets (`<>`) as the default-delimiter.
-
-
-## On The Fly snippets
-You can create snippets that are not for being used all the time but only
-in a single session.
-
-This behaves as an "operator" takes what is in a register and transforms it into a
-snippet using words prefixed as $ as inputs or copies (depending on if the same word appears 
-more than once). You can escape $ by repeating it.
-
-In order to use, add something like this to your config:
-```vim
-vnoremap <c-f>  "ec<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
-inoremap <c-f>  <cmd>lua require('luasnip.extras.otf').on_the_fly("e")<cr>
-```
-
-Notice that you can use your own mapping instead of <c-f>, and you can pick another register
-instead of `"p`. You can even use it several times, as if it where a macro if you add several
-mapppings like:
-```vim
-" For register a
-vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
-inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
-
-
-" For register b
-vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
-inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
-```
-
-<!-- panvimdoc-ignore-start -->
-
-![otf](https://user-images.githubusercontent.com/25300418/184359312-8e368393-7be3-4dc4-ae08-1ff1bf17b309.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-## Select_choice
-
-It's possible to leverage `vim.ui.select` for selecting a choice directly,
-without cycling through choices.
-All that is needed for this is calling `require("luasnip.extras.select_choice")`,
-preferably via some keybind, e.g.
-
-```vim
-inoremap <c-u> <cmd>lua require("luasnip.extras.select_choice")()<cr>
-```
-, while inside a choiceNode. The `opts.kind` hint for `vim.ui.select` will be set to `luasnip`.
-
-<!-- panvimdoc-ignore-start -->
-
-![select_choice](https://user-images.githubusercontent.com/25300418/184359342-c8d79d50-103c-44b7-805f-fe75294e62df.gif)
-
-<!-- panvimdoc-ignore-end -->
-
-## filetype_functions
-
-Contains some utility-functions that can be passed to the `ft_func` or
-`load_ft_func`-settings.
-
-* `from_filetype`: the default for `ft_func`. Simply returns the filetype(s) of
-  the buffer.
-* `from_cursor_pos`: uses treesitter to determine the filetype at the cursor.
-  With that, it's possible to expand snippets in injected regions, as long as
-  the treesitter-parser supports them.
-  If this is used in conjuction with `lazy_load`, extra care must be taken that
-  all the filetypes that can be expanded in a given buffer are also returned by
-  `load_ft_func` (otherwise their snippets may not be loaded).
-  This can easily be achieved with `extend_load_ft`.
-* `extend_load_ft`: `fn(extend_ft:map) -> fn`
-  A simple solution to the problem described above is loading more filetypes
-  than just that of the target-buffer when `lazy_load`ing. This can be done
-  ergonomically via `extend_load_ft`: calling it with a table where the keys are
-  filetypes, and the values are the filetypes that should be loaded additionaly
-  returns a function that can be passed to `load_ft_func` and takes care of
-  extending the filetypes properly.
-
-  ```lua
-  ls.setup({
-  	load_ft_func =
-  		-- Also load both lua and json when a markdown-file is opened,
-  		-- javascript for html.
-  		-- Other filetypes just load themselves.
-  		require("luasnip.extras.filetype_functions").extend_load_ft({
-  			markdown = {"lua", "json"},
-  			html = {"javascript"}
-  		})
-  })
-  ```
 
 # EXTEND_DECORATOR
 
