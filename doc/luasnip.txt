@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.5.0            Last change: 2022 July 05
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 27
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -10,32 +10,37 @@ Table of Contents                                  *luasnip-table-of-contents*
 4. TEXTNODE                                                 |luasnip-textnode|
 5. INSERTNODE                                             |luasnip-insertnode|
 6. FUNCTIONNODE                                         |luasnip-functionnode|
-7. CHOICENODE                                             |luasnip-choicenode|
-8. SNIPPETNODE                                           |luasnip-snippetnode|
-9. INDENTSNIPPETNODE                               |luasnip-indentsnippetnode|
-10. DYNAMICNODE                                          |luasnip-dynamicnode|
-11. RESTORENODE                                          |luasnip-restorenode|
-12. ABSOLUTE_INDEXER                                |luasnip-absolute_indexer|
-13. EXTRAS                                                    |luasnip-extras|
+7. POSTFIX SNIPPET                                   |luasnip-postfix-snippet|
+8. CHOICENODE                                             |luasnip-choicenode|
+9. SNIPPETNODE                                           |luasnip-snippetnode|
+10. INDENTSNIPPETNODE                              |luasnip-indentsnippetnode|
+11. DYNAMICNODE                                          |luasnip-dynamicnode|
+12. RESTORENODE                                          |luasnip-restorenode|
+13. ABSOLUTE_INDEXER                                |luasnip-absolute_indexer|
+14. EXTRAS                                                    |luasnip-extras|
   - FMT                                                          |luasnip-fmt|
   - On The Fly snippets                          |luasnip-on-the-fly-snippets|
   - Select_choice                                      |luasnip-select_choice|
   - filetype_functions                            |luasnip-filetype_functions|
-14. LSP-SNIPPETS                                        |luasnip-lsp-snippets|
-15. VARIABLES                                              |luasnip-variables|
-16. LOADERS                                                  |luasnip-loaders|
+15. LSP-SNIPPETS                                        |luasnip-lsp-snippets|
+  - Snipmate                                                |luasnip-snipmate|
+  - Transformations                                  |luasnip-transformations|
+16. VARIABLES                                              |luasnip-variables|
+  - Environment Namespaces                    |luasnip-environment-namespaces|
+  - LSP-Variables                                      |luasnip-lsp-variables|
+17. LOADERS                                                  |luasnip-loaders|
   - Troubleshooting                                  |luasnip-troubleshooting|
   - VSCODE                                                    |luasnip-vscode|
   - SNIPMATE                                                |luasnip-snipmate|
   - LUA                                                          |luasnip-lua|
   - EDIT_SNIPPETS                                      |luasnip-edit_snippets|
-17. SNIPPETPROXY                                        |luasnip-snippetproxy|
-18. EXT_OPTS                                                |luasnip-ext_opts|
-19. DOCSTRING                                              |luasnip-docstring|
-20. DOCSTRING-CACHE                                  |luasnip-docstring-cache|
-21. EVENTS                                                    |luasnip-events|
-22. CLEANUP                                                  |luasnip-cleanup|
-23. API-REFERENCE                                      |luasnip-api-reference|
+18. SNIPPETPROXY                                        |luasnip-snippetproxy|
+19. EXT_OPTS                                                |luasnip-ext_opts|
+20. DOCSTRING                                              |luasnip-docstring|
+21. DOCSTRING-CACHE                                  |luasnip-docstring-cache|
+22. EVENTS                                                    |luasnip-events|
+23. CLEANUP                                                  |luasnip-cleanup|
+24. API-REFERENCE                                      |luasnip-api-reference|
 
 >
                 __                       ____
@@ -72,8 +77,10 @@ All code-snippets in this help assume that
     local events = require("luasnip.util.events")
     local ai = require("luasnip.nodes.absolute_indexer")
     local fmt = require("luasnip.extras.fmt").fmt
+    local extras = require("luasnip.extras")
     local m = require("luasnip.extras").m
-    local lambda = require("luasnip.extras").l
+    local l = require("luasnip.extras").l
+    local postfix = require("luasnip.extras.postfix").postfix
 <
 
 
@@ -119,8 +126,8 @@ It is possible to make snippets from one filetype available to another using
 2. NODE                                                         *luasnip-node*
 
 Every node accepts, as its’ last parameter, an optional table of arguments.
-There are some common ones (eg. |luasnip-`node_ext_opts`|), and some that only
-apply to some nodes (`user_args` for both function and dynamicNode). These
+There are some common ones (e.g. |luasnip-`node_ext_opts`|), and some that
+only apply to some nodes (`user_args` for both function and dynamicNode). These
 `opts` are only mentioned if they accept options that are not common to all
 nodes.
 
@@ -141,7 +148,7 @@ entries:
 
 
 - `trig`: string, plain text by default. The only entry that must be given.
-- `name`: string, can be used by eg. `nvim-compe` to identify the snippet.
+- `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
 - `dscr`: string, description of the snippet, -separated or table
     for multiple lines.
 - `wordTrig`: boolean, if true, the snippet is only expanded if the word
@@ -180,11 +187,11 @@ The third argument (`opts`) is a table with the following valid keys:
     captures) -> bool`. The snippet will be expanded only if it returns true
     (default is a function that just returns `true`). The function is called before
     the text is modified in any way. Some parameters are passed to the function:
-    The line up to the cursor, the matched trigger and the captures (table).
+    The line up to the cursor, the matched trigger, and the captures (table).
 - `show_condition`: Function with signature `f(line_to_cursor) -> bool`. It is a
     hint for completion-engines, indicating when the snippet should be included in
     current completion candidates. Defaults to a function returning `true`. This is
-    different than `condition` because `condition` is evaluated by LuaSnip on
+    different from `condition` because `condition` is evaluated by LuaSnip on
     snippet expansion (and thus has access to the matched trigger and captures),
     while `show_condition` is evaluated by the completion-engine when scanning for
     available snippet candidates.
@@ -206,12 +213,12 @@ The third argument (`opts`) is a table with the following valid keys:
     this snippet. More info |luasnip-here|.
 
 
-This `opts`-table can also be passed to eg. `snippetNode` or
+This `opts`-table can also be passed to e.g. `snippetNode` or
 `indentSnippetNode`, but only `callbacks` and the `ext_opts`-related options
 are used there.
 
-Snippets contain some interesting tables, eg. `snippet.env` contains variables
-used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
+Snippets contain some interesting tables, e.g. `snippet.env` contains
+variables used in the LSP-protocol like `TM_CURRENT_LINE` or `TM_FILENAME` or
 `snippet.captures`, where capture-groups of regex-triggers are stored.
 Additionally, the string that was used to trigger the snippet is stored in
 `snippet.trigger`. These variables/tables are primarily useful in
@@ -258,7 +265,7 @@ lines rather than a string:
 ==============================================================================
 5. INSERTNODE                                             *luasnip-insertnode*
 
-These Nodes contain editable text and can be jumped to- and from (eg.
+These Nodes contain editable text and can be jumped to- and from (e.g.
 traditional placeholders, like `$1` in textmate-snippets).
 
 The functionality is best demonstrated with an example:
@@ -320,7 +327,7 @@ detail is that the jump-positions restart at 1 in nested snippets:
 <
 
 
-as opposed to eg. the textmate-syntax, where tabstops are snippet-global:
+as opposed to e.g. the textmate-syntax, where tabstops are snippet-global:
 
 >
     ${1:First jump} :: ${2: ${3:Third jump} : ${4:Fourth jump}}
@@ -339,7 +346,7 @@ for potentially keeping some default-value:
 <
 
 
-This initial text is defined the same way as textNodes, eg. can be multiline.
+This initial text is defined the same way as textNodes, e.g. can be multiline.
 
 `i(0)`s can have initial text, but do note that when the SELECTed text is
 replaced, its’ replacement won’t end up in the `i(0)`, but behind it (for
@@ -365,18 +372,18 @@ user-defined function:
 The first parameter of `f` is the function. Its parameters are:
 
 
-1. A table of the text of currently contained in the argnodes. (eg. `{{line1},
+1. A table of the text of currently contained in the argnodes. (e.g. `{{line1},
 {line1, line2}}`). The snippet-indent will be removed from all lines following
 the first.
 2. The immediate parent of the `functionNode`. It is included here as it allows
-easy access to anything that could be useful in functionNodes (ie.
+easy access to anything that could be useful in functionNodes (i.e.
 `parent.snippet.env` or `parent.snippet.captures`, which contains capture
 groups of regex-triggered snippets). In most cases `parent.env` works, but if a
 `functionNode` is nested within a `snippetNode`, the immediate parent (a
 `snippetNode`) will contain neither `captures` nor `env`. Those are only stored
 in the `snippet`, which can be accessed as `parent.snippet`.
 3. The `user_args` passed in `opts`. Note that there may be multiple user_args
-(eg. `user_args1, ..., user_argsn`).
+(e.g. `user_args1, ..., user_argsn`).
 
 
 The function shall return a string, which will be inserted as-is, or a table of
@@ -461,7 +468,105 @@ If the function only performs simple operations on text, consider using the
 `lambda` from |luasnip-`luasnip.extras`|
 
 ==============================================================================
-7. CHOICENODE                                             *luasnip-choicenode*
+7. POSTFIX SNIPPET                                   *luasnip-postfix-snippet*
+
+Postfix snippets, famously used in rust analyzer
+<https://rust-analyzer.github.io/> and various IDEs, are a type of snippet,
+which alters text before the snippets trigger. While these can be implemented
+using regTrig snippets, this helper makes the process easier in most cases.
+
+The simplest example, which surrounds the text preceeding the `.br` with
+brackets `[]`, looks like:
+
+>
+    
+          postfix(".br", {
+                  f(function(_, parent)
+                        return "[" .. parent.snippet.env.POSTFIX_MATCH .. "]"
+                  end, {}),
+          })
+<
+
+
+and is triggered with `xxx.br` and expands to `[xxx]`.
+
+Note the `parent.snippet.env.POSTFIX_MATCH` in the function node. This is
+additional field generated by the postfix snippet. This field is generated by
+extracting the text matched (using a configurable matching string, see below)
+from before the trigger. In the case above, the field would equal `"xxx"`. This
+is also usable within dynamic nodes.
+
+This field can also be used within lambdas and dynamic nodes.
+
+>
+          postfix(".br", {
+                  l("[" .. l.POSTFIX_MATCH .. "]"),
+          })
+<
+
+
+>
+        postfix(".brd", {
+          d(1, function (_, parent)
+            return sn(nil, {t("[" .. parent.env.POSTFIX_MATCH .. "]")})
+          end)
+        }),
+<
+
+
+The arguments to `postfix` are identical to the arguments to `s` but with a few
+extra options.
+
+The first argument can be either a string or a table. If it is a string, that
+string will act as the trigger, and if it is a table it has the same valid keys
+as the table in the same position for `s` except:
+
+
+- `wordTrig`: This key will be ignored if passed in, as it must always be
+    false for postfix snippets.
+- `match_pattern`: The pattern that the line before the trigger is matched
+    against. The default match pattern is `"[%w%.%_%-]+$"`. Note the `$`. This
+    matches since only the line _up until_ the beginning of the trigger is
+    matched against the pattern, which makes the character immediately
+    preceeding the trigger match as the end of the string.
+
+
+Some other match strings, including the default, are available from the postfix
+module. `require("luasnip.extras.postfix).matches`:
+
+
+- `default`: [%w%.%_%-%“%’]+$
+- 'line': `^.+$`
+
+
+The second argument is identical to the second argument for `s`, that is, a
+table of nodes.
+
+The optional third argument is the same as the third (`opts`) argument to the
+`s` function, but with one difference:
+
+The postfix snippet works using a callback on the pre_expand event of the
+snippet. If you pass a callback on the pre_expand event (structure example
+below) it will get run after the builtin callback. This means that your
+callback will have access to the `POSTFIX_MATCH` field as well.
+
+>
+    
+          {
+            callbacks = {
+                  [-1] = {
+                          [events.pre_expand] = function(snippet, event_args)
+                              -- function body to match before the dot
+                              -- goes here
+                           end
+                          }
+                        }
+            }
+<
+
+
+==============================================================================
+8. CHOICENODE                                             *luasnip-choicenode*
 
 ChoiceNodes allow choosing between multiple nodes.
 
@@ -481,7 +586,7 @@ will be converted into a `snippetNode`. The third parameter is a table of
 options with the following keys:
 
 
-- `restore_cursor`: `false` by default. If it is set and the node that was
+- `restore_cursor`: `false` by default. If it is set, and the node that was
     being edited also appears in the switched-to choice (can be the case if a
     `restoreNode` is present in both choice) the cursor is restored relative to
     that node.
@@ -497,7 +602,7 @@ need one inside a choiceNode; their index is the same as the choiceNodes’.
 
 As it is only possible (for now) to change choices from within the choiceNode,
 make sure that all of the choices have some place for the cursor to stop at.
-This means that in `sn(nil, {...nodes...})` `nodes` has to contain eg. an
+This means that in `sn(nil, {...nodes...})` `nodes` has to contain e.g. an
 `i(1)`, otherwise luasnip will just "jump through" the nodes, making it
 impossible to change the choice.
 
@@ -519,8 +624,8 @@ example via
     -- set keybinds for both INSERT and VISUAL.
     vim.api.nvim_set_keymap("i", "<C-n>", "<Plug>luasnip-next-choice", {})
     vim.api.nvim_set_keymap("s", "<C-n>", "<Plug>luasnip-next-choice", {})
-    vim.api.nvim_set_keymap("i", "<C-p>", "<Plug>luasnip-previous-choice", {})
-    vim.api.nvim_set_keymap("s", "<C-p>", "<Plug>luasnip-previous-choice", {})
+    vim.api.nvim_set_keymap("i", "<C-p>", "<Plug>luasnip-prev-choice", {})
+    vim.api.nvim_set_keymap("s", "<C-p>", "<Plug>luasnip-prev-choice", {})
 <
 
 
@@ -528,7 +633,7 @@ Apart from this, there is also a |luasnip-picker| where no cycling is necessary
 and any choice can be selected right away, via `vim.ui.select`.
 
 ==============================================================================
-8. SNIPPETNODE                                           *luasnip-snippetnode*
+9. SNIPPETNODE                                           *luasnip-snippetnode*
 
 SnippetNodes directly insert their contents into the surrounding snippet. This
 is useful for choiceNodes, which only accept one child, or dynamicNodes, where
@@ -549,7 +654,7 @@ number, as they too are jumpable:
 Note that snippetNodes don’t expect an `i(0)`.
 
 ==============================================================================
-9. INDENTSNIPPETNODE                               *luasnip-indentsnippetnode*
+10. INDENTSNIPPETNODE                              *luasnip-indentsnippetnode*
 
 By default, all nodes are indented at least as deep as the trigger. With these
 nodes it’s possible to override that behaviour:
@@ -571,7 +676,7 @@ indent on the line where the snippet was triggered using `ISN` (That is
 possible via regex-triggers where the entire line before the trigger is
 matched).
 
-Another nice usecase for `ISN` is inserting text, eg. `//` or some other
+Another nice usecase for `ISN` is inserting text, e.g. `//` or some other
 comment- string before the nodes of the snippet:
 
 >
@@ -586,7 +691,7 @@ applied after linebreaks. To enable such usage, `$PARENT_INDENT` in the
 indentstring is replaced by the parents’ indent (duh).
 
 ==============================================================================
-10. DYNAMICNODE                                          *luasnip-dynamicnode*
+11. DYNAMICNODE                                          *luasnip-dynamicnode*
 
 Very similar to functionNode, but returns a snippetNode instead of just text,
 which makes them very powerful as parts of the snippet can be changed based on
@@ -619,7 +724,7 @@ at the dynamicNodes place.
 - `user_args1, ..., user_argsn`: passed through from `dynamicNode`-opts.
 
 3. `argnodes`: Indices of nodes the dynamicNode depends on: if any of these trigger an
-update, the `dynamicNode`s’ function will be executed and the result inserted at
+update, the `dynamicNode`s’ function will be executed, and the result inserted at
 the `dynamicNodes` place.
 Can be a single index or a table of indices.
 4. `opts`: Just like `functionNode`, `dynamicNode` also accepts `user_args` in
@@ -627,6 +732,9 @@ addition to options common to all nodes.
 
 
 Examples:
+
+This `dynamicNode` inserts an `insertNode` which copies the text inside the
+first `insertNode`.
 
 >
     s("trig", {
@@ -644,69 +752,46 @@ Examples:
 <
 
 
-This `dynamicNode` inserts an `insertNode` which copies the text inside the
-first `insertNode`.
+This snippet makes use of `old_state` to count the number of updates. To
+store/restore values generated by the `dynamicNode` or entered into
+`insert/choiceNode`, consider using the shortly-introduced `restoreNode`
+instead of `old_state`.
 
 >
-    local function lines(args, parent, old_state, initial_text)
-        local nodes = {}
-        old_state = old_state or {}
+    local function count(_, _, old_state)
+        old_state = old_state or {
+            updates = 0
+        }
     
-        -- count is nil for invalid input.
-        local count = tonumber(args[1][1])
-        -- Make sure there's a number in args[1].
-        if count then
-            for j=1, count do
-                local iNode
-                if old_state and old_state[j] then
-                    -- old_text is used internally to determine whether
-                    -- dependents should be updated. It is updated whenever the
-                    -- node is left, but remains valid when the node is no
-                    -- longer 'rendered', whereas node:get_text() grabs the text
-                    -- directly from the node.
-                    iNode = i(j, old_state[j].old_text)
-                else
-                  iNode = i(j, initial_text)
-                end
-                nodes[2*j-1] = iNode
+        old_state.updates = old_state.updates + 1
     
-                -- linebreak
-                nodes[2*j] = t({"",""})
-                -- Store insertNode in old_state, potentially overwriting older
-                -- nodes.
-                old_state[j] = iNode
-            end
-        else
-            nodes[1] = t("Enter a number!")
-        end
+        local snip = sn(nil, {
+            t(tostring(old_state.updates))
+        })
     
-        local snip = sn(nil, nodes)
         snip.old_state = old_state
         return snip
     end
     
     ...
     
-    s("trig", {
-        i(1, "1"),
-        -- pos, function, argnodes, opts (containing the user_arg).
-        d(2, lines, {1}, {user_args = {"Sample Text"}})
-    })
+    ls.add_snippets("all",
+        s("trig", {
+            i(1, "change to update"),
+            d(2, count, {1})
+        })
+    )
 <
 
 
-This snippet would start out as `"1\nSample Text"` and, upon changing the 1 to
-eg. 3, it would change to `"3\nSample Text\nSample Text\nSample Text"`. Text
-that was inserted into any of the dynamicNodes insertNodes is kept when
-changing to a bigger number. (`old_state` is no longer the best way to preserve
-user-input across multiple recreations: the shortly-explained `restoreNode` is
-much more user-friendly)
+As with `functionNode`, `user_args` can be used to reuse similar `dynamicNode`-
+functions.
 
 ==============================================================================
-11. RESTORENODE                                          *luasnip-restorenode*
+12. RESTORENODE                                          *luasnip-restorenode*
 
 This node can store and restore a snippetNode that was modified (changed
-choices, inserted text) by the user. It’s usage is best demonstrated by an
+choices, inserted text) by the user. Its usage is best demonstrated by an
 example:
 
 >
@@ -729,7 +814,7 @@ Here the text entered into `user_text` is preserved upon changing choice.
 The constructor for the restoreNode, `r`, takes (at most) three parameters: -
 `pos`, when to jump to this node. - `key`, the key that identifies which
 `restoreNode`s should share their content. - `nodes`, the contents of the
-`restoreNode`. Can either be a single node or a table of nodes (both of which
+`restoreNode`. Can either be a single node, or a table of nodes (both of which
 will be wrapped inside a `snippetNode`, except if the single node already is a
 `snippetNode`). The content of a given key may be defined multiple times, but
 if the contents differ, it’s undefined which will actually be used. If a keys
@@ -783,12 +868,12 @@ Now the entered text is stored.
 that really bothers you feel free to open an issue.
 
 ==============================================================================
-12. ABSOLUTE_INDEXER                                *luasnip-absolute_indexer*
+13. ABSOLUTE_INDEXER                                *luasnip-absolute_indexer*
 
 The `absolute_indexer` can be used to pass text of nodes to a
 function/dynamicNode that it doesn’t share a parent with. Normally, accessing
-the outer `i(1)` isn’t possible from inside eg. a snippetNode (nested inside
-a choiceNode to make this example more practical):
+the outer `i(1)` isn’t possible from inside e.g. a snippetNode (nested
+inside a choiceNode to make this example more practical):
 
 >
     s("trig", {
@@ -862,7 +947,7 @@ to be accessed as `ai[restoreNodeIndx][0][1]`.
 
 
 ==============================================================================
-13. EXTRAS                                                    *luasnip-extras*
+14. EXTRAS                                                    *luasnip-extras*
 
 The module `"luasnip.extras"` contains nodes that ease writing snippets (This
 is only a short outline, their usage is shown more expansively in
@@ -891,9 +976,9 @@ is only a short outline, their usage is shown more expansively in
         specified above).
         If `then` is not given, the `then`-value depends on what was specified as the
         `condition`:
-        - pattern: Simply the return value from the `match`, eg. the entire match,
+        - pattern: Simply the return value from the `match`, e.g. the entire match,
             or, if there were capture groups, the first capture group.
-        - function: the return value of the function if it is either a string or a
+        - function: the return value of the function if it is either a string, or a
             table (if there is no `then`, the function cannot return a table containing
             something other than strings).
         - lambda: Simply the first value returned by the lambda.
@@ -902,28 +987,49 @@ is only a short outline, their usage is shown more expansively in
         exactly, nothing otherwise.
     - `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` inserts
         "PALINDROME" if the nth jumpable node is a palindrome.
-    - >
-              s("trig", {
-                  i(1), t":",
-                  i(2), t"::",
-                  m({1, 2}, lambda._1:match("^"..lambda._2.."$"), lambda._1:gsub("a", "e"))
-              })
+        >
+            s("trig", {
+                i(1), t":",
+                i(2), t"::",
+                m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
+            })
         <
         This inserts the text of the first insertNode, with all occurences of `a`
         replaced with `e` if the second insertNode matches the first exactly.
 - `rep`: repeats the node with the passed index. `rep(1)` to repeat the content
     of the first insert.
-- `partial`: directly inserts the output of a function. Useful for eg.
+- `partial`: directly inserts the output of a function. Useful for e.g.
     `partial(os.date, "%Y")` (arguments passed after the function are passed to
     it).
 - `nonempty`: inserts text if the insert at the given index doesn’t contain any
-    text. `nonempty(n, "empty!", "not empty!")` inserts "empty!" if insert n is
-    empty, "not empty!" it it isn’t.
+    text. `nonempty(n, "not empty!", "empty!")` inserts "empty!" if insert n is
+    empty, "not empty!" if it isn’t.
 - `dynamic_lambda`: Operates almost exactly like `lambda`, only that it can be
-    jumped to and it’s contents therfore be easily overridden. `dynamic_lambda(2,
-    lambda._1..lambda._1, 1)` will first contain the content of insert 1 appended
-    to itself, but the second jump will lead to it, making it easy to override the
-    generated text. The text will only be changed when a argnode updates it.
+    jumped to, and it’s contents therefore be easily overridden.
+    `dynamic_lambda(2, lambda._1..lambda._1, 1)` will first contain the content of
+    insert 1 appended to itself, but the second jump will lead to it, making it
+    easy to override the generated text. The text will only be changed when a
+    argnode updates it.
+
+
+>
+    ls.add_snippets("all", {
+      s("extras1", {
+        i(1), t { "", "" }, m(1, "^ABC$", "A")
+      }),
+      s("extras2", {
+        i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
+      }),
+      s("extras3", {
+        i(1), t { "", "" }, i(2), t { "", "" },
+        m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
+      }),
+      s("extras4", { i(1), t { "", "" }, extras.rep(1) }),
+      s("extras5", { extras.partial(os.date, "%Y") }),
+      s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") }),
+      s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) }),
+    })
+<
 
 
 FMT                                                              *luasnip-fmt*
@@ -935,28 +1041,28 @@ Simple example:
 
 >
     ls.add_snippets("all", {
-        -- important! fmt does not return a snippet, it returns a table of nodes.
-        s("example1", fmt("just an {iNode1}", {
-            iNode1 = i(1, "example")
-        }),
-        s("example2", fmt([[
-            if {} then
-                {}
-            end
-        ]], {
-            -- i(1) is at nodes[1], i(2) at nodes[2].
-            i(1, "not now"), i(2, "when")
-        }),
-        s("example3", fmt([[
-            if <> then
-                <>
-            end
-        ]], {
-            -- i(1) is at nodes[1], i(2) at nodes[2].
-            i(1, "not now"), i(2, "when")
-        }, {
-            delimiters = "<>"
-        }),
+      -- important! fmt does not return a snippet, it returns a table of nodes.
+      s("example1", fmt("just an {iNode1}", {
+        iNode1 = i(1, "example")
+      })),
+      s("example2", fmt([[
+      if {} then
+        {}
+      end
+      ]], {
+        -- i(1) is at nodes[1], i(2) at nodes[2].
+        i(1, "not now"), i(2, "when")
+      })),
+      s("example3", fmt([[
+      if <> then
+        <>
+      end
+      ]], {
+        -- i(1) is at nodes[1], i(2) at nodes[2].
+        i(1, "not now"), i(2, "when")
+      }, {
+        delimiters = "<>"
+      })),
     })
 <
 
@@ -972,9 +1078,12 @@ Simple example:
     `"{} ? {} : {}"` becomes `"{1} ? {2} : {3}"`, while
     `"{} ? {3} : {}"` becomes `"{1} ? {3} : {4}"` (the count restarts at each
     numbered placeholder).
+    If a key appears more than once in `format`, the node in
+    `content[<duplicate_key>]` is inserted for the first, and copies of it for
+    subsequent occurences.
 - `nodes`: just a table of nodes.
 - `opts`: optional arguments:
-    - `delimiters`: string, two characters. Change `{,}` to some other pair, eg.
+    - `delimiters`: string, two characters. Change `{,}` to some other pair, e.g.
         `"<>"`.
     - `strict`: Warn about unused nodes (default true).
     - `trim_empty`: remove empty (`"%s*"`) first and last line in `format`. Useful
@@ -992,10 +1101,10 @@ You can create snippets that are not for being used all the time but only in a
 single session.
 
 This behaves as an "operator" takes what is in a register and transforms it
-into a snippet using words prefixed as $ as inputs or copies (depending if the
-same word appears more than once). You can escape $ by repeating it.
+into a snippet using words prefixed as $ as inputs or copies (depending on if
+the same word appears more than once). You can escape $ by repeating it.
 
-In order to use add something like this to your config:
+In order to use, add something like this to your config:
 
 >
     vnoremap <c-f>  "ec<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
@@ -1003,18 +1112,18 @@ In order to use add something like this to your config:
 <
 
 
-Notice that you can use your own mapping instead of <c-f> and you can pick
+Notice that you can use your own mapping instead of <c-f>, and you can pick
 another register instead of `"p`. You can even use it several times, as if it
 where a macro if you add several mapppings like:
 
 >
-    ; For register a
-    vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr
+    " For register a
+    vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
     
     
-    ; For register b
-    vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr
+    " For register b
+    vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
 <
 
@@ -1023,7 +1132,7 @@ SELECT_CHOICE                                          *luasnip-select_choice*
 
 It’s possible to leverage `vim.ui.select` for selecting a choice directly,
 without cycling through choices. All that is needed for this is calling
-`require("luasnip.extras.select_choice")`, preferably via some keybind, eg.
+`require("luasnip.extras.select_choice")`, preferably via some keybind, e.g.
 
 >
     inoremap <c-u> <cmd>lua require("luasnip.extras.select_choice")()<cr>
@@ -1050,7 +1159,7 @@ Contains some utility-functions that can be passed to the `ft_func` or
 - `extend_load_ft`: `fn(extend_ft:map) -> fn` A simple solution to the problem
     described above is loading more filetypes than just that of the target-buffer
     when `lazy_load`ing. This can be done ergonomically via `extend_load_ft`:
-    calling it with a table where the keys are filetypes and the values are the
+    calling it with a table where the keys are filetypes, and the values are the
     filetypes that should be loaded additionaly returns a function that can be
     passed to `load_ft_func` and takes care of extending the filetypes properly.
     >
@@ -1068,7 +1177,7 @@ Contains some utility-functions that can be passed to the `ft_func` or
 
 
 ==============================================================================
-14. LSP-SNIPPETS                                        *luasnip-lsp-snippets*
+15. LSP-SNIPPETS                                        *luasnip-lsp-snippets*
 
 Luasnip is capable of parsing lsp-style snippets using
 `ls.parser.parse_snippet(context, snippet_string)`:
@@ -1078,12 +1187,70 @@ Luasnip is capable of parsing lsp-style snippets using
 <
 
 
+`context` can be: - `string|table`: treated like the first argument to `ls.s`,
+`parse_snippet` returns a snippet. - `number`: `parse_snippet` returns a
+snippetNode, with the position `context`. - `nil`: `parse_snippet` returns a
+flat table of nodes. This can be used like `fmt`.
+
 Nested placeholders(`"${1:this is ${2:nested}}"`) will be turned into
 choiceNode’s with: - the given snippet(`"this is ${1:nested}"`) and - an
 empty insertNode
 
+This behaviour can be modified by changing `parser_nested_assembler` in
+`ls.setup()`.
+
+Luasnip will also modify some snippets it’s incapable of representing
+accurately: - if the `$0` is a placeholder with something other than just text
+inside - if the `$0` is a choice - if the `$0` is not an immediate child of the
+snippet (it could be inside a placeholder: `"${1: $0 }"`)
+
+To remedy those incompatibilities, the invalid `$0` will be replaced with a
+tabstop/placeholder/choice which will be visited just before the new `$0`. This
+new `$0` will be inserted at the (textually) earliest valid position behind the
+invalid `$0`.
+
+SNIPMATE                                                    *luasnip-snipmate*
+
+It is furthermore possible to parse snipmate-snippets (this includes support
+for vimscript-evaluation!!) Snipmate-snippets have to be parsed with a
+different function, `ls.parser.parse_snipmate`:
+
+>
+    ls.parser.parse_snipmate("year", "The year is `strftime('%Y')`")
+<
+
+
+`parse_snipmate` accepts the same arguments as `parse_snippet`, only the
+snippet-body is parsed differently.
+
+TRANSFORMATIONS                                      *luasnip-transformations*
+
+To apply Variable/Placeholder-transformations
+<https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms>,
+luasnip needs to apply ECMAScrip-regexes. This is implemented by relying on
+`jsregexp` <https://github.com/kmarius/jsregexp>. The easiest, but potentially
+error-prone way to install it is by calling `make install_jsregexp` in the
+repo-root. This process can be automated by `packer.nvim`:
+
+>
+    use("L3MON4D3/luasnip", run = "make install_jsregexp")
+<
+
+
+If this fails, first open an issue :P, and then try installing the
+`jsregexp`-luarock. This is also possible via `packer.nvim`, although actual
+usage may require a small workaround, see here
+<https://github.com/wbthomason/packer.nvim/issues/593> or here
+<https://github.com/wbthomason/packer.nvim/issues/358>.
+
+Alternatively, `jsregexp` can be cloned locally, `make`d, and the resulting
+`jsregexp.so` placed in some place where nvim can find it (probably
+`~/.config/nvim/lua/`).
+
+If `jsregexp` is not available, transformation are replaced by a simple copy.
+
 ==============================================================================
-15. VARIABLES                                              *luasnip-variables*
+16. VARIABLES                                              *luasnip-variables*
 
 All `TM_something`-variables are supported with two additions: `SELECT_RAW` and
 `SELECT_DEDENT`. These were introduced because `TM_SELECTED_TEXT` is designed
@@ -1095,11 +1262,12 @@ All variables can be used outside of lsp-parsed snippets as their values are
 stored in a snippets’ `snip.env`-table:
 
 >
-    s("selected_text", {
-        -- the surrounding snippet is passed in args after all argnodes (none,
-        -- in this case).
-        f(function(args, snip) return snip.env.SELECT_RAW end, {})
-    })
+    s("selected_text", f(function(args, snip)
+      local res, env = {}, snip.env
+      table.insert(res, "Selected Text (current line is " .. env.TM_LINE_NUMBER .. "):")
+      for _, ele in ipairs(env.SELECT_RAW) do table.insert(res, ele) end
+      return res
+    end, {}))
 <
 
 
@@ -1108,8 +1276,90 @@ To use any `*SELECT*` variable, the `store_selection_keys` must be set via
 case, hitting `<Tab>` while in Visualmode will populate the `*SELECT*`-vars for
 the next snippet and then clear them.
 
+ENVIRONMENT NAMESPACES                        *luasnip-environment-namespaces*
+
+You can also add your own variables by using the `ls.env_namespace(name, opts)`
+where:
+
+
+- `name`: `string` the names the namespace, can’t contain the character “_”
+- `opts` is a table containing (in every case `EnvVal` is the same as `string|list[string]`:
+    - `vars`: `(fn(name:string)->EnvVal) | map[string, EnvVal]`
+        Is a function that receives a string and returns a value for the var with that name
+        or a table from var name to a value
+        (in this case, if the value is a function it will be executed lazily once per snippet expansion).
+    - `init`: `fn(pos: pair[int])->map[string, EnvVal]` Takes the 0-based position of the cursor and returns
+        a table of variables that will set to the environment of the snippet on expansion,
+        use this for vars that have to be calculated in that moment or that depend on each other.
+    - `eager`: `list[string]` names of variables that will be taken from `vars` and appended eagerly (like those in init)
+    - `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool|string[]` Says if certain vars are a table or just a string,
+        can be a function that get’s the name of the var and returns true if the var is a key,
+        a list of vars that are tables or a boolean for the full namespace, it’s false by default. Refer to
+        issue#510 <https://github.com/L3MON4D3/LuaSnip/issues/510#issuecomment-1209333698> for more information.
+
+
+The four fields of `opts` are optional but you need to provide either `init` or
+`vars`, and `eager` can’t be without `vars`. Also you can’t use namespaces
+that override default vars.
+
+A simple example to make it more clear:
+
+>
+    local random_lang()
+        return ({"LUA", "VIML", "VIML9"})[math.floor(math.random()/2 + 1.5)]
+    end
+    
+    ls.env_namespace("MY", {vars={ NAME="LuaSnip",  LANG=random_lang }})`
+    
+    -- then you can use  $MY_NAME and $MY_LANG in your snippets
+    
+    ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
+    
+    -- then you can use  $SYS_HOME which was eagerly initialized but also $SYS_USER (or any other system environment var) in your snippets
+    
+    lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} end)
+    
+    -- then you can use  $POS_VAL in your snippets
+    
+    s("custom_env", d(1, function(args, parent)
+      local env = parent.snippet.env
+      return sn(nil, t {
+        "NAME: " .. env.MY_NAME,
+        "LANG: " .. env.MY_LANG,
+        "HOME: " .. env.SYS_HOME,
+        "USER: " .. env.SYS_USER,
+        "VAL: " .. env.POS_VAL
+      })
+    end, {}))
+<
+
+
+LSP-VARIABLES                                          *luasnip-lsp-variables*
+
+All variables, even ones added via `env_namespace`, can be accessed in
+lsp-snippets as `$VAR_NAME`.
+
+The lsp-spec states:
+
+------------------------------------------------------------------------------
+
+With `$name` or `${name:default}` you can insert the value of a variable. When
+a variable isn’t set, its default or the empty string is inserted. When a
+variable is unknown (that is, its name isn’t defined) the name of the
+variable is inserted and it is transformed into a placeholder.
+
+------------------------------------------------------------------------------
+
+The above necessiates a differentiation between `unknown` and `unset`
+variables:
+
+For Luasnip, a variable `VARNAME` is `unknown` when `env.VARNAME` returns `nil`
+and `unset` if it returns an empty string.
+
+Consider this when adding env-variables which might be used in lsp-snippets.
+
 ==============================================================================
-16. LOADERS                                                  *luasnip-loaders*
+17. LOADERS                                                  *luasnip-loaders*
 
 Luasnip is capable of loading snippets from different formats, including both
 the well-established vscode- and snipmate-format, as well as plain lua-files
@@ -1125,7 +1375,7 @@ All loaders share a similar interface:
 where `opts` can contain the following keys:
 
 
-- `paths`: List of paths to load. Can be a table or a single,
+- `paths`: List of paths to load. Can be a table, or a single
     comma-separated string.
     The paths may begin with `~/` or `./` to indicate that the path is
     relative to your `$HOME` or to the directory where your `$MYVIMRC` resides
@@ -1147,8 +1397,8 @@ where `opts` can contain the following keys:
 
 
 While `load` will immediately load the snippets, `lazy_load` will defer loading
-until the snippets are actually needed (whenever a new buffer is created or the
-filetype is changed luasnip actually loads `lazy_load`ed snippets for the
+until the snippets are actually needed (whenever a new buffer is created, or
+the filetype is changed luasnip actually loads `lazy_load`ed snippets for the
 filetypes associated with this buffer. This association can be changed by
 customizing `load_ft_func` in `setup`: the option takes a function that, passed
 a `bufnr`, returns the filetypes that should be loaded (`fn(bufnr) -> filetypes
@@ -1184,7 +1434,7 @@ TROUBLESHOOTING                                      *luasnip-troubleshooting*
         ls.filetype_extend("<luasnip-filetype>", { "<collection-filetype>" })
     <
 - As we only load `lazy_load`ed snippet on some events, `lazy_load` will probably
-    not play nice when a non-default `ft_func` is used: if it depends on eg. the
+    not play nice when a non-default `ft_func` is used: if it depends on e.g. the
     cursor-position, only the filetypes for the cursor-position when the
     `lazy_load`-events are triggered will be loaded. Check
     |luasnip-filetype_function’s-`extend_load_ft`| for a solution.
@@ -1351,15 +1601,15 @@ LUA                                                              *luasnip-lua*
 
 Instead of adding all snippets via `add_snippets`, it’s possible to store
 them in separate files and load all of those. The file-structure here is
-exactly the supported snipmate-structure, eg. `<ft>.lua` or `<ft>/*.lua` to add
-snippets for the filetype `<ft>`. The files need to return two lists of
+exactly the supported snipmate-structure, e.g. `<ft>.lua` or `<ft>/*.lua` to
+add snippets for the filetype `<ft>`. The files need to return two lists of
 snippets (either may be `nil`). The snippets in the first are regular snippets
 for `<ft>`, the ones in the second are autosnippets (make sure they are enabled
 in `setup` or `set_config` if this table is used).
 
 As defining all of the snippet-constructors (`s`, `c`, `t`, …) in every file
 is rather cumbersome, luasnip will bring some globals into scope for executing
-these files. By default the names from `luasnip.config.snip_env`
+these files. By default, the names from `luasnip.config.snip_env`
 <https://github.com/L3MON4D3/LuaSnip/blob/69cb81cf7490666890545fef905d31a414edc15b/lua/luasnip/config.lua#L82-L104>
 will be used, but it’s possible to customize them by setting `snip_env` in
 `setup`.
@@ -1401,7 +1651,7 @@ can be quickly edited via
 will open a `vim.ui.select`-dialog to select first a filetype, and then (if
 there are multiple) the associated file to edit.
 
-`opts` currently only contains only one setting:
+`opts` currently only contains one setting:
 
 
 - `format`: `fn(file:string, source_name:string) -> string|nil`
@@ -1413,8 +1663,26 @@ there are multiple) the associated file to edit.
     in `file` with shorter, symbolic names (`"$PLUGINS"`, `"$CONFIG"`), but
     this can be extended to
     - filter files from some specific source/path
-    - more aggressively shorten paths using symbolic names, eg.
-        `"$FRIENDLY_SNIPPETS"`
+    - more aggressively shorten paths using symbolic names, e.g.
+        `"$FRIENDLY_SNIPPETS"`. Example: hide the `*.lua` snippet files, and shorten
+        the path with `$LuaSnip`:
+        >
+            require "luasnip.loaders" .edit_snippet_files {
+              format = function(file, source_name)
+                if source_name == "lua" then return nil
+                else return file:gsub("/root/.config/nvim/luasnippets", "$LuaSnip")
+                end
+              end
+            }
+        <
+        <div class="figure">
+        <img src="https://user-images.githubusercontent.com/25300418/184359420-3bc22d67-1f90-49d9-ac4e-3ea2524bcf0d.gif" title="fig:"/>
+        <p class="caption">edit-select-format</p>
+        </div>
+- `edit`: `fn(file:string)` This function is supposed to open the file for
+    editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
+    current buffer), but one could open the file in a split, a tab, or a floating
+    window, for example.
 
 
 One comfortable way to call this function is registering it as a command:
@@ -1425,10 +1693,10 @@ One comfortable way to call this function is registering it as a command:
 
 
 ==============================================================================
-17. SNIPPETPROXY                                        *luasnip-snippetproxy*
+18. SNIPPETPROXY                                        *luasnip-snippetproxy*
 
 `SnippetProxy` is used internally to alleviate the upfront-cost of loading
-snippets from eg. a snipmate-library or a vscode-package. This is achieved by
+snippets from e.g. a snipmate-library or a vscode-package. This is achieved by
 only parsing the snippet on expansion, not immediately after reading it from
 some file. `SnippetProxy` may also be used from lua directly, to get the same
 benefits:
@@ -1448,8 +1716,15 @@ This will parse the snippet on startup…
 <
 
 
+`sp(context, body, opts) -> snippetProxy` - `context`: exactly the same as the
+first argument passed to `ls.s`. - `body`: the snippet-body. - `opts`: accepts
+the same `opts` as `ls.s`, with some additions: - `parse_fn`: the function for
+parsing the snippet. Defaults to `ls.parser.parse_snippet` (the parser for
+lsp-snippets), an alternative is the parser for snipmate-snippets
+(`ls.parser.parse_snipmate`).
+
 ==============================================================================
-18. EXT_OPTS                                                *luasnip-ext_opts*
+19. EXT_OPTS                                                *luasnip-ext_opts*
 
 `ext_opts` can be used to set the `opts` (see `nvim_buf_set_extmark`) of the
 extmarks used for marking node-positions, either globally, per-snippet or
@@ -1461,7 +1736,7 @@ nodes:
 
 >
     local ext_opts = {
-        -- these ext_opts are applied when the node is active (eg. it has been
+        -- these ext_opts are applied when the node is active (e.g. it has been
         -- jumped into, and not out yet).
         active = 
         -- this is the table actually passed to `nvim_buf_set_extmark`.
@@ -1501,8 +1776,8 @@ It’s important to note that `snippet_passive` applies to the states
 `active`, and `active` only to `active`.
 
 To disable a key from a "lower" state, it has to be explicitly set to its
-default, eg. to disable highlighting inherited from `passive` when the node is
-`active`, `hl_group` could be set to `None` in `active`.
+default, e.g. to disable highlighting inherited from `passive` when the node
+is `active`, `hl_group` could be set to `None` in `active`.
 
 ------------------------------------------------------------------------------
 
@@ -1648,16 +1923,16 @@ Here the highlight of an insertNode nested directly inside a choiceNode is
 always visible on top of it.
 
 ==============================================================================
-19. DOCSTRING                                              *luasnip-docstring*
+20. DOCSTRING                                              *luasnip-docstring*
 
 Snippet-docstrings can be queried using `snippet:get_docstring()`. The function
 evaluates the snippet as if it was expanded regularly, which can be problematic
-if eg. a dynamicNode in the snippet relies on inputs other than the
+if e.g. a dynamicNode in the snippet relies on inputs other than the
 argument-nodes. `snip.env` and `snip.captures` are populated with the names of
 the queried variable and the index of the capture respectively
 (`snip.env.TM_SELECTED_TEXT` -> `'$TM_SELECTED_TEXT'`, `snip.captures[1]` ->
 `'$CAPTURES1'`). Although this leads to more expressive docstrings, it can
-cause errors in functions that eg. rely on a capture being a number:
+cause errors in functions that e.g. rely on a capture being a number:
 
 >
     s({trig = "(%d)", regTrig = true}, {
@@ -1685,7 +1960,7 @@ can be prevented by specifying `docTrig` during snippet-definition:
 `snippet.captures` and `snippet.trigger` will be populated as if actually
 triggered with `3`.
 
-Other issues will have to be handled manually by checking the contents of eg.
+Other issues will have to be handled manually by checking the contents of e.g.
 `snip.env` or predefining the docstring for the snippet:
 
 >
@@ -1697,8 +1972,11 @@ Other issues will have to be handled manually by checking the contents of eg.
 <
 
 
+A better example to understand `docTrig` and `docstring` can refer to #515
+<https://github.com/L3MON4D3/LuaSnip/pull/515>.
+
 ==============================================================================
-20. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
+21. DOCSTRING-CACHE                                  *luasnip-docstring-cache*
 
 Although generation of docstrings is pretty fast, it’s preferable to not redo
 it as long as the snippets haven’t changed. Using
@@ -1715,14 +1993,16 @@ The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 `~/.cache/nvim/luasnip/docstrings.json`).
 
 ==============================================================================
-21. EVENTS                                                    *luasnip-events*
+22. EVENTS                                                    *luasnip-events*
 
 Events can be used to react to some action inside snippets. These callbacks can
 be defined per-snippet (`callbacks`-key in snippet constructor) or globally
 (autocommand).
 
-`callbacks`: `fn(node[, event_args])` All callbacks get the `node` associated
-with the event and event-specific optional arguments, `event_args`.
+`callbacks`: `fn(node[, event_args]) -> event_res` All callbacks get the `node`
+associated with the event and event-specific optional arguments, `event_args`.
+`event_res` is only used in one event, `pre_expand`, where some properties of
+the snippet can be changed.
 
 `autocommand`: Luasnip uses `User`-events. Autocommands for these can be
 registered using
@@ -1755,7 +2035,7 @@ The node and `event_args` can be accessed through `require("luasnip").session`:
 - `enter/leave`: Called when a node is entered/left (for example when jumping
     around in a snippet).
     `User-event`: `"Luasnip<Node>{Enter,Leave}"`, with `<Node>` in
-    PascalCase, eg. `InsertNode` or `DynamicNode`.
+    PascalCase, e.g. `InsertNode` or `DynamicNode`.
     `event_args`: none
 - `change_choice`: When the active choice in a choiceNode is changed.
     `User-event`: `"LuasnipChangeChoice"`
@@ -1767,10 +2047,13 @@ The node and `event_args` can be accessed through `require("luasnip").session`:
     `event_args`:
     - `expand_pos`: `{<row>, <column>}`, position at which the snippet will be
         expanded. `<row>` and `<column>` are both 0-indexed.
+        `event_res`:
+    - `env_override`: `map string->(string[]|string)`, override or extend the
+        snippet’s environment (`snip.env`).
 
 
 A pretty useless, beyond serving as an example here, application of these would
-be printing eg. the nodes’ text after entering:
+be printing e.g. the nodes’ text after entering:
 
 >
     vim.api.nvim_create_autocmd("User", {
@@ -1805,14 +2088,14 @@ or some information about expansions
 
 
 ==============================================================================
-22. CLEANUP                                                  *luasnip-cleanup*
+23. CLEANUP                                                  *luasnip-cleanup*
 
 The function ls.cleanup() triggers the `LuasnipCleanup` user-event, that you
 can listen to do some kind of cleaning in your own snippets, by default it will
 empty the snippets table and the caches of the lazy_load.
 
 ==============================================================================
-23. API-REFERENCE                                      *luasnip-api-reference*
+24. API-REFERENCE                                      *luasnip-api-reference*
 
 `require("luasnip")`:
 
@@ -1842,8 +2125,8 @@ empty the snippets table and the caches of the lazy_load.
 - `get_id_snippet(id)`: returns snippet corresponding to id.
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 - `jumpable(direction)`: returns true if the current node has a next(`direction`
-    = 1) or previous(`direction` = -1), eg. whether it’s possible to jump forward
-    or backward to another node.
+    = 1) or previous(`direction` = -1), e.g. whether it’s possible to jump
+    forward or backward to another node.
 - `jump(direction)`: returns true if the jump was successful.
 - `expandable()`: true if a snippet can be expanded at the current cursor
     position.
@@ -1854,8 +2137,8 @@ empty the snippets table and the caches of the lazy_load.
     is ignored if the cursor is not inside the current snippet.
 - `expand_or_jump()`: returns true if jump/expand was succesful.
 - `expand_auto()`: expands the autosnippets before the cursor (not necessary to
-    call manually, will be called via autocmd if `enable_autosnippet` is set in the
-    config).
+    call manually, will be called via autocmd if `enable_autosnippets` is set in
+    the config).
 - `snip_expand(snip, opts)`: expand `snip` at the current cursor position. `opts`
     may contain the following keys:
     - `clear_region`: A region of text to clear after expanding (but before
@@ -1890,7 +2173,7 @@ empty the snippets table and the caches of the lazy_load.
 - `change_choice(direction)`: changes the choice in the innermost currently
     active choiceNode forward (`direction` = 1) or backward (`direction` = -1).
 - `unlink_current()`: removes the current snippet from the jumplist (useful if
-    luasnip fails to automatically detect eg. deletion of a snippet) and sets the
+    luasnip fails to automatically detect e.g. deletion of a snippet) and sets the
     current node behind the snippet, or, if not possible, before it.
 - `lsp_expand(snip_string, opts)`: expand the lsp-syntax-snippet defined via
     `snip_string` at the cursor. `opts` can have the same options as `opts` in
@@ -1915,9 +2198,9 @@ empty the snippets table and the caches of the lazy_load.
     `load_snippet_docstrings(snippet_table)` on startup after all snippets have
     been added to `snippet_table` is a way to avoide regenerating the (unchanged)
     docstrings on each startup. (Depending on when the docstrings are required and
-    how luasnip is loaded, it may be more sensible to let them load lazily, eg.
-    just before they are required). `snippet_table` should be laid out just like
-    `luasnip.snippets` (it will most likely always _be_ `luasnip.snippets`).
+    how luasnip is loaded, it may be more sensible to let them load lazily,
+    e.g. just before they are required). `snippet_table` should be laid out just
+    like `luasnip.snippets` (it will most likely always _be_ `luasnip.snippets`).
 - `load_snippet_docstrings(snippet_table)`: Load docstrings for all snippets in
     `snippet_table` from `stdpath("cache")/luasnip/docstrings.json`. The docstrings
     are stored and restored via trigger, meaning if two snippets for one filetype
@@ -1925,14 +2208,14 @@ empty the snippets table and the caches of the lazy_load.
     `snippet_table` should be laid out as described in `store_snippet_docstrings`.
 - `unlink_current_if_deleted()`: Checks if the current snippet was deleted, if
     so, it is removed from the jumplist. This is not 100% reliable as luasnip only
-    sees the extmarks and their begin/end may not be on the same position, even if
-    all the text between them was deleted.
+    sees the extmarks and their beginning/end may not be on the same position, even
+    if all the text between them was deleted.
 - `filetype_extend(filetype:string, extend_filetypes:table of string)`: Tells
     luasnip that for a buffer with `ft=filetype`, snippets from `extend_filetypes`
     should be searched as well. `extend_filetypes` is a lua-array (`{ft1, ft2,
     ft3}`). `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand
     c-and cpp-snippets for lua-files.
-- `filetype_set(filetype:string, replace_filetypes:table of string):` Similar to
+- `filetype_set(filetype:string, replace_filetypes:table of string)`: Similar to
     `filetype_extend`, but where _append_ appended filetypes, _set_ sets them:
     `filetype_set("lua", {"c"})` causes only c-snippets to be expanded in
     lua-files, lua-snippets aren’t even searched.
