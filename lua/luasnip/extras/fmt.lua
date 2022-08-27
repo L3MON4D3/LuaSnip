@@ -1,6 +1,7 @@
 local text_node = require("luasnip.nodes.textNode").T
 local wrap_nodes = require("luasnip.util.util").wrap_nodes
 local extend_decorator = require("luasnip.util.extend_decorator")
+local Str = require("luasnip.util.str")
 
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
 local function copy3(obj, seen)
@@ -166,24 +167,6 @@ local function interpolate(fmt, args, opts)
 	return elements
 end
 
--- Find the largest common indent in a list of lines and remove it.
-local function remove_common_indent(lines)
-	local max_indent = math.huge
-	for _, line in ipairs(lines) do
-		-- ignore lines with whitespace only
-		local match = line:match("^(%s*)%S")
-		if match then
-			max_indent = math.min(max_indent, #match)
-		end
-	end
-	if max_indent > 0 then
-		lines = vim.tbl_map(function(line)
-			return line:sub(max_indent + 1)
-		end, lines)
-	end
-	return lines
-end
-
 -- Use a format string with placeholders to interpolate nodes.
 --
 -- See `interpolate` documentation for details on the format.
@@ -209,26 +192,9 @@ local function format_nodes(str, nodes, opts)
 	-- optimization: avoid splitting multiple times
 	local lines = nil
 
-	-- this allows to use [[...]] strings ignoring the first and last lines
-	if opts.trim_empty then
-		lines = vim.split(str, "\n", true)
-		if lines[1]:match("^%s*$") then
-			table.remove(lines, 1)
-		end
-		if lines[#lines]:match("^%s*$") then
-			table.remove(lines)
-		end
-	end
-
-	-- remove common indent
-	if opts.dedent then
-		lines = lines or vim.split(str, "\n", true)
-		lines = remove_common_indent(lines)
-	end
-
-	if lines then
-		str = table.concat(lines, "\n")
-	end
+	lines = vim.split(str, "\n", true)
+	Str.process_multiline(lines, opts)
+	str = table.concat(lines, "\n")
 
 	-- pop format_nodes's opts
 	for key, _ in ipairs(defaults) do

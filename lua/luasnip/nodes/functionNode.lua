@@ -115,9 +115,29 @@ function FunctionNode:set_dependents()
 	append_list[#append_list + 1] = "dependent"
 
 	for _, arg in ipairs(self.args_absolute) do
-		-- mutates arg! Contains key for dict and this node, from now on.
-		dict:set(vim.list_extend(vim.deepcopy(arg), append_list), self)
+		-- if arg is a luasnip-node, just insert it as the key.
+		-- important!! rawget, because indexing absolute_indexer with some key
+		-- appends the key.
+		-- Maybe this is stupid??
+		if rawget(arg, "type") ~= nil then
+			dict:set(vim.list_extend({ arg }, append_list), self)
+		elseif arg.absolute_insert_position then
+			-- copy, list_extend mutates.
+			dict:set(
+				vim.list_extend(
+					vim.deepcopy(arg.absolute_insert_position),
+					append_list
+				),
+				self
+			)
+		end
 	end
+end
+
+function FunctionNode:is_interactive()
+	-- the function node is only evaluated once if it has no argnodes -> it's
+	-- not interactive then.
+	return #self.args ~= 0
 end
 
 return {

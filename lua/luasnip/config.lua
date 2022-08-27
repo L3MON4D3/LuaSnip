@@ -2,6 +2,20 @@ local types = require("luasnip.util.types")
 local ext_util = require("luasnip.util.ext_opts")
 local ft_functions = require("luasnip.extras.filetype_functions")
 local session = require("luasnip.session")
+local iNode = require("luasnip.nodes.insertNode")
+local cNode = require("luasnip.nodes.choiceNode")
+
+-- Inserts a insert(1) before all other nodes, decreases node.pos's as indexing is "wrong".
+local function modify_nodes(snip)
+	for i = #snip.nodes, 1, -1 do
+		snip.nodes[i + 1] = snip.nodes[i]
+		local node = snip.nodes[i + 1]
+		if node.pos then
+			node.pos = node.pos + 1
+		end
+	end
+	snip.nodes[1] = iNode.I(1)
+end
 
 local defaults = {
 	history = false,
@@ -75,7 +89,13 @@ local defaults = {
 	enable_autosnippets = false,
 	-- default applied in util.parser, requires iNode, cNode
 	-- (Dependency cycle if here).
-	parser_nested_assembler = nil,
+	parser_nested_assembler = function(pos, snip)
+		modify_nodes(snip)
+		snip:init_nodes()
+		snip.pos = nil
+
+		return cNode.C(pos, { snip, iNode.I(nil, { "" }) })
+	end,
 	-- Function expected to return a list of filetypes (or empty list)
 	ft_func = ft_functions.from_filetype,
 	-- fn(bufnr) -> string[] (filetypes).

@@ -40,14 +40,16 @@ function DynamicNode:input_leave()
 end
 
 function DynamicNode:get_static_text()
-	if not self.static_text then
+	if self.snip then
+		return self.snip:get_static_text()
+	else
+		self:update_static()
 		if self.snip then
-			self.static_text = self.snip:get_static_text()
+			return self.snip:get_static_text()
 		else
-			self.static_text = { "" }
+			return { "" }
 		end
 	end
-	return self.static_text
 end
 
 function DynamicNode:get_docstring()

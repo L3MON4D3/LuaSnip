@@ -640,18 +640,11 @@ function Snippet:del_marks()
 	end
 end
 
-function Snippet:is_interactive()
+function Snippet:is_interactive(info)
 	for _, node in ipairs(self.nodes) do
 		-- return true if any node depends on another node or is an insertNode.
-		if
-			node.type == types.insertNode
-			or ((node.type == types.functionNode or node.type == types.dynamicNode) and #node.args ~= 0)
-			or node.type == types.choiceNode
-		then
+		if node:is_interactive(info) then
 			return true
-			-- node is snippet, recurse.
-		elseif node.type == types.snippetNode then
-			return node:is_interactive()
 		end
 	end
 	return false

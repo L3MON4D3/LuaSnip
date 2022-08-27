@@ -1305,7 +1305,7 @@ extended(...)
 # LSP-SNIPPETS
 
 Luasnip is capable of parsing lsp-style snippets using
-`ls.parser.parse_snippet(context, snippet_string)`:
+`ls.parser.parse_snippet(context, snippet_string, opts)`:
 ```lua
 ls.parser.parse_snippet({trig = "lsp"}, "$1 is ${2|hard,easy,challenging|}")
 ```
@@ -1316,16 +1316,85 @@ ls.parser.parse_snippet({trig = "lsp"}, "$1 is ${2|hard,easy,challenging|}")
 
 <!-- panvimdoc-ignore-end -->
 
+`context` can be:
+  - `string|table`: treated like the first argument to `ls.s`, `parse_snippet`
+    returns a snippet.
+  - `number`: `parse_snippet` returns a snippetNode, with the position
+    `context`.
+  - `nil`: `parse_snippet` returns a flat table of nodes. This can be used
+    like `fmt`.
+
 Nested placeholders(`"${1:this is ${2:nested}}"`) will be turned into
 choiceNode's with:
-	- the given snippet(`"this is ${1:nested}"`) and
-	- an empty insertNode
+  - the given snippet(`"this is ${1:nested}"`) and
+  - an empty insertNode
 
 <!-- panvimdoc-ignore-start -->
 
 ![lsp2](https://user-images.githubusercontent.com/25300418/184359306-c669d3fa-7ae5-4c07-b11a-34ae8c4a17ac.gif)
 
 <!-- panvimdoc-ignore-end -->
+
+This behaviour can be modified by changing `parser_nested_assembler` in
+`ls.setup()`.
+
+
+Luasnip will also modify some snippets it's incapable of representing
+accurately:
+  - if the `$0` is a placeholder with something other than just text inside
+  - if the `$0` is a choice
+  - if the `$0` is not an immediate child of the snippet (it could be inside a
+    placeholder: `"${1: $0 }"`)
+
+To remedy those incompatibilities, the invalid `$0` will be replaced with a
+tabstop/placeholder/choice which will be visited just before the new `$0`. This
+new `$0` will be inserted at the (textually) earliest valid position behind the
+invalid `$0`.
+
+`opts` can contain the following keys:
+  - `trim_empty`: boolean, remove empty lines from the snippet. Default true.
+  - `dedent`: boolean, remove common indent from the snippet's lines.
+    Default true.
+
+Both `trim_emtpy` and `dedent` will be disabled for snippets parsed via
+`ls.lsp_expand`: it might prevent correct expansion of snippets sent by lsp.
+
+## Snipmate
+
+It is furthermore possible to parse snipmate-snippets (this includes support for
+vimscript-evaluation!!)  
+Snipmate-snippets have to be parsed with a different function,
+`ls.parser.parse_snipmate`:
+```lua
+ls.parser.parse_snipmate("year", "The year is `strftime('%Y')`")
+```
+
+`parse_snipmate` accepts the same arguments as `parse_snippet`, only the
+snippet-body is parsed differently.
+
+## Transformations
+
+To apply
+[Variable/Placeholder-transformations](https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms),
+luasnip needs to apply ECMAScrip-regexes.  
+This is implemented by relying on [`jsregexp`](https://github.com/kmarius/jsregexp).  
+The easiest, but potentially error-prone way to install it is by calling `make
+install_jsregexp` in the repo-root.
+This process can be automated by `packer.nvim`:
+```lua
+use("L3MON4D3/luasnip", run = "make install_jsregexp")
+```
+If this fails, first open an issue :P, and then try installing the
+`jsregexp`-luarock. This is also possible via 
+`packer.nvim`, although actual usage may require a small workaround, see
+[here](https://github.com/wbthomason/packer.nvim/issues/593) or
+[here](https://github.com/wbthomason/packer.nvim/issues/358).  
+
+Alternatively, `jsregexp` can be cloned locally, `make`d, and the resulting
+`jsregexp.so` placed in some place where nvim can find it (probably
+`~/.config/nvim/lua/`).
+
+If `jsregexp` is not available, transformation are replaced by a simple copy.
 
 # VARIABLES
 
@@ -1416,6 +1485,28 @@ end, {}))
 ![custom_variable](https://user-images.githubusercontent.com/25300418/184359382-2b2a357b-37a6-4cc4-9c8f-930f26457888.gif)
 
 <!-- panvimdoc-ignore-end -->
+
+## LSP-Variables
+
+All variables, even ones added via `env_namespace`, can be accessed in
+lsp-snippets as `$VAR_NAME`.
+
+The lsp-spec states:
+
+----
+
+With `$name` or `${name:default}` you can insert the value of a variable.  
+When a variable isn’t set, its default or the empty string is inserted.
+When a variable is unknown (that is, its name isn’t defined) the name of the variable is inserted and it is transformed into a placeholder.
+
+----
+
+The above necessiates a differentiation between `unknown` and `unset` variables:
+
+For Luasnip, a variable `VARNAME` is `unknown` when `env.VARNAME` returns `nil` and `unset`
+if it returns an empty string.
+
+Consider this when adding env-variables which might be used in lsp-snippets.
 
 # LOADERS
 
@@ -1737,6 +1828,13 @@ local sp = require("luasnip.nodes.snippetProxy")
 sp("trig", "a snippet $1")
 ```
 
+`sp(context, body, opts) -> snippetProxy`
+  - `context`: exactly the same as the first argument passed to `ls.s`.
+  - `body`: the snippet-body.
+  - `opts`: accepts the same `opts` as `ls.s`, with some additions:
+    - `parse_fn`: the function for parsing the snippet. Defaults to
+	  `ls.parser.parse_snippet` (the parser for lsp-snippets), an alternative is
+	  the parser for snipmate-snippets (`ls.parser.parse_snipmate`).
 
 # EXT\_OPTS
 

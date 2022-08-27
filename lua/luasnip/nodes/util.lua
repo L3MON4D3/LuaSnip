@@ -37,12 +37,13 @@ local function make_args_absolute(args, parent_insert_position, target)
 		if type(arg) == "number" then
 			-- the arg is a number, should be interpreted relative to direct
 			-- parent.
-			target[i] = vim.deepcopy(parent_insert_position)
-			target[i][#target[i] + 1] = arg
+			local t = vim.deepcopy(parent_insert_position)
+			table.insert(t, arg)
+			target[i] = { absolute_insert_position = t }
 		else
-			-- arg-position is absolute.
-			-- copy because arg could be a node (whose absolute_insert_position _may_ change).
-			target[i] = vim.deepcopy(arg.absolute_insert_position)
+			-- insert node or absolute_indexer itself, node's absolute_insert_position may be nil, check for that during
+			-- usage.
+			target[i] = arg
 		end
 	end
 end

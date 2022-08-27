@@ -1,0 +1,3 @@
+[submodule "deps/jsregexp"]
+	path = deps/jsregexp
+	url = https://github.com/kmarius/jsregexp/

@@ -91,6 +91,9 @@ function ExitNode:update_all_dependents() end
 function ExitNode:_update_dependents_static() end
 function ExitNode:update_dependents_static() end
 function ExitNode:update_all_dependents_static() end
+function ExitNode:is_interactive()
+	return true
+end
 
 function InsertNode:input_enter(no_move)
 	self.mark:update_opts(self.ext_opts.active)
@@ -206,6 +209,10 @@ end
 function InsertNode:get_docstring()
 	-- copy as to not in-place-modify static text.
 	return util.string_wrap(self.static_text, rawget(self, "pos"))
+end
+
+function InsertNode:is_interactive()
+	return true
 end
 
 return {

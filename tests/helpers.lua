@@ -4,6 +4,13 @@ local assert = require("luassert")
 
 local M = {}
 
+function M.setup_jsregexp()
+	-- append default-path.
+	exec_lua(
+		('package.cpath = "%s"'):format(os.getenv("JSREGEXP_PATH") .. "/?.so;;")
+	)
+end
+
 function M.session_setup_luasnip()
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 	helpers.exec(
@@ -19,7 +26,9 @@ function M.session_setup_luasnip()
 	vim.env.MYVIMRC = "/.vimrc"
 
 	ls = require("luasnip")
-	ls.setup({})
+	ls.setup({
+		store_selection_keys = "<Tab>"
+	})
 
 	s = ls.s
 	sn = ls.sn
