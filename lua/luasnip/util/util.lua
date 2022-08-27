@@ -465,15 +465,6 @@ local function redirect_filetypes(fts)
 	return snippet_fts
 end
 
-local function get_snippet_filetypes()
-	local config = require("luasnip.session").config
-	local fts = config.ft_func()
-	-- add all last.
-	table.insert(fts, "all")
-
-	return redirect_filetypes(fts)
-end
-
 local function deduplicate(list)
 	vim.validate({ list = { list, "table" } })
 	local ret = {}
@@ -485,6 +476,15 @@ local function deduplicate(list)
 		end
 	end
 	return ret
+end
+
+local function get_snippet_filetypes()
+	local config = require("luasnip.session").config
+	local fts = config.ft_func()
+	-- add all last.
+	table.insert(fts, "all")
+
+	return deduplicate(redirect_filetypes(fts))
 end
 
 local json_decode

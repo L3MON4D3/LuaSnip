@@ -550,11 +550,12 @@ end
 -- ft string, extend_ft table of strings.
 local function filetype_extend(ft, extend_ft)
 	vim.list_extend(session.ft_redirect[ft], extend_ft)
+	session.ft_redirect[ft] = util.deduplicate(session.ft_redirect[ft])
 end
 
 -- ft string, fts table of strings.
 local function filetype_set(ft, fts)
-	session.ft_redirect[ft] = fts
+	session.ft_redirect[ft] = util.deduplicate(fts)
 end
 
 local function cleanup()
