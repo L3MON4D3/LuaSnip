@@ -15,6 +15,9 @@ install_jsregexp: jsregexp
 	# See the package.loaders-section [here](https://www.lua.org/manual/5.1/manual.html#pdf-require)
 	cp $(shell pwd)/${JSREGEXP_PATH}/jsregexp.so $(shell pwd)/lua/luasnip-jsregexp.so
 
+uninstall_jsregexp:
+	rm $(shell pwd)/lua/luasnip-jsregexp.so
+
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
 test: nvim jsregexp
 	# unset both to prevent env leaking into the neovim-build.
