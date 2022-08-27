@@ -4,6 +4,11 @@ local assert = require("luassert")
 
 local M = {}
 
+function M.setup_jsregexp()
+	-- append default-path.
+	exec_lua(("package.cpath = \"%s\""):format(os.getenv("JSREGEXP_PATH") .. "/?.so;;"))
+end
+
 function M.session_setup_luasnip()
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 	helpers.exec(

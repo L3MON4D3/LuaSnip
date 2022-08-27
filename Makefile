@@ -21,4 +21,4 @@ test: nvim jsregexp
 	unset LUA_PATH LUA_CPATH
 	# add helper-functions to lpath.
 	# ";;" in CPATH appends default.
-	LUASNIP_SOURCE=$(shell pwd) LUA_CPATH="$(shell pwd)/${JSREGEXP_PATH}/?.so;;" TEST_FILE=$(realpath tests) BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua make -C ${NVIM_PATH} functionaltest
+	LUASNIP_SOURCE=$(shell pwd) JSREGEXP_PATH=$(shell pwd)/${JSREGEXP_PATH} TEST_FILE=$(realpath tests) BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua make -C ${NVIM_PATH} functionaltest

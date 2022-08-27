@@ -8,7 +8,6 @@ describe("Parser", function()
 
 	before_each(function()
 		helpers.clear()
-		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 3)
 		screen:attach()
@@ -25,6 +24,7 @@ describe("Parser", function()
 	end)
 
 	it("Expands text-only snippet with auto-generated $0.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"abcde"'
 
 		assert.are.same(
@@ -45,6 +45,7 @@ describe("Parser", function()
 	end)
 
 	it("Can create snippets with tabstops.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a$2 $0b$1 c"'
 
 		assert.are.same(
@@ -81,6 +82,7 @@ describe("Parser", function()
 	end)
 
 	it("Can mirror tabstops.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a$1 ${2:b} c"'
 
 		assert.are.same(
@@ -128,6 +130,7 @@ describe("Parser", function()
 	end)
 
 	it("can create nested snippets.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"${1: aaa $2 bbb}"'
 
 		assert.are.same(
@@ -167,6 +170,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse variables.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${TM_LINE_INDEX}a"'
 
 		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
@@ -181,6 +185,8 @@ describe("Parser", function()
 	end)
 
 	it("can parse transformed variables.", function()
+		ls_helpers.setup_jsregexp()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${TM_LINE_INDEX/(.*)/asdf $1 asdf/g}a"'
 
 		-- /g matches as often as possible, hence two matches, but one with an
@@ -194,7 +200,24 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]]}
 	end)
 
+	it("just inserts the variable if jsregexp is not available.", function()
+		ls_helpers.session_setup_luasnip()
+		local snip = '"a${TM_LINE_INDEX/(.*)/asdf $1 asdf/g}a"'
+
+		-- /g matches as often as possible, hence two matches, but one with an
+		-- empty (eg. without a) group 1.
+		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			a0a^                                               |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("can parse transformed tabstop.", function()
+		ls_helpers.setup_jsregexp()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
 
 		ls_helpers.lsp_static_test(snip, { " a asdf  asdf a" })
@@ -205,8 +228,27 @@ describe("Parser", function()
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]]}
 	end)
+	it("copies tabstop if jsregexp is not available.", function()
+		ls_helpers.session_setup_luasnip()
+		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
+
+		ls_helpers.lsp_static_test(snip, { " a  a" })
+
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			^ a  a                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		feed("asdf")
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			asdf a asdf a^                                     |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
 
 	it("modifies invalid $0 with choice.", function()
+		ls_helpers.session_setup_luasnip()
 		-- this can't work in luasnip.
 		-- solution: add
 		local snip = '"$0   ${0|asdf,qwer,zxcv|} asdf"'
@@ -235,6 +277,7 @@ describe("Parser", function()
 	end)
 
 	it("modifies invalid $0 with choice nested in placeholder.", function()
+		ls_helpers.session_setup_luasnip()
 		-- this can't work in luasnip.
 		-- solution: add
 		local snip = '"$0   ${1: ${0|asdf,qwer,zxcv|}} asdf"'
@@ -263,6 +306,7 @@ describe("Parser", function()
 	end)
 
 	it("does not modify $0 which can be represented.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"${0:qwer} asdf"'
 
 		ls_helpers.lsp_static_test(snip, { "qwer asdf" })
@@ -280,6 +324,7 @@ describe("Parser", function()
 	end)
 
 	it("turns the correct nodes into insert/functionNode", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"${1} ${1:asdf} ${1:asdf}"'
 
 		ls_helpers.lsp_static_test(snip, { "asdf asdf asdf" })
@@ -295,6 +340,7 @@ describe("Parser", function()
 	end)
 
 	it("turns the correct nodes into insert/functionNode v2", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"${1} ${1:asdf} ${1|a,b,c,d,e|}"'
 
 		ls_helpers.lsp_static_test(snip, { "asdf asdf asdf" })
@@ -310,6 +356,8 @@ describe("Parser", function()
 	end)
 
 	it("can modify groups in transform.", function()
+		ls_helpers.setup_jsregexp()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf ${1:/upcase} asdf/} a"'
 
 		ls_helpers.lsp_static_test(snip, { " a asdf  asdf a" })
@@ -328,6 +376,8 @@ describe("Parser", function()
 	end)
 
 	it("handle multiple captures in transform.", function()
+		ls_helpers.setup_jsregexp()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"${1:bbb} a ${1/(.)b(.)/${1:/upcase} $2/g} a"'
 
 		ls_helpers.lsp_static_test(snip, { "bbb a B b a" })
@@ -346,6 +396,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse lazy variables.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${LINE_COMMENT}a"'
 
 		ls_helpers.lsp_static_test(snip, { "a$LINE_COMMENTa" })
@@ -360,6 +411,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse user defined variable without namespace.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${MISSING_VAR}a"'
 
 		ls_helpers.lsp_static_test(snip, { "a$MISSING_VARa" })
@@ -372,6 +424,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse missing user defined variable in placeholder.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${1:$MISSING_VAR}a"'
 
 		ls_helpers.lsp_static_test(snip, { "a$MISSING_VARa" })
@@ -391,6 +444,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse user defined variable with namespace.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${USER_VAR}a"'
 
 		ls_helpers.lsp_static_test(snip, { "a$USER_VARa" })
@@ -407,6 +461,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse variables as placeholder.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${1:$TM_LINE_INDEX}a"'
 
 		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
@@ -422,6 +477,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse variables and tabstops nested in placeholder.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = '"a${1: $2 $TM_LINE_INDEX}a"'
 
 		ls_helpers.lsp_static_test(snip, { "a  $TM_LINE_INDEXa" })
@@ -467,6 +523,7 @@ describe("Parser", function()
 	end)
 
 	it("indents Variables.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = "b\n\t$TM_SELECTED_TEXT b"
 
 		-- indent, insert text, SELECT.
@@ -484,6 +541,7 @@ describe("Parser", function()
 	end)
 
 	it("indents Variables in placeholder.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = "b\n\t${1:$TM_SELECTED_TEXT}b"
 
 		-- indent, insert text, SELECT.
@@ -503,6 +561,7 @@ describe("Parser", function()
 	end)
 
 	it("Inserts variable as placeholder on unknown varname.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = "${A_VARIABLE_DOES_IT_EXIST_QUESTION_MARK}"
 
 		-- indent, insert text, SELECT.
@@ -516,6 +575,7 @@ describe("Parser", function()
 	end)
 
 	it("Inserts default when the variable is empty", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = "${SELECT_DEDENT: a ${2:default}}"
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
@@ -534,6 +594,8 @@ describe("Parser", function()
 	end)
 
 	it("Applies transform to empty variable.", function()
+		ls_helpers.setup_jsregexp()
+		ls_helpers.session_setup_luasnip()
 		local snip = "${TM_SELECTED_TEXT/(.*)/ asd /}"
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
@@ -545,6 +607,8 @@ describe("Parser", function()
 	end)
 
 	it("correctly transforms multiline-values.", function()
+		ls_helpers.setup_jsregexp()
+		ls_helpers.session_setup_luasnip()
 		local snip = "${TM_SELECTED_TEXT/([^]*)/a ${1} a/}"
 
 		-- expand snippet with selected multiline-text.
@@ -558,6 +622,7 @@ describe("Parser", function()
 	end)
 
 	it("handles default correctly inside placeholder", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = "${1: ${SELECT_DEDENT: a ${2:default}} }"
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
@@ -581,6 +646,7 @@ describe("Parser", function()
 	end)
 
 	it("handles copy-source inside default.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = "${1: ${SELECT_DEDENT: a ${2:default} ${3:copied}}} $3"
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
@@ -611,6 +677,7 @@ describe("Parser", function()
 	end)
 
 	it("handles copy inside default", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = "$1 ${2: ${SELECT_DEDENT: a ${3:default} $1} }"
 
 		-- indent, insert text, SELECT.
@@ -629,6 +696,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse vim-stuff in snipmate-snippets.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = [["The year is ${1:`'lel' . 'lol'`}"]]
 
 		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
@@ -639,6 +707,7 @@ describe("Parser", function()
 	end)
 
 	it("can parse multiple vim-stuff in snipmate-snippets.", function()
+		ls_helpers.session_setup_luasnip()
 		local snip = [["The year is ${1:`'rrr' . 'adsf'`} ` 'leeeee' . 'l'` "]]
 
 		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
@@ -649,6 +718,9 @@ describe("Parser", function()
 	end)
 
 	it("Correctly parses unescaped characters.", function()
+		ls_helpers.setup_jsregexp()
+		ls_helpers.session_setup_luasnip()
+
 		local snip = "${} asdf"
 
 		-- indent, insert text, SELECT.
