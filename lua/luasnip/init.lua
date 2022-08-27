@@ -327,7 +327,14 @@ end
 
 local function lsp_expand(body, opts)
 	-- expand snippet as-is.
-	snip_expand(ls.parser.parse_snippet("", body, {trim_empty = false, dedent = false}), opts)
+	snip_expand(
+		ls.parser.parse_snippet(
+			"",
+			body,
+			{ trim_empty = false, dedent = false }
+		),
+		opts
+	)
 end
 
 local function choice_active()
