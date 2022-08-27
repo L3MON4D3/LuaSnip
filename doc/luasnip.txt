@@ -24,7 +24,7 @@ Table of Contents                                  *luasnip-table-of-contents*
   - filetype_functions                            |luasnip-filetype_functions|
 15. EXTEND_DECORATOR                                |luasnip-extend_decorator|
 16. LSP-SNIPPETS                                        |luasnip-lsp-snippets|
-  - Snipmate                                                |luasnip-snipmate|
+  - Snipmate Parser                                  |luasnip-snipmate-parser|
   - Transformations                                  |luasnip-transformations|
 17. VARIABLES                                              |luasnip-variables|
   - Environment Namespaces                    |luasnip-environment-namespaces|
@@ -1297,7 +1297,7 @@ from the snippet’s lines. Default true.
 Both `trim_emtpy` and `dedent` will be disabled for snippets parsed via
 `ls.lsp_expand`: it might prevent correct expansion of snippets sent by lsp.
 
-SNIPMATE                                                    *luasnip-snipmate*
+SNIPMATE PARSER                                      *luasnip-snipmate-parser*
 
 It is furthermore possible to parse snipmate-snippets (this includes support
 for vimscript-evaluation!!) Snipmate-snippets have to be parsed with a
