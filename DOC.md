@@ -1278,8 +1278,8 @@ Snipmate-snippets have to be parsed with a different function,
 ls.parser.parse_snipmate("year", "The year is `strftime('%Y')`")
 ```
 
-`parse_snipmate` is the same as `parse_snippet`, only the snippet-body is parsed
-differently.
+`parse_snipmate` accepts the same arguments as `parse_snippet`, only the
+snippet-body is parsed differently.
 
 ## Transformations
 
@@ -1287,15 +1287,23 @@ To apply
 [Variable/Placeholder-transformations](https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms),
 luasnip needs to apply ECMAScrip-regexes.  
 This is implemented by relying on [`jsregexp`](https://github.com/kmarius/jsregexp).  
-`jsregexp` is available as a luarock, and, as such, can be installed by
-`packer.nvim` (although actual usage may require a small workaround, see
+The easiest, but potentially error-prone way to install it is by calling `make
+install_jsregexp` in the repo-root.
+This process can be automated by `packer.nvim`:
+```lua
+use("L3MON4D3/luasnip", run = "make install_jsregexp")
+```
+If this fails, first open an issue :P, and then try installing the
+`jsregexp`-luarock. This is also possible via 
+`packer.nvim`, although actual usage may require a small workaround, see
 [here](https://github.com/wbthomason/packer.nvim/issues/593) or
-[here](https://github.com/wbthomason/packer.nvim/issues/358)).  
-Alternatively, the repo can be cloned, `make`d, and the resulting `jsregexp.so`
-placed in some place where nvim can find it (probably `~/.config/nvim/lua/`).
+[here](https://github.com/wbthomason/packer.nvim/issues/358).  
 
-If `jsregexp` cannot be found, luasnip omits the transformation and just inserts
-its' input.
+Alternatively, `jsregexp` can be cloned locally, `make`d, and the resulting
+`jsregexp.so` placed in some place where nvim can find it (probably
+`~/.config/nvim/lua/`).
+
+If `jsregexp` is not available, transformation are replaced by a simple copy.
 
 # VARIABLES
 
