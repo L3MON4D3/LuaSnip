@@ -30,11 +30,11 @@ Table of Contents                                  *luasnip-table-of-contents*
   - Environment Namespaces                    |luasnip-environment-namespaces|
   - LSP-Variables                                      |luasnip-lsp-variables|
 18. LOADERS                                                  |luasnip-loaders|
-  - Troubleshooting                          |luasnip-loaders-troubleshooting|
-  - VSCODE                                            |luasnip-loaders-vscode|
-  - SNIPMATE                                        |luasnip-loaders-snipmate|
-  - LUA                                                  |luasnip-loaders-lua|
-  - EDIT_SNIPPETS                              |luasnip-loaders-edit_snippets|
+  - Troubleshooting                                  |luasnip-troubleshooting|
+  - VSCODE                                                    |luasnip-vscode|
+  - SNIPMATE                                                |luasnip-snipmate|
+  - LUA                                                          |luasnip-lua|
+  - EDIT_SNIPPETS                                      |luasnip-edit_snippets|
 19. SNIPPETPROXY                                        |luasnip-snippetproxy|
 20. EXT_OPTS                                                |luasnip-ext_opts|
 21. DOCSTRING                                              |luasnip-docstring|
@@ -1500,7 +1500,7 @@ For easy editing of these files, Luasnip provides a
 |luasnip-`vim.ui.select`-based-dialog| where first the filetype, and then the
 file can be selected.
 
-TROUBLESHOOTING                              *luasnip-loaders-troubleshooting*
+TROUBLESHOOTING                                      *luasnip-troubleshooting*
 
 
 - Luasnip uses `all` as the global filetype. As most snippet collections don’t
@@ -1528,7 +1528,7 @@ TROUBLESHOOTING                              *luasnip-loaders-troubleshooting*
     |luasnip-filetype_function’s-`extend_load_ft`| for a solution.
 
 
-VSCODE                                                *luasnip-loaders-vscode*
+VSCODE                                                        *luasnip-vscode*
 
 As a reference on the structure of these snippet-libraries, see
 `friendly-snippets` <https://github.com/rafamadriz/friendly-snippets>.
@@ -1626,7 +1626,7 @@ This collection can be loaded with any of
 <
 
 
-SNIPMATE                                            *luasnip-loaders-snipmate*
+SNIPMATE                                                    *luasnip-snipmate*
 
 Luasnip does not support the full snipmate format: Only `./{ft}.snippets` and
 `./{ft}/*.snippets` will be loaded. See honza/vim-snippets
@@ -1685,7 +1685,7 @@ Stuff to watch out for:
     future.
 
 
-LUA                                                      *luasnip-loaders-lua*
+LUA                                                              *luasnip-lua*
 
 Instead of adding all snippets via `add_snippets`, it’s possible to store
 them in separate files and load all of those. The file-structure here is
@@ -1731,7 +1731,7 @@ Load via
 <
 
 
-EDIT_SNIPPETS                                  *luasnip-loaders-edit_snippets*
+EDIT_SNIPPETS                                          *luasnip-edit_snippets*
 
 To easily edit snippets for the current session, the files loaded by any loader
 can be quickly edited via
