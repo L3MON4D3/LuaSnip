@@ -25,6 +25,12 @@ local M = {}
 ---`context`.
 function M.parse_snippet(context, body, opts)
 	opts = opts or {}
+	if opts.dedent == nil then
+		opts.dedent = true
+	end
+	if opts.trim_empty == nil then
+		opts.trim_empty = true
+	end
 
 	local lines = vim.split(body, "\n")
 	Str.process_multiline(lines, opts)

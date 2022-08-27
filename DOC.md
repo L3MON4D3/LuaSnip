@@ -1222,7 +1222,7 @@ Contains some utility-functions that can be passed to the `ft_func` or
 # LSP-SNIPPETS
 
 Luasnip is capable of parsing lsp-style snippets using
-`ls.parser.parse_snippet(context, snippet_string)`:
+`ls.parser.parse_snippet(context, snippet_string, opts)`:
 ```lua
 ls.parser.parse_snippet({trig = "lsp"}, "$1 is ${2|hard,easy,challenging|}")
 ```
@@ -1267,6 +1267,14 @@ To remedy those incompatibilities, the invalid `$0` will be replaced with a
 tabstop/placeholder/choice which will be visited just before the new `$0`. This
 new `$0` will be inserted at the (textually) earliest valid position behind the
 invalid `$0`.
+
+`opts` can contain the following keys:
+  - `trim_empty`: boolean, remove empty lines from the snippet. Default true.
+  - `dedent`: boolean, remove common indent from the snippet's lines.
+    Default true.
+
+Both `trim_emtpy` and `dedent` will be disabled for snippets parsed via
+`ls.lsp_expand`: it might prevent correct expansion of snippets sent by lsp.
 
 ## Snipmate
 

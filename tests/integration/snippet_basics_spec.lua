@@ -425,7 +425,7 @@ describe("snippets_basic", function()
 
 	it("Tabs are expanded correctly", function()
 		local snip = [[
-			parse("trig", "\ta")
+			parse("trig", "\ta", {dedent = false})
 		]]
 		feed("i<Space><Space>")
 		exec("set expandtab | set shiftwidth=8")
