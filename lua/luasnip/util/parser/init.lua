@@ -40,7 +40,7 @@ function M.parse_snippet(context, body, opts)
 	end
 
 	local nodes = ast_parser.to_luasnip_nodes(ast, {
-		var_functions = opts.variables
+		var_functions = opts.variables,
 	})
 
 	if type(context) == "number" then
@@ -81,7 +81,8 @@ local function backticks_to_variable(body)
 			.. "}"
 
 		-- don't include backticks in vimscript.
-		var_map[varname] = functions.eval_vim_dynamic(body:sub(from + 1, to - 1))
+		var_map[varname] =
+			functions.eval_vim_dynamic(body:sub(from + 1, to - 1))
 		processed_to = to + 1
 		variable_indx = variable_indx + 1
 	end
@@ -100,7 +101,7 @@ function M.parse_snipmate(context, body, opts)
 	opts.variables = {}
 	for name, fn in pairs(new_vars) do
 		-- created dynamicNode is not interactive.
-		opts.variables[name] = {fn, util.no}
+		opts.variables[name] = { fn, util.no }
 	end
 	return M.parse_snippet(context, body, opts)
 end

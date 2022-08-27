@@ -11,7 +11,7 @@ Vertex.__index = Vertex
 local function new_graph()
 	return setmetatable({
 		-- all vertices of this graph.
-		vertices = {}
+		vertices = {},
 	}, DirectedGraph)
 end
 local function new_vertex()
@@ -19,7 +19,7 @@ local function new_vertex()
 		-- vertices this vertex has an edge from/to.
 		-- map[vert -> bool]
 		incoming_edge_verts = {},
-		outgoing_edge_verts = {}
+		outgoing_edge_verts = {},
 	}, Vertex)
 end
 
@@ -124,7 +124,6 @@ function DirectedGraph:topological_sort()
 		-- original graph. The copied vertices are not known outside this
 		-- function (alternative: maybe return indices in graph.vertices?).
 		table.insert(sorting, original_vert[v])
-
 
 		-- find vertices which, if v is removed from graph, have no more incoming edges.
 		-- Those are sources after v is removed.

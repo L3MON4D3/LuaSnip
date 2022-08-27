@@ -118,10 +118,16 @@ function FunctionNode:set_dependents()
 		-- appends the key.
 		-- Maybe this is stupid??
 		if rawget(arg, "type") ~= nil then
-			dict:set(vim.list_extend({arg}, append_list), self)
+			dict:set(vim.list_extend({ arg }, append_list), self)
 		elseif arg.absolute_insert_position then
 			-- copy, list_extend mutates.
-			dict:set(vim.list_extend(vim.deepcopy(arg.absolute_insert_position), append_list), self)
+			dict:set(
+				vim.list_extend(
+					vim.deepcopy(arg.absolute_insert_position),
+					append_list
+				),
+				self
+			)
 		end
 	end
 end

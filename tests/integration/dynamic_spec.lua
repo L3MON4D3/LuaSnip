@@ -289,22 +289,22 @@ describe("DynamicNode", function()
 				end)
 			})
 		]]
-		ls_helpers.static_docstring_test(
-			snip,
-			{ "" },
-			{ "$1$2$0" }
-		)
+		ls_helpers.static_docstring_test(snip, { "" }, { "$1$2$0" })
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^                                                  |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("some text")
 		exec_lua("ls.active_update_dependents()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			some text^some text                                |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it(

@@ -83,7 +83,7 @@ local function var_func(ast)
 				return variable_default
 			else
 				-- lines might still just be {} (#lines == 0).
-				lines = {""}
+				lines = { "" }
 			end
 		end
 
@@ -124,7 +124,10 @@ local function placeholder_func(_, parent, _, placeholder_snip)
 		return sNode.SN(nil, iNode.I(1, iText))
 	end
 
-	return sNode.SN(nil, session.config.parser_nested_assembler(1, placeholder_snip))
+	return sNode.SN(
+		nil,
+		session.config.parser_nested_assembler(1, placeholder_snip)
+	)
 end
 
 ---If this tabstop-node (CHOICE, TABSTOP or PLACEHOLDER) is a copy of another,
@@ -135,7 +138,8 @@ local function tabstop_node_copy_inst(ast)
 	local existing_tabstop_ast_node = ast.copies
 	if existing_tabstop_ast_node then
 		-- this tabstop is a mirror of an already-parsed tabstop/placeholder.
-		ast.parsed = fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
+		ast.parsed =
+			fNode.F(copy_func(ast), { existing_tabstop_ast_node.parsed })
 		return true
 	end
 	return false
@@ -186,7 +190,7 @@ local to_node_funcs = {
 			local snip = sNode.SN(1, ast2luasnip_nodes(ast.children))
 			node = dNode.D(ast.tabstop, placeholder_func, {}, {
 				-- pass snip here, again to preserve references to other tables.
-				user_args = {snip}
+				user_args = { snip },
 			})
 		end
 
@@ -223,13 +227,13 @@ local to_node_funcs = {
 
 				-- just wrap it for more uniformity.
 				if type(var_value) == "string" then
-					var_value = {var_value}
+					var_value = { var_value }
 				end
 
 				if
 					(#var_value == 1 and #var_value[1] == 0)
-					or #var_value == 0 then
-
+					or #var_value == 0
+				then
 					-- var is empty, default is inserted.
 					-- if no default, it's not interactive (an empty string is inserted).
 					return default and default:is_interactive()
@@ -262,16 +266,15 @@ local to_node_funcs = {
 			-- just needs to be documented a bit.
 			--
 			-- `default` is potentially nil.
-			user_args = {default}
+			user_args = { default },
 		})
 		d.is_interactive = is_interactive_fn
 
 		-- if the variable is preceded by \n<indent>, the indent is applied to
 		-- all lines of the variable (important for eg. TM_SELECTED_TEXT).
 		if ast.previous_text ~= nil and #ast.previous_text > 1 then
-			local last_line_indent = ast.previous_text[#ast.previous_text]:match(
-				"^%s+$"
-			)
+			local last_line_indent =
+				ast.previous_text[#ast.previous_text]:match("^%s+$")
 			if last_line_indent then
 				-- TM_SELECTED_TEXT contains the indent of the selected
 				-- snippets, which leads to correct indentation if the
@@ -333,7 +336,10 @@ function M.to_luasnip_nodes(ast, state)
 	ast_utils.give_vars_previous_text(ast)
 
 	local ast_nodes_topsort = ast_utils.parse_order(ast)
-	assert(ast_nodes_topsort, "cannot represent snippet: contains circular dependencies")
+	assert(
+		ast_nodes_topsort,
+		"cannot represent snippet: contains circular dependencies"
+	)
 	for _, node in ipairs(ast_nodes_topsort) do
 		to_node(node, state)
 	end

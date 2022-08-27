@@ -187,7 +187,11 @@ function M.merge_adjacent_text(ast)
 			-- When we do this is not important, since it does not change the TEXT-nodes, here is just comfortable.
 			M.merge_adjacent_text(child)
 
-			if child.type == node_type.TEXT and last_child and last_child.type == node_type.TEXT then
+			if
+				child.type == node_type.TEXT
+				and last_child
+				and last_child.type == node_type.TEXT
+			then
 				last_child.raw = last_child.raw .. child.raw
 				last_child.esc = last_child.esc .. child.esc
 			else

@@ -191,13 +191,18 @@ describe("Parser", function()
 
 		-- /g matches as often as possible, hence two matches, but one with an
 		-- empty (eg. without a) group 1.
-		ls_helpers.lsp_static_test(snip, { "aasdf $TM_LINE_INDEX asdfasdf  asdfa" })
+		ls_helpers.lsp_static_test(
+			snip,
+			{ "aasdf $TM_LINE_INDEX asdfasdf  asdfa" }
+		)
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aasdf 0 asdfasdf  asdfa^                           |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("just inserts the variable if jsregexp is not available.", function()
@@ -209,10 +214,12 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { "a$TM_LINE_INDEXa" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a0a^                                               |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("can parse transformed tabstop.", function()
@@ -223,10 +230,12 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { " a asdf  asdf a" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^ a asdf  asdf a                                   |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 	it("copies tabstop if jsregexp is not available.", function()
 		ls_helpers.session_setup_luasnip()
@@ -235,16 +244,20 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { " a  a" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^ a  a                                             |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("asdf")
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf a asdf a^                                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("modifies invalid $0 with choice.", function()
@@ -256,24 +269,30 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { "asdf   asdf asdf" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf   ^asdf asdf                                  |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- choice is copied
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			qwer   ^qwer asdf                                  |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- make sure $0 is actually behind choice.
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			qwer   qwer^ asdf                                  |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("modifies invalid $0 with choice nested in placeholder.", function()
@@ -285,24 +304,30 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { "asdf    asdf asdf" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf   ^ asdf asdf                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- jump to choice..
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf    ^asdf asdf                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- and to new $0.
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf    asdf^ asdf                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("does not modify $0 which can be represented.", function()
@@ -312,15 +337,19 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { "qwer asdf" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^q{3:wer} asdf                                         |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^q{3:wer} asdf                                         |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("turns the correct nodes into insert/functionNode", function()
@@ -333,10 +362,12 @@ describe("Parser", function()
 
 		-- actually not sure if this is how it should be, vscode just spawns
 		-- multicursors :(
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf ^a{3:sdf} asdf                                    |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("turns the correct nodes into insert/functionNode v2", function()
@@ -349,10 +380,12 @@ describe("Parser", function()
 
 		-- actually not sure if this is how it should be, vscode just spawns
 		-- multicursors :(
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf ^a{3:sdf} asdf                                    |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("can modify groups in transform.", function()
@@ -363,16 +396,20 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { " a asdf  asdf a" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^ a asdf  asdf a                                   |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("rrrr")
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			rrrr a asdf RRRR asdf a^                           |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("handle multiple captures in transform.", function()
@@ -383,16 +420,20 @@ describe("Parser", function()
 		ls_helpers.lsp_static_test(snip, { "bbb a B b a" })
 
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^b{3:bb} a B b a                                       |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		feed("bbbbbb")
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			bbbbbb a B bB b a^                                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("can parse lazy variables.", function()
@@ -416,11 +457,12 @@ describe("Parser", function()
 
 		ls_helpers.lsp_static_test(snip, { "a$MISSING_VARa" })
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a^M{3:ISSING_VAR}a                                     |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
-
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("can parse missing user defined variable in placeholder.", function()
@@ -429,18 +471,21 @@ describe("Parser", function()
 
 		ls_helpers.lsp_static_test(snip, { "a$MISSING_VARa" })
 
-
 		-- Assure this is parsed into choice+insertNode.
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a^MISSING_VARa                                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a^M{3:ISSING_VAR}a                                     |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("can parse user defined variable with namespace.", function()
@@ -568,10 +613,12 @@ describe("Parser", function()
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
 		-- the \t in front of $1 is extended to both lines of $TM_SELECTED_TEXT.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^A{3:_VARIABLE_DOES_IT_EXIST_QUESTION_MARK}            |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("Inserts default when the variable is empty", function()
@@ -580,17 +627,21 @@ describe("Parser", function()
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			 a ^d{3:efault}                                        |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		feed("<Esc>ccSELECTED TEXT<Esc>V<Tab>")
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			SELECTED TEXT^                                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Applies transform to empty variable.", function()
@@ -600,10 +651,12 @@ describe("Parser", function()
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			 asd ^                                             |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("correctly transforms multiline-values.", function()
@@ -615,10 +668,12 @@ describe("Parser", function()
 		feed("iasdf<Cr>asdf<Esc>Vk<Tab>")
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a asdf                                            |
 			asdf a^                                            |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("handles default correctly inside placeholder", function()
@@ -628,21 +683,27 @@ describe("Parser", function()
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
 		-- variable with default is parsed into choice
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^  a default                                       |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			  a ^d{3:efault}                                       |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		exec_lua("ls.change_choice()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^                                                  |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("handles copy-source inside default.", function()
@@ -652,28 +713,34 @@ describe("Parser", function()
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
 		-- variable with default is parsed into choice
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^  a default copied copied                         |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		exec_lua("ls.jump(1)")
 		exec_lua("ls.jump(1)")
 		feed("still copied")
 		exec_lua("ls.active_update_dependents()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			  a default still copied^ still copied             |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		exec_lua("ls.change_choice()")
 		-- this is somewhat debatable, should the functionNode disappear if
 		-- there is no source? Right now it just doesn't update, I think that's
 		-- okay.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^ still copied                                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("handles copy inside default", function()
@@ -682,17 +749,21 @@ describe("Parser", function()
 
 		-- indent, insert text, SELECT.
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^   a default                                      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("third_tabstop")
 
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			third_tabstop ^  a default third_tabstop           |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("can parse vim-stuff in snipmate-snippets.", function()
@@ -700,10 +771,12 @@ describe("Parser", function()
 		local snip = [["The year is ${1:`'lel' . 'lol'`}"]]
 
 		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			The year is ^l{3:ellol}                                |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("can parse multiple vim-stuff in snipmate-snippets.", function()
@@ -711,10 +784,12 @@ describe("Parser", function()
 		local snip = [["The year is ${1:`'rrr' . 'adsf'`} ` 'leeeee' . 'l'` "]]
 
 		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			The year is ^r{3:rradsf} leeeeel                       |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("Correctly parses unescaped characters.", function()
@@ -725,25 +800,31 @@ describe("Parser", function()
 
 		-- indent, insert text, SELECT.
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			${} asdf^                                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		feed("<Esc>cc")
 		snip = "${1: asdf ${\\}}"
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^ {3:asdf ${}}                                         |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		feed("<Esc>cc")
 		snip = "${TM_LINE_NUMBER/(.*)/ ${} aaaa/}"
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			 ${} aaaa^                                         |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)

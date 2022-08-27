@@ -33,10 +33,17 @@ return {
 	eval_vim_dynamic = function(vimstring)
 		return function()
 			-- 'echo'd string is returned to lua.
-			return sn(nil, {t(vim.split(
-				vim.api.nvim_exec("echo " .. vimstring, true),
-				"\n"
-			))})
+			return sn(
+				nil,
+				{
+					t(
+						vim.split(
+							vim.api.nvim_exec("echo " .. vimstring, true),
+							"\n"
+						)
+					),
+				}
+			)
 		end
 	end,
 	copy = function(args)

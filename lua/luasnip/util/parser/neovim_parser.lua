@@ -323,7 +323,13 @@ S.transform = P.map(
 		S.slash,
 		P.take_until({ "/" }, { "\\" }),
 		S.slash,
-		P.many(P.any(S.format, S.text({ "$", "/" }, { "\\" }), S.patterntext("[^/]"))),
+		P.many(
+			P.any(
+				S.format,
+				S.text({ "$", "/" }, { "\\" }),
+				S.patterntext("[^/]")
+			)
+		),
 		S.slash,
 		P.opt(P.pattern("[ig]+"))
 	),
@@ -351,7 +357,15 @@ S.placeholder = P.any(
 			S.open,
 			S.int,
 			S.colon,
-			P.opt(P.many(P.any(S.toplevel, S.text({ "$", "}" }, { "\\" }), S.patterntext("[^}]")))),
+			P.opt(
+				P.many(
+					P.any(
+						S.toplevel,
+						S.text({ "$", "}" }, { "\\" }),
+						S.patterntext("[^}]")
+					)
+				)
+			),
 			S.close
 		),
 		function(values)
@@ -396,7 +410,13 @@ S.variable = P.any(
 			S.open,
 			S.var,
 			S.colon,
-			P.many(P.any(S.toplevel, S.text({ "$", "}" }, { "\\" }), S.patterntext("[^}]"))),
+			P.many(
+				P.any(
+					S.toplevel,
+					S.text({ "$", "}" }, { "\\" }),
+					S.patterntext("[^}]")
+				)
+			),
 			S.close
 		),
 		function(values)
@@ -406,7 +426,9 @@ S.variable = P.any(
 )
 
 S.snippet = P.map(
-	P.many(P.any(S.toplevel, S.text({ "$" }, { "}", "\\" }), S.patterntext("."))),
+	P.many(
+		P.any(S.toplevel, S.text({ "$" }, { "}", "\\" }), S.patterntext("."))
+	),
 	function(values)
 		-- Insp(values)
 		return ast.snippet(values)

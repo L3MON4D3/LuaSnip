@@ -39,7 +39,7 @@ local function make_args_absolute(args, parent_insert_position, target)
 			-- parent.
 			local t = vim.deepcopy(parent_insert_position)
 			table.insert(t, arg)
-			target[i] = {absolute_insert_position = t}
+			target[i] = { absolute_insert_position = t }
 		else
 			-- insert node or absolute_indexer itself, node's absolute_insert_position may be nil, check for that during
 			-- usage.

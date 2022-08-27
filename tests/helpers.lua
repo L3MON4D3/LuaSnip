@@ -6,7 +6,9 @@ local M = {}
 
 function M.setup_jsregexp()
 	-- append default-path.
-	exec_lua(("package.cpath = \"%s\""):format(os.getenv("JSREGEXP_PATH") .. "/?.so;;"))
+	exec_lua(
+		('package.cpath = "%s"'):format(os.getenv("JSREGEXP_PATH") .. "/?.so;;")
+	)
 end
 
 function M.session_setup_luasnip()

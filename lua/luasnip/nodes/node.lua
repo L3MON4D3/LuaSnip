@@ -151,7 +151,10 @@ local function find_dependents(self, position_self, dict)
 	vim.list_extend(nodes, dict:find_all(position_self, "dependent") or {})
 	position_self[#position_self] = nil
 
-	vim.list_extend(nodes, dict:find_all({self, "dependents"}, "dependent") or {})
+	vim.list_extend(
+		nodes,
+		dict:find_all({ self, "dependents" }, "dependent") or {}
+	)
 
 	return nodes
 end
@@ -251,7 +254,9 @@ local function get_args(node, get_text_func_name)
 			-- the node is not (yet, maybe) visible.
 			return nil
 		end
-		local arg_table = node.parent.snippet.dependents_dict:get(arg.absolute_insert_position)
+		local arg_table = node.parent.snippet.dependents_dict:get(
+			arg.absolute_insert_position
+		)
 		if not arg_table then
 			return nil
 		end

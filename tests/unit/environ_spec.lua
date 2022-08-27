@@ -127,7 +127,11 @@ describe("luasnip.util.environ", function()
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	check_not_empty("Has builtin namespace var", [[]], "CURRENT_YEAR")
-	check_not_empty("Has a builtin namespace var without _ in its name", [[]], "UUID")
+	check_not_empty(
+		"Has a builtin namespace var without _ in its name",
+		[[]],
+		"UUID"
+	)
 	check(
 		"Simple lazy table",
 		[[Environ.env_namespace("TBL", {vars={AGE="120"}} )]],

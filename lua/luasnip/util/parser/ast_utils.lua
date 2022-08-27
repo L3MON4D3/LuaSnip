@@ -223,10 +223,9 @@ function M.fix_zero(ast)
 		or (
 			zn
 			and not is_copied
-			and (
-				zn.type == types.TABSTOP or
-				(zn.type == types.PLACEHOLDER and text_only_placeholder(zn))
-			)
+			and (zn.type == types.TABSTOP or (zn.type == types.PLACEHOLDER and text_only_placeholder(
+				zn
+			)))
 			and ast.children[ast_child_with_0_indx] == zn
 		)
 	then
@@ -241,10 +240,7 @@ function M.fix_zero(ast)
 
 	-- insert $0 as a direct child to snippet, just behind the original $0/the
 	-- node containing it.
-	table.insert(
-		ast.children,
-		ast_child_with_0_indx + 1,
-		Ast.tabstop(0))
+	table.insert(ast.children, ast_child_with_0_indx + 1, Ast.tabstop(0))
 end
 
 ---This function identifies which tabstops/placeholder/choices are copies, and
@@ -352,10 +348,8 @@ end
 
 function M.apply_transform(transform)
 	if jsregexp_ok then
-		local reg_compiled = jsregexp.compile(
-			transform.pattern,
-			transform.option
-		)
+		local reg_compiled =
+			jsregexp.compile(transform.pattern, transform.option)
 		-- can be passed to functionNode!
 		return function(lines)
 			-- luasnip expects+passes lines as list, but regex needs one string.
@@ -370,13 +364,13 @@ function M.apply_transform(transform)
 			for _, match in ipairs(matches) do
 				-- begin_ind and end_ind are inclusive.
 				transformed = transformed
-					.. lines:sub(prev_match_end+1, match.begin_ind - 1)
+					.. lines:sub(prev_match_end + 1, match.begin_ind - 1)
 					.. apply_transform_format(transform.format, match.groups)
 
 				-- end-inclusive
 				prev_match_end = match.end_ind
 			end
-			transformed = transformed .. lines:sub(prev_match_end+1, #lines)
+			transformed = transformed .. lines:sub(prev_match_end + 1, #lines)
 
 			return vim.split(transformed, "\n")
 		end
@@ -396,7 +390,7 @@ end
 ---The text is accessible as ast_node.previous_text, a string[].
 ---@param ast table: the AST.
 function M.give_vars_previous_text(ast)
-	local last_text = {""}
+	local last_text = { "" }
 	-- important: predicate_ltr_nodes visits the node in the order they appear,
 	-- textually, in the snippet.
 	-- This is necessary to actually ensure the variables actually get the text just in front of them.
@@ -420,7 +414,7 @@ function M.give_vars_previous_text(ast)
 			node.previous_text = last_text
 		else
 			-- reset last_text when a different node is encountered.
-			last_text = {""}
+			last_text = { "" }
 		end
 		-- continue..
 		return false
@@ -432,7 +426,7 @@ end
 ---variable is just some text, inserts its default, or its variable-name has to
 ---be deferred to runtime.
 ---So, each variable is a dynamicNode, and needs a tabstop.
----In vscode the variables are visited 
+---In vscode the variables are visited
 --- 1) after all other tabstops/placeholders/choices and
 --- 2) in the order they appear in the snippet-body.
 ---We mimic this behaviour.

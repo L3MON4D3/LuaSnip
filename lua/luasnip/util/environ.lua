@@ -134,9 +134,9 @@ _env_namespace("", builtin_namespace)
 function Environ.env_namespace(name, opts)
 	assert(
 		name:match("^[a-zA-Z][a-zA-Z0-9]*$"),
-		(
-			"You can't create a namespace with name '%s' it has to contain only and at least a non alpha-numeric character"
-		):format(name)
+		("You can't create a namespace with name '%s' it has to contain only and at least a non alpha-numeric character"):format(
+			name
+		)
 	)
 	assert(
 		not builtin_namespace.builtin_ns[name],

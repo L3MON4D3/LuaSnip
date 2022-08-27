@@ -47,14 +47,18 @@ local function parse_snipmate(buffer, filename)
 		end
 
 		body = table.concat(body, "\n")
-		local snip = sp({
-			trig = prefix,
-			dscr = description,
-			wordTrig = true,
-			priority = snipmate_opts.priority,
-		}, body, {
-			parse_fn = snipmate_parse_fn
-		})
+		local snip = sp(
+			{
+				trig = prefix,
+				dscr = description,
+				wordTrig = true,
+				priority = snipmate_opts.priority,
+			},
+			body,
+			{
+				parse_fn = snipmate_parse_fn,
+			}
+		)
 		table.insert(snippets[snippet_type], snip)
 	end
 

@@ -45,7 +45,7 @@ function DynamicNode:get_static_text()
 		if self.snip then
 			return self.snip:get_static_text()
 		else
-			return {""}
+			return { "" }
 		end
 	end
 end
