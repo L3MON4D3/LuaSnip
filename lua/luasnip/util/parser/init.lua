@@ -81,7 +81,7 @@ end
 extend_decorator.register(
 	M.parse_snippet,
 	{ arg_indx = 1, extend = context_extend },
-	{ arg_indx = 3}
+	{ arg_indx = 3 }
 )
 
 local function backticks_to_variable(body)
@@ -134,7 +134,7 @@ end
 extend_decorator.register(
 	M.parse_snipmate,
 	{ arg_indx = 1, extend = context_extend },
-	{ arg_indx = 3}
+	{ arg_indx = 3 }
 )
 
 return M
