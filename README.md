@@ -24,7 +24,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 
 # Requirements
 Neovim >= 0.5 (extmarks)
-`jsregexp` for lsp-snippet-transformations.
+`jsregexp` for lsp-snippet-transformations (see [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) for some tips on installing it)
 
 # Setup
 ## Install 
