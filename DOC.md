@@ -1359,7 +1359,7 @@ invalid `$0`.
 Both `trim_emtpy` and `dedent` will be disabled for snippets parsed via
 `ls.lsp_expand`: it might prevent correct expansion of snippets sent by lsp.
 
-## Snipmate
+## Parsing Snipmate-Snippets
 
 It is furthermore possible to parse snipmate-snippets (this includes support for
 vimscript-evaluation!!)  
