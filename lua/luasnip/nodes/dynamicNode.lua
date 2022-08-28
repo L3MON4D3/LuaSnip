@@ -149,9 +149,8 @@ function DynamicNode:update()
 	tmp:resolve_node_ext_opts()
 	tmp:subsnip_init()
 
-	tmp.mark = self.mark:copy_pos_gravs(
-		vim.deepcopy(tmp:get_passive_ext_opts())
-	)
+	tmp.mark =
+		self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
 	tmp.dynamicNode = self
 	tmp.update_dependents = function(node)
 		node:_update_dependents()
@@ -321,7 +320,8 @@ function DynamicNode:update_restore()
 		-- prevent entering the uninitialized snip in enter_node in a few lines.
 		local tmp = self.stored_snip
 
-		tmp.mark = self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
+		tmp.mark =
+			self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
 
 		-- position might (will probably!!) still have changed, so update it
 		-- here too (as opposed to only in update).

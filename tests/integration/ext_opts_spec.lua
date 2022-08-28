@@ -20,16 +20,22 @@ describe("snippets_basic", function()
 		screen = Screen.new(50, 3)
 		screen:attach()
 		screen:set_default_attr_ids({
-			[0] = {bold = true, foreground = Screen.colors.Blue1},
-			[1] = {bold = true, foreground = Screen.colors.Brown},
-			[2] = {bold = true},
-			[3] = {background = Screen.colors.LightGray},
-			[4] = {foreground = Screen.colors.WebGreen},
-			[5] = {foreground = Screen.colors.Blue1},
-			[6] = {background = Screen.colors.LightGray, foreground = Screen.colors.Blue1},
-			[7] = {foreground = Screen.colors.Cyan1},
-			[8] = {background = Screen.colors.LightGray, foreground = Screen.colors.Cyan1},
-			[9] = {foreground = Screen.colors.Red}
+			[0] = { bold = true, foreground = Screen.colors.Blue1 },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
+			[3] = { background = Screen.colors.LightGray },
+			[4] = { foreground = Screen.colors.WebGreen },
+			[5] = { foreground = Screen.colors.Blue1 },
+			[6] = {
+				background = Screen.colors.LightGray,
+				foreground = Screen.colors.Blue1,
+			},
+			[7] = { foreground = Screen.colors.Cyan1 },
+			[8] = {
+				background = Screen.colors.LightGray,
+				foreground = Screen.colors.Cyan1,
+			},
+			[9] = { foreground = Screen.colors.Red },
 		})
 	end)
 
@@ -54,15 +60,19 @@ describe("snippets_basic", function()
 			})
 		]]
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			{4:Green}{5:^t}{6:ext}                                         |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			Greentext^                                         |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Correctly applies active,visited,unvisited", function()
@@ -93,20 +103,26 @@ describe("snippets_basic", function()
 			})
 		]]
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			{7:^t}{8:ext}{5:texttext}                                      |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			{4:text}{7:^t}{8:ext}{5:text}                                      |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			{4:texttext}{7:^t}{8:ext}                                      |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("Inheritance", function()
@@ -131,19 +147,25 @@ describe("snippets_basic", function()
 			})
 		]]
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			{7:^t}{8:ext}{5:text}                                          |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			{4:text}{7:^t}{8:ext}                                          |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			{9:text}text^                                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
