@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 27
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 28
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1321,7 +1321,7 @@ error-prone way to install it is by calling `make install_jsregexp` in the
 repo-root. This process can be automated by `packer.nvim`:
 
 >
-    use("L3MON4D3/luasnip", run = "make install_jsregexp")
+    use { "L3MON4D3/LuaSnip", run = "make install_jsregexp" }
 <
 
 
