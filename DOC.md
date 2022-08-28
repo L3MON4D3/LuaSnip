@@ -1382,7 +1382,7 @@ The easiest, but potentially error-prone way to install it is by calling `make
 install_jsregexp` in the repo-root.
 This process can be automated by `packer.nvim`:
 ```lua
-use("L3MON4D3/luasnip", run = "make install_jsregexp")
+use { "L3MON4D3/LuaSnip", run = "make install_jsregexp" }
 ```
 If this fails, first open an issue :P, and then try installing the
 `jsregexp`-luarock. This is also possible via 
