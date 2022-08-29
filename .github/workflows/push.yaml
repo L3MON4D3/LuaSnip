@@ -19,6 +19,11 @@ jobs:
         with:
           vimdoc: luasnip
           pandoc: DOC.md
+      - run: |
+          sudo add-apt-repository ppa:neovim-ppa/stable
+          sudo apt-get update
+          sudo apt-get install -y neovim
+          nvim +"helptags doc | exit"
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
