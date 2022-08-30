@@ -2258,7 +2258,10 @@ the lazy_load.
 
 - `expandable()`: true if a snippet can be expanded at the current cursor position.
 
-- `expand()`: expands the snippet at(before) the cursor.
+- `expand(opts)`: expands the snippet at(before) the cursor.
+  `opts` may contain:
+  - `jump_into_func` passed through to `ls.snip_expand`, check its' doc for a
+  	description.
 
 - `expand_or_jumpable()`: returns `expandable() or jumpable(1)` (exists only
   because commonly, one key is used to both jump forward and expand).

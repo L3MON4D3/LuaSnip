@@ -46,6 +46,33 @@ describe("snippets_basic", function()
 		})
 	end)
 
+	it("Can accept custom jump_into_func.", function()
+		local snip = [[
+		]]
+		exec_lua([[
+			ls.add_snippets("all", {
+				s("trig", {
+					i(1, "test"),
+					i(2, "test")
+				})
+			})
+		]])
+
+		feed("itrig")
+		exec_lua([[
+			ls.expand({
+				jump_into_func = function(snip)
+					izero = snip.insert_nodes[0]
+					require("luasnip.util.util").no_region_check_wrap(izero.jump_into, izero, 1)
+				end
+			})
+		]])
+		screen:expect{grid=[[
+			testtest^                                          |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("Can expand Snippets from `all` via <Plug>", function()
 		exec_lua([[
 			ls.add_snippets("all", {

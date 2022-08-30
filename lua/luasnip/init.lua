@@ -256,13 +256,18 @@ local function snip_expand(snippet, opts)
 	return snip
 end
 
-local function expand()
+---Find a snippet matching the current cursor-position.
+---@param opts table: may contain:
+--- - `jump_into_func`: passed through to `snip_expand`.
+---@return boolean: whether a snippet was expanded.
+local function expand(opts)
 	local expand_params
 	local snip
 	-- find snip via next_expand (set from previous expandable()) or manual matching.
 	if next_expand ~= nil then
 		snip = next_expand
 		expand_params = next_expand_params
+
 		next_expand = nil
 		next_expand_params = nil
 	else
@@ -270,6 +275,8 @@ local function expand()
 			match_snippet(util.get_current_line_to_cursor(), "snippets")
 	end
 	if snip then
+		local jump_into_func = opts and opts.jump_into_func
+
 		local cursor = util.get_cursor_0ind()
 		-- override snip with expanded copy.
 		snip = snip_expand(snip, {
@@ -282,6 +289,7 @@ local function expand()
 				},
 				to = cursor,
 			},
+			jump_into_func = jump_into_func,
 		})
 		return true
 	end
