@@ -67,10 +67,12 @@ describe("snippets_basic", function()
 				end
 			})
 		]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			testtest^                                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Can expand Snippets from `all` via <Plug>", function()
