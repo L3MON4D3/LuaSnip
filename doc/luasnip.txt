@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 29
+*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 30
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2235,7 +2235,9 @@ empty the snippets table and the caches of the lazy_load.
 - `jump(direction)`: returns true if the jump was successful.
 - `expandable()`: true if a snippet can be expanded at the current cursor
     position.
-- `expand()`: expands the snippet at(before) the cursor.
+- `expand(opts)`: expands the snippet at(before) the cursor. `opts` may contain:
+    - `jump_into_func` passed through to `ls.snip_expand`, check its’ doc for a
+        description.
 - `expand_or_jumpable()`: returns `expandable() or jumpable(1)` (exists only
     because commonly, one key is used to both jump forward and expand).
 - `expand_or_locally_jumpable()`: same as `expand_or_jumpable()` except jumpable
