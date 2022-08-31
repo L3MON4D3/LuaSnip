@@ -141,7 +141,6 @@ local defaults = {
 		events = require("luasnip.util.events"),
 		parse = require("luasnip.util.parser").parse_snippet,
 		ai = require("luasnip.nodes.absolute_indexer"),
-		postfix = require("luasnip.extras.postfix").postfix,
 	},
 }
 
