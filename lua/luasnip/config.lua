@@ -141,6 +141,7 @@ local defaults = {
 		events = require("luasnip.util.events"),
 		parse = require("luasnip.util.parser").parse_snippet,
 		ai = require("luasnip.nodes.absolute_indexer"),
+		postfix = require("luasnip.extras.postfix").postfix,
 	},
 }
 
@@ -166,6 +167,9 @@ c = {
 		user_config.updateevents = nil
 
 		for k, v in pairs(user_config) do
+			if k == 'snip_env' then
+				v = vim.tbl_extend("force", conf[k], v)
+			end
 			conf[k] = v
 		end
 
