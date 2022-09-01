@@ -150,11 +150,6 @@ local c
 session.config = vim.deepcopy(defaults)
 
 c = {
-	with_default = function(user_conf)
-		return function(default)
-			return vim.tbl_extend("force", default, user_conf)
-		end
-	end,
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
 
@@ -172,9 +167,6 @@ c = {
 		user_config.updateevents = nil
 
 		for k, v in pairs(user_config) do
-			if k == 'snip_env' and type(v) == 'function' then
-				v = v(conf[k])
-			end
 			conf[k] = v
 		end
 
