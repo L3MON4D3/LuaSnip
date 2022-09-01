@@ -118,8 +118,6 @@ local defaults = {
 	ft_func = ft_functions.from_filetype,
 	-- fn(bufnr) -> string[] (filetypes).
 	load_ft_func = ft_functions.from_filetype_load,
-	-- whether should extend default snip_env
-	snip_env_extend = false,
 	-- globals injected into luasnippet-files.
 	snip_env = {
 		s = require("luasnip.nodes.snippet").S,
@@ -152,6 +150,11 @@ local c
 session.config = vim.deepcopy(defaults)
 
 c = {
+	with_default = function(user_conf)
+		return function(default)
+			return vim.tbl_extend("force", default, user_conf)
+		end
+	end,
 	set_config = function(user_config)
 		local conf = vim.deepcopy(defaults)
 
@@ -168,11 +171,9 @@ c = {
 			or user_config.updateevents
 		user_config.updateevents = nil
 
-		local snip_env_extend = user_config.snip_env_extend
-
 		for k, v in pairs(user_config) do
-			if snip_env_extend and k == 'snip_env' then
-				v = vim.tbl_extend("force", conf[k], v)
+			if k == 'snip_env' and type(v) == 'function' then
+				v = v(conf[k])
 			end
 			conf[k] = v
 		end
