@@ -2,8 +2,8 @@ NVIM_PATH=deps/nvim
 nvim:
 	git clone --depth 1 https://github.com/neovim/neovim ${NVIM_PATH} || (cd ${NVIM_PATH}; git fetch --depth 1; git checkout origin/master)
 
-OS := $(shell uname)
-LUAJIT = nvim -v | grep LuaJIT
+OS:=$(shell uname)
+LUAJIT:=$(shell nvim -v | grep -o LuaJIT)
 ifeq ($(LUAJIT),LuaJIT)
 	ifeq ($(OS),Darwin)
 		LUA_LIBNAME=luajit5.1.2
