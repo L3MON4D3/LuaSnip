@@ -6,9 +6,9 @@ OS:=$(shell uname)
 LUAJIT:=$(shell nvim -v | grep -o LuaJIT)
 ifeq ($(LUAJIT),LuaJIT)
 	ifeq ($(OS),Darwin)
-		LUA_LIBNAME=luajit5.1.2
+		LUA_LIBNAME=luajit-5.1.2
 	else
-		LUA_LIBNAME=luajit5.1
+		LUA_LIBNAME=luajit-5.1
 	endif
 else
 	LUA_LIBNAME=lua5.1
