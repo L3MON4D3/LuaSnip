@@ -2,12 +2,23 @@ NVIM_PATH=deps/nvim
 nvim:
 	git clone --depth 1 https://github.com/neovim/neovim ${NVIM_PATH} || (cd ${NVIM_PATH}; git fetch --depth 1; git checkout origin/master)
 
+OS := $(shell uname)
+LUAJIT = nvim -v | grep LuaJIT
+ifeq ($(LUAJIT),LuaJIT)
+	ifeq ($(OS),Darwin)
+		LUA_LIBNAME=luajit5.1.2
+	else
+		LUA_LIBNAME=luajit5.1
+	endif
+else
+	LUA_LIBNAME=lua5.1
+endif
 JSREGEXP_PATH=deps/jsregexp
 jsregexp:
 	git submodule init
 	git submodule update
 	# conditional: find lua nvim is linked against, and link against it too.
-	make INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/ LDLIBS=$(if nvim -v | grep LuaJIT,"-lluajit-5.1","-llua5.1") -C ${JSREGEXP_PATH}
+	make INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/ LDLIBS=-l${LUA_LIBNAME} -C ${JSREGEXP_PATH}
 
 install_jsregexp: jsregexp
 	# access via require("luasnip-jsregexp")
