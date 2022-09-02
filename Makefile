@@ -6,19 +6,18 @@ OS:=$(shell uname)
 LUAJIT:=$(shell nvim -v | grep -o LuaJIT)
 ifeq ($(LUAJIT),LuaJIT)
 	ifeq ($(OS),Darwin)
-		LUA_LIBNAME=luajit-5.1.2
+		LUA_LDLIBS=-lluajit-5.1.2 -L/opt/homebrew/opt/luajit/lib/
 	else
-		LUA_LIBNAME=luajit-5.1
+		LUA_LDLIBS=-lluajit-5.1
 	endif
 else
-	LUA_LIBNAME=lua5.1
+	LUA_LDLIBS=-llua5.1
 endif
 JSREGEXP_PATH=deps/jsregexp
 jsregexp:
 	git submodule init
 	git submodule update
-	# conditional: find lua nvim is linked against, and link against it too.
-	make INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/ LDLIBS=-l${LUA_LIBNAME} -C ${JSREGEXP_PATH}
+	make INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/ LDLIBS="${LUA_LDLIBS}" -C ${JSREGEXP_PATH}
 
 install_jsregexp: jsregexp
 	# access via require("luasnip-jsregexp")
