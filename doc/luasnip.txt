@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.5.0           Last change: 2022 August 30
+*luasnip.txt*          For NVIM v0.5.0          Last change: 2022 September 02
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1340,11 +1340,15 @@ If `jsregexp` is not available, transformation are replaced by a simple copy.
 ==============================================================================
 17. VARIABLES                                              *luasnip-variables*
 
-All `TM_something`-variables are supported with two additions: `SELECT_RAW` and
-`SELECT_DEDENT`. These were introduced because `TM_SELECTED_TEXT` is designed
-to be compatible with vscodes’ behavior, which can be counterintuitive when
-the snippet can be expanded at places other than the point where selection
-started (or when doing transformations on selected text).
+All `TM_something`-variables are supported with two additions: `LS_SELECT_RAW`
+and `LS_SELECT_DEDENT`. These were introduced because `TM_SELECTED_TEXT` is
+designed to be compatible with vscodes’ behavior, which can be
+counterintuitive when the snippet can be expanded at places other than the
+point where selection started (or when doing transformations on selected text).
+Besides those we also provide `LS_TRIGGER` which contains the trigger of the
+snippet, and `LS_CAPTURE_n` (where n is a positive integer) that contains the
+n-th capture when using a regex with capture groups as `trig` in the snippet
+definition.
 
 All variables can be used outside of lsp-parsed snippets as their values are
 stored in a snippets’ `snip.env`-table:
@@ -1353,7 +1357,7 @@ stored in a snippets’ `snip.env`-table:
     s("selected_text", f(function(args, snip)
       local res, env = {}, snip.env
       table.insert(res, "Selected Text (current line is " .. env.TM_LINE_NUMBER .. "):")
-      for _, ele in ipairs(env.SELECT_RAW) do table.insert(res, ele) end
+      for _, ele in ipairs(env.LS_SELECT_RAW) do table.insert(res, ele) end
       return res
     end, {}))
 <
@@ -1376,9 +1380,11 @@ where:
         Is a function that receives a string and returns a value for the var with that name
         or a table from var name to a value
         (in this case, if the value is a function it will be executed lazily once per snippet expansion).
-    - `init`: `fn(pos: pair[int])->map[string, EnvVal]` Takes the 0-based position of the cursor and returns
+    - `init`: `fn(info: table)->map[string, EnvVal]` Returns
         a table of variables that will set to the environment of the snippet on expansion,
         use this for vars that have to be calculated in that moment or that depend on each other.
+        The `info` table argument contains `pos` (0-based position of the cursor on expansion),
+        the `trigger` of the snippet and the `captures` list.
     - `eager`: `list[string]` names of variables that will be taken from `vars` and appended eagerly (like those in init)
     - `multiline_vars`: `(fn(name:string)->bool)|map[sting, bool]|bool|string[]` Says if certain vars are a table or just a string,
         can be a function that get’s the name of the var and returns true if the var is a key,
@@ -1405,7 +1411,7 @@ A simple example to make it more clear:
     
     -- then you can use  $SYS_HOME which was eagerly initialized but also $SYS_USER (or any other system environment var) in your snippets
     
-    lsp.env_namespace("POS", {init=function(pos) return {"VAL": vim.inspect(pos)}} end)
+    lsp.env_namespace("POS", {init=function(info) return {"VAL": vim.inspect(info.pos)}} end)
     
     -- then you can use  $POS_VAL in your snippets
     

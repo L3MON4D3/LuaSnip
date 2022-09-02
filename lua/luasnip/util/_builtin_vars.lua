@@ -147,19 +147,27 @@ function lazy_vars.BLOCK_COMMENT_END()
 end
 
 -- These are the vars that have to be populated once the snippet starts to avoid any issue
-local function eager_vars(pos)
+local function eager_vars(info)
 	local vars = {}
+	local pos = info.pos
 	vars.TM_CURRENT_LINE =
 		vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)[1]
 	vars.TM_CURRENT_WORD = util.word_under_cursor(pos, vars.TM_CURRENT_LINE)
 	vars.TM_LINE_INDEX = tostring(pos[1])
 	vars.TM_LINE_NUMBER = tostring(pos[1] + 1)
-	vars.SELECT_RAW, vars.SELECT_DEDENT, vars.TM_SELECTED_TEXT =
+	vars.LS_SELECT_RAW, vars.LS_SELECT_DEDENT, vars.TM_SELECTED_TEXT =
 		util.get_selection()
+	-- These are for backward compatibility, for now on all builtins that are not part of TM_ go in LS_
+	vars.SELECT_RAW, vars.SELECT_DEDENT =
+		vars.LS_SELECT_RAW, vars.LS_SELECT_DEDENT
+	for i, cap in ipairs(info.captures) do
+		vars["LS_CAPTURE_" .. i] = cap
+	end
+	vars.LS_TRIGGER = info.trigger
 	return vars
 end
 
-local builtin_ns = { SELECT = true }
+local builtin_ns = { SELECT = true, LS = true }
 
 for name, _ in pairs(lazy_vars) do
 	local parts = vim.split(name, "_")
