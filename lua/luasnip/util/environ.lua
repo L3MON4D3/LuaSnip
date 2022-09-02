@@ -39,14 +39,15 @@ function Environ.is_table(var_fullname)
 	return nmsp.is_table(varname)
 end
 
-function Environ:new(pos, o)
+function Environ:new(info, o)
 	o = o or {}
 	setmetatable(o, self)
+	vim.list_extend(info, info.pos) -- For compatibility with old user defined namespaces
 
 	for ns_name, ns in pairs(namespaces) do
 		local eager_vars = {}
 		if ns.init then
-			eager_vars = ns.init(pos)
+			eager_vars = ns.init(info)
 		end
 		for _, eager in ipairs(ns.eager) do
 			if not eager_vars[eager] then

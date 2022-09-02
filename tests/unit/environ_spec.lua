@@ -10,7 +10,7 @@ describe("luasnip.util.environ", function()
 					local Environ = require("luasnip.util.environ")
                                         %s
 
-                                        local env = Environ:new({0, 0})
+                                        local env = Environ:new({pos={0, 0},  captures={}, trigger=""})
                                         local result = env["%s"]
                                         return #(result) > 0
                                         ]=]):format(
@@ -30,7 +30,7 @@ describe("luasnip.util.environ", function()
 					local Environ = require("luasnip.util.environ")
                                         %s
 
-                                        local env = Environ:new({0, 0})
+                                        local env = Environ:new({pos={0, 0},  captures={}, trigger=""})
                                         return env["%s"]
                                         ]=]):format(
 						namespace_setup,
@@ -48,7 +48,7 @@ describe("luasnip.util.environ", function()
 					([=[
 					local Environ = require("luasnip.util.environ")
                                         %s
-                                        local env = Environ:new({0, 0})
+                                        local env = Environ:new({pos={0, 0},  captures={}, trigger=""})
                                         return env["%s"] == nil
                                         ]=]):format(
 						namespace_setup,
@@ -71,7 +71,7 @@ describe("luasnip.util.environ", function()
 					([=[
 					local Environ = require("luasnip.util.environ")
                                         %s
-                                        local env = Environ:new({0, 0})
+                                        local env = Environ:new({pos={0, 0},  captures={}, trigger=""})
                                         return rawget(env, "%s") ~= nil
                                         ]=]):format(
 						namespace_setup,
@@ -145,8 +145,15 @@ describe("luasnip.util.environ", function()
 		"VAR"
 	)
 	check(
+		"Init funtion old api",
+		[[Environ.env_namespace("OLD", {init=function(pos) return {POS = table.concat(pos, ',')} end})]],
+		"OLD_POS",
+		true,
+		"0,0"
+	)
+	check(
 		"Init funtion",
-		[[Environ.env_namespace("IN", {init=function(pos) return {POS = table.concat(pos, ',')} end})]],
+		[[Environ.env_namespace("IN", {init=function(info) return {POS = table.concat(info.pos, ',')} end})]],
 		"IN_POS",
 		true,
 		"0,0"
@@ -180,4 +187,26 @@ describe("luasnip.util.environ", function()
 		"Environ with multiline_vars incorrect type",
 		[[Environ.env_namespace("TES_T", {var={A='s', multiline_vars = 9 }})]]
 	)
+
+	local function check_builtin(var_name, test)
+		it("Test builtin " .. var_name, function()
+			assert.is_true(
+				exec_lua(
+					([=[
+					local Environ = require("luasnip.util.environ")
+                                        local env = Environ:new({pos={0, 0},  captures={"one"}, trigger="trigg"})
+                                        local result = env["%s"]
+                                        local test = %s
+                                        return test(result)
+                                        ]=]):format(
+						var_name,
+						test
+					)
+				)
+			)
+		end)
+	end
+
+	check_builtin("LS_TRIGGER", [[function(r) return r == "trigg" end]])
+	check_builtin("LS_CAPTURE_1", [[function(r) return r == "one" end]])
 end)

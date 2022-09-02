@@ -191,7 +191,9 @@ local function snip_expand(snippet, opts)
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}
 
-	local env = Environ:new(opts.pos)
+	local info =
+		{ trigger = snip.trigger, captures = snip.captures, pos = opts.pos }
+	local env = Environ:new(info)
 
 	local pos_id = vim.api.nvim_buf_set_extmark(
 		0,

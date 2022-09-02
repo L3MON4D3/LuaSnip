@@ -623,7 +623,7 @@ describe("Parser", function()
 
 	it("Inserts default when the variable is empty", function()
 		ls_helpers.session_setup_luasnip()
-		local snip = "${SELECT_DEDENT: a ${2:default}}"
+		local snip = "${LS_SELECT_DEDENT: a ${2:default}}"
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
@@ -678,7 +678,7 @@ describe("Parser", function()
 
 	it("handles default correctly inside placeholder", function()
 		ls_helpers.session_setup_luasnip()
-		local snip = "${1: ${SELECT_DEDENT: a ${2:default}} }"
+		local snip = "${1: ${LS_SELECT_DEDENT: a ${2:default}} }"
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
@@ -708,7 +708,7 @@ describe("Parser", function()
 
 	it("handles copy-source inside default.", function()
 		ls_helpers.session_setup_luasnip()
-		local snip = "${1: ${SELECT_DEDENT: a ${2:default} ${3:copied}}} $3"
+		local snip = "${1: ${LS_SELECT_DEDENT: a ${2:default} ${3:copied}}} $3"
 
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
@@ -745,7 +745,7 @@ describe("Parser", function()
 
 	it("handles copy inside default", function()
 		ls_helpers.session_setup_luasnip()
-		local snip = "$1 ${2: ${SELECT_DEDENT: a ${3:default} $1} }"
+		local snip = "$1 ${2: ${LS_SELECT_DEDENT: a ${3:default} $1} }"
 
 		-- indent, insert text, SELECT.
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
