@@ -189,6 +189,7 @@ end
 local function insert_move_on(new_cur_pos)
 	-- maybe feedkeys this too.
 	set_cursor_0ind(new_cur_pos)
+	vim.api.nvim_command("redraw!")
 end
 
 local function multiline_equal(t1, t2)
