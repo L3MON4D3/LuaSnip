@@ -60,4 +60,13 @@ function M.apply_text_edits(snippet_or_text_edits, bufnr, offset_encoding, apply
 	})
 end
 
+function M.update_capabilities(capabilities)
+	if not capabilities.experimental then
+		capabilities.experimental = {}
+	end
+	capabilities.experimental.snippetTextEdit = true
+
+	return capabilities
+end
+
 return M
