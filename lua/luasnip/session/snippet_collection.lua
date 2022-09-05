@@ -85,10 +85,10 @@ local by_prio_snippets_mt = {
 -- metatable for the by_prio table used when by_prio.type[prio] is reset
 -- create here so that it can be shared and only has to be created once
 local prio_mt2 = {
-	__index = function(s,k)
+	__index = function(s, k)
 		-- make new tables as they are indexed
 		return auto_creating_tables(s, k, 2)
-	end
+	end,
 }
 
 setmetatable(by_prio.snippets, by_prio_snippets_mt)
