@@ -13,7 +13,9 @@ syn match snippet '^priority.*' contains=snipKeyword,priority
 syn match priority '\d\+' contained
 syn match multiSnipText '\S\+ \zs.*' contained
 syn match snipKeyword '^(snippet|extends|version|autosnippet|priority)'me=s+8 contained
-syn match snipError "^[^#vsaep\t].*$"
+" normally we'd want a \s in that group, but that doesn't work => cover common
+" cases with \t and " ".
+syn match snipError "^[^#vsaep\t ].*$"
 
 hi link snippet       Identifier
 hi link snipComment   Comment
