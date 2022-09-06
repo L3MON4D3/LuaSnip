@@ -28,8 +28,20 @@ Neovim >= 0.5 (extmarks)
 
 # Setup
 ## Install 
-* With your preferred plugin manager i.e. [vim-plug](https://github.com/junegunn/vim-plug) or [packer](https://github.com/wbthomason/packer.nvim) (recommended).
-  
+* With your preferred plugin manager i.e. [vim-plug](https://github.com/junegunn/vim-plug) or [packer](https://github.com/wbthomason/packer.nvim)
+* LuaSnip uses [Semantic Versioning](https://semver.org) (with some leeway, big patches might end up as a Minor version)!  
+  Releases will be tagged as `vMajor.Minor.Patch`, we recommend following the latest Major release.  
+
+  Packer:
+  ```lua
+  use({"L3MON4D3/LuaSnip", tag = "v<CurrentMajor>.*"})
+  ```
+  vim-plug:
+  ```vim
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*'}
+  ```
+  Consider watching the repos releases so you're notified when a new version becomes available.
+
 ## Keymaps
 ```vim
 " press <Tab> to expand or jump in a snippet. These can also be mapped separately
