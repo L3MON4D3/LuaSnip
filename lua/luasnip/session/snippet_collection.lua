@@ -10,6 +10,28 @@ local M = {
 	invalidated_count = 0,
 }
 
+-- depth specifies how many levels under this table should be allowed to index
+-- throug this metamethod
+-- set depth to 0 to disable checking
+-- Acknowledgment: This is (maybe more than) inspired by
+-- https://lua-users.org/wiki/AutomagicTables so special thanks to
+-- Thomas Wrensch and Rici Lake for sharing their ideas on this topic.
+local function auto_creating_tables(self, key, depth)
+	local t = {}
+	assert(depth ~= 1, "don't index at that level")
+	setmetatable(t, {
+		-- creating a new function on each time (could be shared) isn't that
+		-- nice. Nonetheless this shouldn't be too bad, as these are only
+		-- created twice (auto+snippet) per ft and twice for each prio,ft
+		-- combination
+		__index = function(s, k)
+			return auto_creating_tables(s, k, depth - 1)
+		end,
+	})
+	self[key] = t
+	return t
+end
+
 local by_key = {}
 
 -- stores snippets/autosnippets by priority.
@@ -17,20 +39,10 @@ local by_prio = {
 	snippets = {
 		-- stores sorted keys, eg 1=1000, 2=1010, 3=1020,..., used for
 		-- quick iterating.
-		order = {
-			1000,
-		},
-		[1000] = {
-			all = {},
-		},
+		order = {},
 	},
 	autosnippets = {
-		order = {
-			1000,
-		},
-		[1000] = {
-			all = {},
-		},
+		order = {},
 	},
 }
 
@@ -59,16 +71,28 @@ local function insert_sorted_unique(t, k)
 	t[i] = k
 end
 
-local sort_mt = {
+local by_prio_snippets_mt = {
+	__index = function(s, k)
+		-- make new tables as they are indexed
+		return auto_creating_tables(s, k, 3)
+	end,
 	__newindex = function(t, k, v)
 		-- update priority-order as well.
 		insert_sorted_unique(t.order, k)
 		rawset(t, k, v)
 	end,
 }
+-- metatable for the by_prio table used when by_prio.type[prio] is reset
+-- create here so that it can be shared and only has to be created once
+local prio_mt2 = {
+	__index = function(s, k)
+		-- make new tables as they are indexed
+		return auto_creating_tables(s, k, 2)
+	end,
+}
 
-setmetatable(by_prio.snippets, sort_mt)
-setmetatable(by_prio.autosnippets, sort_mt)
+setmetatable(by_prio.snippets, by_prio_snippets_mt)
+setmetatable(by_prio.autosnippets, by_prio_snippets_mt)
 
 -- iterate priorities, high to low.
 local function prio_iter(type)
@@ -88,6 +112,14 @@ local by_ft = {
 	snippets = {},
 	autosnippets = {},
 }
+
+local by_ft_snippets_mt = {
+	__index = function(s, k)
+		return auto_creating_tables(s, k, 2)
+	end,
+}
+setmetatable(by_ft.snippets, by_ft_snippets_mt)
+setmetatable(by_ft.autosnippets, by_ft_snippets_mt)
 
 local by_id = setmetatable({}, {
 	-- make by_id-table weak (v).
@@ -118,14 +150,18 @@ function M.clear_snippets(ft)
 		-- remove all (auto)snippets for all priorities.
 		for _, prio in ipairs(by_prio.snippets.order) do
 			by_prio.snippets[prio] = {}
+			setmetatable(by_prio.snippets[prio], prio_mt2)
 		end
 		for _, prio in ipairs(by_prio.autosnippets.order) do
 			by_prio.autosnippets[prio] = {}
+			setmetatable(by_prio.autosnippets[prio], prio_mt2)
 		end
 
-		by_ft.snippets = {}
-		by_ft.autosnippets = {}
 		by_key = {}
+		by_ft.snippets = {}
+		setmetatable(by_ft.snippets, by_ft_snippets_mt)
+		by_ft.autosnippets = {}
+		setmetatable(by_ft.autosnippets, by_ft_snippets_mt)
 	end
 end
 
@@ -174,6 +210,7 @@ function M.clean_invalidated(opts)
 		for key, prio_snippets in pairs(type_snippets) do
 			if key ~= "order" then
 				type_snippets[key] = without_invalidated(prio_snippets)
+				setmetatable(type_snippets[key], prio_mt2)
 			end
 		end
 	end
@@ -202,8 +239,6 @@ local current_id = 0
 -- snippets like {ft1={<snippets>}, ft2={<snippets>}}, opts should be properly
 -- initialized with default values.
 function M.add_snippets(snippets, opts)
-	local prio_snip_table = by_prio[opts.type]
-
 	for ft, ft_snippets in pairs(snippets) do
 		local ft_table = by_ft[opts.type][ft]
 
@@ -212,33 +247,19 @@ function M.add_snippets(snippets, opts)
 			by_ft[opts.type][ft] = ft_table
 		end
 
-		-- TODO: not the nicest loop, can it be improved? Do table-checks outside
-		-- it, preferably.
 		for _, snip in ipairs(ft_snippets) do
 			snip.priority = opts.override_priority
 				or (snip.priority and snip.priority)
 				or opts.default_priority
 				or 1000
 
-			if not prio_snip_table[snip.priority] then
-				prio_snip_table[snip.priority] = {}
-			end
-
-			local prio_ft_table
-			if not prio_snip_table[snip.priority][ft] then
-				prio_ft_table = {}
-				prio_snip_table[snip.priority][ft] = prio_ft_table
-			else
-				prio_ft_table = prio_snip_table[snip.priority][ft]
-			end
-
-			prio_ft_table[#prio_ft_table + 1] = snip
-
-			ft_table[#ft_table + 1] = snip
-
 			snip.id = current_id
-			by_id[current_id] = snip
 			current_id = current_id + 1
+
+			-- do the insertion
+			table.insert(by_prio[opts.type][snip.priority][ft], snip)
+			table.insert(by_ft[opts.type][ft], snip)
+			by_id[snip.id] = snip
 		end
 	end
 
@@ -250,12 +271,29 @@ function M.add_snippets(snippets, opts)
 	end
 end
 
+-- specialized copy functions to not loose performance on ifs when copying
+-- and to be able to specify when pairs or ipairs is used
+local function copy_by_ft_type_ft(tab)
+	local r = {}
+	for k, v in ipairs(tab) do
+		r[k] = v
+	end
+	return r
+end
+local function copy_by_ft_type(tab)
+	local r = {}
+	for k, v in pairs(tab) do
+		r[k] = copy_by_ft_type_ft(v)
+	end
+	return r
+end
+
 -- ft may be nil, type not.
 function M.get_snippets(ft, type)
 	if ft then
-		return by_ft[type][ft]
+		return copy_by_ft_type_ft(by_ft[type][ft])
 	else
-		return by_ft[type]
+		return copy_by_ft_type(by_ft[type])
 	end
 end
 
