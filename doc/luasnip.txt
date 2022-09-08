@@ -1,4 +1,4 @@
-*luasnip.txt*          For NVIM v0.5.0          Last change: 2022 September 06
+*luasnip.txt*          For NVIM v0.5.0          Last change: 2022 September 08
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2248,6 +2248,8 @@ empty the snippets table and the caches of the lazy_load.
     because commonly, one key is used to both jump forward and expand).
 - `expand_or_locally_jumpable()`: same as `expand_or_jumpable()` except jumpable
     is ignored if the cursor is not inside the current snippet.
+- `locally_jumpable(direction)`: same as `jumpable()` except it is ignored if the
+    cursor is not inside the current snippet.
 - `expand_or_jump()`: returns true if jump/expand was succesful.
 - `expand_auto()`: expands the autosnippets before the cursor (not necessary to
     call manually, will be called via autocmd if `enable_autosnippets` is set in

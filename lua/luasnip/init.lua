@@ -174,6 +174,10 @@ local function expand_or_locally_jumpable()
 	return expandable() or (in_snippet() and jumpable())
 end
 
+local function locally_jumpable(dir)
+	return in_snippet() and jumpable(dir)
+end
+
 local function _jump_into_default(snippet)
 	return util.no_region_check_wrap(snippet.jump_into, snippet, 1)
 end
@@ -646,6 +650,7 @@ end
 ls = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
+	locally_jumpable = locally_jumpable,
 	jumpable = jumpable,
 	expandable = expandable,
 	in_snippet = in_snippet,
