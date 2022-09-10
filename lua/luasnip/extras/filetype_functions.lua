@@ -1,24 +1,13 @@
--- Check if treesitter is available
-local ok_parsers, ts_parsers = pcall(require, "nvim-treesitter.parsers")
-if not ok_parsers then
-	ts_parsers = nil
-end
-
-local ok_utils, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
-if not ok_utils then
-	ts_utils = nil
-end
+local util = require("luasnip.util.util")
 
 local function from_cursor_pos()
-	if not ts_parsers or not ts_utils then
-		return {}
-	end
+	-- get_parser errors if parser not present (no grammar for language).
+	local has_parser, parser = pcall(vim.treesitter.get_parser)
 
-	local parser = ts_parsers.get_parser()
-	local current_node = ts_utils.get_node_at_cursor()
-
-	if current_node then
-		return { parser:language_for_range({ current_node:range() }):lang() }
+	if has_parser then
+		local cursor = util.get_cursor_0ind()
+		-- assumption: languagetree uses 0-indexed byte-ranges.
+		return { parser:language_for_range({ cursor[1], cursor[2], cursor[1], cursor[2] }):lang() }
 	else
 		return {}
 	end
