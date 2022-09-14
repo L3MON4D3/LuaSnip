@@ -326,6 +326,11 @@ ls.add_snippets("all", {
 	}, {
 		condition = conds.line_begin,
 	}),
+	s("cond3", {
+		t("will only expand at the end of the line"),
+	}, {
+		condition = conds.line_end,
+	}),
 	-- The last entry of args passed to the user-function is the surrounding snippet.
 	s(
 		{ trig = "a%d", regTrig = true },
