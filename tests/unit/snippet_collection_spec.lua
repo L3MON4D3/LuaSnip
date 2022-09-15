@@ -46,3 +46,25 @@ describe("snippet_collection.add/get", function()
 		assert.is_true(foo())
 	end)
 end)
+
+describe("add_snippets invalidation", function()
+	-- apparently clear() needs to run before anything else...
+	helpers.clear()
+	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
+	it("", function()
+		local function foo()
+				return helpers.exec_lua([[
+					local s,t = require("luasnip").snippet, require("luasnip").text_node
+					local collection = require("luasnip.session.snippet_collection")
+					collection.clear_snippets()
+					local s1,s2 = s("trig1", t("snippet1")), s("trig2", t("snippet2"))
+					local opts = {type="snippets", default_priority=1000, key="abc"}
+					collection.add_snippets({["txt"]={s1,s2}}, opts)
+					collection.clean_invalidated({ inv_limit = -1 })
+					local r = collection.get_snippets("nonExistantFT", "snippets")
+					]])
+		end
+		assert.has_no.errors(foo)
+	end)
+end)
