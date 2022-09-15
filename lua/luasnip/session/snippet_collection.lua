@@ -217,6 +217,7 @@ function M.clean_invalidated(opts)
 
 	for type, type_snippets in pairs(by_ft) do
 		by_ft[type] = without_invalidated(type_snippets)
+		setmetatable(by_ft[type], by_ft_snippets_mt)
 	end
 
 	for key, key_snippets in pairs(by_key) do
