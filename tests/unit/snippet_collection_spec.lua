@@ -54,7 +54,7 @@ describe("add_snippets invalidation", function()
 
 	it("", function()
 		local function foo()
-				return helpers.exec_lua([[
+			return helpers.exec_lua([[
 					local s,t = require("luasnip").snippet, require("luasnip").text_node
 					local collection = require("luasnip.session.snippet_collection")
 					collection.clear_snippets()
