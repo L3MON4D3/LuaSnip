@@ -1362,7 +1362,7 @@ invalid `$0`.
   - `dedent`: boolean, remove common indent from the snippet's lines.
     Default true.
 
-Both `trim_emtpy` and `dedent` will be disabled for snippets parsed via
+Both `trim_empty` and `dedent` will be disabled for snippets parsed via
 `ls.lsp_expand`: it might prevent correct expansion of snippets sent by lsp.
 
 ## Snipmate Parser
