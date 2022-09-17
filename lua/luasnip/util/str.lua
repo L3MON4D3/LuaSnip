@@ -109,4 +109,8 @@ function M.aupatescape(s)
 	return vim.fn.fnameescape(escaped)
 end
 
+function M.sanitize(str)
+	return str:gsub("%\r", "")
+end
+
 return M
