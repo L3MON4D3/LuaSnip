@@ -44,6 +44,25 @@ describe("Parser", function()
 		})
 	end)
 
+	it("Omits \\r in passed text.", function()
+		ls_helpers.session_setup_luasnip()
+		local snip = '"adsf\\r\\nasdf"'
+
+		assert.are.same(
+			exec_lua(
+				'return ls.parser.parse_snippet("", '
+					.. snip
+					.. "):get_static_text()"
+			),
+			{ "adsf", "asdf" }
+		)
+		exec_lua("ls.lsp_expand(" .. snip .. ")")
+		screen:expect{grid=[[
+			adsf                                              |
+			asdf^                                              |
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("Can create snippets with tabstops.", function()
 		ls_helpers.session_setup_luasnip()
 		local snip = '"a$2 $0b$1 c"'

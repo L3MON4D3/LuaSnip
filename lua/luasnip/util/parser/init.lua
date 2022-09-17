@@ -33,6 +33,8 @@ function M.parse_snippet(context, body, opts)
 		opts.trim_empty = true
 	end
 
+	body = Str.sanitize(body)
+
 	local lines = vim.split(body, "\n")
 	Str.process_multiline(lines, opts)
 	body = table.concat(lines, "\n")
