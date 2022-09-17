@@ -29,7 +29,7 @@ function M.process_multiline(lines, options)
 		if lines[1]:match("^%s*$") then
 			table.remove(lines, 1)
 		end
-		if lines[#lines]:match("^%s*$") then
+		if #lines > 0 and lines[#lines]:match("^%s*$") then
 			lines[#lines] = nil
 		end
 	end
