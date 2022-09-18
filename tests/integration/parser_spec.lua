@@ -57,10 +57,12 @@ describe("Parser", function()
 			{ "adsf", "asdf" }
 		)
 		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			adsf                                              |
 			asdf^                                              |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Can create snippets with tabstops.", function()
