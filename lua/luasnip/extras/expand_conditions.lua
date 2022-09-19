@@ -6,28 +6,52 @@ local M = {}
 local memoization_mt = {
 	-- logic operators
 	-- not
-	__unm  = function(o1)    return function(...) return not o1(...)      end end,
+	__unm = function(o1)
+		return function(...)
+			return not o1(...)
+		end
+	end,
 	-- or
-	__add  = function(o1,o2) return function(...) return o1(...) or  o2(...) end end,
+	__add = function(o1, o2)
+		return function(...)
+			return o1(...) or o2(...)
+		end
+	end,
 	-- and
-	__mul  = function(o1,o2) return function(...) return o1(...) and o2(...) end end,
+	__mul = function(o1, o2)
+		return function(...)
+			return o1(...) and o2(...)
+		end
+	end,
 	-- xnor
-	__eq   = function(o1,o2) return function(...) return o1(...) == o2(...) end end,
+	__eq = function(o1, o2)
+		return function(...)
+			return o1(...) == o2(...)
+		end
+	end,
 	-- use table like a function by overloading __call
 	__call = function(tab, line_to_cursor, matched_trigger, captures)
-		if not tab.mem or tab.invalidate(tab, line_to_cursor, matched_trigger, captures) then
+		if
+			not tab.mem
+			or tab.invalidate(tab, line_to_cursor, matched_trigger, captures)
+		then
 			tab.mem = tab.func(line_to_cursor, matched_trigger, captures)
 		end
 		return tab.mem
-	end
+	end,
 }
 -- low level factory
 -- invalidate(table) -> bool: decides if the memoization should be invalidated,
 -- can store state in table
 function M.memoization_factory(func, invalidate)
 	-- always invalidare by default
-	invalidate = invalidate or function() return true end
-	return setmetatable({func=func, invalidate=invalidate}, memoization_mt)
+	invalidate = invalidate or function()
+		return true
+	end
+	return setmetatable(
+		{ func = func, invalidate = invalidate },
+		memoization_mt
+	)
 end
 
 -------------------
