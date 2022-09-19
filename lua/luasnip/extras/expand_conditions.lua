@@ -11,13 +11,13 @@ function M.line_end(line_to_cursor)
 end
 
 local memoization_mt = {
-	__unm  = function(o1)    return function() return not o1()      end end,
-	__add  = function(o1,o2) return function() return o1() or  o2() end end,
-	__mul  = function(o1,o2) return function() return o1() and o2() end end,
+	__unm  = function(o1)    return function(...) return not o1(...)      end end,
+	__add  = function(o1,o2) return function(...) return o1(...) or  o2(...) end end,
+	__mul  = function(o1,o2) return function(...) return o1(...) and o2(...) end end,
 	-- TODO more logic operators
-	__call = function(tab)
-		if not tab.mem or tab.invalidate(tab) then
-			tab.mem = tab.func()
+	__call = function(tab, line_to_cursor, matched_trigger, captures)
+		if not tab.mem or tab.invalidate(tab, line_to_cursor, matched_trigger, captures) then
+			tab.mem = tab.func(line_to_cursor, matched_trigger, captures)
 		end
 		return tab.mem
 	end
