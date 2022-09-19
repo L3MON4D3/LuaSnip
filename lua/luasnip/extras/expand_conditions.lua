@@ -11,10 +11,16 @@ function M.line_end(line_to_cursor)
 end
 
 local memoization_mt = {
+	-- logic operators
+	-- not
 	__unm  = function(o1)    return function(...) return not o1(...)      end end,
+	-- or
 	__add  = function(o1,o2) return function(...) return o1(...) or  o2(...) end end,
+	-- and
 	__mul  = function(o1,o2) return function(...) return o1(...) and o2(...) end end,
-	-- TODO more logic operators
+	-- xnor
+	__eq   = function(o1,o2) return function(...) return o1(...) == o2(...) end end,
+	-- use table like a function by overloading __call
 	__call = function(tab, line_to_cursor, matched_trigger, captures)
 		if not tab.mem or tab.invalidate(tab, line_to_cursor, matched_trigger, captures) then
 			tab.mem = tab.func(line_to_cursor, matched_trigger, captures)
