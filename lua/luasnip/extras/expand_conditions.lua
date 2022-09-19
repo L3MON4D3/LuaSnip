@@ -1,15 +1,8 @@
 local M = {}
 
-function M.line_begin(line_to_cursor, matched_trigger)
-	-- +1 because `string.sub("abcd", 1, -2)` -> abc
-	return line_to_cursor:sub(1, -(#matched_trigger + 1)):match("^%s*$")
-end
-
-function M.line_end(line_to_cursor)
-	local line = vim.api.nvim_get_current_line()
-	return #line_to_cursor == #line
-end
-
+-----------------------
+-- CONDITION OBJECTS --
+-----------------------
 local memoization_mt = {
 	-- logic operators
 	-- not
@@ -38,14 +31,21 @@ function M.memoization_factory(func, invalidate)
 	return setmetatable({func=func, invalidate=invalidate}, memoization_mt)
 end
 
--- F1 = memoization_factory(function() return true  end)
--- F2 = memoization_factory(function() return false end)
--- F3 = F1 + F2
--- F4 = F1 * -F2
---
--- local m = {F1=F1, F2=F2, F3=F3, F4=F4}
--- for _,name in ipairs{"F1", "F2", "F3", "F4"} do
--- 	print(name, m[name]())
--- end
+-------------
+-- PRESETS --
+-------------
+local function line_begin(line_to_cursor, matched_trigger)
+	-- +1 because `string.sub("abcd", 1, -2)` -> abc
+	return line_to_cursor:sub(1, -(#matched_trigger + 1)):match("^%s*$")
+end
+function M.line_begin() return M.memoization_factory(line_begin, nil) -- TODO invalidation function
+end
+
+local function line_end(line_to_cursor)
+	local line = vim.api.nvim_get_current_line()
+	return #line_to_cursor == #line
+end
+function M.line_end() return M.memoization_factory(line_end, nil) -- TODO invalidation function
+end
 
 return M
