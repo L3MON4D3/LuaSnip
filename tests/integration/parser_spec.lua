@@ -848,4 +848,17 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("correctly parses escaped characters.", function()
+		ls_helpers.session_setup_luasnip()
+		local snip = [["\\`\\`\\` `'abc' . '\\`lel'`"]]
+
+		exec_lua("ls.snip_expand(ls.parser.parse_snipmate('', " .. snip .. "))")
+		screen:expect({
+			grid = [[
+			``` abc\`lel^                                      |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)
