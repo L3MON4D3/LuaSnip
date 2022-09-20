@@ -116,7 +116,7 @@ local function backticks_to_variable(body)
 	end
 
 	-- append remaining characters.
-	var_string = var_string .. body:sub(processed_to, -1)
+	var_string = var_string .. body:sub(processed_to, -1):gsub("\\`", "`")
 
 	return var_map, var_string
 end
