@@ -1,4 +1,4 @@
-*luasnip.txt*          For NVIM v0.5.0          Last change: 2022 September 20
+*luasnip.txt*          For NVIM v0.5.0          Last change: 2022 September 28
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -127,7 +127,7 @@ It is possible to make snippets from one filetype available to another using
 ==============================================================================
 2. NODE                                                         *luasnip-node*
 
-Every node accepts, as its’ last parameter, an optional table of arguments.
+Every node accepts, as its last parameter, an optional table of arguments.
 There are some common ones (e.g. |luasnip-`node_ext_opts`|), and some that
 only apply to some nodes (`user_args` for both function and dynamicNode). These
 `opts` are only mentioned if they accept options that are not common to all
