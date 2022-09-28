@@ -35,7 +35,8 @@ local function load_files(ft, files, add_opts)
 		local func_string = path_mod.read_file(file)
 		-- bring snippet-constructors into global scope for that function.
 		func_string = 'require("luasnip").setup_snip_env() ' .. func_string
-		local file_snippets, file_autosnippets = loadstring(func_string)()
+		local ok, file_snippets, file_autosnippets = pcall(loadstring(func_string))
+		if not ok then error('Failed to load ' .. file) end
 
 		-- make sure these aren't nil.
 		file_snippets = file_snippets or {}
