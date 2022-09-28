@@ -80,7 +80,7 @@ It is possible to make snippets from one filetype available to another using
 
 # NODE
 
-Every node accepts, as its' last parameter, an optional table of arguments.
+Every node accepts, as its last parameter, an optional table of arguments.
 There are some common ones (e.g. [`node_ext_opts`](#ext_opts)), and some that
 only apply to some nodes (`user_args` for both function and dynamicNode).
 These `opts` are only mentioned if they accept options that are not common to
