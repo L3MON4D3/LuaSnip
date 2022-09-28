@@ -29,9 +29,10 @@ jobs:
         with:
           commit_message: "Auto generate docs"
       - name: "Format with Stylua"
-        uses: JohnnyMorganz/stylua-action@1.0.0
+        uses: JohnnyMorganz/stylua-action@v1.1.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          version: v0.15.1
           args: .
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
