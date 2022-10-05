@@ -1064,6 +1064,31 @@ ls.add_snippets("all", {
 })
 ```
 
+- `conditions.show`: Contains typical predicates/functions used as
+  `show`-condition. Currently this is just `line_end`
+- `conditions.expand`: Contains typical predicates/functions used as
+  `expand`-condition. Currently this is just `line_begin`
+  Contains everything from `conditions.show` as well.
+- `conditions`: Provides a function `make_condition(foo)` which takes a function
+  as argument and returns a *condition object* for which several operators are
+  defined:
+  - `c1 + c2 -> c1 or c2`
+  - `c1 * c2 -> c1 and c2`
+  - `-c1 -> not c1`
+  - `c1 ^ c2 -> c1 xor/!= c2`
+  - `c1 % c2 -> c1 xnor/== c2`: This decision may look weird but as we weren't
+	able to use `==`, we decided to take something that makes one scratch ones
+	head (and thus avoid making false assumptions).
+	For more details look at [this comment](https://github.com/L3MON4D3/LuaSnip/pull/612#issuecomment-1264487743).
+
+  `conditions.show`s and `conditions.expand`s members all are also condition
+  objects so you can work with those too.
+
+  Thus you can easily combine existing predicates. Like in
+  `conditions.expand.line_end + conditions.expand.line_begin` instead of doing
+  something like
+  `function(...) return conditions.expand.line_end(...) or conditions.expand.line_begin(...) end`.
+
 <!-- panvimdoc-ignore-start -->
 
 extras1: ![extras1](https://user-images.githubusercontent.com/25300418/184359431-50f90599-3db0-4df0-a3a9-27013e663649.gif)
