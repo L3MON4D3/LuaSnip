@@ -541,7 +541,9 @@ local function exit_out_of_region(node)
 	-- leave if curser before or behind snippet
 	if not ok or
 		pos[1] < snip_begin_pos[1] or
-		pos[1] > snip_end_pos[1] then
+		pos[1] > snip_end_pos[1] or
+		pos[2] < snip_begin_pos[2] + 1 or
+		pos[2] > snip_end_pos[2] - 1 then
 		-- jump as long as the 0-node of the snippet hasn't been reached.
 		-- check for nil; if history is not set, the jump to snippet.next
 		-- returns nil.
