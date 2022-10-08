@@ -1050,9 +1050,9 @@ is only a short outline, their usage is shown more expansively in
 
 
 
-- `conditions.show`: Contains typical predicats/functions used as
+- `conditions.show`: Contains typical predicates/functions used as
     `show`-condition. Currently this is just `line_end`
-- `conditions.expand`: Contains typical predicats/functions used as
+- `conditions.expand`: Contains typical predicates/functions used as
     `expand`-condition. Currently this is just `line_begin` Contains everything
     from `conditions.show` as well.
 - `conditions`: Provides a function `make_condition(foo)` which takes a function
@@ -1068,7 +1068,7 @@ is only a short outline, their usage is shown more expansively in
         For more details look at this comment <https://github.com/L3MON4D3/LuaSnip/pull/612#issuecomment-1264487743>.
     `conditions.show`s and `conditions.expand`s members all are also condition
     objects so you can work with those too.
-    Thus you can easily combine existing predicats. Like in
+    Thus you can easily combine existing predicates. Like in
     `conditions.expand.line_end + conditions.expand.line_begin` instead of doing
     something like `function(...) return conditions.expand.line_end(...) or
     conditions.expand.line_begin(...) end`.
