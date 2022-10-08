@@ -17,7 +17,8 @@ local dl = require("luasnip.extras").dynamic_lambda
 local fmt = require("luasnip.extras.fmt").fmt
 local fmta = require("luasnip.extras.fmt").fmta
 local types = require("luasnip.util.types")
-local conds = require("luasnip.extras.expand_conditions")
+local conds = require("luasnip.extras.conditions")
+local conds_expand = require("luasnip.extras.conditions.expand")
 
 -- If you're reading this file for the first time, best skip to around line 190
 -- where the actual snippet-definitions start.
@@ -320,16 +321,27 @@ ls.add_snippets("all", {
 			return line_to_cursor:match("%s*//")
 		end,
 	}),
-	-- there's some built-in conditions in "luasnip.extras.expand_conditions".
+	-- there's some built-in conditions in "luasnip.extras.conditions.expand" and "luasnip.extras.conditions.show".
 	s("cond2", {
 		t("will only expand at the beginning of the line"),
 	}, {
-		condition = conds.line_begin,
+		condition = conds_expand.line_begin,
 	}),
 	s("cond3", {
 		t("will only expand at the end of the line"),
 	}, {
-		condition = conds.line_end,
+		condition = conds_expand.line_end,
+	}),
+	-- on conditions some logic operators are defined
+	s("cond4", {
+		t("will only expand at the end and the start of the line"),
+	}, {
+		-- last function is just an example how to make own function objects and apply operators on them
+		condition = conds_expand.line_end
+			+ conds_expand.line_begin
+				* conds.make_condition(function()
+					return true
+				end),
 	}),
 	-- The last entry of args passed to the user-function is the surrounding snippet.
 	s(

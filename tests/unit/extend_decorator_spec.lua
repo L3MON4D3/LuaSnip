@@ -4,6 +4,11 @@ local exec = helpers.exec
 local ls_helpers = require("helpers")
 
 describe("luasnip.util.extend_decorator", function()
+	before_each(function()
+		helpers.clear()
+		ls_helpers.session_setup_luasnip()
+		helpers.exec_lua("noop = function() end")
+	end)
 	local shared_setup1 = [[
 			local function passthrough(arg1, arg2)
 				return arg1, arg2
