@@ -208,6 +208,7 @@ used there.
 ### Snippet-Data
 
 Snippets contain some interesting tables during runtime:
+
 - `snippet.env`: Contains variables used in the LSP-protocol, for example
   `TM_CURRENT_LINE` or `TM_FILENAME`. It's possible to add customized variables
   here too, check [Environment Namespaces](#environment-namespaces)
@@ -254,6 +255,7 @@ s("trigger", {
 ```
 
 `t(text, node_opts)`:
+
 - `text`: `string` or `string[]`
 - `node_opts`: `table`, see [here](#node)
 
@@ -535,6 +537,7 @@ ChoiceNodes allow choosing between multiple nodes.
 <!-- panvimdoc-ignore-end -->
 
 `c(jump_index, choices, node_opts)`
+
 - [`jump_index`](#jump-index): `number`, since choiceNodes can be jumped to, they need their
   jump-indx.
 - `choices`: `node[]|node`, the choices. The first will be initialliy active.
@@ -974,6 +977,7 @@ ai[1][2][3] == ai(1, 2, 3) == ai{1, 2, 3}
 A shortcut for `functionNode`s that only do very basic string-
 manipulation.  
 `l(lambda, argnodes)`:
+
 - `lambda`: An object created by applying string-operations to `l._n`, objects
   representing the `n`th argnode.  
   For example: 
@@ -991,33 +995,36 @@ There are many examples for `lamda` in `Examples/snippets.lua`
 `match` can insert text based on a predicate (again, a shorthand for `functionNode`).
 
 `match(argnodes, condition, then, else)`, where
-  * `argnode`: A single [`node-reference`](#node_reference). May not be nil, or
-  	a table.
-  * `condition` may be either of
-    * `string`: interpreted as a lua-pattern. Matched on the `\n`-joined (in case
-      it's multiline) text of the first argnode (`args[1]:match(condition)`).
-    * `function`: `fn(args, snip) -> bool`: takes the same parameters as the
-      `functionNode`-function, any value other than nil or false is interpreted
-      as a match.
-    * `lambda`: `l._n` is the `\n`-joined text of the nth argnode.  
-      Useful if string-manipulations have to be performed before the string is matched.  
-	  Should end with `match`, but any other truthy result will be interpreted
-	  as matching.
 
-  * `then` is inserted if the condition matches,
-  * `else` if it does not.  
+* `argnode`: A single [`node-reference`](#node_reference). May not be nil, or
+	a table.
+* `condition` may be either of
+  * `string`: interpreted as a lua-pattern. Matched on the `\n`-joined (in case
+    it's multiline) text of the first argnode (`args[1]:match(condition)`).
+  * `function`: `fn(args, snip) -> bool`: takes the same parameters as the
+    `functionNode`-function, any value other than nil or false is interpreted
+    as a match.
+  * `lambda`: `l._n` is the `\n`-joined text of the nth argnode.  
+    Useful if string-manipulations have to be performed before the string is matched.  
+    Should end with `match`, but any other truthy result will be interpreted
+    as matching.
+
+* `then` is inserted if the condition matches,
+* `else` if it does not.  
 
 Both `then` and `else` can be either text, lambda or function (with the same parameters as
 specified above).  
 `then`'s default-value depends on the `condition`:
-  * `pattern`: Simply the return value from the `match`, e.g. the entire match,
-  or, if there were capture groups, the first capture group.
-  * `function`: the return value of the function if it is either a string, or a
-  table (if there is no `then`, the function cannot return a table containing
-  something other than strings).
-  * `lambda`: Simply the first value returned by the lambda.
+
+* `pattern`: Simply the return value from the `match`, e.g. the entire match,
+or, if there were capture groups, the first capture group.
+* `function`: the return value of the function if it is either a string, or a
+table (if there is no `then`, the function cannot return a table containing
+something other than strings).
+* `lambda`: Simply the first value returned by the lambda.
 
 Examples:
+
 * `match(n, "^ABC$", "A")` .
 * `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` 
 
@@ -1279,6 +1286,7 @@ and expanded, with as little disruption as possible.
 
 Since they should mainly fast to write, and don't necessarily need all bells and
 whistles, they don't make use of lsp/textmate-syntax, but a more simplistic one:  
+
 * `$anytext` denotes a placeholder (`insertNode`) with text "anytext". The text
   also serves as a unique key: if there are multiple placeholders with the same
   key, only the first will be editable, the others will just mirror it.  
@@ -1522,6 +1530,7 @@ via `extend_decorator.register`.
 `/lua/luasnip/util/extend_decorator.lua`).
 
 `register(fn, ...)`:
+
 * `fn`: the function.
 * `...`: any number of tables. Each specifies how to extend an argument of `fn`.
   The tables accept:
@@ -1534,6 +1543,7 @@ via `extend_decorator.register`.
     argument may be string or table.
 
 `apply(fn, ...) -> decorated_fn`:
+
 * `fn`: the function to decorate.
 * `...`: The values to extend with. These should match the descriptions passed
   in `register` (the argument first passed to `register` will be extended with
@@ -2054,7 +2064,12 @@ and then (if there are multiple) the associated file to edit.
       end
     }
     ```
+	<!-- panvimdoc-ignore-start -->
+
     ![edit-select-format](https://user-images.githubusercontent.com/25300418/184359420-3bc22d67-1f90-49d9-ac4e-3ea2524bcf0d.gif)
+
+	<!-- panvimdoc-ignore-end -->
+
 * `edit`: `fn(file:string)` This function is supposed to open the file for
   editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
   current buffer), but one could open the file in a split, a tab, or a floating
@@ -2085,12 +2100,13 @@ sp("trig", "a snippet $1")
 ```
 
 `sp(context, body, opts) -> snippetProxy`
-  - `context`: exactly the same as the first argument passed to `ls.s`.
-  - `body`: the snippet-body.
-  - `opts`: accepts the same `opts` as `ls.s`, with some additions:
-    - `parse_fn`: the function for parsing the snippet. Defaults to
-	  `ls.parser.parse_snippet` (the parser for lsp-snippets), an alternative is
-	  the parser for snipmate-snippets (`ls.parser.parse_snipmate`).
+
+- `context`: exactly the same as the first argument passed to `ls.s`.
+- `body`: the snippet-body.
+- `opts`: accepts the same `opts` as `ls.s`, with some additions:
+  - `parse_fn`: the function for parsing the snippet. Defaults to
+    `ls.parser.parse_snippet` (the parser for lsp-snippets), an alternative is
+    the parser for snipmate-snippets (`ls.parser.parse_snipmate`).
 
 # EXT\_OPTS
 
