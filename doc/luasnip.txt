@@ -266,14 +266,18 @@ are used there.
 
 SNIPPET-DATA ~
 
-Snippets contain some interesting tables during runtime: - `snippet.env`:
-Contains variables used in the LSP-protocol, for example `TM_CURRENT_LINE` or
-`TM_FILENAME`. It’s possible to add customized variables here too, check
-|luasnip-environment-namespaces| - `snippet.captures`: If the snippet was
-triggered by a pattern (`regTrig`), and the pattern contained capture-groups,
-they can be retrieved here. - `snippet.trigger`: The string that triggered this
-snippet. Again, only interesting if the snippet was triggered through
-`regTrig`, for getting the full match.
+Snippets contain some interesting tables during runtime:
+
+
+- `snippet.env`: Contains variables used in the LSP-protocol, for example
+    `TM_CURRENT_LINE` or `TM_FILENAME`. It’s possible to add customized variables
+    here too, check |luasnip-environment-namespaces|
+- `snippet.captures`: If the snippet was triggered by a pattern (`regTrig`), and
+    the pattern contained capture-groups, they can be retrieved here.
+- `snippet.trigger`: The string that triggered this snippet. Again, only
+    interesting if the snippet was triggered through `regTrig`, for getting the
+    full match.
+
 
 These variables/tables primarily come in handy in `dynamic/functionNodes`,
 where the snippet can be accessed through the immediate parent
@@ -318,8 +322,12 @@ lines rather than a string:
 <
 
 
-`t(text, node_opts)`: - `text`: `string` or `string[]` - `node_opts`: `table`,
-see |luasnip-here|
+`t(text, node_opts)`:
+
+
+- `text`: `string` or `string[]`
+- `node_opts`: `table`, see |luasnip-here|
+
 
 ==============================================================================
 5. INSERTNODE                                             *luasnip-insertnode*
@@ -553,20 +561,25 @@ ChoiceNodes allow choosing between multiple nodes.
 <
 
 
-`c(jump_index, choices, node_opts)` - |luasnip-`jump_index`|: `number`, since
-choiceNodes can be jumped to, they need their jump-indx. - `choices`:
-`node[]|node`, the choices. The first will be initialliy active. A list of
-nodes will be turned into a `snippetNode`. - `node_opts`: `table`. `choiceNode`
-supports the keys common to all nodes described |luasnip-here|, and one
-additional key: - `restore_cursor`: `false` by default. If it is set, and the
-node that was being edited also appears in the switched-to choice (can be the
-case if a `restoreNode` is present in both choice) the cursor is restored
-relative to that node. The default is `false` as enabling might lead to
-decreased performance. It’s possible to override the default by wrapping the
-`choiceNode`-constructor in another function that sets `opts.restore_cursor` to
-`true` and then using that to construct `choiceNode`s: `lua local function
-restore_cursor_choice(pos, choices, opts) if opts then opts.restore_cursor =
-true else opts = {restore_cursor = true} end return c(pos, choices, opts) end`
+`c(jump_index, choices, node_opts)`
+
+
+- |luasnip-`jump_index`|: `number`, since choiceNodes can be jumped to, they need their
+    jump-indx.
+- `choices`: `node[]|node`, the choices. The first will be initialliy active.
+    A list of nodes will be turned into a `snippetNode`.
+- `node_opts`: `table`. `choiceNode` supports the keys common to all nodes
+    described |luasnip-here|, and one additional key:
+    - `restore_cursor`: `false` by default. If it is set, and the node that was
+        being edited also appears in the switched-to choice (can be the case if a
+        `restoreNode` is present in both choice) the cursor is restored relative to
+        that node.
+        The default is `false` as enabling might lead to decreased performance. It’s
+        possible to override the default by wrapping the `choiceNode`-constructor
+        in another function that sets `opts.restore_cursor` to `true` and then using
+        that to construct `choiceNode`s:
+        `lua     local function restore_cursor_choice(pos, choices, opts)         if opts then             opts.restore_cursor = true         else             opts = {restore_cursor = true}         end         return c(pos, choices, opts)     end`
+
 
 Jumpable nodes that normally expect an index as their first parameter don’t
 need one inside a choiceNode; their jump-index is the same as the
@@ -956,13 +969,20 @@ to be accessed as `ai[restoreNodeIndx][0][1]`.
 LAMBDA                                                        *luasnip-lambda*
 
 A shortcut for `functionNode`s that only do very basic string- manipulation.
-`l(lambda, argnodes)`: - `lambda`: An object created by applying
-string-operations to `l._n`, objects representing the `n`th argnode. For
-example: - `l._1:gsub("a", "e")` replaces all occurences of "a" in the text of
-the first argnode with "e", or - `l._1 .. l._2` concats text of the first and
-second argnode. If an argnode contains multiple lines of text, they are
-concatenated with `"\n"` prior to any operation. - `argnodes`,
-|luasnip-`node-references`|, just like in function- and dynamicNode.
+`l(lambda, argnodes)`:
+
+
+- `lambda`: An object created by applying string-operations to `l._n`, objects
+    representing the `n`th argnode.
+    For example:
+    - `l._1:gsub("a", "e")` replaces all occurences of "a" in the text of the
+        first argnode with "e", or
+    - `l._1 .. l._2` concats text of the first and second argnode.
+        If an argnode contains multiple lines of text, they are concatenated with
+        `"\n"` prior to any operation.
+- `argnodes`, |luasnip-`node-references`|, just like in function- and
+    dynamicNode.
+
 
 There are many examples for `lamda` in `Examples/snippets.lua`
 
@@ -971,44 +991,50 @@ MATCH                                                          *luasnip-match*
 `match` can insert text based on a predicate (again, a shorthand for
 `functionNode`).
 
-`match(argnodes, condition, then, else)`, where * `argnode`: A single
-|luasnip-`node-reference`|. May not be nil, or a table. * `condition` may be
-either of * `string`: interpreted as a lua-pattern. Matched on the `\n`-joined
-(in case it’s multiline) text of the first argnode
-(`args[1]:match(condition)`). * `function`: `fn(args, snip) -> bool`: takes the
-same parameters as the `functionNode`-function, any value other than nil or
-false is interpreted as a match. * `lambda`: `l._n` is the `\n`-joined text of
-the nth argnode. Useful if string-manipulations have to be performed before the
-string is matched. Should end with `match`, but any other truthy result will be
-interpreted as matching.
+`match(argnodes, condition, then, else)`, where
 
 
+- `argnode`: A single |luasnip-`node-reference`|. May not be nil, or
+    a table.
+- `condition` may be either of
+    - `string`: interpreted as a lua-pattern. Matched on the `\n`-joined (in case
+        it’s multiline) text of the first argnode (`args[1]:match(condition)`).
+    - `function`: `fn(args, snip) -> bool`: takes the same parameters as the
+        `functionNode`-function, any value other than nil or false is interpreted
+        as a match.
+    - `lambda`: `l._n` is the `\n`-joined text of the nth argnode.
+        Useful if string-manipulations have to be performed before the string is matched.
+        Should end with `match`, but any other truthy result will be interpreted
+        as matching.
 - `then` is inserted if the condition matches,
 - `else` if it does not.
 
 
 Both `then` and `else` can be either text, lambda or function (with the same
 parameters as specified above). `then`’s default-value depends on the
-`condition`: * `pattern`: Simply the return value from the `match`, e.g. the
-entire match, or, if there were capture groups, the first capture group. *
-`function`: the return value of the function if it is either a string, or a
-table (if there is no `then`, the function cannot return a table containing
-something other than strings). * `lambda`: Simply the first value returned by
-the lambda.
-
-Examples: * `match(n, "^ABC$", "A")`. * `match(n,
-lambda._1:match(lambda._1:reverse()), "PALINDROME")`
-
->
-    s("trig", {
-      i(1), t":",
-      i(2), t"::",
-      m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
-    })
-<
+`condition`:
 
 
+- `pattern`: Simply the return value from the `match`, e.g. the entire match,
+    or, if there were capture groups, the first capture group.
+- `function`: the return value of the function if it is either a string, or a
+    table (if there is no `then`, the function cannot return a table containing
+    something other than strings).
+- `lambda`: Simply the first value returned by the lambda.
 
+
+Examples:
+
+
+- `match(n, "^ABC$", "A")`.
+- `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
+    >
+        s("trig", {
+          i(1), t":",
+          i(2), t"::",
+          m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
+        })
+    <
 - >
             s("extras1", {
               i(1), t { "", "" }, m(1, "^ABC$", "A")
@@ -1217,11 +1243,15 @@ expanded, with as little disruption as possible.
 
 Since they should mainly fast to write, and don’t necessarily need all bells
 and whistles, they don’t make use of lsp/textmate-syntax, but a more
-simplistic one: * `$anytext` denotes a placeholder (`insertNode`) with text
-"anytext". The text also serves as a unique key: if there are multiple
-placeholders with the same key, only the first will be editable, the others
-will just mirror it. * … That’s it. `$` can be escaped by preceding it with
-a second `$`, all other symbols will be interpreted literally.
+simplistic one:
+
+
+- `$anytext` denotes a placeholder (`insertNode`) with text "anytext". The text
+    also serves as a unique key: if there are multiple placeholders with the same
+    key, only the first will be editable, the others will just mirror it.
+- … That’s it. `$` can be escaped by preceding it with a second `$`, all other
+    symbols will be interpreted literally.
+
 
 There is currently only one way to expand On The Fly-snippets:
 `require('luasnip.extras.otf').on_the_fly("<some-register>")` will interpret
@@ -1444,19 +1474,29 @@ via `extend_decorator.register`. (This is not limited to luasnip’s
 functions!) (although, for usage outside of luasnip, best copy the source-file
 `/lua/luasnip/util/extend_decorator.lua`).
 
-`register(fn, ...)`: * `fn`: the function. * `...`: any number of tables. Each
-specifies how to extend an argument of `fn`. The tables accept: * arg_indx,
-`number` (required): the position of the parameter to override. * extend,
-`fn(arg, extend_value) -> effective_arg` (optional): this function is used to
-extend the args passed to the decorated function. It defaults to a function
-which just extends the the arg-table with the extend-table (accepts `nil`).
-This extend-behaviour is adaptable to accomodate `s`, where the first argument
-may be string or table.
+`register(fn, ...)`:
 
-`apply(fn, ...) -> decorated_fn`: * `fn`: the function to decorate. * `...`:
-The values to extend with. These should match the descriptions passed in
-`register` (the argument first passed to `register` will be extended with the
-first value passed here).
+
+- `fn`: the function.
+- `...`: any number of tables. Each specifies how to extend an argument of `fn`.
+    The tables accept:
+    - arg_indx, `number` (required): the position of the parameter to override.
+    - extend, `fn(arg, extend_value) -> effective_arg` (optional): this function
+        is used to extend the args passed to the decorated function.
+        It defaults to a function which just extends the the arg-table with the
+        extend-table (accepts `nil`).
+        This extend-behaviour is adaptable to accomodate `s`, where the first
+        argument may be string or table.
+
+
+`apply(fn, ...) -> decorated_fn`:
+
+
+- `fn`: the function to decorate.
+- `...`: The values to extend with. These should match the descriptions passed
+    in `register` (the argument first passed to `register` will be extended with
+    the first value passed here).
+
 
 One more example for registering a new function:
 
@@ -1986,10 +2026,6 @@ there are multiple) the associated file to edit.
               end
             }
         <
-        <div class="figure">
-        <img src="https://user-images.githubusercontent.com/25300418/184359420-3bc22d67-1f90-49d9-ac4e-3ea2524bcf0d.gif" title="fig:"/>
-        <p class="caption">edit-select-format</p>
-        </div>
 - `edit`: `fn(file:string)` This function is supposed to open the file for
     editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
     current buffer), but one could open the file in a split, a tab, or a floating
@@ -2027,12 +2063,16 @@ This will parse the snippet on startup…
 <
 
 
-`sp(context, body, opts) -> snippetProxy` - `context`: exactly the same as the
-first argument passed to `ls.s`. - `body`: the snippet-body. - `opts`: accepts
-the same `opts` as `ls.s`, with some additions: - `parse_fn`: the function for
-parsing the snippet. Defaults to `ls.parser.parse_snippet` (the parser for
-lsp-snippets), an alternative is the parser for snipmate-snippets
-(`ls.parser.parse_snipmate`).
+`sp(context, body, opts) -> snippetProxy`
+
+
+- `context`: exactly the same as the first argument passed to `ls.s`.
+- `body`: the snippet-body.
+- `opts`: accepts the same `opts` as `ls.s`, with some additions:
+    - `parse_fn`: the function for parsing the snippet. Defaults to
+        `ls.parser.parse_snippet` (the parser for lsp-snippets), an alternative is
+        the parser for snipmate-snippets (`ls.parser.parse_snipmate`).
+
 
 ==============================================================================
 19. EXT_OPTS                                                *luasnip-ext_opts*
