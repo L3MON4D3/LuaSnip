@@ -175,7 +175,7 @@ local function bash(_, _, command)
 	return res
 end
 
--- Returns a snippet_node wrapped around an insert_node whose initial
+-- Returns a snippet_node wrapped around an insertNode whose initial
 -- text value is set to the current date in the desired format.
 local date_input = function(args, snip, old_state, fmt)
 	local fmt = fmt or "%Y-%m-%d"
@@ -219,7 +219,7 @@ ls.add_snippets("all", {
 		t(" "),
 		c(3, {
 			t("{"),
-			-- sn: Nested Snippet. Instead of a trigger, it has a position, just like insert-nodes. !!! These don't expect a 0-node!!!!
+			-- sn: Nested Snippet. Instead of a trigger, it has a position, just like insertNodes. !!! These don't expect a 0-node!!!!
 			-- Inside Choices, Nodes don't need a position as the choice node is the one being jumped to.
 			sn(nil, {
 				t("extends "),
@@ -288,9 +288,9 @@ ls.add_snippets("all", {
 		"fmt6",
 		fmt("use {} only", { t("this"), t("not this") }, { strict = false })
 	),
-	-- Use a dynamic_node to interpolate the output of a
+	-- Use a dynamicNode to interpolate the output of a
 	-- function (see date_input above) into the initial
-	-- value of an insert_node.
+	-- value of an insertNode.
 	s("novel", {
 		t("It was a dark and stormy night on "),
 		d(1, date_input, {}, { user_args = { "%A, %B %d of %Y" } }),
