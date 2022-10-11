@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.5.0           Last change: 2022 October 10
+*luasnip.txt*           For NVIM v0.5.0           Last change: 2022 October 11
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1971,7 +1971,7 @@ will be used, but it’s possible to customize them by setting `snip_env` in
 
 >
     return {
-        parse("trig", "loaded!!")
+        s("trig", t("loaded!!"))
     }
 <
 
@@ -1980,9 +1980,9 @@ will be used, but it’s possible to customize them by setting `snip_env` in
 
 >
     return {
-        parse("ctrig", "also loaded!!")
+        s("ctrig", t("also loaded!!"))
     }, {
-        parse("autotrig", "autotriggered, if enabled")
+        s("autotrig", t("autotriggered, if enabled"))
     }
 <
 
