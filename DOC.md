@@ -2010,15 +2010,15 @@ possible to customize them by setting `snip_env` in `setup`.
 `~/snippets/all.lua`:
 ```lua
 return {
-	parse("trig", "loaded!!")
+	s("trig", t("loaded!!"))
 }
 ```
 `~/snippets/c.lua`:
 ```lua
 return {
-	parse("ctrig", "also loaded!!")
+	s("ctrig", t("also loaded!!"))
 }, {
-	parse("autotrig", "autotriggered, if enabled")
+	s("autotrig", t("autotriggered, if enabled"))
 }
 ```
 
