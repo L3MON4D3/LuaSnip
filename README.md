@@ -100,9 +100,9 @@ There's also a repository collecting snippets for various languages, [molleweide
 
 ## Docs and Examples
 Here is a list of official documentation and examples:
-- [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) is the main documentation---it gives an overview of how to write snippets; explains the role and use case of each LuaSnip node; shows how to load snippets from Lua, VS Code, and SnipMate formats; and covers the available LuaSnip API.
+- [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) is the main documentation—it gives an overview of how to write snippets; explains the role and use case of each LuaSnip node; shows how to load snippets from Lua, VS Code, and SnipMate formats; and covers the available LuaSnip API.
 - `:help luasnip.txt` is a plain text version of `DOC.md` and is available with Neovim's `:help` feature.
-- The file [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) contains many example snippets written in Lua---we highly recommend looking through (or better yet, `:luafile`ing) the example snippets before writing your own Lua snippets.
+- The file [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) contains many example snippets written in Lua—we highly recommend looking through (or better yet, `:luafile`ing) the example snippets before writing your own Lua snippets.
 - The [Wiki](https://github.com/L3MON4D3/LuaSnip/wiki) contains some useful extensions to Luasnip and some examples of advanced snippets and configs.
 
 【中文版】DOC in Chinese is [here](https://zjp-cn.github.io/neovim0.6-blogs/nvim/luasnip/doc1.html). 
