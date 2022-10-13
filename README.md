@@ -99,16 +99,28 @@ This can also be done much cleaner, with all the benefits that come with using a
 There's also a repository collecting snippets for various languages, [molleweide/LuaSnip-snippets.nvim](https://github.com/molleweide/LuaSnip-snippets.nvim)
 
 ## Documentation
-**New users:** we suggest beginning with the [Resources for new users](#resources-for-new-users) section below instead of immediately reading the official documentation, since the docs are written more as a reference manual than as a tutorial for new users.
-Here is a suggested learning progression from beginner to advanced:
-
-1. If you learn best from videos, watch one of the introductory videos in the [Resources for new users](#resources-for-new-users).
-   If you learn best from written guides, read the [guide to writing snippets in Lua](https://www.ejmastnak.com/tutorials/vim-latex/luasnip.html)
-1. Read the sections `:help luasnip-basics`, `:help luasnip-textnode`, and `:help luasnip-insertnode` in the LuaSnip docs.
-1. Try writing some basic snippets with text nodes and insert nodes.
-1. Watch TJ's video on advanced features in the resources section.
-1. Look through the advanced snippets in the [Wiki](https://github.com/L3MON4D3/LuaSnip/wiki) and [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua).
-1. Read through the full LuaSnip documentation and begin writing your own snippets using LuaSnip's full feature set and more advanced nodes.
+**New users:**
+* **snipmate/vscode**: if you only want to write/load snipmate/vscode-snippet and ignore lua-snippets (and this is definitely recommended if you don't yet need to make use of luasnips more complicated features!), check out the sections on loading [vscode](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#vscode) or [snipmate](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#snipmate)-packages in `DOC.md`. Of those two, snipmate is definitely the more comfortable way of writing snippets.
+* **lua**: we suggest beginning with the [Resources for new users](#resources-for-new-users) section below instead of immediately reading the official documentation, since the docs are written more as a reference manual than as a tutorial for new users.  
+The following list contains some pointers to important features of luasnip,
+which should be checked out after getting familiar with the basics.
+  * [`config`](https://github.com/L3MON4D3/LuaSnip#config): Notable: `region_check_events` and
+    `delete_check_events` for jumping to the end of snippets the cursor is no
+    longer inside of, and cleaning up snippets whose text was deleted.
+  * [`extras`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#extras): This module contains many functions that make writing snippets
+    significantly easier.  
+    `fmt` and `lambda` are especially useful.
+  * [`lua-loader`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#lua):
+    Very useful, more comfortable than calling `add_snippets`.  
+    Also supports hot reload (limited to buffers in the same neovim-instance as the edited file) and [jumping to the files that provide snippets to the
+    current buffer](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#edit_snippets).
+  * Advanced Nodes:
+    [`functionNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#functionnode),
+    [`dynamicNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#functionnode),
+    [`choiceNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#choicenode) and [`restoreNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#restorenode)  
+    Instead of reading about them in the doc, the first three are explained very
+    well in [this video](https://www.youtube.com/watch?v=KtQZRAkgLqo) by Tj
+    Devries.
 
 ### Official docs and examples
 - [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) is the main documentation—it gives an overview of how to write snippets; explains the role and use case of each LuaSnip node; shows how to load snippets from Lua, VS Code, and SnipMate formats; and covers the available LuaSnip API.
@@ -121,7 +133,8 @@ Here is a suggested learning progression from beginner to advanced:
 
 ### Resources for new users
 Here are some LuaSnip videos and tutorials on the Web:
-- [Introductory](https://www.youtube.com/watch?v=Dn800rlPIho) and [advanced](https://www.youtube.com/watch?v=KtQZRAkgLqo) YouTube videos by the one and only [TJ DeVries](https://github.com/tjdevries)
+- [Introductory](https://www.youtube.com/watch?v=Dn800rlPIho) and [advanced](https://www.youtube.com/watch?v=KtQZRAkgLqo) YouTube videos by the one and only [TJ DeVries](https://github.com/tjdevries). Unfortunately there were some breaking changes in luasnip since these videos were made:
+  * Snippets are now added via [`ls.add_snippets`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#adding-snippets)
 - A [guide to writing snippets in Lua](https://www.ejmastnak.com/tutorials/vim-latex/luasnip.html) with LaTeX-themed GIFs and real-life examples by [@ejmastnak](https://github.com/ejmastnak)
 - A guide to [moving from UltiSnips to LuaSnip](https://github.com/evesdropper/dotfiles/tree/main/nvim/luasnip#readme) by [@evesdropper](https://github.com/evesdropper), also in a LaTeX context
 - An introductory LuaSnip [video tutorial for beginners](https://www.youtube.com/watch?v=ub0REXjhpmk) by Ziontee113
