@@ -33,6 +33,9 @@ function M.edit_snippet_files(opts)
 	opts = opts or {}
 	local format = opts.format or default_format
 	local edit = opts.edit or default_edit
+	local extend = opts.extend or function()
+		return {}
+	end
 
 	local fts = util.get_snippet_filetypes()
 	vim.ui.select(fts, {
@@ -51,6 +54,17 @@ function M.edit_snippet_files(opts)
 						table.insert(items, fmt_name)
 					end
 				end
+			end
+
+			-- extend filetypes with user-defined function.
+			local extended = extend(ft, ft_paths)
+			assert(
+				type(extended) == "table",
+				"You must return a table in extend function"
+			)
+			for _, pair in ipairs(extended) do
+				table.insert(items, pair[1])
+				table.insert(ft_paths, pair[2])
 			end
 
 			-- prompt user again if there are multiple files providing this filetype.
