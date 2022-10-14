@@ -177,11 +177,11 @@ c = {
 		vim.cmd(
 			string.format(
 				[[
-        augroup luasnip
-            au!
-            autocmd %s * lua require("luasnip").unlink_current_if_deleted()
-            autocmd %s * lua require("luasnip").active_update_dependents()
-            autocmd %s * lua require("luasnip").exit_out_of_region(require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()])
+ 		augroup luasnip
+ 			au!
+ 			autocmd %s * lua require("luasnip").unlink_current_if_deleted()
+ 			autocmd %s * lua require("luasnip").active_update_dependents()
+ 			autocmd %s * lua require("luasnip").exit_out_of_region(require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()])
 			"Remove buffers' nodes on deletion+wipeout.
 			autocmd BufDelete,BufWipeout * lua current_nodes = require("luasnip").session.current_nodes if current_nodes then current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
 		]]
