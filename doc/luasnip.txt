@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.5.0           Last change: 2022 October 13
+*luasnip.txt*           For NVIM v0.5.0           Last change: 2022 October 14
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2002,17 +2002,15 @@ can be quickly edited via
 will open a `vim.ui.select`-dialog to select first a filetype, and then (if
 there are multiple) the associated file to edit.
 
-`opts` currently only contains one setting:
+`opts` contains three settings:
 
 
-- `format`: `fn(file:string, source_name:string) -> string|nil`
-    `file` is simply the path to the file, `source_name` is one of `"lua"`,
-    `"snipmate"` or `"vscode"`.
-    If a string is returned, it is used as the title of the item, `nil` on the
-    other hand will filter out this item.
-    The default simply replaces some long strings (packer-path and config-path)
-    in `file` with shorter, symbolic names (`"$PLUGINS"`, `"$CONFIG"`), but
-    this can be extended to
+- `format`: `fn(file:string, source_name:string) -> string|nil` `file` is simply
+    the path to the file, `source_name` is one of `"lua"`, `"snipmate"` or
+    `"vscode"`. If a string is returned, it is used as the title of the item, `nil`
+    on the other hand will filter out this item. The default simply replaces some
+    long strings (packer-path and config-path) in `file` with shorter, symbolic
+    names (`"$PLUGINS"`, `"$CONFIG"`), but this can be extended to
     - filter files from some specific source/path
     - more aggressively shorten paths using symbolic names, e.g.
         `"$FRIENDLY_SNIPPETS"`. Example: hide the `*.lua` snippet files, and shorten
@@ -2030,6 +2028,29 @@ there are multiple) the associated file to edit.
     editing. The default is a simple `vim.cmd("edit " .. file)` (replace the
     current buffer), but one could open the file in a split, a tab, or a floating
     window, for example.
+- `extend`: `fn(ft:string, ft_paths:string[]) -> (string,string)[]` This function
+    can be used to create additional choices for the file-selection.
+    - `ft`: The filetype snippet-files are queried for.
+    - `ft_paths`: list of paths to the known snippet files.
+    The function should return a list of `(string,string)`-tuples. The first of
+    each pair is the label that will appear in the selection-prompt, and the second
+    is the path that will be passed to the `edit()` function if that item was
+    selected.
+    This can be used to create a new snippet-file for the current filetype:
+    >
+        require("luasnip.loaders").edit_snippet_files {
+        extend = function(ft, paths)
+          if #paths == 0 then
+            return {
+              { "$CONFIG/" .. ft .. ".snippets",
+                string.format("%s/%s.snippets", <PERSONAL_SNIPPETS_FOLDER>, ft) }
+            }
+          end
+        
+          return {}
+        end
+        }
+    <
 
 
 One comfortable way to call this function is registering it as a command:
