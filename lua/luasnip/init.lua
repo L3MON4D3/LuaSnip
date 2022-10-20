@@ -604,6 +604,12 @@ local function refresh_notify(ft)
 	end
 end
 
+local function setup_snip_path()
+	if session.config.snip_path then
+		package.path = session.config.snip_path
+	end
+end
+
 local function setup_snip_env()
 	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
 end
@@ -679,6 +685,7 @@ ls = {
 	get_snippets = get_snippets,
 	get_id_snippet = get_id_snippet,
 	setup_snip_env = setup_snip_env,
+	setup_snip_path = setup_snip_path,
 	clean_invalidated = clean_invalidated,
 	get_snippet_filetypes = util.get_snippet_filetypes,
 	s = snip_mod.S,

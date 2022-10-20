@@ -163,5 +163,6 @@ Here are some LuaSnip videos and tutorials on the Web:
 Setting `snip_env` to `{ some_global = "a value" }` will add the global variable `some_global` while evaluating these files.
 If you mind the (probably) large number of generated warnings, consider adding the keys set here to the globals
 recognized by lua-language-server or add `---@diagnostic disable: undefined-global` somewhere in the affected files.
+- `snip_path`: Define the require path of lua environment of files loaded by the [lua-loader](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#lua-snippets-loader).
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)

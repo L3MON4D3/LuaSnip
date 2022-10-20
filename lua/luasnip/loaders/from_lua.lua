@@ -33,8 +33,14 @@ local M = {}
 local function load_files(ft, files, add_opts)
 	for _, file in ipairs(files) do
 		local func_string = path_mod.read_file(file)
-		-- bring snippet-constructors into global scope for that function.
-		func_string = 'require("luasnip").setup_snip_env() ' .. func_string
+		func_string = table.concat({
+			-- bring snippet-constructors into global scope for that function.
+			'require("luasnip").setup_snip_env()',
+			-- setup package.paths to allow custom imports
+			'require("luasnip").setup_snip_path()',
+			func_string,
+		}, "\n")
+
 		local ok, file_snippets, file_autosnippets =
 			pcall(loadstring(func_string))
 		if not ok then
