@@ -263,7 +263,7 @@ local function snip_expand(snippet, opts)
 end
 
 ---Find a snippet matching the current cursor-position.
----@param opts table: may contain:
+---@param opts table|nil: may contain:
 --- - `jump_into_func`: passed through to `snip_expand`.
 ---@return boolean: whether a snippet was expanded.
 local function expand(opts)
