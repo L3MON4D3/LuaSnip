@@ -46,6 +46,10 @@ local types = require("luasnip.util.types")
 local parse = require("luasnip.util.parser").parse_snippet
 ```
 
+As noted in [the Lua section](#lua):
+
+> By default, the names from [`luasnip.config.snip_env`][snip-env-src] will be used, but it's possible to customize them by setting `snip_env` in `setup`. 
+
 <!-- panvimdoc-ignore-start -->
 
 Note: the source code of snippets in GIFs is actually
