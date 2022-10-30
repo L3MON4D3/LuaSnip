@@ -2014,7 +2014,7 @@ these files.
 By default, the names from [`luasnip.config.snip_env`][snip-env-src] will be used, but it's
 possible to customize them by setting `snip_env` in `setup`.  
 
-[snip-env-src]: https://github.com/L3MON4D3/LuaSnip/blob/69cb81cf7490666890545fef905d31a414edc15b/lua/luasnip/config.lua#L82-L104
+[snip-env-src]: https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L122-L148
 
 **Example**:
 
