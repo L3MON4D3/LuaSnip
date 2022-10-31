@@ -1,4 +1,4 @@
-local snip = require("luasnip").snippet
+local snip = require("luasnip.nodes.snippet").S
 local events = require("luasnip.util.events")
 local matches = {
 	default = [[[%w%.%_%-%"%']+$]],
