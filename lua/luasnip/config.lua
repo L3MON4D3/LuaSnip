@@ -120,7 +120,6 @@ local defaults = {
 	load_ft_func = ft_functions.from_filetype_load,
 	-- globals injected into luasnippet-files.
 	snip_env = {
-		ls = require("luasnip"),
 		s = require("luasnip.nodes.snippet").S,
 		sn = require("luasnip.nodes.snippet").SN,
 		isn = require("luasnip.nodes.snippet").ISN,
