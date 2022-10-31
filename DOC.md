@@ -50,6 +50,8 @@ As noted in [the Lua section](#lua):
 
 > By default, the names from [`luasnip.config.snip_env`][snip-env-src] will be used, but it's possible to customize them by setting `snip_env` in `setup`. 
 
+Furthermore, note that while this document assumes you have defined `ls` to be `require("luasnip")`, it is **not** provided in the default set of variables.
+
 <!-- panvimdoc-ignore-start -->
 
 Note: the source code of snippets in GIFs is actually
