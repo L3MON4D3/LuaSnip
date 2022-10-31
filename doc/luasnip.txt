@@ -112,6 +112,9 @@ As noted in |luasnip-the-lua-section|:
   `setup`.
 
 
+Furthermore, note that while this document assumes you have defined `ls` to be
+`require("luasnip")`, it is **not** provided in the default set of variables.
+
 ==============================================================================
 1. BASICS                                                     *luasnip-basics*
 
