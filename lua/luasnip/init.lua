@@ -53,7 +53,7 @@ local function get_snippets(ft, opts)
 	return snippet_collection.get_snippets(ft, opts.type or "snippets") or {}
 end
 
-local function get_context(snip)
+local function default_snip_info(snip)
 	return {
 		name = snip.name,
 		trigger = snip.trigger,
@@ -63,19 +63,21 @@ local function get_context(snip)
 	}
 end
 
-local function available()
+local function available(snip_info)
+	snip_info = snip_info or default_snip_info
+
 	local fts = util.get_snippet_filetypes()
 	local res = {}
 	for _, ft in ipairs(fts) do
 		res[ft] = {}
 		for _, snip in ipairs(get_snippets(ft)) do
 			if not snip.invalidated then
-				table.insert(res[ft], get_context(snip))
+				table.insert(res[ft], snip_info(snip))
 			end
 		end
 		for _, snip in ipairs(get_snippets(ft, { type = "autosnippets" })) do
 			if not snip.invalidated then
-				table.insert(res[ft], get_context(snip))
+				table.insert(res[ft], snip_info(snip))
 			end
 		end
 	end
