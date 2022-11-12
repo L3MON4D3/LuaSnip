@@ -2002,13 +2002,41 @@ Stuff to watch out for:
 ## LUA
 
 Instead of adding all snippets via `add_snippets`, it's possible to store them
-in separate files and load all of those.
+in separate files and load all of those.  
 The file-structure here is exactly the supported snipmate-structure, e.g.
 `<ft>.lua` or `<ft>/*.lua` to add snippets for the filetype `<ft>`.  
-The files need to return two lists of snippets (either may be `nil`). The
-snippets in the first are regular snippets for `<ft>`, the ones in the
-second are autosnippets (make sure they are enabled in `setup` or `set_config`
-if this table is used).
+
+There are two ways to add snippets:
+
+* the files may return two lists of snippets, the snippets in the first are all
+  added as regular snippets, while the snippets in the second will be added as
+  autosnippets (both are the defaults, if a snippet defines a different
+  `snippetType`, that will have preference)
+* snippets can also be appended to the global (only for these files! They are not
+  visible anywhere else) tables `ls_file_snippets` and `ls_file_autosnippets`.
+  This can be combined with a custom `snip_env` to define and add snippets with
+  one function-call:
+  ```lua
+  ls.setup({
+  	snip_env = {
+  		s = function(...)
+  			local snip = ls.s(...)
+  			-- we can't just access the global `ls_file_snippets`, since it will be
+  			-- resolved in the environment of the scope in which it was defined.
+  			table.insert(getfenv(2).ls_file_snippets, snip)
+  		end,
+  		parse = function(...)
+  			local snip = ls.parser.parse(...)
+  			table.insert(getfenv(2).ls_file_snippets, snip)
+  		end,
+  		-- remaining definitions.
+  		...
+  	},
+  	...
+  })
+  ```
+  This is more flexible than the previous approach since the snippets don't have
+  to be collected, they just have to be defined using the above `s` and `parse`.
 
 As defining all of the snippet-constructors (`s`, `c`, `t`, ...) in every file
 is rather cumbersome, luasnip will bring some globals into scope for executing
