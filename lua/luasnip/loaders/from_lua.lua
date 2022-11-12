@@ -44,14 +44,19 @@ local function load_files(ft, files, add_opts)
 		local file_added_snippets = {}
 		local file_added_autosnippets = {}
 
-		setfenv(func, vim.tbl_extend(
-			"force",
-			-- extend the current(expected!) globals with the snip_env, and the two tables.
-			_G,
-			ls.get_snip_env(), {
-				ls_file_snippets = file_added_snippets,
-				ls_file_autosnippets = file_added_autosnippets
-			}) )
+		setfenv(
+			func,
+			vim.tbl_extend(
+				"force",
+				-- extend the current(expected!) globals with the snip_env, and the two tables.
+				_G,
+				ls.get_snip_env(),
+				{
+					ls_file_snippets = file_added_snippets,
+					ls_file_autosnippets = file_added_autosnippets,
+				}
+			)
+		)
 
 		local run_ok, file_snippets, file_autosnippets = pcall(func)
 		if not run_ok then
