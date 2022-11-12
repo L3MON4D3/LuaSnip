@@ -2707,14 +2707,21 @@ the lazy_load.
 - `refresh_notify(ft:string)`: Triggers an autocmd that other plugins can hook
   into to perform various cleanup for the refreshed filetype.
   Useful for signaling that new snippets were added for the filetype `ft`.
+
 - `set_choice(indx:number)`: Changes to the `indx`th choice.
   If no `choiceNode` is active, an error is thrown.
   If the active `choiceNode` doesn't have an `indx`th choice, an error is
   thrown.
+
 - `get_current_choices() -> string[]`: Returns a list of multiline-strings
   (themselves lists, even if they have only one line), the `i`th string
   corresponding to the `i`th choice of the currently active `choiceNode`.
   If no `choiceNode` is active, an error is thrown.
+
+- `setup_snip_env()`: Adds the variables defined (during `setup`) in `snip_env`
+  to the callers environment.
+
+- `get_snip_env()`: Returns `snip_env`.
 
 Not covered in this section are the various node-constructors exposed by
 the module, their usage is shown either previously in this file or in

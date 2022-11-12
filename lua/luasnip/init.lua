@@ -607,6 +607,9 @@ end
 local function setup_snip_env()
 	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
 end
+local function get_snip_env()
+	return session.config.snip_env
+end
 
 local function get_id_snippet(id)
 	return snippet_collection.get_id_snippet(id)
@@ -679,6 +682,7 @@ ls = {
 	get_snippets = get_snippets,
 	get_id_snippet = get_id_snippet,
 	setup_snip_env = setup_snip_env,
+	get_snip_env = get_snip_env,
 	clean_invalidated = clean_invalidated,
 	get_snippet_filetypes = util.get_snippet_filetypes,
 	s = snip_mod.S,
