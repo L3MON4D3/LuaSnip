@@ -33,17 +33,37 @@ local M = {}
 local function load_files(ft, files, add_opts)
 	for _, file in ipairs(files) do
 		local func_string = path_mod.read_file(file)
-		-- bring snippet-constructors into global scope for that function.
-		func_string = 'require("luasnip").setup_snip_env() ' .. func_string
-		local ok, file_snippets, file_autosnippets =
-			pcall(loadstring(func_string))
-		if not ok then
-			error("Failed to load " .. file)
+
+		local load_ok, func = pcall(loadstring, func_string)
+		if not load_ok then
+			error("Failed to load " .. file .. "\n: " .. func)
+		end
+
+		-- the loaded file may add snippets to these tables, they'll be
+		-- combined with the snippets returned regularly.
+		local file_added_snippets = {}
+		local file_added_autosnippets = {}
+
+		setfenv(func, vim.tbl_extend(
+			"force",
+			-- extend the current(expected!) globals with the snip_env, and the two tables.
+			_G,
+			ls.get_snip_env(), {
+				ls_file_snippets = file_added_snippets,
+				ls_file_autosnippets = file_added_autosnippets
+			}) )
+
+		local run_ok, file_snippets, file_autosnippets = pcall(func)
+		if not run_ok then
+			error("Failed to execute " .. file .. "\n: " .. file_snippets)
 		end
 
 		-- make sure these aren't nil.
 		file_snippets = file_snippets or {}
 		file_autosnippets = file_autosnippets or {}
+
+		vim.list_extend(file_snippets, file_added_snippets)
+		vim.list_extend(file_autosnippets, file_added_autosnippets)
 
 		-- keep track of snippet-source.
 		cache.path_snippets[file] = {
