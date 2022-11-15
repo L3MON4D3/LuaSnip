@@ -1879,7 +1879,8 @@ the `luasnip`-table:
 	],
 	"luasnip": {
 		"priority": 2000,
-		"autotrigger": true
+		"autotrigger": true,
+		"wordTrig": false
 	}
 }
 ```

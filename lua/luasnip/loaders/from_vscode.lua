@@ -41,7 +41,7 @@ local function get_file_snippets(file)
 					trig = prefix,
 					name = name,
 					dscr = parts.description or name,
-					wordTrig = true,
+					wordTrig = ls_conf.wordTrig,
 					priority = ls_conf.priority,
 				}, body)
 
