@@ -52,6 +52,16 @@ describe("RestoreNode", function()
 			{2:-- SELECT --}                                      |]],
 		})
 
+		-- can use get_docstring on inactive restoreNode.
+		assert.are.same(
+			exec_lua("return ls.get_current_choices()"),
+			{
+				[[${${1:aaaa}}]],
+				[[${"${${1:aaaa}}"}]],
+				[[${'${${1:aaaa}}'}]]
+			}
+		)
+
 		feed("bbbb")
 		exec_lua("ls.change_choice(1)")
 		screen:expect({

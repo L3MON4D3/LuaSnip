@@ -191,7 +191,7 @@ end
 
 function RestoreNode:get_docstring()
 	if not self.docstring then
-		self.docstring = self.snip:get_docstring()
+		self.docstring = self.parent.snippet.stored[self.key]:get_docstring()
 	end
 	return self.docstring
 end
