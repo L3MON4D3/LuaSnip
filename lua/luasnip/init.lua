@@ -12,6 +12,8 @@ local next_expand_params = nil
 local ls
 local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
+local log = require("luasnip.util.log").new("main")
+
 local function get_active_snip()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -90,6 +92,8 @@ local function safe_jump(node, dir, no_move)
 		return res
 	else
 		local snip = node.parent.snippet
+		log.warn("Removing snippet `%s` due to error %s", snip.trigger, res)
+
 		snip:remove_from_jumplist()
 		-- dir==1: try jumping into next snippet, then prev
 		-- dir==-1: try jumping into prev snippet, then next
@@ -158,6 +162,7 @@ local function in_snippet()
 	local ok, snip_begin_pos, snip_end_pos =
 		pcall(snippet.mark.pos_begin_end, snippet.mark)
 	if not ok then
+		log.warn("Error while getting extmark-position: %s", snip_begin_pos)
 		-- if there was an error getting the position, the snippets text was
 		-- most likely removed, resulting in messed up extmarks -> error.
 		-- remove the snippet.
@@ -240,7 +245,9 @@ local function snip_expand(snippet, opts)
 		else
 			-- snippet was expanded behind a previously active one, leave the i(0)
 			-- properly (and remove the snippet on error).
-			if not pcall(current_node.input_leave, current_node) then
+			local ok, err = pcall(current_node.input_leave, current_node)
+			if not ok then
+				log.warn("Error while leaving snippet: ", err)
 				current_node.parent.snippet:remove_from_jumplist()
 			end
 		end
@@ -408,14 +415,17 @@ local function active_update_dependents()
 			{ right_gravity = false }
 		)
 
-		local ok = pcall(active.update_dependents, active)
+		local ok, err = pcall(active.update_dependents, active)
 		if not ok then
+			log.warn("Error while updating dependents for snippet %s due to error %s", active.parent.snippet.trigger, err)
 			unlink_current()
 			return
 		end
 
 		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
-		if not pcall(active.parent.enter_node, active.parent, active.indx) then
+		ok, err = pcall(active.parent.enter_node, active.parent, active.indx)
+		if not ok then
+			log.warn("Error while entering node in snippet %s: %s", active.parent.snippet.trigger, err)
 			unlink_current()
 			return
 		end
@@ -510,6 +520,11 @@ local function unlink_current_if_deleted()
 	local snippet = node.parent.snippet
 	local ok, snip_begin_pos, snip_end_pos =
 		pcall(snippet.mark.pos_begin_end_raw, snippet.mark)
+
+	if not ok then
+		log.warn("Error while getting extmark-position: %s", snip_begin_pos)
+	end
+
 	-- stylua: ignore
 	-- leave snippet if empty:
 	if not ok or
@@ -520,7 +535,11 @@ local function unlink_current_if_deleted()
 		-- (this can happen when deleting linewise-visual or via `dd`)
 		(snip_begin_pos[1]+1 == snip_end_pos[1] and
 		 snip_end_pos[2] == 0 and
+
 		 #vim.api.nvim_buf_get_lines(0, snip_begin_pos[1], snip_begin_pos[1]+1, true)[1] == 0) then
+
+		log.info("Detected deletion of snippet `%s`, removing it", snippet.trigger)
+
 		snippet:remove_from_jumplist()
 		session.current_nodes[vim.api.nvim_get_current_buf()] = snippet.prev.prev
 			or snippet.next.next
@@ -537,19 +556,25 @@ local function exit_out_of_region(node)
 	local snippet = node.parent.snippet
 	local ok, snip_begin_pos, snip_end_pos =
 		pcall(snippet.mark.pos_begin_end, snippet.mark)
+
+	if not ok then
+		log.warn("Error while getting extmark-position: %s", snip_begin_pos)
+	end
+
 	-- stylua: ignore
 	-- leave if curser before or behind snippet
 	if not ok or
 		pos[1] < snip_begin_pos[1] or
 		pos[1] > snip_end_pos[1] then
+
 		-- jump as long as the 0-node of the snippet hasn't been reached.
 		-- check for nil; if history is not set, the jump to snippet.next
 		-- returns nil.
 		while node and node ~= snippet.next do
-			local ok
 			-- set no_move.
 			ok, node = pcall(node.jump_from, node, 1, true)
 			if not ok then
+				log.warn("Error while jumping from node: %s", node)
 				snippet:remove_from_jumplist()
 				-- may be nil, checked later.
 				node = snippet.next
@@ -711,8 +736,6 @@ ls = {
 	env_namespace = Environ.env_namespace,
 	setup = require("luasnip.config").setup,
 	extend_decorator = extend_decorator,
-	-- don't lazy-load this somehow (right now nothing is, just for the future),
-	-- it should print the initial status-message.
 	log = require("luasnip.util.log")
 
 }
