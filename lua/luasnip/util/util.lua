@@ -568,6 +568,17 @@ local function reverse_lookup(t)
 	return rev
 end
 
+local function nop() end
+
+local function indx_of(t, v)
+	for i, value in ipairs(t) do
+		if v == value then
+			return i
+		end
+	end
+	return nil
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -611,4 +622,6 @@ return {
 	no = no,
 	yes = yes,
 	reverse_lookup = reverse_lookup,
+	nop = nop,
+	indx_of = indx_of,
 }
