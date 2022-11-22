@@ -5,6 +5,7 @@ local str_util = require("luasnip.util.str")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local sp = require("luasnip.nodes.snippetProxy")
+local log = require("luasnip.util.log").new("vscode-loader")
 
 local function json_decode(data)
 	local status, result = pcall(util.json_decode, data)
@@ -19,10 +20,15 @@ local function get_file_snippets(file)
 	local lang_snips = {}
 	local auto_lang_snips = {}
 
-	local data = Path.read_file(file)
+	local data_ok, data = pcall(Path.read_file, file)
+	if not data_ok then
+		log.error("Could not read file %s", file)
+		return {}, {}
+	end
 	local snippet_set_data = json_decode(data)
 	if snippet_set_data == nil then
-		return
+		log.error("Could not parse json in %s", file)
+		return {}, {}
 	end
 
 	for name, parts in pairs(snippet_set_data) do
@@ -97,6 +103,9 @@ local function load_snippet_files(lang, files, add_opts)
 					refresh_notify = false,
 				}, add_opts)
 			)
+			log.info("Adding %s snippets and %s autosnippets for filetype `%s` from %s", #lang_snips, #auto_lang_snips, lang, file)
+		else
+			log.error("Trying to read snippets from file %s, but it does not exist.", lang, file)
 		end
 	end
 
@@ -112,16 +121,20 @@ end
 --- Paths are normalized.
 local function package_files(root, filter)
 	local package = Path.join(root, "package.json")
-	local data = Path.read_file(package)
+	local data_ok, data = pcall(Path.read_file, package)
+	-- if root doesn't contain a package.json, or it contributes no snippets,
+	-- return no snippets.
+	if not data_ok then
+		log.error("Tried reading package %s, but it does not exist", package)
+		return {}
+	end
 	local package_data = json_decode(data)
-	if
-		not (
-			package_data
-			and package_data.contributes
-			and package_data.contributes.snippets
-		)
-	then
-		-- root doesn't contain a package.json, return no snippets.
+	if not package_data then
+		log.error("Json in %s could not be parsed", package)
+		return {}
+	end
+	if not package_data.contributes or not package_data.contributes.snippets then
+		log.warn("Package %s does not contribute any snippets, skipping it", package)
 		return {}
 	end
 
@@ -145,6 +158,8 @@ local function package_files(root, filter)
 					Path.normalize(Path.join(root, snippet_entry.path))
 				if normalized_snippet_file then
 					table.insert(ft_files[ft], normalized_snippet_file)
+				else
+					log.warn("Could not find file %s from advertised in %s", snippet_entry.path, root)
 				end
 			end
 		end
@@ -195,6 +210,7 @@ function M.load(opts)
 
 	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
 
+	log.info("Loading snippet:", vim.inspect(ft_files))
 	for ft, files in pairs(ft_files) do
 		load_snippet_files(ft, files, add_opts)
 	end
@@ -216,6 +232,7 @@ function M._load_lazy_loaded(bufnr)
 	for _, ft in ipairs(fts) do
 		if not cache.lazy_loaded_ft[ft] then
 			M._load_lazy_loaded_ft(ft)
+			log.info("Loading lazy-load-snippets for filetype `%s`", ft)
 			cache.lazy_loaded_ft[ft] = true
 		end
 	end
@@ -235,11 +252,13 @@ function M.lazy_load(opts)
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
 			load_snippet_files(ft, files, add_opts)
+			log.info("Immediately loading lazy-load-snippets for already-active filetype %s from files:\n%s", ft, vim.inspect(files))
 
 			-- don't load these files again.
 			ft_files[ft] = nil
 		end
 	end
+	log.info("Registering lazy-load-snippets:\n%s", vim.inspect(ft_files))
 
 	ft_files.add_opts = add_opts
 	table.insert(cache.lazy_load_paths, ft_files)
@@ -259,6 +278,7 @@ function M._reload_file(filename)
 		-- file is not loaded by this loader.
 		return
 	end
+	log.info("Re-loading snippets contributed by %s", filename)
 
 	cache.path_snippets[filename] = nil
 	local add_opts = cached_data.add_opts
