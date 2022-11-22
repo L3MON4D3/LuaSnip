@@ -1042,7 +1042,7 @@ function Snippet:event(event, event_args)
 
 	session.event_node = self
 	session.event_args = event_args
-	vim.cmd("doautocmd User Luasnip" .. events.to_string(self.type, event))
+	vim.cmd("doautocmd <nomodeline> User Luasnip" .. events.to_string(self.type, event))
 
 	return cb_res
 end
