@@ -2569,6 +2569,22 @@ The function ls.cleanup()  triggers the `LuasnipCleanup` user-event, that you ca
 of cleaning in your own snippets, by default it will  empty the snippets table and the caches of
 the lazy_load.
 
+# Logging
+Luasnip uses logging to report unexpected program-states, and information on
+what's going on in general. If something does not work as expected, taking a
+look at the log (and potentially increasing the loglevel) might give some good
+hints towards what is going wrong.  
+
+The log is stored in `<vim.fn.stdpath("log")>/luasnip.log`, and can be opened by
+calling `ls.log.open()`.
+The loglevel (granularity of reported events) can be adjusted by calling
+`ls.log.set_loglevel("error"|"warn"|"info"|"debug")`. `"debug"` has the highest
+granularity, `"error"` the lowest, the default is `"warn"`.  
+
+Once this log grows too large (10MiB, currently not adjustable), it will be
+renamed to `luasnip.log.old`, and a new, empty log created in its place. If
+there already exists a `luasnip.log.old`, it will be deleted.
+
 # API-REFERENCE
 
 `require("luasnip")`:

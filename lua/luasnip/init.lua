@@ -711,6 +711,10 @@ ls = {
 	env_namespace = Environ.env_namespace,
 	setup = require("luasnip.config").setup,
 	extend_decorator = extend_decorator,
+	-- don't lazy-load this somehow (right now nothing is, just for the future),
+	-- it should print the initial status-message.
+	log = require("luasnip.util.log")
+
 }
 
 return ls
