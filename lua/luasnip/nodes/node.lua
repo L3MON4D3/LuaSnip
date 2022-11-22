@@ -250,7 +250,10 @@ function Node:event(event)
 	end
 
 	session.event_node = self
-	vim.cmd("doautocmd <nomodeline> User Luasnip" .. events.to_string(self.type, event))
+	vim.cmd(
+		"doautocmd <nomodeline> User Luasnip"
+			.. events.to_string(self.type, event)
+	)
 end
 
 local function get_args(node, get_text_func_name)
