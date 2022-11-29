@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 20
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 January 06
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -33,6 +33,7 @@ Table of Contents                                  *luasnip-table-of-contents*
   - Select_choice                                      |luasnip-select_choice|
   - filetype_functions                            |luasnip-filetype_functions|
   - POSTFIX SNIPPET                                  |luasnip-postfix-snippet|
+  - Snippet List                                        |luasnip-snippet-list|
 14. EXTEND_DECORATOR                                |luasnip-extend_decorator|
 15. LSP-SNIPPETS                                        |luasnip-lsp-snippets|
   - Snipmate Parser                                  |luasnip-snipmate-parser|
@@ -1472,6 +1473,150 @@ callback will have access to the `POSTFIX_MATCH` field as well.
 <
 
 
+SNIPPET LIST                                            *luasnip-snippet-list*
+
+>
+    local sl = require("luasnip.extras.snippet_list")
+<
+
+
+Makes an `open` function available to use to open currently available snippets
+in a different buffer/window/tab.
+
+`sl.open(opts:table|nil)`
+
+
+- `opts`: optional arguments:
+    - `snip_info`: `snip_info(snippet) -> table representation of snippet`
+    - `printer`: `printer(snippets:table) -> any`
+    - `display`: `display(snippets:any)`
+
+
+Benefits include: syntax highlighting, searching, and customizability.
+
+Simple Example:
+
+>
+    sl.open()
+<
+
+
+Customization Examples:
+
+>
+    -- making our own snip_info
+    local function snip_info(snippet)
+        return { name = snippet.name }
+    end
+    
+    -- using it
+    sl.open({snip_info = snip_info})
+<
+
+
+>
+    -- making our own printer
+    local function printer(snippets)
+        local res = ""
+    
+        for ft, snips in pairs(snippets) do
+            res = res .. ft .. "\n"
+            for _, snip in pairs(snips) do
+                res = res .. "    " .. "Name: " .. snip.name .. "\n"
+                res = res .. "    " .. "Desc: " .. snip.description[1] .. "\n"
+                res = res .. "    " .. "Trigger: " .. snip.trigger .. "\n"
+                res = res .. "    ----" .. "\n"
+            end
+        end
+    
+        return res
+    end
+    
+    
+    -- using it
+    sl.open({printer = printer})
+<
+
+
+>
+    -- making our own display
+    local function display(printer_result)
+        -- right vertical split
+        vim.cmd("botright vnew")
+    
+        -- get buf and win handle
+        local buf = vim.api.nvim_get_current_buf()
+        local win = vim.api.nvim_get_current_win()
+    
+        -- setting window and buffer options
+        vim.api.nvim_win_set_option(win, "foldmethod", "manual")
+        vim.api.nvim_buf_set_option(buf, "filetype", "javascript")
+    
+        vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
+        vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+        vim.api.nvim_buf_set_option(buf, "buflisted", false)
+    
+        vim.api.nvim_buf_set_name(buf, "Custom Display buf " .. buf)
+    
+        -- dump snippets
+        local replacement = vim.split(printer_result)
+        vim.api.nvim_buf_set_lines(buf, 0, 0, false, replacement)
+    end
+    
+    -- using it
+    sl.open({display = display})
+<
+
+
+There is a **caveat** with implementing your own printer and/or display
+function. The **default** behavior for the printer function is to return a
+string representation of the snippets. The display function uses the results
+from the printer function, therefore by **default** the display function is
+expecting that result to be a string.
+
+This doesn’t have to be the case however. You can for example implement your
+own printer function that returns a table representation of the snippets
+**but** you would have to then implement your own display function or some
+other function in order to stringify this result.
+
+An `options` table is available which has functionality in it that can be used
+to customize 'common' settings.
+
+
+- `sl.options`: options table:
+    - `display`: `display(opts:table|nil) -> function(printer_result:string)`
+
+
+You can see from the example above that making a custom display is a fairly
+involved process. What if you just wanted to change a buffer option like the
+name or just the filetype? This is where `sl.options.display` comes in. It
+allows you to customize buffer and window options while keeping the default
+behavior.
+
+`sl.options.display(opts:table|nil) -> function(printer_result:string)`
+
+
+- `opts`: optional arguments:
+    - `win_opts`: `table which has a {window_option = value} form`
+    - `buf_opts`: `table which has a {buffer_option = value} form`
+    - `get_name`: `get_name(buf) -> string`
+
+
+Let’s recreate the custom display example above:
+
+>
+    -- keeping the default display behavior but modifying window/buffer
+    local modified_default_display = sl.options.display({
+            buf_opts = {filetype = "javascript"},
+            win_opts = {foldmethod = "manual"},
+            get_name = function(buf) return "Custom Display buf " .. buf end
+        })
+    
+    -- using it
+    sl.open({display = modified_default_display})
+<
+
+
 ==============================================================================
 14. EXTEND_DECORATOR                                *luasnip-extend_decorator*
 
@@ -2668,8 +2813,13 @@ print a short message to the log.
 - `active_update_dependents()`: update all function/dynamicNodes that have the
     current node as an argnode (will actually only update them if the text in any
     of the argnodes changed).
-- `available()`: return a table of all snippets defined for the current
-    filetypes(s) (`{ft1={snip1, snip2}, ft2={snip3, snip4}}`).
+- `available(snip_info)`: return a table of all snippets defined for the current
+    filetypes(s) (`{ft1={snip1, snip2}, ft2={snip3, snip4}}`). The structure of the
+    snippet is defined by `snip_info` which is a function (`snip_info(snip)`) that
+    takes in a snippet (`snip`) and uses it to define the desired table.
+    `snip_info` is an optional argument as a default has already been defined. You
+    can use it for more granular control over the table of snippets that is
+    returned.
 - `exit_out_of_region(node)`: checks whether the cursor is still within the range
     of the snippet `node` belongs to. If yes, no change occurs, if No, the snippet
     is exited and following snippets’ regions are checked and potentially exited
