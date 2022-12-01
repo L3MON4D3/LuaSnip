@@ -216,6 +216,7 @@ Node.update_dependents_static = Node._update_dependents_static
 Node.update_all_dependents_static = Node._update_dependents_static
 
 function Node:update() end
+
 function Node:update_static() end
 
 function Node:expand_tabs(tabwidth, indentstr)
@@ -296,6 +297,10 @@ function Node:get_args()
 end
 function Node:get_static_args()
 	return get_args(self, "get_static_text")
+end
+
+function Node:get_jump_index()
+	return self.pos
 end
 
 function Node:set_ext_opts(name)

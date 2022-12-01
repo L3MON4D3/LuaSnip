@@ -124,6 +124,11 @@ only apply to some nodes (`user_args` for both function and dynamicNode).
 These `opts` are only mentioned if they accept options that are not common to
 all nodes.
 
+## Node-Api:
+
+- `get_jump_index()`: this method returns the jump-index of a node. If a node 
+  doesn't have a jump-index, this method returns `nil` instead.
+
 # SNIPPETS
 
 The most direct way to define snippets is `s`:
@@ -237,7 +242,7 @@ which is passed to the function.
 (in most cases `parent == parent.snippet`, but the `parent` of the dynamicNode
 is not always the surrounding snippet, it could be a `snippetNode`).
 
-## Api:
+## Snippet-Api:
 
 - `invalidate()`: call this method to effectively remove the snippet. The
   snippet will no longer be able to expand via `expand` or `expand_auto`. It
@@ -1204,6 +1209,13 @@ ls.add_snippets("all", {
   }, {
     delimiters = "<>"
   })),
+  s("example4", fmt([[
+  repeat {a} with the same key {a}
+  ]], {
+    a = i(1, "this will be repeat")
+  }, {
+    repeat_duplicates = true
+  }))
 })
 ```
 
@@ -1238,6 +1250,9 @@ any way, correspond to the jump-index of the nodes!
   	when passing multiline strings via `[[]]` (default true).
   * `dedent`: remove indent common to all lines in `format`. Again, makes
   	passing multiline-strings a bit nicer (default true).
+  * `repeat_duplicates`: repeat nodes when a key is reused instead of copying
+        the node if it has a jump-index, refer to [jump-index](#jump-index) to
+        know which nodes have a jump-index (default false).
 
 There is also `require("luasnip.extras.fmt").fmta`. This only differs from `fmt`
 by using angle-brackets (`<>`) as the default-delimiter.

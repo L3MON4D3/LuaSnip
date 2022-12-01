@@ -2,6 +2,7 @@ local text_node = require("luasnip.nodes.textNode").T
 local wrap_nodes = require("luasnip.util.util").wrap_nodes
 local extend_decorator = require("luasnip.util.extend_decorator")
 local Str = require("luasnip.util.str")
+local rp = require("luasnip.extras").rep
 
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
 local function copy3(obj, seen)
@@ -39,11 +40,13 @@ end
 --   opts:
 --     delimiters: string, 2 distinct characters (left, right), default "{}"
 --     strict: boolean, set to false to allow for unused `args`, default true
+--     repeat_duplicates: boolean, repeat nodes which have jump_index instead of copying them, default false
 -- Returns: a list of strings and elements of `args` inserted into placeholders
 local function interpolate(fmt, args, opts)
 	local defaults = {
 		delimiters = "{}",
 		strict = true,
+		repeat_duplicates = false,
 	}
 	opts = vim.tbl_extend("force", defaults, opts or {})
 
@@ -97,7 +100,12 @@ local function interpolate(fmt, args, opts)
 		-- The nodes are modified in-place as part of constructing the snippet,
 		-- modifying one node twice will lead to UB.
 		if used_keys[key] then
-			table.insert(elements, copy3(args[key]))
+			local jump_index = args[key]:get_jump_index() -- For nodes that don't have a jump index, copy it instead
+			if not opts.repeat_duplicates or jump_index == nil then
+				table.insert(elements, copy3(args[key]))
+			else
+				table.insert(elements, rp(jump_index))
+			end
 		else
 			table.insert(elements, args[key])
 			used_keys[key] = true
@@ -211,6 +219,7 @@ local function format_nodes(str, nodes, opts)
 		end
 	end, parts)
 end
+
 extend_decorator.register(format_nodes, { arg_indx = 3 })
 
 return {
