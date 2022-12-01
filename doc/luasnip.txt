@@ -7,8 +7,9 @@ Table of Contents                                  *luasnip-table-of-contents*
   - Jump-index                                            |luasnip-jump-index|
   - Adding Snippets                                  |luasnip-adding-snippets|
 2. NODE                                                         |luasnip-node|
+  - Node-Api:                                              |luasnip-node-api:|
 3. SNIPPETS                                                 |luasnip-snippets|
-  - Api:                                                        |luasnip-api:|
+  - Snippet-Api:                                        |luasnip-snippet-api:|
 4. TEXTNODE                                                 |luasnip-textnode|
 5. INSERTNODE                                             |luasnip-insertnode|
 6. FUNCTIONNODE                                         |luasnip-functionnode|
@@ -193,6 +194,13 @@ only apply to some nodes (`user_args` for both function and dynamicNode). These
 `opts` are only mentioned if they accept options that are not common to all
 nodes.
 
+NODE-API:                                                  *luasnip-node-api:*
+
+
+- `get_jump_index()`: this method returns the jump-index of a node. If a node
+    doesn’t have a jump-index, this method returns `nil` instead.
+
+
 ==============================================================================
 3. SNIPPETS                                                 *luasnip-snippets*
 
@@ -304,7 +312,7 @@ where the snippet can be accessed through the immediate parent
 parent.snippet`, but the `parent` of the dynamicNode is not always the
 surrounding snippet, it could be a `snippetNode`).
 
-API:                                                            *luasnip-api:*
+SNIPPET-API:                                            *luasnip-snippet-api:*
 
 
 - `invalidate()`: call this method to effectively remove the snippet. The
@@ -1167,6 +1175,13 @@ Simple example:
       }, {
         delimiters = "<>"
       })),
+      s("example4", fmt([[
+      repeat {a} with the same key {a}
+      ]], {
+        a = i(1, "this will be repeat")
+      }, {
+        repeat_duplicates = true
+      }))
     })
 <
 
@@ -1197,6 +1212,9 @@ any way, correspond to the jump-index of the nodes!
         when passing multiline strings via `[[]]` (default true).
     - `dedent`: remove indent common to all lines in `format`. Again, makes
         passing multiline-strings a bit nicer (default true).
+    - `repeat_duplicates`: repeat nodes when a key is reused instead of copying
+        the node if it has a jump-index, refer to |luasnip-jump-index| to
+        know which nodes have a jump-index (default false).
 
 
 There is also `require("luasnip.extras.fmt").fmta`. This only differs from
