@@ -7,9 +7,8 @@ local works = function(params)
 		-- fails if number- and string-keys are mixed ({1,2} works fine, {1, b=2} fails).
 		-- So we limit ourselves to just passing strings, which are then turned into tables
 		-- while load()ing the function.
-		local result = helpers.exec_lua(
-			string.format(
-				[[
+		local result = helpers.exec_lua(string.format(
+			[[
 						local args = %s
 						local mock_args = {}
 
@@ -35,11 +34,10 @@ local works = function(params)
 						end
 						return str_result
 						]],
-				params.args,
-				params.fmt,
-				params.opts
-			)
-		)
+			params.args,
+			params.fmt,
+			params.opts
+		))
 		assert.are.same(params.expected, result)
 	end)
 end
