@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 November 27
+*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 01
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -261,7 +261,7 @@ The most direct way to define snippets is `s`:
         access to the matched trigger and captures), while `show_condition` is (should
         be) evaluated by the completion-engine when scanning for available snippet
         candidates.
-    - `callbacks`: Contains functions that are called upon enterin/leaving a node of
+    - `callbacks`: Contains functions that are called upon entering/leaving a node of
         this snippet. For example: to print text upon entering the _second_ node of a
         snippet, `callbacks` should be set as follows:
         >
