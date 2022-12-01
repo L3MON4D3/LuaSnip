@@ -195,7 +195,7 @@ s({trig="trigger"}, {})
     LuaSnip on snippet expansion (and thus has access to the matched trigger and
 	captures), while `show_condition` is (should be) evaluated by the
 	completion-engine when scanning for available snippet candidates.
-  - `callbacks`: Contains functions that are called upon enterin/leaving a node
+  - `callbacks`: Contains functions that are called upon entering/leaving a node
     of this snippet.  
 	For example: to print text upon entering the _second_ node of a snippet,
 	`callbacks` should be set as follows:
