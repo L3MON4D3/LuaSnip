@@ -1,4 +1,5 @@
 NVIM_PATH=deps/nvim
+TEST_FILE?=$(realpath tests)
 nvim:
 	git clone --depth 1 https://github.com/neovim/neovim ${NVIM_PATH} || (cd ${NVIM_PATH}; git fetch --depth 1; git checkout origin/master)
 
@@ -33,4 +34,4 @@ test: nvim jsregexp
 	# unset both to prevent env leaking into the neovim-build.
 	# add helper-functions to lpath.
 	# ";;" in CPATH appends default.
-	unset LUA_PATH LUA_CPATH; LUASNIP_SOURCE=$(shell pwd) JSREGEXP_PATH=$(shell pwd)/${JSREGEXP_PATH} TEST_FILE=$(realpath tests) BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua make -C ${NVIM_PATH} functionaltest
+	unset LUA_PATH LUA_CPATH; LUASNIP_SOURCE=$(shell pwd) JSREGEXP_PATH=$(shell pwd)/${JSREGEXP_PATH} TEST_FILE=$(realpath ${TEST_FILE}) BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua make -C ${NVIM_PATH} functionaltest
