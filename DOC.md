@@ -1743,7 +1743,7 @@ ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
 
 -- then you can use  $SYS_HOME which was eagerly initialized but also $SYS_USER (or any other system environment var) in your snippets
 
-lsp.env_namespace("POS", {init=function(info) return {["VAL"]=vim.inspect(info.pos)} end})
+lsp.env_namespace("POS", {init=function(info) return {VAL=vim.inspect(info.pos)} end})
 
 -- then you can use  $POS_VAL in your snippets
 
