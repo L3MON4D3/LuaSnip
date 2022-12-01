@@ -1731,11 +1731,11 @@ Also you can't use namespaces that override default vars.
 A simple example to make it more clear:
 
 ```lua
-local random_lang()
+local function random_lang()
     return ({"LUA", "VIML", "VIML9"})[math.floor(math.random()/2 + 1.5)]
 end
 
-ls.env_namespace("MY", {vars={ NAME="LuaSnip",  LANG=random_lang }})`
+ls.env_namespace("MY", {vars={ NAME="LuaSnip",  LANG=random_lang }})
 
 -- then you can use  $MY_NAME and $MY_LANG in your snippets
 
@@ -1743,7 +1743,7 @@ ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
 
 -- then you can use  $SYS_HOME which was eagerly initialized but also $SYS_USER (or any other system environment var) in your snippets
 
-lsp.env_namespace("POS", {init=function(info) return {"VAL": vim.inspect(info.pos)}} end)
+lsp.env_namespace("POS", {init=function(info) return {VAL=vim.inspect(info.pos)} end})
 
 -- then you can use  $POS_VAL in your snippets
 
