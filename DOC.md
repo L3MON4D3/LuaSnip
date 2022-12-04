@@ -1940,7 +1940,7 @@ the `luasnip`-table:
 			"line $2",
 			"snippet$0"
 		]
-	},
+	}
 }
 ```
 
