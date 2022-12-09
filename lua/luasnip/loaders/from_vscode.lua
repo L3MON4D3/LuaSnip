@@ -103,9 +103,19 @@ local function load_snippet_files(lang, files, add_opts)
 					refresh_notify = false,
 				}, add_opts)
 			)
-			log.info("Adding %s snippets and %s autosnippets for filetype `%s` from %s", #lang_snips, #auto_lang_snips, lang, file)
+			log.info(
+				"Adding %s snippets and %s autosnippets for filetype `%s` from %s",
+				#lang_snips,
+				#auto_lang_snips,
+				lang,
+				file
+			)
 		else
-			log.error("Trying to read snippets from file %s, but it does not exist.", lang, file)
+			log.error(
+				"Trying to read snippets from file %s, but it does not exist.",
+				lang,
+				file
+			)
 		end
 	end
 
@@ -133,8 +143,13 @@ local function package_files(root, filter)
 		log.error("Json in %s could not be parsed", package)
 		return {}
 	end
-	if not package_data.contributes or not package_data.contributes.snippets then
-		log.warn("Package %s does not contribute any snippets, skipping it", package)
+	if
+		not package_data.contributes or not package_data.contributes.snippets
+	then
+		log.warn(
+			"Package %s does not contribute any snippets, skipping it",
+			package
+		)
 		return {}
 	end
 
@@ -159,7 +174,11 @@ local function package_files(root, filter)
 				if normalized_snippet_file then
 					table.insert(ft_files[ft], normalized_snippet_file)
 				else
-					log.warn("Could not find file %s from advertised in %s", snippet_entry.path, root)
+					log.warn(
+						"Could not find file %s from advertised in %s",
+						snippet_entry.path,
+						root
+					)
 				end
 			end
 		end
@@ -252,7 +271,11 @@ function M.lazy_load(opts)
 		if cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
 			load_snippet_files(ft, files, add_opts)
-			log.info("Immediately loading lazy-load-snippets for already-active filetype %s from files:\n%s", ft, vim.inspect(files))
+			log.info(
+				"Immediately loading lazy-load-snippets for already-active filetype %s from files:\n%s",
+				ft,
+				vim.inspect(files)
+			)
 
 			-- don't load these files again.
 			ft_files[ft] = nil
