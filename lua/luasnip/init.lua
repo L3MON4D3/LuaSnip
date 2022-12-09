@@ -417,7 +417,11 @@ local function active_update_dependents()
 
 		local ok, err = pcall(active.update_dependents, active)
 		if not ok then
-			log.warn("Error while updating dependents for snippet %s due to error %s", active.parent.snippet.trigger, err)
+			log.warn(
+				"Error while updating dependents for snippet %s due to error %s",
+				active.parent.snippet.trigger,
+				err
+			)
 			unlink_current()
 			return
 		end
@@ -425,7 +429,11 @@ local function active_update_dependents()
 		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
 		ok, err = pcall(active.parent.enter_node, active.parent, active.indx)
 		if not ok then
-			log.warn("Error while entering node in snippet %s: %s", active.parent.snippet.trigger, err)
+			log.warn(
+				"Error while entering node in snippet %s: %s",
+				active.parent.snippet.trigger,
+				err
+			)
 			unlink_current()
 			return
 		end
@@ -736,8 +744,7 @@ ls = {
 	env_namespace = Environ.env_namespace,
 	setup = require("luasnip.config").setup,
 	extend_decorator = extend_decorator,
-	log = require("luasnip.util.log")
-
+	log = require("luasnip.util.log"),
 }
 
 return ls

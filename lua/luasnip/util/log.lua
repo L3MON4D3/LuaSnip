@@ -11,10 +11,11 @@ local luasnip_log_fd = vim.loop.fs_open(
 	-- only append.
 	"a",
 	-- 420 = 0644
-	420)
+	420
+)
 
 local logsize = vim.loop.fs_fstat(luasnip_log_fd).size
-if logsize > 10*2^20 then
+if logsize > 10 * 2 ^ 20 then
 	-- logsize > 10MiB:
 	-- move log -> old log, start new log.
 	vim.loop.fs_rename(log_location, log_old_location)
@@ -23,7 +24,8 @@ if logsize > 10*2^20 then
 		-- only append.
 		"a",
 		-- 420 = 0644
-		420)
+		420
+	)
 end
 
 local M = {}
@@ -45,7 +47,7 @@ local log = {
 	end,
 	debug = function(msg)
 		log_line_append("DEBUG | " .. msg)
-	end
+	end,
 }
 
 -- functions copied directly by deepcopy.
@@ -53,7 +55,7 @@ local log = {
 local effective_log
 
 -- levels sorted by importance, descending.
-local loglevels = {"error", "warn", "info", "debug"}
+local loglevels = { "error", "warn", "info", "debug" }
 
 -- special key none disable all logging.
 function M.set_loglevel(target_level)
@@ -70,13 +72,13 @@ function M.set_loglevel(target_level)
 	for i = 1, target_level_indx do
 		effective_log[loglevels[i]] = log[loglevels[i]]
 	end
-	for i = target_level_indx+1, #loglevels do
+	for i = target_level_indx + 1, #loglevels do
 		effective_log[loglevels[i]] = util.nop
 	end
 end
 
 function M.new(module_name)
-	local module_log = { }
+	local module_log = {}
 	for name, _ in pairs(log) do
 		module_log[name] = function(msg, ...)
 			-- don't immediately get the referenced function, we'd like to
@@ -92,7 +94,7 @@ function M.open()
 end
 
 -- manually append newline
-vim.loop.fs_write(luasnip_log_fd,"\n")
+vim.loop.fs_write(luasnip_log_fd, "\n")
 log.info("New session: " .. os.date())
 M.set_loglevel("warn")
 

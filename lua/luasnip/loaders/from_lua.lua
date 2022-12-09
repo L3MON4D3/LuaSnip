@@ -99,7 +99,13 @@ local function load_files(ft, files, add_opts)
 				refresh_notify = false,
 			}, add_opts)
 		)
-		log.info("Adding %s snippets and %s autosnippets from %s to ft `%s`", #file_snippets, #file_autosnippets, file, ft)
+		log.info(
+			"Adding %s snippets and %s autosnippets from %s to ft `%s`",
+			#file_snippets,
+			#file_autosnippets,
+			file,
+			ft
+		)
 	end
 
 	ls.refresh_notify(ft)
@@ -159,7 +165,11 @@ function M.lazy_load(opts)
 		for ft, files in pairs(load_paths) do
 			if cache.lazy_loaded_ft[ft] then
 				-- instantly load snippets if they were already loaded...
-				log.info("Immediately loading lazy-load-snippets for already-active filetype `%s` from files:\n%s", ft, vim.inspect(files))
+				log.info(
+					"Immediately loading lazy-load-snippets for already-active filetype `%s` from files:\n%s",
+					ft,
+					vim.inspect(files)
+				)
 				load_files(ft, files, add_opts)
 
 				-- don't load these files again.

@@ -143,7 +143,13 @@ local function load_snippet_files(add_ft, paths, collection_files, add_opts)
 				key = string.format("__%s_autosnippets_%s", add_ft, path),
 			}, add_opts)
 		)
-		log.info("Adding %s snippets and %s autosnippets for filetype `%s` from %s", #snippet, #autosnippet, add_ft, path)
+		log.info(
+			"Adding %s snippets and %s autosnippets for filetype `%s` from %s",
+			#snippet,
+			#autosnippet,
+			add_ft,
+			path
+		)
 
 		for _, ft in ipairs(extends) do
 			load_snippet_files(
@@ -229,7 +235,11 @@ function M.lazy_load(opts)
 		for ft, paths in pairs(load_paths) do
 			if cache.lazy_loaded_ft[ft] then
 				-- instantly load snippets if the ft is already loaded...
-				log.info("Immediately loading lazy-load-snippets for already-active filetype `%s` from files:\n%s", ft, vim.inspect(paths))
+				log.info(
+					"Immediately loading lazy-load-snippets for already-active filetype `%s` from files:\n%s",
+					ft,
+					vim.inspect(paths)
+				)
 				load_snippet_files(ft, paths, collection_paths, add_opts)
 				-- clear from load_paths to prevent duplicat loads.
 				load_paths[ft] = nil
@@ -262,7 +272,11 @@ function M._reload_file(filename)
 	cache.path_snippets[filename] = nil
 
 	for ft, _ in pairs(cached_data.fts) do
-		log.info("Re-loading snippets contributed by %s for filetype `%s`", filename, ft)
+		log.info(
+			"Re-loading snippets contributed by %s for filetype `%s`",
+			filename,
+			ft
+		)
 		-- we can safely set collection to empty, the `extends` are already
 		-- "set up", eg are included via cached_data.fts.
 		load_snippet_files(ft, { filename }, {}, add_opts)
