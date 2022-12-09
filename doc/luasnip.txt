@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 05
+*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 09
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -52,7 +52,8 @@ Table of Contents                                  *luasnip-table-of-contents*
 21. DOCSTRING-CACHE                                  |luasnip-docstring-cache|
 22. EVENTS                                                    |luasnip-events|
 23. CLEANUP                                                  |luasnip-cleanup|
-24. API-REFERENCE                                      |luasnip-api-reference|
+24. Logging                                                  |luasnip-logging|
+25. API-REFERENCE                                      |luasnip-api-reference|
 
 >
                 __                       ____
@@ -2554,7 +2555,25 @@ can listen to do some kind of cleaning in your own snippets, by default it will
 empty the snippets table and the caches of the lazy_load.
 
 ==============================================================================
-24. API-REFERENCE                                      *luasnip-api-reference*
+24. Logging                                                  *luasnip-logging*
+
+Luasnip uses logging to report unexpected program-states, and information on
+what’s going on in general. If something does not work as expected, taking a
+look at the log (and potentially increasing the loglevel) might give some good
+hints towards what is going wrong.
+
+The log is stored in `<vim.fn.stdpath("log")>/luasnip.log`, and can be opened
+by calling `ls.log.open()`. The loglevel (granularity of reported events) can
+be adjusted by calling `ls.log.set_loglevel("error"|"warn"|"info"|"debug")`.
+`"debug"` has the highest granularity, `"error"` the lowest, the default is
+`"warn"`.
+
+Once this log grows too large (10MiB, currently not adjustable), it will be
+renamed to `luasnip.log.old`, and a new, empty log created in its place. If
+there already exists a `luasnip.log.old`, it will be deleted.
+
+==============================================================================
+25. API-REFERENCE                                      *luasnip-api-reference*
 
 `require("luasnip")`:
 
