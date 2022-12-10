@@ -2575,8 +2575,9 @@ what's going on in general. If something does not work as expected, taking a
 look at the log (and potentially increasing the loglevel) might give some good
 hints towards what is going wrong.  
 
-The log is stored in `<vim.fn.stdpath("log")>/luasnip.log`, and can be opened by
-calling `ls.log.open()`.
+The log is stored in `<vim.fn.stdpath("log")>/luasnip.log`
+(`<vim.fn.stdpath("cache")>/luasnip.log` for neovim-versions where
+`stdpath("log")` does not exist), and can be opened by calling `ls.log.open()`.
 The loglevel (granularity of reported events) can be adjusted by calling
 `ls.log.set_loglevel("error"|"warn"|"info"|"debug")`. `"debug"` has the highest
 granularity, `"error"` the lowest, the default is `"warn"`.  

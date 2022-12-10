@@ -1,10 +1,17 @@
 local util = require("luasnip.util.util")
+
+-- older neovim-versions (even 0.7.2) do not have stdpath("log").
+local logpath_ok, logpath = pcall(vim.fn.stdpath, "log")
+if not logpath_ok then
+	logpath = vim.fn.stdpath("cache")
+end
+
 -- just to be sure this dir exists.
 -- 448 = 0700
-vim.loop.fs_mkdir(vim.fn.stdpath("log"), 448)
+vim.loop.fs_mkdir(logpath, 448)
 
-local log_location = vim.fn.stdpath("log") .. "/luasnip.log"
-local log_old_location = vim.fn.stdpath("log") .. "/luasnip.log.old"
+local log_location = logpath .. "/luasnip.log"
+local log_old_location = logpath .. "/luasnip.log.old"
 
 local luasnip_log_fd = vim.loop.fs_open(
 	log_location,
