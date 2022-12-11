@@ -100,9 +100,12 @@ function M.open()
 	vim.cmd(("tabnew %s"):format(log_location))
 end
 
--- manually append newline
-vim.loop.fs_write(luasnip_log_fd, "\n")
-log.info("New session: " .. os.date())
+-- to verify log is working.
+function M.ping()
+	log_line_append(("PONG  | pong! (%s)"):format(os.date()))
+end
+
+-- set default-loglevel.
 M.set_loglevel("warn")
 
 return M

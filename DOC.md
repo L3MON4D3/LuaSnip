@@ -2586,6 +2586,9 @@ Once this log grows too large (10MiB, currently not adjustable), it will be
 renamed to `luasnip.log.old`, and a new, empty log created in its place. If
 there already exists a `luasnip.log.old`, it will be deleted.
 
+`ls.log.ping()` can be used to verify the log is working correctly: it will
+print a short message to the log.
+
 # API-REFERENCE
 
 `require("luasnip")`:
