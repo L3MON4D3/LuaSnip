@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 10
+*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 11
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1012,7 +1012,7 @@ A shortcut for `functionNode`s that only do very basic string- manipulation.
     dynamicNode.
 
 
-There are many examples for `lamda` in `Examples/snippets.lua`
+There are many examples for `lambda` in `Examples/snippets.lua`
 
 MATCH                                                          *luasnip-match*
 
