@@ -1007,7 +1007,7 @@ manipulation.
 - `argnodes`, [`node-references`](#node_reference), just like in function- and
   dynamicNode.
 
-There are many examples for `lamda` in `Examples/snippets.lua`
+There are many examples for `lambda` in `Examples/snippets.lua`
 
 ## Match
 `match` can insert text based on a predicate (again, a shorthand for `functionNode`).
