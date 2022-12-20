@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 11
+*luasnip.txt*           For NVIM v0.5.0          Last change: 2022 December 20
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2572,6 +2572,9 @@ granularity, `"error"` the lowest, the default is `"warn"`.
 Once this log grows too large (10MiB, currently not adjustable), it will be
 renamed to `luasnip.log.old`, and a new, empty log created in its place. If
 there already exists a `luasnip.log.old`, it will be deleted.
+
+`ls.log.ping()` can be used to verify the log is working correctly: it will
+print a short message to the log.
 
 ==============================================================================
 25. API-REFERENCE                                      *luasnip-api-reference*
