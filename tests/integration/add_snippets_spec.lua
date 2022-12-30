@@ -282,7 +282,8 @@ describe("add_snippets", function()
 		})
 
 		feed("<ESC>cc") -- rewrite line
-		feed("triD")
+		feed("tri")
+		feed("D")
 		-- check if snippet "d" is automatically triggered
 		screen:expect({
 			grid = [[
