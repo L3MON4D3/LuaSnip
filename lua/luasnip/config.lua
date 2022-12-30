@@ -188,9 +188,12 @@ c = {
 			"Remove buffers' nodes on deletion+wipeout.
 			autocmd BufDelete,BufWipeout * lua current_nodes = require("luasnip").session.current_nodes if current_nodes then current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
 		]]
-					.. (session.config.enable_autosnippets and [[
+					.. (session.config.enable_autosnippets and
+        -- Luasnip_just_inserted makes sure we only trigger autosnippets after we inserted characters in insert mode.
+        -- vim.b.Luasnip_last_changedtick allows us to compute how many changes occurred in the file between two TextChanged* events. We use this information to distinguish typing characters by hand vs using <C-r> to paste multiple characters in insert mode. We want to allow expanding autosnippets in the first case and not in the second. After some investigation, this is the only way I found to distinguish the two cases.
+        [[
 			autocmd InsertCharPre * lua Luasnip_just_inserted = true
-			autocmd TextChangedI,TextChangedP * lua if Luasnip_just_inserted then require("luasnip").expand_auto() Luasnip_just_inserted=nil end
+			autocmd TextChangedI,TextChangedP * lua if Luasnip_just_inserted then Luasnip_just_inserted=nil if vim.b.Luasnip_last_changedtick == nil or vim.b.changedtick==vim.b.Luasnip_last_changedtick + 1 then require("luasnip").expand_auto() end vim.b.Luasnip_last_changedtick = vim.b.changedtick end
 		]] or "")
 					.. [[
 		augroup END
