@@ -55,6 +55,7 @@ end
 
 local function get_context(snip)
 	return {
+	  id = snip.id,
 		name = snip.name,
 		trigger = snip.trigger,
 		description = snip.dscr,

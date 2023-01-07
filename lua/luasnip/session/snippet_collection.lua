@@ -128,6 +128,10 @@ local by_id = setmetatable({}, {
 	__mode = "v",
 })
 
+-- This map allows user to get the source file of a specific snippet given its
+-- snippet id.
+local id_to_source_map = {}
+
 -- ft: any filetype, optional.
 function M.clear_snippets(ft)
 	if ft then
@@ -236,6 +240,7 @@ local function invalidate_snippets(snippets_by_ft)
 	M.clean_invalidated({ inv_limit = 100 })
 end
 
+
 local current_id = 0
 -- snippets like {ft1={<snippets>}, ft2={<snippets>}}, opts should be properly
 -- initialized with default values.
@@ -270,6 +275,10 @@ function M.add_snippets(snippets, opts)
 			table.insert(by_prio[snip.snippetType][snip.priority][ft], snip)
 			table.insert(by_ft[snip.snippetType][ft], snip)
 			by_id[snip.id] = snip
+
+			if opts.source then
+			  id_to_source_map[snip.id] = opts.source
+			end
 		end
 	end
 
@@ -309,6 +318,10 @@ end
 
 function M.get_id_snippet(id)
 	return by_id[id]
+end
+
+function M.get_source_by_snip_id(id)
+  return id_to_source_map[id]
 end
 
 return M

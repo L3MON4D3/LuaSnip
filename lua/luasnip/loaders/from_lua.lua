@@ -83,6 +83,7 @@ local function load_files(ft, files, add_opts)
 			ft,
 			file_snippets,
 			vim.tbl_extend("keep", {
+			  source = file,
 				type = "snippets",
 				key = "__snippets_" .. file,
 				-- prevent refresh here, will be done outside loop.
@@ -93,6 +94,7 @@ local function load_files(ft, files, add_opts)
 			ft,
 			file_autosnippets,
 			vim.tbl_extend("keep", {
+			  source = file,
 				type = "autosnippets",
 				key = "__autosnippets_" .. file,
 				-- prevent refresh here, will be done outside loop.
