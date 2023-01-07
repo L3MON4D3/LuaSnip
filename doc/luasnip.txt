@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 January 06
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 January 07
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2816,9 +2816,9 @@ print a short message to the log.
 - `available(snip_info)`: return a table of all snippets defined for the current
     filetypes(s) (`{ft1={snip1, snip2}, ft2={snip3, snip4}}`). The structure of the
     snippet is defined by `snip_info` which is a function (`snip_info(snip)`) that
-    takes in a snippet (`snip`) and uses it to define the desired table.
-    `snip_info` is an optional argument as a default has already been defined. You
-    can use it for more granular control over the table of snippets that is
+    takes in a snippet (`snip`), finds the desired information on it, and returns
+    it. `snip_info` is an optional argument as a default has already been defined.
+    You can use it for more granular control over the table of snippets that is
     returned.
 - `exit_out_of_region(node)`: checks whether the cursor is still within the range
     of the snippet `node` belongs to. If yes, no change occurs, if No, the snippet
