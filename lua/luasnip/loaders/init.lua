@@ -25,6 +25,10 @@ local function edit_specific_snippet(data, edit)
 	local source_file = get_source_by_snip_id(data.id)
 	if source_file then
 		edit(source_file)
+		if data.name then
+	    local feed_str = vim.api.nvim_replace_termcodes("/"..data.name.."<CR>", true, true, true)
+			vim.fn.feedkeys(feed_str, "n")
+		end
 	else
 		print(
 			"No source found for id: " .. data.id .. " with name: " .. data.name
