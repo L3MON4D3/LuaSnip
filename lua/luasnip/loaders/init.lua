@@ -1,6 +1,8 @@
 local Cache = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
 local Path = require("luasnip.util.path")
+local get_source_by_snip_id =
+	require("luasnip.session.snippet_collection").get_source_by_snip_id
 
 local M = {}
 
@@ -19,6 +21,17 @@ local function default_edit(file)
 	vim.cmd("edit " .. file)
 end
 
+local function edit_specific_snippet(data, edit)
+	local source_file = get_source_by_snip_id(data.id)
+	if source_file then
+		edit(source_file)
+	else
+		print(
+			"No source found for id: " .. data.id .. " with name: " .. data.name
+		)
+	end
+end
+
 --- Quickly jump to snippet-file from any source for the active filetypes.
 ---@param opts table, options for this function:
 --- - format: fn(path:string, source_name:string) -> string|nil
@@ -35,6 +48,11 @@ function M.edit_snippet_files(opts)
 	local edit = opts.edit or default_edit
 	local extend = opts.extend or function()
 		return {}
+	end
+
+	if opts.target_snippet then
+		edit_specific_snippet(opts.target_snippet, edit)
+		return
 	end
 
 	local fts = util.get_snippet_filetypes()
