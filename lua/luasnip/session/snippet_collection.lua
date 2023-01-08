@@ -1,3 +1,4 @@
+local session = require("luasnip.session")
 -- store snippets by some key.
 -- also ordered by filetype, eg.
 -- {
@@ -276,7 +277,7 @@ function M.add_snippets(snippets, opts)
 			table.insert(by_ft[snip.snippetType][ft], snip)
 			by_id[snip.id] = snip
 
-			if opts.source then
+			if opts.source and opts.store_meta_data then
 			  id_to_source_map[snip.id] = opts.source
 			end
 		end

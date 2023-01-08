@@ -24,6 +24,7 @@ local defaults = {
 	region_check_events = "User None",
 	delete_check_events = "User None",
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
+	store_meta_data = false, -- For each snippet, eg. source path.
 	ext_opts = {
 		[types.textNode] = {
 			active = { hl_group = "LuasnipTextNodeActive" },
