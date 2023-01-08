@@ -1,8 +1,6 @@
 local Cache = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
 local Path = require("luasnip.util.path")
-local get_source_by_snip_id =
-	require("luasnip.session.snippet_collection").get_source_by_snip_id
 
 local M = {}
 
@@ -22,11 +20,17 @@ local function default_edit(file)
 end
 
 local function edit_specific_snippet(data, edit)
-	local source_file = get_source_by_snip_id(data.id)
+	local sc = require("luasnip.session.snippet_collection")
+	local source_file = sc.get_source_by_snip_id(data.id)
 	if source_file then
 		edit(source_file)
 		if data.name then
-	    local feed_str = vim.api.nvim_replace_termcodes("/"..data.name.."<CR>", true, true, true)
+			local feed_str = vim.api.nvim_replace_termcodes(
+				"/" .. data.name .. "<CR>",
+				true,
+				true,
+				true
+			)
 			vim.fn.feedkeys(feed_str, "n")
 		end
 	else
