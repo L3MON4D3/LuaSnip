@@ -2157,6 +2157,19 @@ require("luasnip.loaders").edit_snippet_files {
   end
 }
 ```
+* `target_snippet`: `table:snippet` If you have config option `store_meta_data`
+    set to true, then passing a target snippet to the edit function will jump
+    the cursor to the location where the target snippet is declared.
+    Currently, this only works for snippets that have been loaded through
+    `loaders.from_lua`. NOTE: the edit function only uses props that are
+    returned from `ls.get_context()` so you can either supply a full snip or
+    the stripped down variant returned from `get_context`.
+```lua
+require("luasnip.loaders").edit_snippet_files({
+  target_snippet = my_snippet,
+})
+```
+
 
 One comfortable way to call this function is registering it as a command:
 ```vim
