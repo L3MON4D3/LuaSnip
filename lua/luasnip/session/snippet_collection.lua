@@ -129,9 +129,11 @@ local by_id = setmetatable({}, {
 	__mode = "v",
 })
 
--- This map allows user to get the source file of a specific snippet given its
--- snippet id.
-local id_to_source_map = {}
+-- If `add_snippets` opts.source and config.store_meta_data then each call to
+-- add snippets stores the source file and potentially other meta data in this
+-- table which then each snippet points to so that one can `jump-to-snip`
+-- by calling `loaders.edit_snippet_files({ target_snippet = snip_context_x })`
+local snippets_meta_data = {}
 
 -- ft: any filetype, optional.
 function M.clear_snippets(ft)
@@ -241,11 +243,17 @@ local function invalidate_snippets(snippets_by_ft)
 	M.clean_invalidated({ inv_limit = 100 })
 end
 
-
 local current_id = 0
 -- snippets like {ft1={<snippets>}, ft2={<snippets>}}, opts should be properly
 -- initialized with default values.
 function M.add_snippets(snippets, opts)
+	-- TODO: store the source meta data here, and then point each snip
+	--       this should allow me to remove the snip id mapping and use a
+	--       pure meta data pointer.
+	if opts.source and opts.store_meta_data then
+	  table.insert(snippets_meta_data, { source = opts.source })
+	end
+
 	for ft, ft_snippets in pairs(snippets) do
 		local ft_table = by_ft[opts.type][ft]
 
@@ -278,7 +286,7 @@ function M.add_snippets(snippets, opts)
 			by_id[snip.id] = snip
 
 			if opts.source and opts.store_meta_data then
-			  id_to_source_map[snip.id] = opts.source
+				snip["meta_data"] = snippets_meta_data[#snippets_meta_data]
 			end
 		end
 	end
@@ -319,10 +327,6 @@ end
 
 function M.get_id_snippet(id)
 	return by_id[id]
-end
-
-function M.get_source_by_snip_id(id)
-  return id_to_source_map[id]
 end
 
 return M

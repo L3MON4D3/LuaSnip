@@ -20,10 +20,9 @@ local function default_edit(file)
 end
 
 local function edit_specific_snippet(data, edit)
-	local sc = require("luasnip.session.snippet_collection")
-	local source_file = sc.get_source_by_snip_id(data.id)
-	if source_file then
-		edit(source_file)
+	local source =data.meta_data.source
+	if  source then
+		edit(source)
 		if data.name then
 			local feed_str = vim.api.nvim_replace_termcodes(
 				"/" .. data.name .. "<CR>",
