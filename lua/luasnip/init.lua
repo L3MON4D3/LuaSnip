@@ -705,7 +705,6 @@ local function add_snippets(ft, snippets, opts)
 	opts.refresh_notify = opts.refresh_notify or true
 	-- alternatively, "autosnippets"
 	opts.type = opts.type or "snippets"
-	opts.store_meta_data = session.config.store_meta_data
 
 	-- if ft is nil, snippets already has this format.
 	if ft then

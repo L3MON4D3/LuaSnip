@@ -1,4 +1,5 @@
 local session = require("luasnip.session")
+
 -- store snippets by some key.
 -- also ordered by filetype, eg.
 -- {
@@ -136,6 +137,30 @@ local by_id = setmetatable({}, {
 local snippets_meta_data = {}
 local snip_id_to_meta_map = {}
 
+
+local function initialize_snippet_meta_data(opts)
+  -- If we use two funcs one for module and one for each snip then the following
+  -- block would obviously have to be modified to work with that
+  --
+  -- config.store_snippets_data = {
+  --     get_module_module_data = function(opts) return { source = opts.source },
+  --     for_each_snippet = function(ft, snip, opts) ... end
+  -- }
+
+
+  -- func / table
+	if type(session.config.store_meta_data) == "function" then
+	  -- NOTE: use function is still a bit wip
+	  table.insert(snippets_meta_data, session.config.store_meta_data(opts))
+
+
+    -- if bool
+	elseif session.config.store_meta_data then
+	  table.insert(snippets_meta_data, { source = opts.source })
+
+	end
+end
+
 -- ft: any filetype, optional.
 function M.clear_snippets(ft)
 	if ft then
@@ -247,12 +272,13 @@ end
 local current_id = 0
 -- snippets like {ft1={<snippets>}, ft2={<snippets>}}, opts should be properly
 -- initialized with default values.
+--
+-- opts.source = path to snip module which is assigned in
+-- `from_lua.load`
 function M.add_snippets(snippets, opts)
-	-- TODO: store the source meta data here, and then point each snip
-	--       this should allow me to remove the snip id mapping and use a
-	--       pure meta data pointer.
-	if opts.source and opts.store_meta_data then
-	  table.insert(snippets_meta_data, { source = opts.source })
+
+  if session.config.store_meta_data then
+	  initialize_snippet_meta_data(opts)
 	end
 
 	for ft, ft_snippets in pairs(snippets) do
@@ -286,8 +312,12 @@ function M.add_snippets(snippets, opts)
 			table.insert(by_ft[snip.snippetType][ft], snip)
 			by_id[snip.id] = snip
 
-			if opts.source and opts.store_meta_data then
+			if session.config.store_meta_data then
 				snip_id_to_meta_map[snip.id] = #snippets_meta_data
+				-- TODO: (wip) following line would store single snippet specific data
+				--      we are not sure yet how this would be done but I leave it here
+				--      for reference
+			  -- snippets_meta_data[#snippets_meta_data].snippet_specific[snip.id] = session.config.store_meta_data.each_snippet(ft, snip, opts)
 			end
 		end
 	end
