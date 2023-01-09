@@ -2200,7 +2200,7 @@ There are two ways to add snippets:
   			table.insert(getfenv(2).ls_file_snippets, snip)
   		end,
   		parse = function(...)
-  			local snip = ls.parser.parse(...)
+  			local snip = ls.parser.parse_snippet(...)
   			table.insert(getfenv(2).ls_file_snippets, snip)
   		end,
   		-- remaining definitions.
