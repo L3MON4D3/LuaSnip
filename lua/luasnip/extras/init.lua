@@ -113,6 +113,27 @@ local function match(index, _match, _then, _else)
 	return F(func, index)
 end
 
+local function jump_to_snip(snip)
+	local meta_data = require("luasnip.session.snippet_collection").get_meta_data_by_snip_id(snip.id)
+	local source = meta_data.source
+	if  source then
+	  vim.cmd("edit " .. source)
+		if snip.name then
+			local feed_str = vim.api.nvim_replace_termcodes(
+				"/" .. snip.name .. "<CR>",
+				true,
+				true,
+				true
+			)
+			vim.fn.feedkeys(feed_str, "n")
+		end
+	else
+		print(
+			"No source found for id: " .. snip.id .. " with name: " .. snip.name
+		)
+	end
+end
+
 return {
 	lambda = lambda,
 	match = match,
@@ -161,4 +182,6 @@ return {
 	--alias
 	l = lambda,
 	m = match,
+
+	jump_to_snip = jump_to_snip,
 }
