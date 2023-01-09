@@ -55,8 +55,6 @@ end
 
 local function default_snip_info(snip)
 	return {
-	  id = snip.id,
-	  meta_data = snip.meta_data,
 		name = snip.name,
 		trigger = snip.trigger,
 		description = snip.dscr,
