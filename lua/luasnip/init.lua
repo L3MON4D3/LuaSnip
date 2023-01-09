@@ -63,24 +63,66 @@ local function default_snip_info(snip)
 	}
 end
 
-local function available(snip_info)
+---Retrieve available snippets
+---@param snip_info function: takes a snip and returns whatever props you want
+---         from the snippet
+---
+---@param opts: May contain:
+---         scope <nil|string("buf","everything")|table(filetypes)
+---           buf: returns snippets for current buffers filetypes
+---           everything: returns all loaded snippets
+---           table: allows you to filter snippet subsets by filetype(s)
+---         include_autosnippets bool
+---
+---@return table: the resulting table of ft snip mappings after fitlers have
+--          been applied
+local function available(snip_info, opts)
+	opts = opts or {}
+	opts.scope = opts.scope or "buf"
+	opts.include_autosnippets = opts.include_autosnippets or true
 	snip_info = snip_info or default_snip_info
-
-	local fts = util.get_snippet_filetypes()
 	local res = {}
-	for _, ft in ipairs(fts) do
-		res[ft] = {}
-		for _, snip in ipairs(get_snippets(ft)) do
-			if not snip.invalidated then
-				table.insert(res[ft], snip_info(snip))
-			end
-		end
-		for _, snip in ipairs(get_snippets(ft, { type = "autosnippets" })) do
+
+	local function validate_and_append_to_res(ft, t_snips)
+		for _, snip in ipairs(t_snips) do
 			if not snip.invalidated then
 				table.insert(res[ft], snip_info(snip))
 			end
 		end
 	end
+
+	local function filter_all_snippets(t_snips)
+		for ft, snips in pairs(t_snips) do
+			if
+				opts.scope == "everything" or vim.tbl_contains(opts.scope, ft)
+			then
+				if not res[ft] then
+					res[ft] = {}
+				end
+				validate_and_append_to_res(ft, snips)
+			end
+		end
+	end
+
+	if opts.scope == "buf" then
+		local fts = util.get_snippet_filetypes()
+		for _, ft in ipairs(fts) do
+			res[ft] = {}
+			validate_and_append_to_res(ft, get_snippets(ft))
+			if opts.include_autosnippets then
+				validate_and_append_to_res(
+					ft,
+					get_snippets(ft, { type = "autosnippets" })
+				)
+			end
+		end
+	elseif opts.scope == "everything" or type(opts.scope) == "table" then
+		filter_all_snippets(get_snippets())
+		if opts.include_autosnippets then
+			filter_all_snippets(get_snippets(nil, { type = "autosnippets" }))
+		end
+	end
+
 	return res
 end
 
