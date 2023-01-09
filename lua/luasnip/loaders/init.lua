@@ -20,7 +20,8 @@ local function default_edit(file)
 end
 
 local function edit_specific_snippet(data, edit)
-	local source =data.meta_data.source
+	local meta_data = require("luasnip.session.snippet_collection").get_meta_data_by_snip_id(data.id)
+	local source = meta_data.source
 	if  source then
 		edit(source)
 		if data.name then

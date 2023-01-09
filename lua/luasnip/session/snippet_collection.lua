@@ -134,6 +134,7 @@ local by_id = setmetatable({}, {
 -- table which then each snippet points to so that one can `jump-to-snip`
 -- by calling `loaders.edit_snippet_files({ target_snippet = snip_context_x })`
 local snippets_meta_data = {}
+local snip_id_to_meta_map = {}
 
 -- ft: any filetype, optional.
 function M.clear_snippets(ft)
@@ -286,7 +287,7 @@ function M.add_snippets(snippets, opts)
 			by_id[snip.id] = snip
 
 			if opts.source and opts.store_meta_data then
-				snip["meta_data"] = snippets_meta_data[#snippets_meta_data]
+				snip_id_to_meta_map[snip.id] = #snippets_meta_data
 			end
 		end
 	end
@@ -327,6 +328,10 @@ end
 
 function M.get_id_snippet(id)
 	return by_id[id]
+end
+
+function M.get_meta_data_by_snip_id(id)
+  return snippets_meta_data[snip_id_to_meta_map[id]]
 end
 
 return M
