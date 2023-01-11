@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 January 08
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 January 11
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2262,18 +2262,26 @@ there are multiple) the associated file to edit.
                 string.format("%s/%s.snippets", <PERSONAL_SNIPPETS_FOLDER>, ft) }
             }
           end
-
+        
           return {}
         end
         }
     <
-- `target_snippet`: `table:snippet` - If you have config option `store_meta_data`
-    set to true, then passing a target snippet to the edit function will jump
-    the cursor to the location where the target snippet is declared.
-    Currently, this only works for snippets that have been loaded through
-    `loaders.from_lua`. NOTE: the edit function only uses props that are
-    returned from `ls.get_context()` so you can either supply a full snip or
-    the stripped down variant returned from `get_context`.
+- `target_snippet`: `table:snippet` If you have config option `store_meta_data`
+    set to true, then passing a target snippet to the edit function will jump the
+    cursor to the location where the target snippet is declared. Currently, this
+    only works for snippets that have been loaded through `loaders.from_lua`. NOTE:
+    the edit function only uses props that are returned from `ls.get_context()` so
+    you can either supply a full snip or the stripped down variant returned from
+    `get_context`.
+
+
+>
+    require("luasnip.loaders").edit_snippet_files({
+      target_snippet = my_snippet,
+    })
+<
+
 
 One comfortable way to call this function is registering it as a command:
 
