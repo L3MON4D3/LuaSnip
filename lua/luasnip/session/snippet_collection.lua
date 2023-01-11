@@ -137,27 +137,23 @@ local by_id = setmetatable({}, {
 local snippets_meta_data = {}
 local snip_id_to_meta_map = {}
 
-
 local function initialize_snippet_meta_data(opts)
-  -- If we use two funcs one for module and one for each snip then the following
-  -- block would obviously have to be modified to work with that
-  --
-  -- config.store_snippets_data = {
-  --     get_module_module_data = function(opts) return { source = opts.source },
-  --     for_each_snippet = function(ft, snip, opts) ... end
-  -- }
+	-- If we use two funcs one for module and one for each snip then the following
+	-- block would obviously have to be modified to work with that
+	--
+	-- config.store_snippets_data = {
+	--     get_module_module_data = function(opts) return { source = opts.source },
+	--     for_each_snippet = function(ft, snip, opts) ... end
+	-- }
 
-
-  -- func / table
+	-- func / table
 	if type(session.config.store_meta_data) == "function" then
-	  -- NOTE: use function is still a bit wip
-	  table.insert(snippets_meta_data, session.config.store_meta_data(opts))
+		-- NOTE: use function is still a bit wip
+		table.insert(snippets_meta_data, session.config.store_meta_data(opts))
 
-
-    -- if bool
+	-- if bool
 	elseif session.config.store_meta_data then
-	  table.insert(snippets_meta_data, { source = opts.source })
-
+		table.insert(snippets_meta_data, { source = opts.source })
 	end
 end
 
@@ -276,9 +272,8 @@ local current_id = 0
 -- opts.source = path to snip module which is assigned in
 -- `from_lua.load`
 function M.add_snippets(snippets, opts)
-
-  if session.config.store_meta_data then
-	  initialize_snippet_meta_data(opts)
+	if session.config.store_meta_data then
+		initialize_snippet_meta_data(opts)
 	end
 
 	for ft, ft_snippets in pairs(snippets) do
@@ -317,7 +312,7 @@ function M.add_snippets(snippets, opts)
 				-- TODO: (wip) following line would store single snippet specific data
 				--      we are not sure yet how this would be done but I leave it here
 				--      for reference
-			  -- snippets_meta_data[#snippets_meta_data].snippet_specific[snip.id] = session.config.store_meta_data.each_snippet(ft, snip, opts)
+				-- snippets_meta_data[#snippets_meta_data].snippet_specific[snip.id] = session.config.store_meta_data.each_snippet(ft, snip, opts)
 			end
 		end
 	end
@@ -361,7 +356,7 @@ function M.get_id_snippet(id)
 end
 
 function M.get_meta_data_by_snip_id(id)
-  return snippets_meta_data[snip_id_to_meta_map[id]]
+	return snippets_meta_data[snip_id_to_meta_map[id]]
 end
 
 return M
