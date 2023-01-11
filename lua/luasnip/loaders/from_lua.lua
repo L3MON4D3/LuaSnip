@@ -28,6 +28,7 @@ local util = require("luasnip.util.util")
 local str_util = require("luasnip.util.str")
 local ls = require("luasnip")
 local log = require("luasnip.util.log").new("lua-loader")
+local session = require("luasnip.session")
 
 local M = {}
 
@@ -83,6 +84,8 @@ local function load_files(ft, files, add_opts)
 			ft,
 			file_snippets,
 			vim.tbl_extend("keep", {
+			  -- TODO: redo `source` here by passing the entire meta-table
+			  -- metadata =
 			  source = file,
 				type = "snippets",
 				key = "__snippets_" .. file,

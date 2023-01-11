@@ -24,7 +24,18 @@ local defaults = {
 	region_check_events = "User None",
 	delete_check_events = "User None",
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
+
+  -- TODO: generates a function which, given a filename produces the metadata
+  -- that shall badded to snippets loaded by one of the loaders.
+  --
+  -- @params table:
+  --        may contain: filename
+  --        ...
 	store_meta_data = false, -- For each snippet, eg. source path.
+	store_meta_data2 = function(opts)
+	  return {}
+	end,
+
 	ext_opts = {
 		[types.textNode] = {
 			active = { hl_group = "LuasnipTextNodeActive" },

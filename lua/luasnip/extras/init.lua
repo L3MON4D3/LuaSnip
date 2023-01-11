@@ -113,6 +113,7 @@ local function match(index, _match, _then, _else)
 	return F(func, index)
 end
 
+-- TODO: MOVE TO OWN MODULE
 local function jump_to_snip(snip)
 	local meta_data = require("luasnip.session.snippet_collection").get_meta_data_by_snip_id(snip.id)
 	local source = meta_data.source
