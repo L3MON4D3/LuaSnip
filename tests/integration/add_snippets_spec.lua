@@ -282,12 +282,12 @@ describe("add_snippets", function()
 		})
 
 		feed("<ESC>cc") -- rewrite line
-        -- This integration test aims to simulate the situation where one would be typing into Neovim by feeding each simulated keystroke to Neovim one at a time. Neovim's TextChangedI event responds to the simulated keystrokes differently from how we would expect it to when typing normally. Specifically, we expect the TextChangedI event to occur after every keystroke in insert mode when typing into Neovim normally, but in this simulation, TextChangedI only seems to occur after a string of keystrokes has completed. For example, the test here feeds the keystrokes "tri" and then "D". We would normally expect four TextChangedI events, one after each letter ('t', 'r', 'i', and 'D'). However, according to my investigation, it only occurs after 'i' and 'D' and only after a sleep command. Clearly, there is some timing aspect to Neovim event behavior.
-        -- We feed "tri" and "D" separately, because autosnippets need to have TextChangedI triggered on the character inserted before the trigger is complete or it will think that the trigger was pasted in (and should not be auto-expanded) as it will appear that many characters were inserted together.
+		-- This integration test aims to simulate the situation where one would be typing into Neovim by feeding each simulated keystroke to Neovim one at a time. Neovim's TextChangedI event responds to the simulated keystrokes differently from how we would expect it to when typing normally. Specifically, we expect the TextChangedI event to occur after every keystroke in insert mode when typing into Neovim normally, but in this simulation, TextChangedI only seems to occur after a string of keystrokes has completed. For example, the test here feeds the keystrokes "tri" and then "D". We would normally expect four TextChangedI events, one after each letter ('t', 'r', 'i', and 'D'). However, according to my investigation, it only occurs after 'i' and 'D' and only after a sleep command. Clearly, there is some timing aspect to Neovim event behavior.
+		-- We feed "tri" and "D" separately, because autosnippets need to have TextChangedI triggered on the character inserted before the trigger is complete or it will think that the trigger was pasted in (and should not be auto-expanded) as it will appear that many characters were inserted together.
 		feed("tri")
-        require('luv').sleep(100)
+		require("luv").sleep(100)
 		feed("D")
-        require('luv').sleep(100)
+		require("luv").sleep(100)
 		-- check if snippet "d" is automatically triggered
 		screen:expect({
 			grid = [[
