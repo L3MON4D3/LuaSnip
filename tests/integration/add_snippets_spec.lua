@@ -2,6 +2,16 @@ local helpers = require("test.functional.helpers")(after_each)
 local exec_lua, feed, exec = helpers.exec_lua, helpers.feed, helpers.exec
 local ls_helpers = require("helpers")
 local Screen = require("test.functional.ui.screen")
+local sleep = require("luv").sleep
+
+-- The integration tests here simulate typing into Neovim by feeding each simulated keystroke to Neovim one at a time.
+
+-- Neovim's TextChangedI event responds to the simulated keystrokes differently from how we would expect it to when typing normally. Specifically, we expect the TextChangedI event to occur after every keystroke in insert mode when typing into Neovim normally, but in this simulation, TextChangedI only seems to occur after a pause.
+-- For example, imagine we call feed("tri") and then feed("D"). We would normally expect four TextChangedI events, one after each letter ('t', 'r', 'i', and 'D'). However, according to my investigation, it only occurs after 'i' and 'D'. It only happens consistently if we include a sleep command after each call to feed.
+local function feed_wait(...)
+  feed(...)
+  sleep(100)
+end
 
 describe("add_snippets", function()
 	local screen
@@ -282,16 +292,29 @@ describe("add_snippets", function()
 		})
 
 		feed("<ESC>cc") -- rewrite line
-		-- This integration test aims to simulate the situation where one would be typing into Neovim by feeding each simulated keystroke to Neovim one at a time. Neovim's TextChangedI event responds to the simulated keystrokes differently from how we would expect it to when typing normally. Specifically, we expect the TextChangedI event to occur after every keystroke in insert mode when typing into Neovim normally, but in this simulation, TextChangedI only seems to occur after a string of keystrokes has completed. For example, the test here feeds the keystrokes "tri" and then "D". We would normally expect four TextChangedI events, one after each letter ('t', 'r', 'i', and 'D'). However, according to my investigation, it only occurs after 'i' and 'D' and only after a sleep command. Clearly, there is some timing aspect to Neovim event behavior.
-		-- We feed "tri" and "D" separately, because autosnippets need to have TextChangedI triggered on the character inserted before the trigger is complete or it will think that the trigger was pasted in (and should not be auto-expanded) as it will appear that many characters were inserted together.
-		feed("tri")
-		require("luv").sleep(100)
-		feed("D")
-		require("luv").sleep(100)
+		-- We feed "tri" and "D" separately, because autosnippets need to have TextChangedI triggered on the character inserted before the trigger is complete or it will think that the trigger was pasted in (and therefore should not be auto-expanded) as it will appear that many characters were inserted all together.
+		feed_wait("tri")
+		feed_wait("D")
 		-- check if snippet "d" is automatically triggered
 		screen:expect({
 			grid = [[
 			helloDworld^                                       |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+        -- Test to make sure that autosnippets do not get triggered while pasting in insert mode.
+		feed("<ESC>dd") -- clear line
+        helpers.feed_command("set paste") -- disable autosnippets
+        helpers.insert("triD")
+        feed("<ESC>")
+        helpers.feed_command("set nopaste") -- reenable autosnippets
+		feed("<ESC>0d$") -- clear line
+		feed_wait([[i<C-r>"]]) -- use feed_wait here to wait for any auto expanding to occur (which it shouldn't)
+		-- make sure snippet is not automatically triggered. Ideally, autosnippets should never get triggered when we are pasting text. In most common cases, Luasnip should correctly avoid doing so.
+		screen:expect({
+			grid = [[
+			triD^                                              |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
 		})
