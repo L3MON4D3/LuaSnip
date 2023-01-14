@@ -9,8 +9,8 @@ local sleep = require("luv").sleep
 -- Neovim's TextChangedI event responds to the simulated keystrokes differently from how we would expect it to when typing normally. Specifically, we expect the TextChangedI event to occur after every keystroke in insert mode when typing into Neovim normally, but in this simulation, TextChangedI only seems to occur after a pause.
 -- For example, imagine we call feed("tri") and then feed("D"). We would normally expect four TextChangedI events, one after each letter ('t', 'r', 'i', and 'D'). However, according to my investigation, it only occurs after 'i' and 'D'. It only happens consistently if we include a sleep command after each call to feed.
 local function feed_wait(...)
-  feed(...)
-  sleep(100)
+	feed(...)
+	sleep(100)
 end
 
 describe("add_snippets", function()
@@ -303,12 +303,12 @@ describe("add_snippets", function()
 			{2:-- INSERT --}                                      |]],
 		})
 
-        -- Test to make sure that autosnippets do not get triggered while pasting in insert mode.
+		-- Test to make sure that autosnippets do not get triggered while pasting in insert mode.
 		feed("<ESC>dd") -- clear line
-        helpers.feed_command("set paste") -- disable autosnippets
-        helpers.insert("triD")
-        feed("<ESC>")
-        helpers.feed_command("set nopaste") -- reenable autosnippets
+		helpers.feed_command("set paste") -- disable autosnippets
+		helpers.insert("triD")
+		feed("<ESC>")
+		helpers.feed_command("set nopaste") -- reenable autosnippets
 		feed("<ESC>0d$") -- clear line
 		feed_wait([[i<C-r>"]]) -- use feed_wait here to wait for any auto expanding to occur (which it shouldn't)
 		-- make sure snippet is not automatically triggered. Ideally, autosnippets should never get triggered when we are pasting text. In most common cases, Luasnip should correctly avoid doing so.
