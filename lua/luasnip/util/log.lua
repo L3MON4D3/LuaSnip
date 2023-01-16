@@ -21,26 +21,35 @@ local luasnip_log_fd = vim.loop.fs_open(
 	420
 )
 
-local logsize = vim.loop.fs_fstat(luasnip_log_fd).size
-if logsize > 10 * 2 ^ 20 then
-	-- logsize > 10MiB:
-	-- move log -> old log, start new log.
-	vim.loop.fs_rename(log_location, log_old_location)
-	luasnip_log_fd = vim.loop.fs_open(
-		log_location,
-		-- only append.
-		"a",
-		-- 420 = 0644
-		420
-	)
-end
-
-local M = {}
-
 local function log_line_append(msg)
 	msg = msg:gsub("\n", "\n      | ")
 	vim.loop.fs_write(luasnip_log_fd, msg .. "\n")
 end
+
+if not luasnip_log_fd then
+	-- print a warning
+	print(("LuaSnip: could not open log at %s. Not logging for this session."):format(log_location))
+	-- make log_line_append do nothing.
+	log_line_append = util.nop
+else
+	-- if log_fd found, check if log should be rotated.
+	local logsize = vim.loop.fs_fstat(luasnip_log_fd).size
+	if logsize > 10 * 2 ^ 20 then
+		-- logsize > 10MiB:
+		-- move log -> old log, start new log.
+		vim.loop.fs_rename(log_location, log_old_location)
+		luasnip_log_fd = vim.loop.fs_open(
+			log_location,
+			-- only append.
+			"a",
+			-- 420 = 0644
+			420
+		)
+	end
+end
+
+
+local M = {}
 
 local log = {
 	error = function(msg)
