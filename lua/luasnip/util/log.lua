@@ -28,7 +28,11 @@ end
 
 if not luasnip_log_fd then
 	-- print a warning
-	print(("LuaSnip: could not open log at %s. Not logging for this session."):format(log_location))
+	print(
+		("LuaSnip: could not open log at %s. Not logging for this session."):format(
+			log_location
+		)
+	)
 	-- make log_line_append do nothing.
 	log_line_append = util.nop
 else
@@ -47,7 +51,6 @@ else
 		)
 	end
 end
-
 
 local M = {}
 
