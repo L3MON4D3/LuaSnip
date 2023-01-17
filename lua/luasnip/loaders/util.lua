@@ -37,6 +37,10 @@ local function split_lines(filestring)
 	)
 end
 
+local function _is_present(v)
+	return v ~= nil
+end
+
 local function normalize_paths(paths, rtp_dirname)
 	if not paths then
 		paths = vim.api.nvim_get_runtime_file(rtp_dirname, true)
@@ -45,6 +49,7 @@ local function normalize_paths(paths, rtp_dirname)
 	end
 
 	paths = vim.tbl_map(Path.expand, paths)
+	paths = vim.tbl_filter(_is_present, paths)
 	paths = util.deduplicate(paths)
 
 	return paths

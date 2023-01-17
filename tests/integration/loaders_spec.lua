@@ -236,6 +236,27 @@ describe("loaders:", function()
 		assert.are.same(3, exec_lua('return #ls.get_snippets("vim")'))
 	end)
 
+	it("loads paths with invalid paths ditched (vscode)", function()
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_vscode").load({paths={"%s", "%s"}})]],
+			os.getenv("LUASNIP_SOURCE") .. "/tests/data/invalid-not-exists",
+			os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets" -- has 5 prio snippets
+		))
+
+		assert.are.same(5, exec_lua('return #ls.get_snippets("prio")'))
+	end)
+
+	it("loads paths with invalid paths ditched (lua)", function()
+		exec_lua(string.format(
+			[[require("luasnip.loaders.from_lua").load({paths={"%s", "%s"}})]],
+			os.getenv("LUASNIP_SOURCE") .. "/tests/data/invalid-not-exists",
+			os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/lua-snippets/luasnippets" -- has 1 prio snippet
+		))
+
+		assert.are.same(1, exec_lua('return #ls.get_snippets("prio")'))
+	end)
+
 	it("respects {override,default}_priority", function()
 		-- just the filetype the test-snippets are added for.
 		exec("set ft=prio")
