@@ -1,6 +1,8 @@
 local Ast = require("luasnip.util.parser.neovim_ast")
 local types = Ast.node_type
 local util = require("luasnip.util.util")
+local Str = require("luasnip.util.str")
+local log = require("luasnip.util.log").new("parser")
 
 -- jsregexp: first try loading the version installed by luasnip, then global ones.
 local jsregexp_ok, jsregexp = pcall(require, "luasnip-jsregexp")
@@ -300,22 +302,17 @@ function M.add_dependents(ast)
 	end
 end
 
-local modifiers = setmetatable({
-	upcase = string.upper,
-	downcase = string.lower,
-	capitalize = function(string)
-		-- uppercase first character only.
-		return string:sub(1, 1):upper() .. string:sub(2, -1)
-	end,
-}, {
-	__index = function()
-		-- return string unmodified.
-		-- TODO: log an error/warning here.
-		return util.id
-	end,
-})
 local function apply_modifier(text, modifier)
-	return modifiers[modifier](text)
+	local mod_fn = Str.vscode_string_modifiers[modifier]
+	if mod_fn then
+		return mod_fn(text)
+	else
+		-- this can't really be reached, since only correct and available
+		-- modifiers are parsed successfully
+		-- (https://github.com/L3MON4D3/LuaSnip/blob/5fbebf6409f86bc4b7b699c2c80745e1ed190c16/lua/luasnip/util/parser/neovim_parser.lua#L239-L245).
+		log.warn("Tried to apply unknown modifier `%s` while parsing snippet, recovering by applying identity instead.", modifier)
+		return text
+	end
 end
 
 local function apply_transform_format(nodes, captures)

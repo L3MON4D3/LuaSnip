@@ -113,4 +113,29 @@ function M.sanitize(str)
 	return str:gsub("%\r", "")
 end
 
+-- string-operations implemented according to
+-- https://github.com/microsoft/vscode/blob/71c221c532996c9976405f62bb888283c0cf6545/src/vs/editor/contrib/snippet/browser/snippetParser.ts#L372-L415
+-- such that they can be used for snippet-transformations in vscode-snippets.
+local function capitalize(str)
+	-- uppercase first character.
+	return str:gsub("^.", string.upper)
+end
+local function pascalcase(str)
+	local pascalcased = ""
+	for match in str:gmatch("[a-zA-Z0-9]+") do
+		pascalcased = pascalcased .. capitalize(match)
+	end
+	return pascalcased
+end
+M.vscode_string_modifiers = {
+	upcase = string.upper,
+	downcase = string.lower,
+	capitalize = capitalize,
+	pascalcase = pascalcase,
+	camelcase = function(str)
+		-- same as pascalcase, but first character lowercased.
+		return pascalcase(str):gsub("^.", string.lower)
+	end
+}
+
 return M
