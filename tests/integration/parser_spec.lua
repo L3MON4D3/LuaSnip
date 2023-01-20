@@ -281,6 +281,39 @@ describe("Parser", function()
 		})
 	end)
 
+	local function check_case_transform(text, expected_map)
+		local supported_modifiers = {
+			upcase = true,
+			downcase = true,
+			capitalize = true,
+			camelcase = true,
+			pascalcase = true
+		}
+
+		for modifier, modified_expected in pairs(expected_map) do
+			if not supported_modifiers[modifier] then
+				error("unexpected key " .. modifier .. " in expected_map")
+			end
+
+			it("applies " .. modifier .. " correctly", function()
+				ls_helpers.setup_jsregexp()
+				ls_helpers.session_setup_luasnip()
+				local snip = ('"${1:%s} ${1/(.*)/${1:/%s}/}"'):format(text, modifier)
+
+				-- should be sufficient to test this.
+				ls_helpers.lsp_static_test(snip, { "test text Text " .. modified_expected })
+			end)
+		end
+	end
+
+	check_case_transform("test text Text", {
+		upcase = "TEST TEXT TEXT",
+		downcase = "test text text",
+		capitalize = "Test text Text",
+		camelcase = "testTextText",
+		pascalcase = "TestTextText"
+	})
+
 	it("modifies invalid $0 with choice.", function()
 		ls_helpers.session_setup_luasnip()
 		-- this can't work in luasnip.
