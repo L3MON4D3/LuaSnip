@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 January 18
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 January 20
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1755,7 +1755,7 @@ TRANSFORMATIONS                                      *luasnip-transformations*
 
 To apply Variable/Placeholder-transformations
 <https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms>,
-luasnip needs to apply ECMAScrip-regexes. This is implemented by relying on
+luasnip needs to apply ECMAScript regexes. This is implemented by relying on
 `jsregexp` <https://github.com/kmarius/jsregexp>. The easiest, but potentially
 error-prone way to install it is by calling `make install_jsregexp` in the
 repo-root. This process can be automated by `packer.nvim`:
