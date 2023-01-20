@@ -1823,7 +1823,7 @@ snippet-body is parsed differently.
 
 To apply
 [Variable/Placeholder-transformations](https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms),
-luasnip needs to apply ECMAScrip-regexes.  
+luasnip needs to apply ECMAScript regexes.
 This is implemented by relying on [`jsregexp`](https://github.com/kmarius/jsregexp).  
 The easiest, but potentially error-prone way to install it is by calling `make
 install_jsregexp` in the repo-root.
