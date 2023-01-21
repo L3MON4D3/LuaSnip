@@ -11,6 +11,19 @@ function M.setup_jsregexp()
 	)
 end
 
+function M.prevent_jsregexp()
+	-- append default-path.
+	exec_lua([[
+		local old_require = require
+		require = function(modulename)
+			if modulename == "jsregexp" or modulename == "luasnip-jsregexp" then
+				error("Disabled by `prevent_jsregexp`")
+			end
+			return old_require(modulename)
+		end
+	]])
+end
+
 function M.session_setup_luasnip()
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 	helpers.exec(

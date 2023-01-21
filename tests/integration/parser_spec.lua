@@ -227,6 +227,7 @@ describe("Parser", function()
 	end)
 
 	it("just inserts the variable if jsregexp is not available.", function()
+		ls_helpers.prevent_jsregexp()
 		ls_helpers.session_setup_luasnip()
 		local snip = '"a${TM_LINE_INDEX/(.*)/asdf $1 asdf/g}a"'
 
@@ -259,6 +260,7 @@ describe("Parser", function()
 		})
 	end)
 	it("copies tabstop if jsregexp is not available.", function()
+		ls_helpers.prevent_jsregexp()
 		ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
 
