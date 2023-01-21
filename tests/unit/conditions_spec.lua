@@ -242,14 +242,16 @@ describe("expand_conditions", function()
 		it("is at begin", function()
 			local function foo()
 				return helpers.exec_lua([[
-				local vim_bak = vim
-				-- vim.api.nvim_get_current_line
-				vim = {api = {nvim_get_current_line = function() return "hello world ending" end}}
-				local conds = require("luasnip.extras.expand_conditions")
-				local c = conds.line_end
-				local ret = not c("hello world ending") ~= true -- allow nil/object
-				vim = vim_bak
-				return ret
+					local gcl_bak = vim.api.nvim_get_current_line
+					vim.api.nvim_get_current_line = function() return "hello world ending" end
+
+					local conds = require("luasnip.extras.expand_conditions")
+					local c = conds.line_end
+					local ret = not c("hello world ending") ~= true -- allow nil/object
+
+					vim.api.nvim_get_current_line = gcl_bak
+
+					return ret
 				]])
 			end
 			assert.has_no.errors(foo)
@@ -258,14 +260,16 @@ describe("expand_conditions", function()
 		it("is NOT at begin", function()
 			local function foo()
 				return helpers.exec_lua([[
-				local vim_bak = vim
-				-- vim.api.nvim_get_current_line
-				vim = {api = {nvim_get_current_line = function() return "hello world ending" end}}
-				local conds = require("luasnip.extras.expand_conditions")
-				local c = conds.line_end
-				local ret = not c("hello world") ~= false -- allow nil/object
-				vim = vim_bak
-				return ret
+					local gcl_bak = vim.api.nvim_get_current_line
+					vim.api.nvim_get_current_line = function() return "hello world ending" end
+
+					local conds = require("luasnip.extras.expand_conditions")
+					local c = conds.line_end
+					local ret = not c("hello world") ~= false -- allow nil/object
+
+					vim.api.nvim_get_current_line = gcl_bak
+
+					return ret
 				]])
 			end
 			assert.has_no.errors(foo)

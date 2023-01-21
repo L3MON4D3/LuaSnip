@@ -579,6 +579,20 @@ local function indx_of(t, v)
 	return nil
 end
 
+local function lazy_table(lazy_t, lazy_defs)
+	return setmetatable(lazy_t, {
+		__index = function(t, k)
+			local v = lazy_defs[k]
+			if v then
+				local v_resolved = v()
+				rawset(t, k, v_resolved)
+				return v_resolved
+			end
+			return nil
+		end
+	})
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -624,4 +638,5 @@ return {
 	reverse_lookup = reverse_lookup,
 	nop = nop,
 	indx_of = indx_of,
+	lazy_table = lazy_table,
 }
