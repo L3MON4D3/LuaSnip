@@ -24,7 +24,10 @@ function M.prevent_jsregexp()
 	]])
 end
 
-function M.session_setup_luasnip()
+function M.session_setup_luasnip(opts)
+	opts = opts or {}
+	local no_snip_globals = opts.no_snip_globals ~= nil and opts.no_snip_globals or false
+
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 	helpers.exec(
 		string.format(
@@ -42,31 +45,35 @@ function M.session_setup_luasnip()
 	ls.setup({
 		store_selection_keys = "<Tab>"
 	})
-
-	s = ls.s
-	sn = ls.sn
-	t = ls.t
-	i = ls.i
-	f = ls.f
-	c = ls.c
-	d = ls.d
-	isn = require("luasnip.nodes.snippet").ISN
-	l = require'luasnip.extras'.lambda
-	dl = require'luasnip.extras'.dynamic_lambda
-	rep = require'luasnip.extras'.rep
-	r = ls.restore_node
-	p = require("luasnip.extras").partial
-	types = require("luasnip.util.types")
-	events = require("luasnip.util.events")
-	fmt = require("luasnip.extras.fmt").fmt
-	fmta = require("luasnip.extras.fmt").fmta
-	parse = ls.parser.parse_snippet
-	n = require("luasnip.extras").nonempty
-	m = require("luasnip.extras").match
-	ai = require("luasnip.nodes.absolute_indexer")
-	sp = require("luasnip.nodes.snippetProxy")
-	pf = require("luasnip.extras.postfix").postfix
 	]])
+
+	if not no_snip_globals then
+		helpers.exec_lua([[
+			s = ls.s
+			sn = ls.sn
+			t = ls.t
+			i = ls.i
+			f = ls.f
+			c = ls.c
+			d = ls.d
+			isn = require("luasnip.nodes.snippet").ISN
+			l = require'luasnip.extras'.lambda
+			dl = require'luasnip.extras'.dynamic_lambda
+			rep = require'luasnip.extras'.rep
+			r = ls.restore_node
+			p = require("luasnip.extras").partial
+			types = require("luasnip.util.types")
+			events = require("luasnip.util.events")
+			fmt = require("luasnip.extras.fmt").fmt
+			fmta = require("luasnip.extras.fmt").fmta
+			parse = ls.parser.parse_snippet
+			n = require("luasnip.extras").nonempty
+			m = require("luasnip.extras").match
+			ai = require("luasnip.nodes.absolute_indexer")
+			sp = require("luasnip.nodes.snippetProxy")
+			pf = require("luasnip.extras.postfix").postfix
+		]])
+	end
 end
 
 function M.static_docstring_test(snip_str, static, docstring)

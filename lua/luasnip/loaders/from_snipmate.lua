@@ -1,10 +1,7 @@
 local ls = require("luasnip")
 local cache = require("luasnip.loaders._caches").snipmate
-local util = require("luasnip.util.util")
-local str_util = require("luasnip.util.str")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
-local session = require("luasnip.session")
 local sp = require("luasnip.nodes.snippetProxy")
 local snipmate_parse_fn = require("luasnip.util.parser").parse_snipmate
 

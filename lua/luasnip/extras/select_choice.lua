@@ -1,5 +1,4 @@
 local session = require("luasnip.session")
-local util = require("luasnip.util.util")
 local ls = require("luasnip")
 
 local function set_choice_callback(_, indx)

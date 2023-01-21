@@ -104,7 +104,7 @@ describe("loaders:", function()
 
 	before_each(function()
 		helpers.clear()
-		ls_helpers.session_setup_luasnip()
+		ls_helpers.session_setup_luasnip({no_snip_globals = true})
 
 		screen = Screen.new(50, 5)
 		screen:attach()

@@ -1,6 +1,5 @@
 local session = require("luasnip.session")
 local util = require("luasnip.util.util")
-local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
 local ext_util = require("luasnip.util.ext_opts")
 local events = require("luasnip.util.events")
