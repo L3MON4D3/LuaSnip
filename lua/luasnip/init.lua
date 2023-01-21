@@ -639,7 +639,12 @@ local function refresh_notify(ft)
 end
 
 local function setup_snip_env()
-	setfenv(2, vim.tbl_extend("force", _G, session.config.snip_env))
+	local combined_table = vim.tbl_extend("force", _G, session.config.snip_env)
+	-- TODO: if desired, take into account _G's __index before looking into
+	-- snip_env's __index.
+	setmetatable(combined_table, getmetatable(session.config.snip_env))
+
+	setfenv(2, combined_table)
 end
 local function get_snip_env()
 	return session.config.snip_env

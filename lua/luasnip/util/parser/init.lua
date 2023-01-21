@@ -1,5 +1,4 @@
 local sNode = require("luasnip.nodes.snippet")
-local ast_utils = require("luasnip.util.parser.ast_utils")
 local ast_parser = require("luasnip.util.parser.ast_parser")
 local parse = require("luasnip.util.parser.neovim_parser").parse
 local Ast = require("luasnip.util.parser.neovim_ast")

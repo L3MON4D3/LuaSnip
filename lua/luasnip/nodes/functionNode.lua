@@ -3,7 +3,6 @@ local FunctionNode = Node:new()
 local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
-local events = require("luasnip.util.events")
 local tNode = require("luasnip.nodes.textNode").textNode
 local extend_decorator = require("luasnip.util.extend_decorator")
 

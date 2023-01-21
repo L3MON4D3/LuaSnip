@@ -1,7 +1,6 @@
 local ls = require("luasnip")
 local cache = require("luasnip.loaders._caches").vscode
 local util = require("luasnip.util.util")
-local str_util = require("luasnip.util.str")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local sp = require("luasnip.nodes.snippetProxy")
