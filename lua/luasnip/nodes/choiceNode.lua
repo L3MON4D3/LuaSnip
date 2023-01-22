@@ -132,7 +132,12 @@ function ChoiceNode:expand_tabs(tabwidth, indentstringlen)
 	end
 end
 
-function ChoiceNode:input_enter()
+function ChoiceNode:input_enter(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = true
+		return
+	end
+
 	self.mark:update_opts(self.ext_opts.active)
 	self.parent:enter_node(self.indx)
 
@@ -144,7 +149,12 @@ function ChoiceNode:input_enter()
 	self:event(events.enter)
 end
 
-function ChoiceNode:input_leave()
+function ChoiceNode:input_leave(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = false
+		return
+	end
+
 	self:event(events.leave)
 
 	self.mark:update_opts(self:get_passive_ext_opts())
@@ -169,17 +179,21 @@ function ChoiceNode:get_docstring()
 	)
 end
 
-function ChoiceNode:jump_into(dir, no_move)
-	if self.active then
-		self:input_leave()
+function ChoiceNode:jump_into(dir, no_move, dry_run)
+	self:init_dry_run_active(dry_run)
+
+	if self:is_active(dry_run) then
+		self:input_leave(no_move, dry_run)
+
 		if dir == 1 then
-			return self.next:jump_into(dir, no_move)
+			return self.next:jump_into(dir, no_move, dry_run)
 		else
-			return self.prev:jump_into(dir, no_move)
+			return self.prev:jump_into(dir, no_move, dry_run)
 		end
 	else
-		self:input_enter()
-		return self.active_choice:jump_into(dir, no_move)
+		self:input_enter(no_move, dry_run)
+
+		return self.active_choice:jump_into(dir, no_move, dry_run)
 	end
 end
 

@@ -3036,6 +3036,11 @@ These are the settings you can provide to `luasnip.setup()`:
 
 - `get_snip_env()`: Returns `snip_env`.
 
+- `jump_destination(direction)`: Returns the node the next jump in `direction`
+  (either -1 or 1, for backwards, forwards respectively) leads to, or `nil` if
+  the destination could not be determined (most likely because there is no node
+  that can be jumped to in the given direction, or there is no active node).
+
 Not covered in this section are the various node-constructors exposed by
 the module, their usage is shown either previously in this file or in
 `Examples/snippets.lua` (in the repo).

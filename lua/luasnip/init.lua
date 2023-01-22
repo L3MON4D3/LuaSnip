@@ -83,12 +83,12 @@ local function available(snip_info)
 	return res
 end
 
-local function safe_jump(node, dir, no_move)
+local function safe_jump(node, dir, no_move, dry_run)
 	if not node then
 		return nil
 	end
 
-	local ok, res = pcall(node.jump_from, node, dir, no_move)
+	local ok, res = pcall(node.jump_from, node, dir, no_move, dry_run)
 	if ok then
 		return res
 	else
@@ -102,13 +102,15 @@ local function safe_jump(node, dir, no_move)
 			return safe_jump(
 				snip.next.next or snip.prev.prev,
 				snip.next.next and 1 or -1,
-				no_move
+				no_move,
+				dry_run
 			)
 		else
 			return safe_jump(
 				snip.prev.prev or snip.next.next,
 				snip.prev.prev and -1 or 1,
-				no_move
+				no_move,
+				dry_run
 			)
 		end
 	end
@@ -122,6 +124,14 @@ local function jump(dir)
 	else
 		return false
 	end
+end
+local function jump_destination(dir)
+	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
+	if current then
+		-- dry run of jump (+no_move ofc.), only retrieves destination-node.
+		return safe_jump(current, dir, true, {active = {}})
+	end
+	return nil
 end
 
 local function jumpable(dir)
@@ -756,6 +766,7 @@ ls = util.lazy_table({
 	get_snip_env = get_snip_env,
 	clean_invalidated = clean_invalidated,
 	get_snippet_filetypes = util.get_snippet_filetypes,
+	jump_destination = jump_destination,
 	session = session,
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,

@@ -103,6 +103,9 @@ describe("RestoreNode", function()
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 
+		-- next jump to "aaaa"-insertNode.
+		assert.are.same(exec_lua([[return ls.jump_destination(1).absolute_insert_position]]), {2,0,1,0,1})
+
 		screen:expect({
 			grid = [[
 			^a -> a aaaa                                       |
@@ -151,6 +154,7 @@ describe("RestoreNode", function()
 			{ "aca" }
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
+		assert.are.same(exec_lua([[return ls.jump_destination(1).absolute_insert_position]]), {1,1,2,0,1,1})
 
 		screen:expect({
 			grid = [[
@@ -309,6 +313,9 @@ describe("RestoreNode", function()
 			{ "${1:${1:${1:aaa}${2:${1:aaa}}}}$0" }
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
+
+		assert.are.same(exec_lua([[return ls.jump_destination(1).absolute_insert_position]]), {1,1,0,2,0,1})
+
 		screen:expect({
 			grid = [[
 			^a{3:aa}aaa                                            |

@@ -75,6 +75,8 @@ describe("ChoiceNode", function()
 			{ "a a" }
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
+		-- next jump leads to t"a".
+		assert.are.same(exec_lua([[return ls.jump_destination(1).absolute_insert_position]]), {1,1,2,1})
 
 		screen:expect({
 			grid = [[
@@ -94,6 +96,9 @@ describe("ChoiceNode", function()
 			{2:-- INSERT --}                                      |]],
 		})
 
+		-- back-jump leads to 1-node.
+		assert.are.same(exec_lua([[return ls.jump_destination(-1).absolute_insert_position]]), {1,1,1})
+
 		-- change choice on outer choiceNode.
 		exec_lua("ls.jump(-1)")
 		exec_lua("ls.change_choice(1)")
@@ -105,6 +110,7 @@ describe("ChoiceNode", function()
 		})
 
 		exec_lua("ls.change_choice(1)")
+		assert.are.same(exec_lua([[return ls.jump_destination(1).absolute_insert_position]]), {1,1,2,2})
 		screen:expect({
 			grid = [[
 			^c b                                               |
@@ -158,6 +164,10 @@ describe("ChoiceNode", function()
 			{ "aa" }
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
+
+		-- next jump leads inside dynamicNode.
+		assert.are.same(exec_lua([[return ls.jump_destination(1).absolute_insert_position]]), {2,1,0,1})
+
 		screen:expect({
 			grid = [[
 			^aa                                                |

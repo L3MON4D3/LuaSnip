@@ -15,7 +15,11 @@ local function T(static_text, opts)
 end
 extend_decorator.register(T, { arg_indx = 2 })
 
-function TextNode:input_enter(no_move)
+function TextNode:input_enter(no_move, dry_run)
+	if dry_run then
+		return
+	end
+
 	self.mark:update_opts(self.ext_opts.active)
 	self.visited = true
 
