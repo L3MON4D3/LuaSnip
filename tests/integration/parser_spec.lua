@@ -287,7 +287,7 @@ describe("Parser", function()
 			downcase = true,
 			capitalize = true,
 			camelcase = true,
-			pascalcase = true
+			pascalcase = true,
 		}
 
 		for modifier, modified_expected in pairs(expected_map) do
@@ -298,10 +298,16 @@ describe("Parser", function()
 			it("applies " .. modifier .. " correctly", function()
 				ls_helpers.setup_jsregexp()
 				ls_helpers.session_setup_luasnip()
-				local snip = ('"${1:%s} ${1/(.*)/${1:/%s}/}"'):format(text, modifier)
+				local snip = ('"${1:%s} ${1/(.*)/${1:/%s}/}"'):format(
+					text,
+					modifier
+				)
 
 				-- should be sufficient to test this.
-				ls_helpers.lsp_static_test(snip, { "test text Text " .. modified_expected })
+				ls_helpers.lsp_static_test(
+					snip,
+					{ "test text Text " .. modified_expected }
+				)
 			end)
 		end
 	end
@@ -311,7 +317,7 @@ describe("Parser", function()
 		downcase = "test text text",
 		capitalize = "Test text Text",
 		camelcase = "testTextText",
-		pascalcase = "TestTextText"
+		pascalcase = "TestTextText",
 	})
 
 	it("modifies invalid $0 with choice.", function()

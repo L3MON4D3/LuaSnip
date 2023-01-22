@@ -310,7 +310,10 @@ local function apply_modifier(text, modifier)
 		-- this can't really be reached, since only correct and available
 		-- modifiers are parsed successfully
 		-- (https://github.com/L3MON4D3/LuaSnip/blob/5fbebf6409f86bc4b7b699c2c80745e1ed190c16/lua/luasnip/util/parser/neovim_parser.lua#L239-L245).
-		log.warn("Tried to apply unknown modifier `%s` while parsing snippet, recovering by applying identity instead.", modifier)
+		log.warn(
+			"Tried to apply unknown modifier `%s` while parsing snippet, recovering by applying identity instead.",
+			modifier
+		)
 		return text
 	end
 end

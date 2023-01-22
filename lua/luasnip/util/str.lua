@@ -135,7 +135,7 @@ M.vscode_string_modifiers = {
 	camelcase = function(str)
 		-- same as pascalcase, but first character lowercased.
 		return pascalcase(str):gsub("^.", string.lower)
-	end
+	end,
 }
 
 return M
