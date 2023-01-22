@@ -128,6 +128,16 @@ all nodes.
 
 - `get_jump_index()`: this method returns the jump-index of a node. If a node 
   doesn't have a jump-index, this method returns `nil` instead.
+- `get_buf_position(opts) -> {from_position, to_position}`:
+  Determines the range of the buffer occupied by this node. `from`- and
+  `to_position` are `row,column`-tuples, `0,0`-indexed (first line is 0, first
+  column is 0) and end-inclusive (see `:h api-indexing`, this is extmarks
+  indexing).
+  - `opts`: `table|nil`, options, valid keys are:
+    - `raw`: `bool`, default `true`. This can be used to switch between
+	  byte-columns (`raw=true`) and visual columns (`raw=false`). This makes a
+	  difference if the line contains characters represented by multiple bytes
+	  in UTF, for example `ÿ`.
 
 # SNIPPETS
 

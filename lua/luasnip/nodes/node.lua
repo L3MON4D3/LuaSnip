@@ -420,6 +420,17 @@ function Node:is_active(dry_run)
 	return (not dry_run and self.active) or (dry_run and dry_run.active[self])
 end
 
+function Node:get_buf_position(opts)
+	opts = opts or {}
+	local raw = opts.raw ~= nil and opts.raw or true
+
+	if raw then
+		return self.mark:pos_begin_end_raw()
+	else
+		return self.mark:pos_begin_end()
+	end
+end
+
 return {
 	Node = Node,
 }
