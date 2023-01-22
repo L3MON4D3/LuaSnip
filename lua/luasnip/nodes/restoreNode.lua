@@ -39,7 +39,12 @@ function RestoreNode:exit()
 	self.active = false
 end
 
-function RestoreNode:input_enter()
+function RestoreNode:input_enter(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = true
+		return
+	end
+
 	self.active = true
 	self.visited = true
 	self.mark:update_opts(self.ext_opts.active)
@@ -47,7 +52,12 @@ function RestoreNode:input_enter()
 	self:event(events.enter)
 end
 
-function RestoreNode:input_leave()
+function RestoreNode:input_leave(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = false
+		return
+	end
+
 	self:event(events.leave)
 
 	self:update_dependents()
@@ -126,17 +136,21 @@ function RestoreNode:put_initial(pos)
 end
 
 -- the same as DynamicNode.
-function RestoreNode:jump_into(dir, no_move)
-	if self.active then
-		self:input_leave()
+function RestoreNode:jump_into(dir, no_move, dry_run)
+	self:init_dry_run_active(dry_run)
+
+	if self:is_active(dry_run) then
+		self:input_leave(no_move, dry_run)
+
 		if dir == 1 then
-			return self.next:jump_into(dir, no_move)
+			return self.next:jump_into(dir, no_move, dry_run)
 		else
-			return self.prev:jump_into(dir, no_move)
+			return self.prev:jump_into(dir, no_move, dry_run)
 		end
 	else
-		self:input_enter()
-		return self.snip:jump_into(dir, no_move)
+		self:input_enter(no_move, dry_run)
+
+		return self.snip:jump_into(dir, no_move, dry_run)
 	end
 end
 

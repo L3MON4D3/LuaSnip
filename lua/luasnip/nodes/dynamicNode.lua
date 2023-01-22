@@ -24,7 +24,12 @@ local function D(pos, fn, args, opts)
 end
 extend_decorator.register(D, { arg_indx = 4 })
 
-function DynamicNode:input_enter()
+function DynamicNode:input_enter(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = true
+		return
+	end
+
 	self.visited = true
 	self.active = true
 	self.mark:update_opts(self.ext_opts.active)
@@ -32,7 +37,11 @@ function DynamicNode:input_enter()
 	self:event(events.enter)
 end
 
-function DynamicNode:input_leave()
+function DynamicNode:input_leave(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = false
+		return
+	end
 	self:event(events.leave)
 
 	self:update_dependents()
@@ -73,26 +82,31 @@ function DynamicNode:indent(_) end
 
 function DynamicNode:expand_tabs(_) end
 
-function DynamicNode:jump_into(dir, no_move)
-	if self.active then
-		self:input_leave()
+function DynamicNode:jump_into(dir, no_move, dry_run)
+	-- init dry_run-state for this node.
+	self:init_dry_run_active(dry_run)
+
+	if self:is_active(dry_run) then
+		self:input_leave(no_move, dry_run)
+
 		if dir == 1 then
-			return self.next:jump_into(dir, no_move)
+			return self.next:jump_into(dir, no_move, dry_run)
 		else
-			return self.prev:jump_into(dir, no_move)
+			return self.prev:jump_into(dir, no_move, dry_run)
 		end
 	else
-		self:input_enter()
+		self:input_enter(no_move, dry_run)
+
 		if self.snip then
-			return self.snip:jump_into(dir, no_move)
+			return self.snip:jump_into(dir, no_move, dry_run)
 		else
 			-- this will immediately enter and leave, but IMO that's expected
 			-- behaviour.
-			self:input_leave()
+			self:input_leave(no_move, dry_run)
 			if dir == 1 then
-				return self.next:jump_into(dir, no_move)
+				return self.next:jump_into(dir, no_move, dry_run)
 			else
-				return self.prev:jump_into(dir, no_move)
+				return self.prev:jump_into(dir, no_move, dry_run)
 			end
 		end
 	end

@@ -866,7 +866,12 @@ function Snippet:make_args_absolute()
 	end
 end
 
-function Snippet:input_enter()
+function Snippet:input_enter(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = true
+		return
+	end
+
 	self.visited = true
 	self.active = true
 
@@ -879,7 +884,12 @@ function Snippet:input_enter()
 	self:event(events.enter)
 end
 
-function Snippet:input_leave()
+function Snippet:input_leave(_, dry_run)
+	if dry_run then
+		dry_run.active[self] = false
+		return
+	end
+
 	self:event(events.leave)
 	self:update_dependents()
 
@@ -899,20 +909,25 @@ function Snippet:set_ext_opts(opt_name)
 	end
 end
 
-function Snippet:jump_into(dir, no_move)
-	if self.active then
-		self:input_leave()
+function Snippet:jump_into(dir, no_move, dry_run)
+	self:init_dry_run_active(dry_run)
+
+	-- if dry_run, ignore self.active
+	if self:is_active(dry_run) then
+		self:input_leave(no_move, dry_run)
+
 		if dir == 1 then
-			return self.next:jump_into(dir, no_move)
+			return self.next:jump_into(dir, no_move, dry_run)
 		else
-			return self.prev:jump_into(dir, no_move)
+			return self.prev:jump_into(dir, no_move, dry_run)
 		end
 	else
-		self:input_enter()
+		self:input_enter(no_move, dry_run)
+
 		if dir == 1 then
-			return self.inner_first:jump_into(dir, no_move)
+			return self.inner_first:jump_into(dir, no_move, dry_run)
 		else
-			return self.inner_last:jump_into(dir, no_move)
+			return self.inner_last:jump_into(dir, no_move, dry_run)
 		end
 	end
 end

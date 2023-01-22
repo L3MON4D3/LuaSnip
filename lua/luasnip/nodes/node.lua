@@ -64,29 +64,50 @@ function Node:put_initial(pos)
 	self.visible = true
 end
 
-function Node:input_enter(_)
+function Node:input_enter(_, _)
 	self.visited = true
 	self.mark:update_opts(self.ext_opts.active)
 
 	self:event(events.enter)
 end
 
-function Node:jump_into(_, no_move)
-	self:input_enter(no_move)
+-- dry_run: if not nil, it has to be a table with the key `active` also a table.
+-- dry_run.active[node] stores whether the node is "active" in the dry run (we
+-- can't change the `active`-state in the actual node, so changes to the
+-- active-state are stored in the `dry_run`-table, which is passed to all nodes
+-- that participate in the jump)
+-- The changes to `active` have to be stored. Otherwise, `dry_run` can lead to
+-- endless loops in cases like:
+-- ```lua
+-- s({ trig = 'n' } , { i(1, "1"), sn(2, {t"asdf"}), i(3, "3") })
+-- ```
+--
+-- Here, jumping from 1 will first set active on the snippetNode, then, since
+-- there are no interactive nodes inside it, and since active is set, we will
+-- jump to the `i(3)`.
+-- If active is not set during the dry_run, we will just keep jumping into the
+-- inner textNode.
+--
+-- A similar problem occurs in nested expansions (insertNode.inner_active
+-- is not set).
+function Node:jump_into(_, no_move, dry_run)
+	if not dry_run then
+		self:input_enter(no_move, dry_run)
+	end
 	return self
 end
 
-function Node:jump_from(dir, no_move)
-	self:input_leave()
+function Node:jump_from(dir, no_move, dry_run)
+	self:input_leave(no_move, dry_run)
 	if dir == 1 then
 		if self.next then
-			return self.next:jump_into(dir, no_move)
+			return self.next:jump_into(dir, no_move, dry_run)
 		else
 			return nil
 		end
 	else
 		if self.prev then
-			return self.prev:jump_into(dir, no_move)
+			return self.prev:jump_into(dir, no_move, dry_run)
 		else
 			return nil
 		end
@@ -147,7 +168,10 @@ function Node:get_passive_ext_opts()
 	end
 end
 
-function Node:input_leave()
+function Node:input_leave(_, dry_run)
+	if dry_run then
+		return
+	end
 	self:event(events.leave)
 
 	self.mark:update_opts(self:get_passive_ext_opts())
@@ -381,6 +405,19 @@ end
 function Node:is_interactive()
 	-- safe default.
 	return true
+end
+
+-- initialize active-setting in dry_run-table for `self`.
+function Node:init_dry_run_active(dry_run)
+	if dry_run and dry_run.active[self] == nil then
+		dry_run.active[self] = self.active
+	end
+end
+-- determine whether this node is currently active.
+-- This is its own function (and not just a flat table-check) since we have to
+-- check the data in the dry_run-table or the node, depending on `dry_run`.
+function Node:is_active(dry_run)
+	return (not dry_run and self.active) or (dry_run and dry_run.active[self])
 end
 
 return {
