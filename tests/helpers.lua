@@ -26,7 +26,8 @@ end
 
 function M.session_setup_luasnip(opts)
 	opts = opts or {}
-	local no_snip_globals = opts.no_snip_globals ~= nil and opts.no_snip_globals or false
+	local no_snip_globals = opts.no_snip_globals ~= nil and opts.no_snip_globals
+		or false
 
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 	helpers.exec(
