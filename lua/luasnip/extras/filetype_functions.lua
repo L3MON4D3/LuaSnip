@@ -7,7 +7,16 @@ local function from_cursor_pos()
 	if has_parser then
 		local cursor = util.get_cursor_0ind()
 		-- assumption: languagetree uses 0-indexed byte-ranges.
-		return { parser:language_for_range({ cursor[1], cursor[2], cursor[1], cursor[2] }):lang() }
+		return {
+			parser
+				:language_for_range({
+					cursor[1],
+					cursor[2],
+					cursor[1],
+					cursor[2],
+				})
+				:lang(),
+		}
 	else
 		return {}
 	end

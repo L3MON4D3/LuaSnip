@@ -45,14 +45,16 @@ local function load_files(ft, files, add_opts)
 		local file_added_autosnippets = {}
 
 		-- setup snip_env in func
-		local func_env = vim.tbl_extend("force",
+		local func_env = vim.tbl_extend(
+			"force",
 			-- extend the current(expected!) globals with the snip_env, and the two tables.
 			_G,
 			ls.get_snip_env(),
 			{
 				ls_file_snippets = file_added_snippets,
 				ls_file_autosnippets = file_added_autosnippets,
-			})
+			}
+		)
 		-- defaults snip-env requires metatable for resolving
 		-- lazily-initialized keys. If we have to combine this with an eventual
 		-- metatable of _G, look into unifying ls.setup_snip_env and this.

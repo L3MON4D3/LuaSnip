@@ -589,7 +589,7 @@ local function lazy_table(lazy_t, lazy_defs)
 				return v_resolved
 			end
 			return nil
-		end
+		end,
 	})
 end
 
