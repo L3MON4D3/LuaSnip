@@ -29,7 +29,6 @@ jobs:
           libtree-sitter-dev \
           libunibilium-dev \
           libuv1-dev \
-          libvterm-dev \
           locales \
           lua-busted \
           lua-check \
