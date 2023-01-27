@@ -24,22 +24,40 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 
 # Requirements
 Neovim >= 0.5 (extmarks)
-`jsregexp` for lsp-snippet-transformations (see [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) for some tips on installing it)
+`jsregexp` for lsp-snippet-transformations (see [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) for some tips on installing it).
 
 # Setup
 ## Install 
-* With your preferred plugin manager i.e. [vim-plug](https://github.com/junegunn/vim-plug) or [packer](https://github.com/wbthomason/packer.nvim)
+* With your preferred plugin manager i.e. [vim-plug](https://github.com/junegunn/vim-plug), [Packer](https://github.com/wbthomason/packer.nvim) or [lazy](https://github.com/folke/lazy.nvim)  
+  **Packer**:
+  ```lua
+  use({
+  	"L3MON4D3/LuaSnip",
+  	-- follow latest release.
+  	tag = "v<CurrentMajor>.*",
+  	-- install jsregexp (optional!:).
+  	run = "make install_jsregexp"
+  })
+  ```
+  **lazy**:
+  ```lua
+  {
+  	"L3MON4D3/LuaSnip",
+  	-- follow latest release.
+  	version = "<CurrentMajor>.*",
+  	-- install jsregexp (optional!).
+  	build = "make install_jsregexp"
+  }
+  ```
+  **vim-plug**:
+  ```vim
+  " follow latest release and install jsregexp.
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*', 'do': 'make install_jsregexp'}
+  ```
+  Check the `Releases`-section to the right for the latest major version.
+
 * LuaSnip uses [Semantic Versioning](https://semver.org) (with some leeway, big patches might end up as a Minor version)!  
   Releases will be tagged as `vMajor.Minor.Patch`, we recommend following the latest Major release.  
-
-  Packer:
-  ```lua
-  use({"L3MON4D3/LuaSnip", tag = "v<CurrentMajor>.*"})
-  ```
-  vim-plug:
-  ```vim
-  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*'}
-  ```
   Consider watching the repos releases so you're notified when a new version becomes available.
 
 ## Keymaps
