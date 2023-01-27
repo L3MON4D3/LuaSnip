@@ -738,20 +738,24 @@ describe("Parser", function()
 		})
 	end)
 
-	it("correctly transforms if the match does not include the first character.", function()
-		ls_helpers.setup_jsregexp()
-		ls_helpers.session_setup_luasnip()
-		local snip = "${1:asdf.asdf} ${1/[\\.]/-/g}"
+	it(
+		"correctly transforms if the match does not include the first character.",
+		function()
+			ls_helpers.setup_jsregexp()
+			ls_helpers.session_setup_luasnip()
+			local snip = "${1:asdf.asdf} ${1/[\\.]/-/g}"
 
-		-- expand snippet.
-		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+			-- expand snippet.
+			exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
-		screen:expect{
-			grid=[[
+			screen:expect({
+				grid = [[
 			^a{3:sdf.asdf} asdf-asdf                               |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
-	end)
+			{2:-- SELECT --}                                      |]],
+			})
+		end
+	)
 
 	it("handles default correctly inside placeholder", function()
 		ls_helpers.session_setup_luasnip()
