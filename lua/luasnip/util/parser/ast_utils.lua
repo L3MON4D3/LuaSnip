@@ -359,8 +359,8 @@ function M.apply_transform(transform)
 			local transformed = ""
 			-- index one past the end of previous match.
 			-- This is used to append unmatched characters to `transformed`, so
-			-- it's initialized with 1.
-			local prev_match_end = 1
+			-- it's initialized such that the first append is from 1.
+			local prev_match_end = 0
 			for _, match in ipairs(matches) do
 				-- begin_ind and end_ind are inclusive.
 				transformed = transformed
