@@ -1210,6 +1210,11 @@ function Snippet:invalidate()
 		+ 1
 end
 
+-- used in add_snippets to get variants of snippet.
+function Snippet:retrieve_all()
+	return {self}
+end
+
 return {
 	Snippet = Snippet,
 	S = S,

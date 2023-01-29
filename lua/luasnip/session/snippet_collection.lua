@@ -229,8 +229,10 @@ end
 
 local function invalidate_snippets(snippets_by_ft)
 	for _, ft_snippets in pairs(snippets_by_ft) do
-		for _, snip in ipairs(ft_snippets) do
-			snip:invalidate()
+		for _, addable in ipairs(ft_snippets) do
+			for _, snip in ipairs(addable:retrieve_all()) do
+				snip:invalidate()
+			end
 		end
 	end
 	M.clean_invalidated({ inv_limit = 100 })
@@ -241,28 +243,30 @@ local current_id = 0
 -- initialized with default values.
 function M.add_snippets(snippets, opts)
 	for ft, ft_snippets in pairs(snippets) do
-		for _, snip in ipairs(ft_snippets) do
-			snip.priority = opts.override_priority
-				or (snip.priority and snip.priority)
-				or opts.default_priority
-				or 1000
+		for _, addable in ipairs(ft_snippets) do
+			for _, snip in ipairs(addable:retrieve_all()) do
+				snip.priority = opts.override_priority
+					or (snip.priority and snip.priority)
+					or opts.default_priority
+					or 1000
 
-			-- if snippetType undefined by snippet, take default value from opts
-			snip.snippetType = snip.snippetType ~= nil and snip.snippetType
-				or opts.type
-			assert(
-				snip.snippetType == "autosnippets"
-					or snip.snippetType == "snippets",
-				"snipptType must be either 'autosnippets' or 'snippets'"
-			)
+				-- if snippetType undefined by snippet, take default value from opts
+				snip.snippetType = snip.snippetType ~= nil and snip.snippetType
+					or opts.type
+				assert(
+					snip.snippetType == "autosnippets"
+						or snip.snippetType == "snippets",
+					"snipptType must be either 'autosnippets' or 'snippets'"
+				)
 
-			snip.id = current_id
-			current_id = current_id + 1
+				snip.id = current_id
+				current_id = current_id + 1
 
-			-- do the insertion
-			table.insert(by_prio[snip.snippetType][snip.priority][ft], snip)
-			table.insert(by_ft[snip.snippetType][ft], snip)
-			by_id[snip.id] = snip
+				-- do the insertion
+				table.insert(by_prio[snip.snippetType][snip.priority][ft], snip)
+				table.insert(by_ft[snip.snippetType][ft], snip)
+				by_id[snip.id] = snip
+			end
 		end
 	end
 
