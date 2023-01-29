@@ -241,13 +241,6 @@ local current_id = 0
 -- initialized with default values.
 function M.add_snippets(snippets, opts)
 	for ft, ft_snippets in pairs(snippets) do
-		local ft_table = by_ft[opts.type][ft]
-
-		if not ft_table then
-			ft_table = {}
-			by_ft[opts.type][ft] = ft_table
-		end
-
 		for _, snip in ipairs(ft_snippets) do
 			snip.priority = opts.override_priority
 				or (snip.priority and snip.priority)
