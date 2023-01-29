@@ -125,8 +125,6 @@ end
 local function init_snippetNode_opts(opts)
 	local in_node = {}
 
-	opts = opts or {}
-
 	in_node.child_ext_opts =
 		ext_util.child_complete(vim.deepcopy(opts.child_ext_opts or {}))
 
@@ -146,12 +144,6 @@ end
 local function init_snippet_opts(opts)
 	local in_node = {}
 
-	opts = opts or {}
-
-	in_node.condition = opts.condition or true_func
-
-	in_node.show_condition = opts.show_condition or true_func
-
 	-- return sn(t("")) for so-far-undefined keys.
 	in_node.stored = setmetatable(opts.stored or {}, stored_mt)
 
@@ -168,7 +160,8 @@ local function init_snippet_opts(opts)
 	return vim.tbl_extend("error", in_node, init_snippetNode_opts(opts))
 end
 
-local function init_snippet_context(context)
+-- context, opts non-nil tables.
+local function init_snippet_context(context, opts)
 	if type(context) == "string" then
 		context = { trig = context }
 	end
@@ -223,6 +216,9 @@ local function init_snippet_context(context)
 		context.regTrig = false
 	end
 
+	context.condition = context.condition or opts.condition or true_func
+	context.show_condition = context.show_condition or opts.show_condition or true_func
+
 	return context
 end
 
@@ -269,7 +265,9 @@ local function _S(snip, nodes, opts)
 end
 
 local function S(context, nodes, opts)
-	local snip = init_snippet_context(context)
+	opts = opts or {}
+
+	local snip = init_snippet_context(context, opts)
 	snip = vim.tbl_extend("error", snip, init_snippet_opts(opts))
 
 	return _S(snip, nodes, opts)
@@ -281,6 +279,8 @@ extend_decorator.register(
 )
 
 function SN(pos, nodes, opts)
+	opts = opts or {}
+
 	local snip = Snippet:new(
 		vim.tbl_extend("error", {
 			pos = pos,

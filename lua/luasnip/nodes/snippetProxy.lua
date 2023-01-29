@@ -54,16 +54,19 @@ local license_to_nil = { priority = true, snippetType = true }
 -- the snippet. This is useful, since snipmate-snippets are parsed with a
 -- function than regular lsp-snippets.
 local function new(context, snippet, opts)
+	opts = opts or {}
+
 	-- default to regular lsp-parse-function.
 	local parse_fn = lsp_parse_fn
-	if opts and opts.parse_fn then
+
+	if opts.parse_fn then
 		parse_fn = opts.parse_fn
 	end
 	-- "error": there should not be duplicate keys, don't silently overwrite/keep.
 	local sp = vim.tbl_extend(
 		"error",
 		{},
-		snip_mod.init_snippet_context(context),
+		snip_mod.init_snippet_context(context, opts),
 		snip_mod.init_snippet_opts(opts),
 		node_util.init_node_opts(opts)
 	)

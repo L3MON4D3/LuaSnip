@@ -183,12 +183,6 @@ s({trig="trigger"}, {})
     `ls.config.setup({ enable_autosnippets = true })` if you want to use this
     feature). If unset it depends on how the snippet is added of which type the
     snippet will be.
-
-- `nodes`: A single node or a list of nodes. The nodes that make up the
-  snippet.
-
-- `opts`: A table with the following valid keys:
-
   - `condition`: `fn(line_to_cursor, matched_trigger, captures) -> bool`, where
       - `line_to_cursor`: `string`, the line up to the cursor.
       - `matched_trigger`: `string`, the fully matched trigger (can be retrieved
@@ -196,10 +190,6 @@ s({trig="trigger"}, {})
       - `captures`: if the trigger is pattern, this list contains the
       	capture-groups. Again, could be computed from `line_to_cursor`, but we
       	already did so.
-
-	The snippet will be expanded only if this function returns true (default is
-	a function that just returns `true`).  
-    The function is called before the text on the line is modified in any way.
   - `show_condition`: `f(line_to_cursor) -> bool`.  
     - `line_to_cursor`: `string`, the line up to the cursor.  
 
@@ -210,6 +200,11 @@ s({trig="trigger"}, {})
     LuaSnip on snippet expansion (and thus has access to the matched trigger and
 	captures), while `show_condition` is (should be) evaluated by the
 	completion engines when scanning for available snippet candidates.
+
+- `nodes`: A single node or a list of nodes. The nodes that make up the
+  snippet.
+
+- `opts`: A table with the following valid keys:
   - `callbacks`: Contains functions that are called upon entering/leaving a node
     of this snippet.  
 	For example: to print text upon entering the _second_ node of a snippet,
@@ -229,9 +224,11 @@ s({trig="trigger"}, {})
   - `child_ext_opts`, `merge_child_ext_opts`: Control `ext_opts` applied to the
   	children of this snippet. More info on those [here](#ext_opts).
 
-The `opts`-table can also be passed to e.g. `snippetNode` and
-`indentSnippetNode`, but only `callbacks` and the `ext_opts`-related options are
-used there.
+The `opts`-table, as described here, can also be passed to e.g. `snippetNode`
+and `indentSnippetNode`.  
+It is also possible to set `condition` and `show_condition` (described in the
+documentation of the `context`-table) from `opts`. They should, however, not be
+set from both.
 
 ### Snippet-Data
 
