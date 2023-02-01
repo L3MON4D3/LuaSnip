@@ -2851,6 +2851,12 @@ print a short message to the log.
       	return snip.insert_nodes[0]
       end
       ```
+    - `jumplist_insert_func`: fn(snippet, start_node, end_node, current_node):
+      Use this callback to change how the snippet in inserted into the jumplist.
+      `start_node` and `end_node` are the respective nodes of `snippet`, the
+      snippet which is expanded.
+      By default, this function:
+      TODO: describe the default-behavior :(
 
   `opts` and any of its parameters may be nil.
 
