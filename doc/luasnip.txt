@@ -2851,6 +2851,12 @@ These are the settings you can provide to `luasnip.setup()`:
         `lua     function(snip)       -- jump_into set the placeholder of the snippet, 1       -- to jump forwards.       return snip:jump_into(1)`
         While this can be used to only insert the snippet
         `lua     function(snip)       return snip.insert_nodes[0]     end`
+    - `jumplist_insert_func`: fn(snippet, start_node, end_node, current_node):
+        Use this callback to change how the snippet in inserted into the jumplist.
+        `start_node` and `end_node` are the respective nodes of `snippet`, the
+        snippet which is expanded.
+        By default, this function:
+        TODO: describe the default-behavior :(
     `opts` and any of its parameters may be nil.
 - `get_active_snip()`: returns the currently active snippet (not node!).
 - `choice_active()`: true if inside a choiceNode.

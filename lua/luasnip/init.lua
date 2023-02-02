@@ -185,6 +185,23 @@ local function locally_jumpable(dir)
 end
 
 local function _jump_into_default(snippet)
+	local current_buf = vim.api.nvim_get_current_buf()
+	if session.current_nodes[current_buf] then
+		local current_node = session.current_nodes[current_buf]
+		if current_node.pos > 0 then
+			-- snippet is nested, notify current insertNode about expansion.
+			current_node.inner_active = true
+		else
+			-- snippet was expanded behind a previously active one, leave the i(0)
+			-- properly (and remove the snippet on error).
+			local ok, err = pcall(current_node.input_leave, current_node)
+			if not ok then
+				log.warn("Error while leaving snippet: ", err)
+				current_node.parent.snippet:remove_from_jumplist()
+			end
+		end
+	end
+
 	return util.no_region_check_wrap(snippet.jump_into, snippet, 1)
 end
 
@@ -197,6 +214,8 @@ local function snip_expand(snippet, opts)
 	-- override with current position if none given.
 	opts.pos = opts.pos or util.get_cursor_0ind()
 	opts.jump_into_func = opts.jump_into_func or _jump_into_default
+	opts.jumplist_insert_func = opts.jumplist_insert_func
+		or require("luasnip.nodes.snippet").default_jumplist_insert
 
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}
@@ -233,26 +252,9 @@ local function snip_expand(snippet, opts)
 	snip:trigger_expand(
 		session.current_nodes[vim.api.nvim_get_current_buf()],
 		pos_id,
-		env
+		env,
+		opts.jumplist_insert_func
 	)
-
-	local current_buf = vim.api.nvim_get_current_buf()
-
-	if session.current_nodes[current_buf] then
-		local current_node = session.current_nodes[current_buf]
-		if current_node.pos > 0 then
-			-- snippet is nested, notify current insertNode about expansion.
-			current_node.inner_active = true
-		else
-			-- snippet was expanded behind a previously active one, leave the i(0)
-			-- properly (and remove the snippet on error).
-			local ok, err = pcall(current_node.input_leave, current_node)
-			if not ok then
-				log.warn("Error while leaving snippet: ", err)
-				current_node.parent.snippet:remove_from_jumplist()
-			end
-		end
-	end
 
 	-- jump_into-callback returns new active node.
 	session.current_nodes[vim.api.nvim_get_current_buf()] =

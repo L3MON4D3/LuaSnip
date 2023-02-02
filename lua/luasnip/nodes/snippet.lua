@@ -385,7 +385,7 @@ function Snippet:remove_from_jumplist()
 	end
 end
 
-local function insert_into_jumplist(snippet, start_node, current_node)
+local function insert_into_jumplist(snippet, start_node, end_node, current_node)
 	if current_node then
 		-- currently at the endpoint (i(0)) of another snippet, this snippet
 		-- is inserted _behind_ that snippet.
@@ -394,13 +394,13 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 				if current_node.next.pos == -1 then
 					-- next is beginning of another snippet, this snippet is
 					-- inserted before that one.
-					current_node.next.prev = snippet.insert_nodes[0]
+					current_node.next.prev = end_node
 				else
 					-- next is outer insertNode.
-					current_node.next.inner_last = snippet.insert_nodes[0]
+					current_node.next.inner_last = end_node
 				end
 			end
-			snippet.insert_nodes[0].next = current_node.next
+			end_node.next = current_node.next
 			current_node.next = start_node
 			start_node.prev = current_node
 		elseif current_node.pos == -1 then
@@ -411,27 +411,20 @@ local function insert_into_jumplist(snippet, start_node, current_node)
 					current_node.prev.inner_first = snippet
 				end
 			end
-			snippet.insert_nodes[0].next = current_node
+			end_node.next = current_node
 			start_node.prev = current_node.prev
-			current_node.prev = snippet.insert_nodes[0]
+			current_node.prev = end_node
 		else
-			snippet.insert_nodes[0].next = current_node
+			end_node.next = current_node
 			-- jump into snippet directly.
 			current_node.inner_first = snippet
-			current_node.inner_last = snippet.insert_nodes[0]
+			current_node.inner_last = end_node
 			start_node.prev = current_node
 		end
 	end
-
-	-- snippet is between i(-1)(startNode) and i(0).
-	snippet.next = snippet.insert_nodes[0]
-	snippet.prev = start_node
-
-	snippet.insert_nodes[0].prev = snippet
-	start_node.next = snippet
 end
 
-function Snippet:trigger_expand(current_node, pos_id, env)
+function Snippet:trigger_expand(current_node, pos_id, env, jumplist_insert_func)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 	local pre_expand_res = self:event(events.pre_expand, { expand_pos = pos })
 		or {}
@@ -509,7 +502,13 @@ function Snippet:trigger_expand(current_node, pos_id, env)
 	start_node.pos = -1
 	start_node.parent = self
 
-	insert_into_jumplist(self, start_node, current_node)
+	-- snippet is between i(-1)(startNode) and i(0).
+	self.insert_nodes[0].prev = self
+	start_node.next = self
+	self.next = self.insert_nodes[0]
+	self.prev = start_node
+
+	jumplist_insert_func(self, start_node, self.insert_nodes[0], current_node)
 end
 
 -- returns copy of snip if it matches, nil if not.
@@ -1205,4 +1204,5 @@ return {
 	wrap_nodes_in_snippetNode = wrap_nodes_in_snippetNode,
 	init_snippet_context = init_snippet_context,
 	init_snippet_opts = init_snippet_opts,
+	default_jumplist_insert = insert_into_jumplist,
 }
