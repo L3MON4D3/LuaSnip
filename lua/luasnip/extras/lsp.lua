@@ -102,7 +102,6 @@ function M.apply_text_edits(snippet_or_text_edits, bufnr, offset_encoding, apply
 			expand_opts.jump_into_func = function(snip)
 				expanded_snippets[i] = snip
 				local cr = _jump_into_default(snip)
-				print(cr)
 				return cr
 			end
 		else
@@ -110,15 +109,19 @@ function M.apply_text_edits(snippet_or_text_edits, bufnr, offset_encoding, apply
 			expand_opts.jump_into_func = function(snip)
 				expanded_snippets[i] = snip
 
-				print(session.current_nodes[bufnr])
-
 				-- let the already-active node stay active.
 				return session.current_nodes[bufnr]
 			end
-			-- jump from previous i0 directly into this snippet (ignore start_node).
-			expand_opts.jumplist_insert_func = function(snippet, _, _, _)
-					snippet.prev = expanded_snippets[i-1].insert_nodes[0]
-					expanded_snippets[i-1].insert_nodes[0].next = snippet
+			-- jump from previous i0 directly to start_node.
+			expand_opts.jumplist_insert_func = function(_, start_node, _, _)
+					start_node.prev = expanded_snippets[i-1].insert_nodes[0]
+					expanded_snippets[i-1].insert_nodes[0].next = start_node
+
+					-- skip start_node while jumping around.
+					-- start_node of first snippet behaves normally!
+					function start_node:jump_into(dir, no_move)
+						return (dir == 1 and self.next or self.prev):jump_into(dir, no_move)
+					end
 			end
 		end
 
