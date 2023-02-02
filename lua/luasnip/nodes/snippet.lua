@@ -1204,5 +1204,5 @@ return {
 	wrap_nodes_in_snippetNode = wrap_nodes_in_snippetNode,
 	init_snippet_context = init_snippet_context,
 	init_snippet_opts = init_snippet_opts,
-	default_jumplist_insert = insert_into_jumplist
+	default_jumplist_insert = insert_into_jumplist,
 }

@@ -214,7 +214,8 @@ local function snip_expand(snippet, opts)
 	-- override with current position if none given.
 	opts.pos = opts.pos or util.get_cursor_0ind()
 	opts.jump_into_func = opts.jump_into_func or _jump_into_default
-	opts.jumplist_insert_func = opts.jumplist_insert_func or require("luasnip.nodes.snippet").default_jumplist_insert
+	opts.jumplist_insert_func = opts.jumplist_insert_func
+		or require("luasnip.nodes.snippet").default_jumplist_insert
 
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}

@@ -35,7 +35,12 @@ end
 ---@param offset_encoding string|nil, 'utf-8,16,32' or ni
 ---@param apply_text_edits_fn function, has to apply regular textEdits, most
 --- likely `vim.lsp.util.apply_text_edits` (we expect its' interface).
-function M.apply_text_edits(snippet_or_text_edits, bufnr, offset_encoding, apply_text_edits_fn)
+function M.apply_text_edits(
+	snippet_or_text_edits,
+	bufnr,
+	offset_encoding,
+	apply_text_edits_fn
+)
 	-- plain textEdits, applied using via `apply_text_edits_fn`.
 	local text_edits = {}
 
@@ -48,16 +53,30 @@ function M.apply_text_edits(snippet_or_text_edits, bufnr, offset_encoding, apply
 		if v.newText and v.insertTextFormat == 2 then
 			-- from vim.lsp.apply_text_edits.
 			local start_row = v.range.start.line
-			local start_col = vim.lsp.util._get_line_byte_from_position(bufnr, v.range.start, offset_encoding)
-			local end_row = v.range['end'].line
-			local end_col = vim.lsp.util._get_line_byte_from_position(bufnr, v.range['end'], offset_encoding)
+			local start_col = vim.lsp.util._get_line_byte_from_position(
+				bufnr,
+				v.range.start,
+				offset_encoding
+			)
+			local end_row = v.range["end"].line
+			local end_col = vim.lsp.util._get_line_byte_from_position(
+				bufnr,
+				v.range["end"],
+				offset_encoding
+			)
 
 			table.insert(all_snippet_params, {
 				snippet_body = v.newText,
-				mark = vim.api.nvim_buf_set_extmark(bufnr, luasnip_ns_id, start_row, start_col, {
-					end_row = end_row,
-					end_col = end_col
-				}),
+				mark = vim.api.nvim_buf_set_extmark(
+					bufnr,
+					luasnip_ns_id,
+					start_row,
+					start_col,
+					{
+						end_row = end_row,
+						end_col = end_col,
+					}
+				),
 			})
 		else
 			table.insert(text_edits, v)
@@ -72,9 +91,14 @@ function M.apply_text_edits(snippet_or_text_edits, bufnr, offset_encoding, apply
 	-- store expanded snippets, if there are multiple we need to properly chain them together.
 	local expanded_snippets = {}
 	for i, snippet_params in ipairs(all_snippet_params) do
-		local mark_info = vim.api.nvim_buf_get_extmark_by_id(bufnr, luasnip_ns_id, snippet_params.mark, {details = true})
-		local mark_begin_pos = {mark_info[1], mark_info[2]}
-		local mark_end_pos = {mark_info[3].end_row, mark_info[3].end_col}
+		local mark_info = vim.api.nvim_buf_get_extmark_by_id(
+			bufnr,
+			luasnip_ns_id,
+			snippet_params.mark,
+			{ details = true }
+		)
+		local mark_begin_pos = { mark_info[1], mark_info[2] }
+		local mark_end_pos = { mark_info[3].end_row, mark_info[3].end_col }
 
 		-- luasnip can only expand snippets in the active buffer, so switch (nop if
 		-- buf already active).
@@ -114,14 +138,17 @@ function M.apply_text_edits(snippet_or_text_edits, bufnr, offset_encoding, apply
 			end
 			-- jump from previous i0 directly to start_node.
 			expand_opts.jumplist_insert_func = function(_, start_node, _, _)
-					start_node.prev = expanded_snippets[i-1].insert_nodes[0]
-					expanded_snippets[i-1].insert_nodes[0].next = start_node
+				start_node.prev = expanded_snippets[i - 1].insert_nodes[0]
+				expanded_snippets[i - 1].insert_nodes[0].next = start_node
 
-					-- skip start_node while jumping around.
-					-- start_node of first snippet behaves normally!
-					function start_node:jump_into(dir, no_move)
-						return (dir == 1 and self.next or self.prev):jump_into(dir, no_move)
-					end
+				-- skip start_node while jumping around.
+				-- start_node of first snippet behaves normally!
+				function start_node:jump_into(dir, no_move)
+					return (dir == 1 and self.next or self.prev):jump_into(
+						dir,
+						no_move
+					)
+				end
 			end
 		end
 
