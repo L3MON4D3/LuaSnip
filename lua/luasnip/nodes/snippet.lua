@@ -422,13 +422,6 @@ local function insert_into_jumplist(snippet, start_node, end_node, current_node)
 			start_node.prev = current_node
 		end
 	end
-
-	-- snippet is between i(-1)(startNode) and i(0).
-	snippet.next = end_node
-	snippet.prev = start_node
-
-	end_node.prev = snippet
-	start_node.next = snippet
 end
 
 function Snippet:trigger_expand(current_node, pos_id, env, jumplist_insert_func)
@@ -508,6 +501,12 @@ function Snippet:trigger_expand(current_node, pos_id, env, jumplist_insert_func)
 	start_node.mark = self.nodes[1].mark
 	start_node.pos = -1
 	start_node.parent = self
+
+	-- snippet is between i(-1)(startNode) and i(0).
+	self.insert_nodes[0].prev = self
+	start_node.next = self
+	self.next = self.insert_nodes[0]
+	self.prev = start_node
 
 	jumplist_insert_func(self, start_node, self.insert_nodes[0], current_node)
 end
