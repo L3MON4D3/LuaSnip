@@ -83,7 +83,7 @@ setting up a super-tab-like mapping.
 Check out [the doc](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#loaders) for a general explanation of the
 loaders and their benefits. The following list serves only as a short overview.
 
-- **Vscode-like**: To use existing vs-code style snippets from a plugin (eg. [rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) simply install the plugin and then add
+- **VS Code-like**: To use existing VS Code style snippets from a plugin (eg. [rafamadriz/friendly-snippets](https://github.com/rafamadriz/friendly-snippets)) simply install the plugin and then add
     ```lua
     require("luasnip.loaders.from_vscode").lazy_load()
     ```
@@ -93,13 +93,13 @@ loaders and their benefits. The following list serves only as a short overview.
     -- load snippets from path/of/your/nvim/config/my-cool-snippets
     require("luasnip.loaders.from_vscode").lazy_load({ paths = { "./my-cool-snippets" } })
     ```
-	For more info on the vscode-loader, check the [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L501) or [documentation](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#loaders).
+	For more info on the VS Code loader, check the [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L501) or [documentation](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#loaders).
 
-- **Snipmate-like**: Very similar to Vscode-packages: install a plugin that provides snippets and call the `load`-function:
+- **SnipMate-like**: Very similar to VS Code packages; install a plugin that provides snippets and call the `load`-function:
     ```lua
     require("luasnip.loaders.from_snipmate").lazy_load()
     ```
-    The snipmate format is very simple, so adding **custom snippets** only requires a few steps:
+    The SnipMate format is very simple, so adding **custom snippets** only requires a few steps:
     - add a directory beside your `init.vim` (or any other place that is in your `runtimepath`) named `snippets`.
     - inside that directory, create files named `<filetype>.snippets` and add snippets for the given filetype in it (for inspiration, check [honza/vim-snippets](https://github.com/honza/vim-snippets/tree/master/snippets)).  
         ``` snipmate
@@ -147,13 +147,13 @@ Here are some suggestions for getting started in either case:
 
 ### Official docs and examples
 
-Note: instead of immediately reading the official documentation, you may want to check out the [Resources for new users](#resources-for-new-users) section below, since the docs are written more as a reference manual than as a tutorial for new users.
+Note: instead of immediately reading the official documentation, you may want to check out the [Resources for new users](#resources-for-new-users) section below since the docs are written more as a reference manual than as a tutorial for new users.
 
-- [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) is the main documentation—it gives an overview of how to write snippets; explains the role and use case of each LuaSnip node; shows how to load snippets from Lua, VS Code, and SnipMate formats; and covers the available LuaSnip API.
+- [`DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md) is the main documentation—it gives an overview of how to write snippets, explains the role and use case of each LuaSnip node, shows how to load snippets from Lua, VS Code, and SnipMate formats, and covers the available LuaSnip API.
 - `:help luasnip.txt` is a plain text version of `DOC.md` available with Neovim's `:help` feature.
 - The file [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) contains many example snippets written in Lua—we highly recommend looking through (or better yet, `:luafile`ing) these example snippets before using LuaSnip's advanced features.
 - The [Wiki](https://github.com/L3MON4D3/LuaSnip/wiki) contains some useful LuaSnip extensions and some examples of advanced snippets and configs.
-- Configuration is documentated [in `DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#config-reference) as well.
+- Configuration is documented [in `DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#config-reference) as well.
 
 【中文版】DOC in Chinese is [here](https://zjp-cn.github.io/neovim0.6-blogs/nvim/luasnip/doc1.html). 
 
@@ -162,7 +162,7 @@ Here are some LuaSnip videos and tutorials on the Web:
 - [Introductory](https://www.youtube.com/watch?v=Dn800rlPIho) and [advanced](https://www.youtube.com/watch?v=KtQZRAkgLqo) YouTube videos by the one and only [TJ DeVries](https://github.com/tjdevries). Unfortunately there were some breaking changes in LuaSnip since these videos were recorded:
   * Snippets are now added via [`ls.add_snippets`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#adding-snippets) instead of with `ls.snippets = {}`
 - A [guide to writing snippets in Lua](https://www.ejmastnak.com/tutorials/vim-latex/luasnip.html) with LaTeX-themed GIFs and real-life examples by [@ejmastnak](https://github.com/ejmastnak)
-- A [collection of LuaSnip guides](https://evesdropper.dev/files/luasnip) by [@evesdropper](https://github.com/evesdropper), also in a LaTeX context
+- A [collection of LuaSnip guides](https://evesdropper.dev/files/luasnip) by [@evesdropper](https://github.com/evesdropper), with most of them also in a LaTeX context
 - An introductory LuaSnip [video tutorial for beginners](https://www.youtube.com/watch?v=ub0REXjhpmk) by Ziontee113
 
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
