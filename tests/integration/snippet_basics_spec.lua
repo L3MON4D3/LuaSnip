@@ -517,4 +517,45 @@ describe("snippets_basic", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("snip_env respects behaviour (set)", function()
+		exec_lua([[
+			ls.setup({
+				snip_env = {
+					__snip_env_behaviour = "set",
+					_s = true
+				}
+			})
+			-- remove this variable from global environment.
+			s = nil
+		]])
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets2_env_test_set"
+			)
+		)
+	end)
+	it("snip_env respects behaviour (extend)", function()
+		exec_lua([[
+			ls.setup({
+				snip_env = {
+					__snip_env_behaviour = "extend",
+					_s = true,
+					-- default has i as function, check override.
+					i = true
+				}
+			})
+			-- remove this variable from global environment.
+			s = nil
+		]])
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets2_env_test_extend"
+			)
+		)
+	end)
 end)

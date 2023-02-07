@@ -153,6 +153,30 @@ local defaults = {
 	snip_env = util.lazy_table({}, lazy_snip_env),
 }
 
+local function set_snip_env(target_conf_defaults, user_config)
+	if not user_config.snip_env then
+		-- target_conf already contains defaults
+		return
+	end
+
+	-- either "set" or "extend", make sure it does not appear in the final snip_env.
+	local snip_env_behaviour = user_config.snip_env.__snip_env_behaviour ~= nil and user_config.snip_env.__snip_env_behaviour or "extend"
+	assert(snip_env_behaviour == "set" or snip_env_behaviour == "extend", "Unknown __snip_env_behaviour, `" .. snip_env_behaviour .. "`")
+	user_config.snip_env.__snip_env_behaviour = nil
+
+	if snip_env_behaviour == "set" then
+		target_conf_defaults.snip_env = user_config.snip_env
+	else
+		-- cannot use vim.tbl_extend, since we'd need to transfer the metatable.
+		for k, v in pairs(user_config.snip_env) do
+			target_conf_defaults.snip_env[k] = v
+		end
+	end
+
+	-- set to nil, to mark that it's handled.
+	user_config.snip_env = nil
+end
+
 -- declare here to use in set_config.
 local c
 session.config = vim.deepcopy(defaults)
@@ -173,6 +197,8 @@ c = {
 		user_config.update_events = user_config.update_events
 			or user_config.updateevents
 		user_config.updateevents = nil
+
+		set_snip_env(conf, user_config)
 
 		for k, v in pairs(user_config) do
 			conf[k] = v
