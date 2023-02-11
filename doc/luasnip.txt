@@ -2796,14 +2796,30 @@ These are the settings you can provide to `luasnip.setup()`:
     buffer (used for `lazy_loading`). `fn(bufnr) -> filetypes (string[])`. Again,
     there are some examples in
     filetype_functions <lua/luasnip/extras/filetype_functions.lua>.
-- `snip_env`: The global environment will be extended with this table in some
-    places, eg. in files loaded by the
+- `snip_env`: The best way to author snippets in lua involves the
     lua-loader <https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#lua-snippets-loader>.
-    Setting `snip_env` to `{ some_global = "a value" }` will add the global
-    variable `some_global` while evaluating these files. If you mind the
-    (probably) large number of generated warnings, consider adding the keys set
-    here to the globals recognized by lua-language-server or add
-    `---@diagnostic disable: undefined-global` somewhere in the affected files.
+    Unfortunately, this requires that snippets are defined in separate files,
+    which means that common definitions like `s`, `i`, `sn`, `t`, `fmt`, … have
+    to be repeated in each of them, and that adding more customized functions to
+    ease writing snippets also requires some setup.
+    `snip_env` can be used to insert variables into exactly the places where
+    lua-snippets are defined (for now only the file loaded by the lua-loader).
+    Setting `snip_env` to `{ some_global = "a value" }` will add (amongst the
+    defaults stated at the beginning of this documentation) the global variable
+    `some_global` while evaluating these files.
+    There are special keys which, when set in `snip_env` change the behaviour of
+    this option, and are not passed through to the lua-files:
+    - `__snip_env_behaviour`, string: either `"set"` or `"extend"` (default
+        `"extend"`)
+        If this is `"extend"`, the variables defined in `snip_env` will complement (and
+        override) the defaults. If this is not desired, `"set"` will not include the
+        defaults, but only the variables set here.
+    One side-effect of this is that analysis-tools (most likely
+    `lua-language-server`) for lua will generate diagnostics for the usage of
+    undefined symbols. If you mind the (probably) large number of generated
+    warnings, consider adding the undefined globals to the globals recognized by
+    `lua-language-server` or add `---@diagnostic disable: undefined-global`
+    somewhere in the affected files.
 
 
 ==============================================================================
