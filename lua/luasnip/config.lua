@@ -160,8 +160,13 @@ local function set_snip_env(target_conf_defaults, user_config)
 	end
 
 	-- either "set" or "extend", make sure it does not appear in the final snip_env.
-	local snip_env_behaviour = user_config.snip_env.__snip_env_behaviour ~= nil and user_config.snip_env.__snip_env_behaviour or "extend"
-	assert(snip_env_behaviour == "set" or snip_env_behaviour == "extend", "Unknown __snip_env_behaviour, `" .. snip_env_behaviour .. "`")
+	local snip_env_behaviour = user_config.snip_env.__snip_env_behaviour ~= nil
+			and user_config.snip_env.__snip_env_behaviour
+		or "extend"
+	assert(
+		snip_env_behaviour == "set" or snip_env_behaviour == "extend",
+		"Unknown __snip_env_behaviour, `" .. snip_env_behaviour .. "`"
+	)
 	user_config.snip_env.__snip_env_behaviour = nil
 
 	if snip_env_behaviour == "set" then
