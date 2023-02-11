@@ -10,7 +10,8 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
-      # straight from neovim-CI.
+      # only install required dependencies, make build uses bundled libraries, etc.
+      # from here: https://github.com/neovim/neovim/blob/3a5dddf24f9d4d8959194b0cd3c6a7dd0cbd73ae/.github/scripts/install_deps_ubuntu.sh
       - run: |
           sudo add-apt-repository ppa:neovim-ppa/stable
           sudo apt-get update
@@ -18,29 +19,24 @@ jobs:
           autoconf \
           automake \
           build-essential \
-          ccache \
           cmake \
-          flake8 \
+          cpanminus \
+          curl \
           gettext \
-          libluajit-5.1-dev \
-          libmsgpack-dev \
-          libtermkey-dev \
           libtool-bin \
-          libtree-sitter-dev \
-          libunibilium-dev \
-          libuv1-dev \
-          locales \
-          lua-busted \
-          lua-check \
-          lua-filesystem \
-          lua-inspect \
-          lua-lpeg \
-          lua-luv-dev \
-          lua-nvim \
-          luajit \
+          locales-all \
           ninja-build \
           pkg-config \
-          liblua5.1-0-dev
+          unzip
 
+          # install luajit+headers for jsregexp
+          sudo apt-get install -y libluajit-5.1-dev luajit
 
-      - run: make test
+          # libuv is installed by default, but the version is too old; remove it.
+          sudo apt-get remove libuv1-dev
+
+      # explicitly set LUAJIT-variable since nvim is not available when the
+      # makefile's variables are evaluated, but that's not a problem since we
+      # actually know that we'll build with luajit, and not lua, and can just
+      # set it manually.
+      - run: make test LUAJIT=LuaJIT
