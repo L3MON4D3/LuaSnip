@@ -152,11 +152,6 @@ local function init_snippet_opts(opts)
 		in_node.stored[key] = wrap_nodes_in_snippetNode(nodes)
 	end
 
-	-- init invalidated here.
-	-- This is because invalidated is a key that can be populated without any
-	-- information on the actual snippet (it can be used by snippetProxy!).
-	in_node.invalidated = false
-
 	return vim.tbl_extend("error", in_node, init_snippetNode_opts(opts))
 end
 
@@ -218,6 +213,14 @@ local function init_snippet_context(context, opts)
 
 	context.condition = context.condition or opts.condition or true_func
 	context.show_condition = context.show_condition or opts.show_condition or true_func
+
+	-- init invalidated here.
+	-- This is because invalidated is a key that can be populated without any
+	-- information on the actual snippet (it can be used by snippetProxy!) and
+	-- it should be also available to the snippet-representations in the
+	-- snippet-list, and not in the expanded snippet, as doing this in
+	-- `init_snippet_opts` would suggest.
+	context.invalidated = false
 
 	return context
 end
