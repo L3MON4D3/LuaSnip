@@ -2772,6 +2772,13 @@ These are the settings you can provide to `luasnip.setup()`:
 - `update_events`: Choose which events trigger an update of the active nodes'
   dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'`
   would update on every change.
+  These, like all other `*_events` are passed to `nvim_create_autocmd` as
+  `events`, so they can be wrapped in a table, like
+  ```lua
+  ls.setup({
+  	update_events = {"TextChanged", "TextChangedI"}
+  })
+  ```
 - `region_check_events`: Events on which to leave the current snippet if the
   cursor is outside its' 'region'. Disabled by default, `'CursorMoved'`,
   `'CursorHold'` or `'InsertEnter'` seem reasonable.

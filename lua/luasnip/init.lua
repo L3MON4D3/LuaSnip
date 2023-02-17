@@ -616,7 +616,10 @@ end
 
 local function cleanup()
 	-- Use this to reload luasnip
-	vim.cmd([[doautocmd <nomodeline> User LuasnipCleanup]])
+	vim.api.nvim_exec_autocmds(
+		"User",
+		{ pattern = "LuasnipCleanup", modeline = false }
+	)
 	-- clear all snippets.
 	snippet_collection.clear_snippets()
 	loader.cleanup()
@@ -634,7 +637,10 @@ local function refresh_notify(ft)
 		end
 	else
 		session.latest_load_ft = ft
-		vim.cmd([[doautocmd <nomodeline> User LuasnipSnippetsAdded]])
+		vim.api.nvim_exec_autocmds(
+			"User",
+			{ pattern = "LuasnipSnippetsAdded", modeline = false }
+		)
 	end
 end
 

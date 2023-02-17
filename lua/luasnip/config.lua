@@ -50,8 +50,8 @@ local defaults = {
 	history = false,
 	update_events = "InsertLeave",
 	-- see :h User, event should never be triggered(except if it is `doautocmd`'d)
-	region_check_events = "User None",
-	delete_check_events = "User None",
+	region_check_events = nil,
+	delete_check_events = nil,
 	store_selection_keys = nil, -- Supossed to be the same as the expand shortcut
 	ext_opts = {
 		[types.textNode] = {
@@ -215,29 +215,49 @@ c = {
 	end,
 
 	_setup = function()
-		vim.cmd(
-			string.format(
-				[[
-        augroup luasnip
-            au!
-            autocmd %s * lua require("luasnip").unlink_current_if_deleted()
-            autocmd %s * lua require("luasnip").active_update_dependents()
-            autocmd %s * lua require("luasnip").exit_out_of_region(require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()])
-			"Remove buffers' nodes on deletion+wipeout.
-			autocmd BufDelete,BufWipeout * lua current_nodes = require("luasnip").session.current_nodes if current_nodes then current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil end
-		]]
-					.. (session.config.enable_autosnippets and [[
-			autocmd InsertCharPre * lua Luasnip_just_inserted = true
-			autocmd TextChangedI,TextChangedP * lua if Luasnip_just_inserted then require("luasnip").expand_auto() Luasnip_just_inserted=nil end
-		]] or "")
-					.. [[
-		augroup END
-		]],
+		local augroup = vim.api.nvim_create_augroup("luasnip", {})
+		local function ls_autocmd(event, callback)
+			vim.api.nvim_create_autocmd(event, {
+				callback = callback,
+				group = augroup,
+			})
+		end
+		if session.config.delete_check_events ~= nil then
+			ls_autocmd(
 				session.config.delete_check_events,
-				session.config.update_events,
-				session.config.region_check_events
+				require("luasnip").unlink_current_if_deleted
 			)
+		end
+		ls_autocmd(
+			session.config.update_events,
+			require("luasnip").active_update_dependents
 		)
+		if session.config.region_check_events ~= nil then
+			ls_autocmd(session.config.region_check_events, function()
+				require("luasnip").exit_out_of_region(
+					require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()]
+				)
+			end)
+		end
+		-- Remove buffers' nodes on deletion+wipeout.
+		ls_autocmd({ "BufDelete", "BufWipeout" }, function()
+			local current_nodes = require("luasnip").session.current_nodes
+			if current_nodes then
+				current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil
+			end
+		end)
+		if session.config.enable_autosnippets then
+			ls_autocmd("InsertCharPre", function()
+				Luasnip_just_inserted = true
+			end)
+			ls_autocmd({ "TextChangedI", "TextChangedP" }, function()
+				if Luasnip_just_inserted then
+					require("luasnip").expand_auto()
+					Luasnip_just_inserted = nil
+				end
+			end)
+		end
+
 		if session.config.store_selection_keys then
 			vim.cmd(
 				string.format(
