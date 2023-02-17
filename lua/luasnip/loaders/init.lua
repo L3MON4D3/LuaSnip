@@ -104,11 +104,12 @@ function M.load_lazy_loaded(fts)
 	end
 end
 
-vim.cmd([[
-		augroup luasnip_watch_reload
-		autocmd BufWritePost * lua require("luasnip.loaders").reload_file(vim.fn.expand("<afile>"))
-		augroup END
-	]])
+vim.api.nvim_create_autocmd("BufWritePost", {
+	group = vim.api.nvim_create_augroup("luasnip_watch_reload", {}),
+	callback = function()
+		require("luasnip.loaders").reload_file(vim.fn.expand("<afile>"))
+	end,
+})
 function M.reload_file(filename)
 	filename = Path.normalize(filename)
 	if not filename then

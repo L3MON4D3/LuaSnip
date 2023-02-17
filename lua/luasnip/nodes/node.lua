@@ -250,9 +250,12 @@ function Node:event(event)
 	end
 
 	session.event_node = self
-	vim.cmd(
-		"doautocmd <nomodeline> User Luasnip"
-			.. events.to_string(self.type, event)
+	vim.api.nvim_exec_autocmds(
+		"User",
+		{
+			pattern = "Luasnip" .. events.to_string(self.type, event),
+			modeline = false,
+		}
 	)
 end
 
