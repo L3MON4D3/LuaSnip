@@ -188,6 +188,7 @@ session.config = vim.deepcopy(defaults)
 
 c = {
 	set_config = function(user_config)
+		user_config = user_config or {}
 		local conf = vim.deepcopy(defaults)
 
 		-- remove unused highlights from default-ext_opts.
