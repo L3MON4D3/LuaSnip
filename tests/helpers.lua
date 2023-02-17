@@ -29,13 +29,10 @@ function M.session_setup_luasnip(opts)
 	local no_snip_globals = opts.no_snip_globals ~= nil and opts.no_snip_globals
 		or false
 
+	-- stylua: ignore
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
-	helpers.exec(
-		string.format(
-			"source %s/plugin/luasnip.vim",
-			os.getenv("LUASNIP_SOURCE")
-		)
-	)
+	helpers.exec(("source %s/plugin/luasnip.vim"):format(os.getenv("LUASNIP_SOURCE")))
+	helpers.exec(("luafile %s/plugin/luasnip.lua"):format(os.getenv("LUASNIP_SOURCE")))
 
 	helpers.exec_lua([[
 
