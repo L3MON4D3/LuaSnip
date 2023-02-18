@@ -250,13 +250,10 @@ function Node:event(event)
 	end
 
 	session.event_node = self
-	vim.api.nvim_exec_autocmds(
-		"User",
-		{
-			pattern = "Luasnip" .. events.to_string(self.type, event),
-			modeline = false,
-		}
-	)
+	vim.api.nvim_exec_autocmds("User", {
+		pattern = "Luasnip" .. events.to_string(self.type, event),
+		modeline = false,
+	})
 end
 
 local function get_args(node, get_text_func_name)

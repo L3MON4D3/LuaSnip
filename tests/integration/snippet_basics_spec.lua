@@ -587,33 +587,41 @@ describe("snippets_basic", function()
 				t"sometext", i(1, "someinsertnode")
 			}))
 		]])
-screen:expect{grid=[[
+		screen:expect({
+			grid = [[
   sometext^s{3:omeinsertnode}                            |
   {0:~                                                 }|
   {2:-- SELECT --}                                      |
-]]}
+]],
+		})
 		-- leave snippet-area, and trigger insertLeave.
 		feed("<Esc>o<Esc>")
-screen:expect{grid=[[
+		screen:expect({
+			grid = [[
   sometextsomeinsertnode                            |
   ^                                                  |
                                                     |
-]]}
+]],
+		})
 		-- make sure we're in the last tabstop (ie. region_check_events did its
 		-- job).
 		exec_lua("ls.jump(1)")
-screen:expect{grid=[[
+		screen:expect({
+			grid = [[
   sometextsomeinsertnode                            |
   ^                                                  |
                                                     |
-]]}
+]],
+		})
 		-- not really necessary, but feels safer this way.
 		exec_lua("ls.jump(-1)")
-screen:expect{grid=[[
+		screen:expect({
+			grid = [[
   sometext^s{3:omeinsertnode}                            |
                                                     |
   {2:-- SELECT --}                                      |
-]]}
+]],
+		})
 
 		-- delete snippet text
 		feed("<Esc>dd")
