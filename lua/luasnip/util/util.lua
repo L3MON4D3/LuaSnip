@@ -488,7 +488,6 @@ local function get_snippet_filetypes()
 	return deduplicate(redirect_filetypes(fts))
 end
 
-
 local function pos_add(p1, p2)
 	return { p1[1] + p2[1], p1[2] + p2[2] }
 end
