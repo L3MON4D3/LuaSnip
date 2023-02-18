@@ -1,3 +1,4 @@
+local lazy_table = require("luasnip.util.lazy_table")
 local util = require("luasnip.util.util")
 local session = require("luasnip.session")
 local snippet_collection = require("luasnip.session.snippet_collection")
@@ -713,9 +714,11 @@ local ls_lazy = {
 	restore_node = function() return require("luasnip.nodes.restoreNode").R end,
 	parser = function() return require("luasnip.util.parser") end,
 	config = function() return require("luasnip.config") end,
+	get_snippet_filetypes = function() return require("luasnip.util.util").get_snippet_filetypes end,
 }
 
-ls = util.lazy_table({
+
+ls = lazy_table({
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
 	locally_jumpable = locally_jumpable,
@@ -749,7 +752,6 @@ ls = util.lazy_table({
 	setup_snip_env = setup_snip_env,
 	get_snip_env = get_snip_env,
 	clean_invalidated = clean_invalidated,
-	get_snippet_filetypes = util.get_snippet_filetypes,
 	session = session,
 	cleanup = cleanup,
 	refresh_notify = refresh_notify,
