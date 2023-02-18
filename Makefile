@@ -1,7 +1,30 @@
-NVIM_PATH=deps/nvim
 TEST_FILE?=$(realpath tests)
-nvim:
-	git clone --depth 1 https://github.com/neovim/neovim ${NVIM_PATH} || (cd ${NVIM_PATH}; git fetch --depth 1; git checkout origin/master)
+
+NVIM_PATH=deps/nvim_multiversion
+# relative to ${NVIM_PATH} and relative to this makefile.
+NVIM_MASTER_PATH_REL=worktree_master
+NVIM_0.7_PATH_REL=worktree_0.7
+NVIM_MASTER_PATH=${NVIM_PATH}/${NVIM_MASTER_PATH_REL}
+NVIM_0.7_PATH=${NVIM_PATH}/${NVIM_0.7_PATH_REL}
+
+# directory as target.
+${NVIM_PATH}:
+	# fetch current master and 0.7.0 (the minimum version we support).
+	git clone --bare --depth 1 https://github.com/neovim/neovim ${NVIM_PATH}
+	git -C ${NVIM_PATH} fetch --depth 1 origin tag v0.7.0
+	# create one worktree for master, and one for 0.7.
+	# The rationale behind this is that switching from 0.7 to master (and
+	# vice-versa) requires a `make distclean`, and full clean build, which takes
+	# a lot of time.
+	# The most straightforward solution seems to be too keep two worktrees, one
+	# for master, one for 0.7, which are used for the respective builds/tests.
+	git -C ${NVIM_PATH} worktree add ${NVIM_MASTER_PATH_REL} master
+	git -C ${NVIM_PATH} worktree add ${NVIM_0.7_PATH_REL} v0.7.0
+
+# |: don't update `nvim` if `${NVIM_PATH}` is changed.
+nvim: | ${NVIM_PATH}
+	# only update master
+	git -C ${NVIM_MASTER_PATH} fetch --depth 1
 
 OS:=$(shell uname)
 LUAJIT:=$(shell nvim -v | grep -o LuaJIT)
@@ -31,7 +54,12 @@ uninstall_jsregexp:
 
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
 test: nvim jsregexp
-	# unset both to prevent env leaking into the neovim-build.
-	# add helper-functions to lpath.
-	# ";;" in CPATH appends default.
-	unset LUA_PATH LUA_CPATH; LUASNIP_SOURCE=$(shell pwd) JSREGEXP_PATH=$(shell pwd)/${JSREGEXP_PATH} TEST_FILE=$(realpath ${TEST_FILE}) BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua make -C ${NVIM_PATH} functionaltest
+	# unset PATH and CPATH to prevent system-env leaking into the neovim-build,
+	# add our helper-functions to lpath.
+	unset LUA_PATH LUA_CPATH; \
+	export LUASNIP_SOURCE=$(shell pwd); \
+	export JSREGEXP_PATH=$(shell pwd)/${JSREGEXP_PATH}; \
+	export TEST_FILE=$(realpath ${TEST_FILE}); \
+	export BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua; \
+	make -C ${NVIM_0.7_PATH} functionaltest; \
+	make -C ${NVIM_MASTER_PATH} functionaltest;
