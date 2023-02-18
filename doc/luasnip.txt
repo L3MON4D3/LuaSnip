@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 February 11
+*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 February 18
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2761,21 +2761,26 @@ print a short message to the log.
 These are the settings you can provide to `luasnip.setup()`:
 
 
-- `history`: If true, snippets that were exited can still be jumped back into.
-    As snippets are not removed when their text is deleted, they have to be
-    removed manually via `LuasnipUnlinkCurrent` if `delete_check_events` is not
-    enabled (set to eg. `'TextChanged'`).
+- `history`: If true, snippets that were exited can still be jumped back into. As
+    snippets are not removed when their text is deleted, they have to be removed
+    manually via `LuasnipUnlinkCurrent` if `delete_check_events` is not enabled
+    (set to eg. `'TextChanged'`).
 - `update_events`: Choose which events trigger an update of the active nodes’
-    dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'`
-    would update on every change.
+    dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would
+    update on every change. These, like all other `*_events` are passed to
+    `nvim_create_autocmd` as `events`, so they can be wrapped in a table, like
+    >
+        ls.setup({
+          update_events = {"TextChanged", "TextChangedI"}
+        })
+    <
 - `region_check_events`: Events on which to leave the current snippet if the
     cursor is outside its’ 'region'. Disabled by default, `'CursorMoved'`,
     `'CursorHold'` or `'InsertEnter'` seem reasonable.
-- `delete_check_events`: When to check if the current snippet was deleted, and
-    if so, remove it from the history. Off by default, `'TextChanged'` (perhaps
-    `'InsertLeave'`, to react to changes done in Insert mode) should work just
-    fine (alternatively, this can also be mapped using
-    `<Plug>luasnip-delete-check`).
+- `delete_check_events`: When to check if the current snippet was deleted, and if
+    so, remove it from the history. Off by default, `'TextChanged'` (perhaps
+    `'InsertLeave'`, to react to changes done in Insert mode) should work just fine
+    (alternatively, this can also be mapped using `<Plug>luasnip-delete-check`).
 - `store_selection_keys`: Mapping for populating `TM_SELECTED_TEXT` and related
     variables (not set by default).
 - `enable_autosnippets`: Autosnippets are disabled by default to minimize
@@ -2783,30 +2788,29 @@ These are the settings you can provide to `luasnip.setup()`:
 - `ext_opts`: Additional options passed to extmarks. Can be used to add
     passive/active highlight on a per-node-basis (more info in DOC.md)
 - `parser_nested_assembler`: Override the default behaviour of inserting a
-    `choiceNode` containing the nested snippet and an empty `insertNode` for
-    nested placeholders (`"${1: ${2: this is nested}}"`). For an example
-    (behaviour more similar to vscode), check
-    here <https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#imitate-vscodes-behaviour-for-nested-placeholders>
+    `choiceNode` containing the nested snippet and an empty `insertNode` for nested
+    placeholders (`"${1: ${2: this is nested}}"`). For an example (behaviour more
+    similar to vscode), check here
+    <https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#imitate-vscodes-behaviour-for-nested-placeholders>
 - `ft_func`: Source of possible filetypes for snippets. Defaults to a function,
     which returns `vim.split(vim.bo.filetype, ".", true)`, but check
-    filetype_functions <lua/luasnip/extras/filetype_functions.lua> or the
-    docs <https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#filetype_functions>
-    for more options.
-- `load_ft_func`: Function to determine which filetypes belong to a given
-    buffer (used for `lazy_loading`). `fn(bufnr) -> filetypes (string[])`. Again,
-    there are some examples in
-    filetype_functions <lua/luasnip/extras/filetype_functions.lua>.
-- `snip_env`: The best way to author snippets in lua involves the
-    lua-loader <https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#lua-snippets-loader>.
-    Unfortunately, this requires that snippets are defined in separate files,
-    which means that common definitions like `s`, `i`, `sn`, `t`, `fmt`, … have
-    to be repeated in each of them, and that adding more customized functions to
-    ease writing snippets also requires some setup.
-    `snip_env` can be used to insert variables into exactly the places where
-    lua-snippets are defined (for now only the file loaded by the lua-loader).
-    Setting `snip_env` to `{ some_global = "a value" }` will add (amongst the
-    defaults stated at the beginning of this documentation) the global variable
-    `some_global` while evaluating these files.
+    filetype_functions <lua/luasnip/extras/filetype_functions.lua> or the docs
+    <https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#filetype_functions> for
+    more options.
+- `load_ft_func`: Function to determine which filetypes belong to a given buffer
+    (used for `lazy_loading`). `fn(bufnr) -> filetypes (string[])`. Again, there
+    are some examples in filetype_functions
+    <lua/luasnip/extras/filetype_functions.lua>.
+- `snip_env`: The best way to author snippets in lua involves the lua-loader
+    <https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#lua-snippets-loader>.
+    Unfortunately, this requires that snippets are defined in separate files, which
+    means that common definitions like `s`, `i`, `sn`, `t`, `fmt`, … have to be
+    repeated in each of them, and that adding more customized functions to ease
+    writing snippets also requires some setup. `snip_env` can be used to insert
+    variables into exactly the places where lua-snippets are defined (for now only
+    the file loaded by the lua-loader). Setting `snip_env` to `{ some_global = "a
+    value" }` will add (amongst the defaults stated at the beginning of this
+    documentation) the global variable `some_global` while evaluating these files.
     There are special keys which, when set in `snip_env` change the behaviour of
     this option, and are not passed through to the lua-files:
     - `__snip_env_behaviour`, string: either `"set"` or `"extend"` (default
