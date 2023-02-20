@@ -1,3 +1,4 @@
 /deps/nvim
+/deps/nvim_multiversion
 /doc/tags
 /lua/luasnip-jsregexp.so
