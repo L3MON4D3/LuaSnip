@@ -631,10 +631,18 @@ describe("snippets_basic", function()
 		]]))
 	end)
 
-	it("jump_destination works for snippets where `node.active` is important", function()
-		exec_lua([[
+	it(
+		"jump_destination works for snippets where `node.active` is important",
+		function()
+			exec_lua([[
 			ls.snip_expand(s("", {i(1), sn(2, {t"this is skipped"}), i(3)}))
 		]])
-		assert.are.same(exec_lua([[return ls.jump_destination(1).absolute_insert_position]]), {3})
-	end)
+			assert.are.same(
+				exec_lua(
+					[[return ls.jump_destination(1).absolute_insert_position]]
+				),
+				{ 3 }
+			)
+		end
+	)
 end)
