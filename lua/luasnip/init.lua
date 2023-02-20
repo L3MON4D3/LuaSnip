@@ -129,7 +129,7 @@ local function jump_destination(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
 		-- dry run of jump (+no_move ofc.), only retrieves destination-node.
-		return safe_jump(current, dir, true, {active = {}})
+		return safe_jump(current, dir, true, { active = {} })
 	end
 	return nil
 end

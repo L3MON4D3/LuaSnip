@@ -149,7 +149,8 @@ function InsertNode:init_dry_run_inner_active(dry_run)
 	end
 end
 function InsertNode:is_inner_active(dry_run)
-	return (not dry_run and self.inner_active) or (dry_run and dry_run.active[self])
+	return (not dry_run and self.inner_active)
+		or (dry_run and dry_run.active[self])
 end
 
 function InsertNode:jump_into(dir, no_move, dry_run)
