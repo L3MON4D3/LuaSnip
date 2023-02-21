@@ -1,3 +1,7 @@
+vim.filetype.add {
+    extension = { snippets = "snippets"}
+}
+
 local function silent_map(mode, lhs, rhs)
 	vim.keymap.set(mode, lhs, rhs, { silent = true })
 end
