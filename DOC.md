@@ -2080,6 +2080,12 @@ the `luasnip`-table:
 }
 ```
 
+Files with the extension `jsonc` will be parsed as `jsonc`, [json with
+comments](https://code.visualstudio.com/docs/languages/json#_json-with-comments),
+while `*.json` are parsed with a regular `json` parser, where comments are
+disallowed. (the json-parser is a bit faster, so don't default to `jsonc` if
+it's not necessary).
+
 **Example**:
 
 `~/.config/nvim/my_snippets/package.json`:

@@ -116,6 +116,10 @@ function Path.basename(filepath, ext)
 	end
 end
 
+function Path.extension(fname)
+	return fname:match("%.([^%.]+)$")
+end
+
 -- returns nil if the file does not exist!
 Path.normalize = uv.fs_realpath
 
