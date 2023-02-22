@@ -25,6 +25,12 @@
 					"lua"
 				],
 				"path": "./thisfiledoesnotexist.json"
+			},
+			{
+				"language": [
+					"all"
+				],
+				"path": "snippets/all.jsonc"
 			}
 		]
 	}

@@ -443,6 +443,19 @@ describe("loaders:", function()
 		})
 	end)
 
+	it("Can load jsonc.", function()
+		loaders["vscode(rtp)"]()
+
+		feed("ijsonc")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			jsonc!!!^                                          |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	reload_test(
 		"snipmate-reload works",
 		loaders["snipmate(rtp)"],

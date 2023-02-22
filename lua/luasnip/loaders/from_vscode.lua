@@ -6,12 +6,31 @@ local Path = require("luasnip.util.path")
 local sp = require("luasnip.nodes.snippetProxy")
 local log = require("luasnip.util.log").new("vscode-loader")
 
-local function json_decode(data)
-	local status, result = pcall(util.json_decode, data)
+local json_decoders = {
+	json = util.json_decode,
+	jsonc = require("luasnip.util.jsonc").decode
+}
+
+local function read_json(fname)
+	local data_ok, data = pcall(Path.read_file, fname)
+	if not data_ok then
+		log.error("Could not read file %s", fname)
+		return nil
+	end
+
+	local fname_extension = Path.extension(fname)
+	if fname_extension ~= "json" and fname_extension ~= "jsonc" then
+		log.error("`%s` was expected to have file-extension either `json` or `jsonc`, but doesn't.", fname)
+		return nil
+	end
+	local fname_decoder = json_decoders[fname_extension]
+
+	local status, result = pcall(fname_decoder, data)
 	if status then
 		return result
 	else
-		return nil, result
+		log.error("Could not parse file %s: %s", fname, result)
+		return nil
 	end
 end
 
@@ -19,14 +38,9 @@ local function get_file_snippets(file)
 	local lang_snips = {}
 	local auto_lang_snips = {}
 
-	local data_ok, data = pcall(Path.read_file, file)
-	if not data_ok then
-		log.error("Could not read file %s", file)
-		return {}, {}
-	end
-	local snippet_set_data = json_decode(data)
+	local snippet_set_data = read_json(file)
 	if snippet_set_data == nil then
-		log.error("Could not parse json in %s", file)
+		log.error("Reading json from file `%s` failed, skipping it.", file)
 		return {}, {}
 	end
 
@@ -130,18 +144,20 @@ end
 --- Paths are normalized.
 local function package_files(root, filter)
 	local package = Path.join(root, "package.json")
-	local data_ok, data = pcall(Path.read_file, package)
 	-- if root doesn't contain a package.json, or it contributes no snippets,
 	-- return no snippets.
-	if not data_ok then
-		log.error("Tried reading package %s, but it does not exist", package)
+	if not Path.exists(package) then
+		log.warn("Looked for `package.json` in `root`, does not exist.", package)
 		return {}
 	end
-	local package_data = json_decode(data)
+
+	local package_data = read_json(package)
 	if not package_data then
-		log.error("Json in %s could not be parsed", package)
+		-- since it is a `.json`, the json not being correct should be an error.
+		log.error("Could not read json from `%s`", package)
 		return {}
 	end
+
 	if
 		not package_data.contributes or not package_data.contributes.snippets
 	then
@@ -166,10 +182,10 @@ local function package_files(root, filter)
 				if not ft_files[ft] then
 					ft_files[ft] = {}
 				end
-				-- the file might not exist.
-				-- TODO: log this.
 				local normalized_snippet_file =
 					Path.normalize(Path.join(root, snippet_entry.path))
+
+				-- the file might not exist..
 				if normalized_snippet_file then
 					table.insert(ft_files[ft], normalized_snippet_file)
 				else
