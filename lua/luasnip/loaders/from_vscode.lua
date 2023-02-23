@@ -8,7 +8,7 @@ local log = require("luasnip.util.log").new("vscode-loader")
 
 local json_decoders = {
 	json = util.json_decode,
-	jsonc = require("luasnip.util.jsonc").decode
+	jsonc = require("luasnip.util.jsonc").decode,
 }
 
 local function read_json(fname)
@@ -20,7 +20,10 @@ local function read_json(fname)
 
 	local fname_extension = Path.extension(fname)
 	if fname_extension ~= "json" and fname_extension ~= "jsonc" then
-		log.error("`%s` was expected to have file-extension either `json` or `jsonc`, but doesn't.", fname)
+		log.error(
+			"`%s` was expected to have file-extension either `json` or `jsonc`, but doesn't.",
+			fname
+		)
 		return nil
 	end
 	local fname_decoder = json_decoders[fname_extension]
@@ -147,7 +150,10 @@ local function package_files(root, filter)
 	-- if root doesn't contain a package.json, or it contributes no snippets,
 	-- return no snippets.
 	if not Path.exists(package) then
-		log.warn("Looked for `package.json` in `root`, does not exist.", package)
+		log.warn(
+			"Looked for `package.json` in `root`, does not exist.",
+			package
+		)
 		return {}
 	end
 

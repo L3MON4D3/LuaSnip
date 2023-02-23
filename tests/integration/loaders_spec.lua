@@ -448,12 +448,14 @@ describe("loaders:", function()
 
 		feed("ijsonc")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			jsonc!!!^                                          |
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	reload_test(
