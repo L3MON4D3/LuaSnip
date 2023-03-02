@@ -631,6 +631,43 @@ describe("snippets_basic", function()
 		]]))
 	end)
 
+	it("autocommands are registered in different formats", function()
+		exec_lua([[
+			a_set = false
+			b_set = false
+			c_set = false
+
+			local function set_a() a_set = true end
+			local function set_b() b_set = true end
+			local function set_c() c_set = true end
+
+			ls.exit_out_of_region = set_a
+			ls.unlink_current_if_deleted = set_b
+			ls.active_update_dependents = set_c
+
+			ls.setup({
+				region_check_events = {"InsertLeave","CursorHold"},
+				delete_check_events = "TextChanged,InsertEnter",
+				update_events = {"TextChanged"},
+			})
+
+			vim.api.nvim_exec_autocmds("InsertLeave", {})
+			assert(a_set)
+			a_set = false
+			vim.api.nvim_exec_autocmds("CursorHold", {})
+			assert(a_set)
+
+			vim.api.nvim_exec_autocmds("TextChanged", {})
+			assert(b_set)
+			b_set = false
+			vim.api.nvim_exec_autocmds("InsertEnter", {})
+			assert(b_set)
+
+			vim.api.nvim_exec_autocmds("TextChanged", {})
+			assert(c_set)
+		]])
+	end)
+
 	it(
 		"jump_destination works for snippets where `node.active` is important",
 		function()
