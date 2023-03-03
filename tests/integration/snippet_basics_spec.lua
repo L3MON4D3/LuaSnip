@@ -632,40 +632,43 @@ describe("snippets_basic", function()
 	end)
 
 	it("autocommands are registered in different formats", function()
-		exec_lua([[
-			a_set = false
-			b_set = false
-			c_set = false
+		local function test_combination(setting_name, overridefn_name)
+				exec_lua(([[
+					local config_events = {
+						{"InsertLeave","CursorHold"},
+						"InsertLeave,CursorHold",
+						"InsertLeave, CursorHold",
+						"InsertLeave",
+						{"InsertLeave"}
+					}
+					local check_events = {
+						{"InsertLeave","CursorHold"},
+						{"InsertLeave","CursorHold"},
+						{"InsertLeave","CursorHold"},
+						{"InsertLeave"},
+						{"InsertLeave"}
+					}
 
-			local function set_a() a_set = true end
-			local function set_b() b_set = true end
-			local function set_c() c_set = true end
+					for i, config_event in ipairs(config_events) do
+						a_set = false
+						ls.%s = function() a_set = true end
 
-			ls.exit_out_of_region = set_a
-			ls.unlink_current_if_deleted = set_b
-			ls.active_update_dependents = set_c
+						ls.setup({
+							%s = config_event
+						})
+						for _, event in ipairs(check_events[i]) do
+							a_set = false
+							vim.api.nvim_exec_autocmds(event, {})
+							assert(a_set)
+						end
+					end
+				]]):format(overridefn_name, setting_name))
+		end
 
-			ls.setup({
-				region_check_events = {"InsertLeave","CursorHold"},
-				delete_check_events = "TextChanged,InsertEnter",
-				update_events = {"TextChanged"},
-			})
-
-			vim.api.nvim_exec_autocmds("InsertLeave", {})
-			assert(a_set)
-			a_set = false
-			vim.api.nvim_exec_autocmds("CursorHold", {})
-			assert(a_set)
-
-			vim.api.nvim_exec_autocmds("TextChanged", {})
-			assert(b_set)
-			b_set = false
-			vim.api.nvim_exec_autocmds("InsertEnter", {})
-			assert(b_set)
-
-			vim.api.nvim_exec_autocmds("TextChanged", {})
-			assert(c_set)
-		]])
+		test_combination("region_check_events", "exit_out_of_region")
+		test_combination("delete_check_events", "unlink_current_if_deleted")
+		test_combination("update_events", "active_update_dependents")
+		test_combination("updateevents", "active_update_dependents")
 	end)
 
 	it(

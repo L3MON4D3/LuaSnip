@@ -222,7 +222,8 @@ c = {
 		local function ls_autocmd(events, callback)
 			if type(events) == "string" then
 				-- split on ',' for backwards compatibility.
-				events = vim.split(events, ",")
+				-- remove spaces from string.
+				events = vim.split(events:gsub(" ", ""), ",")
 			end
 			vim.api.nvim_create_autocmd(events, {
 				callback = callback,
