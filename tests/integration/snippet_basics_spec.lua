@@ -633,7 +633,7 @@ describe("snippets_basic", function()
 
 	it("autocommands are registered in different formats", function()
 		local function test_combination(setting_name, overridefn_name)
-				exec_lua(([[
+			exec_lua(([[
 					local config_events = {
 						{"InsertLeave","CursorHold"},
 						"InsertLeave,CursorHold",
