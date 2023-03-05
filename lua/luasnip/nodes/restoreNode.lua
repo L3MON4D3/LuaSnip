@@ -165,14 +165,17 @@ function RestoreNode:update()
 end
 
 function RestoreNode:update_static()
-	self.snip:update_static()
+	-- *_static-methods can use the stored snippet, since they don't require
+	-- the snip to actually be inside the restoreNode.
+	self.parent.snippet.stored[self.key]:update_static()
 end
 
 local function snip_init(self, snip)
 	snip.parent = self.parent
 
 	snip.snippet = self.parent.snippet
-	snip.pos = self.pos
+	-- pos should be nil if the restoreNode is inside a choiceNode.
+	snip.pos = rawget(self, "pos")
 
 	snip:resolve_child_ext_opts()
 	snip:resolve_node_ext_opts()
@@ -198,7 +201,7 @@ end
 function RestoreNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		self.static_text = self.snip:get_static_text()
+		self.static_text = self.parent.snippet.stored[self.key]:get_static_text()
 	end
 	return self.static_text
 end
@@ -249,7 +252,7 @@ end
 
 function RestoreNode:update_all_dependents_static()
 	self:_update_dependents_static()
-	self.snip:_update_dependents_static()
+	self.parent.snippet.stored[self.key]:_update_dependents_static()
 end
 
 function RestoreNode:init_insert_positions(position_so_far)

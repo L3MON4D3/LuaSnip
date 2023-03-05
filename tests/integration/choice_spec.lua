@@ -74,12 +74,20 @@ describe("ChoiceNode", function()
 			exec_lua("return " .. snip .. ":get_static_text()"),
 			{ "a a" }
 		)
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_docstring()"),
+			{ "${1:${${1:a} ${2:a}}}$0" }
+		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 		-- next jump leads to t"a".
 		assert.are.same(
 			exec_lua([[return ls.jump_destination(1).absolute_insert_position]]),
 			{ 1, 1, 2, 1 }
 		)
+		assert.are.same(exec_lua("return ls.get_current_choices()"), {
+			'${${1:a} ${2:a}}',
+			'b'
+		})
 
 		screen:expect({
 			grid = [[
@@ -174,6 +182,10 @@ describe("ChoiceNode", function()
 			exec_lua("return " .. snip .. ":get_static_text()"),
 			{ "aa" }
 		)
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_docstring()"),
+			{ "${1:a}${2:${${1:a}}}$0" }
+		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		-- next jump leads inside dynamicNode.
@@ -196,6 +208,10 @@ describe("ChoiceNode", function()
 			b^b                                                |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
+		})
+		assert.are.same(exec_lua("return ls.get_current_choices()"), {
+			'${${1:a}}',
+			'none'
 		})
 
 		exec_lua("ls.change_choice(1)")
@@ -225,6 +241,34 @@ describe("ChoiceNode", function()
 			c^c                                                |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
+		})
+	end)
+
+	it("get_current_choices works with non-default f/dNode", function()
+		exec_lua([[
+			ls.snip_expand(s("test", {
+				c(1, {
+					t"a",
+					sn(nil, {f(function()
+						return "c"
+					end) }),
+					t"b",
+					f(function()
+						return "d"
+					end),
+					d(nil, function()
+						return sn(nil, t"e")
+					end)
+				})
+			}))
+		]])
+
+		assert.are.same(exec_lua("return ls.get_current_choices()"), {
+			'a',
+			'${c}',
+			'b',
+			'd',
+			'${e}'
 		})
 	end)
 end)

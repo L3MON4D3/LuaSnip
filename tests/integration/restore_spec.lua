@@ -43,6 +43,10 @@ describe("RestoreNode", function()
 			exec_lua("return " .. snip .. ":get_static_text()"),
 			{ "aaaa" }
 		)
+		assert.are.same(
+			exec_lua("return " .. snip .. ":get_docstring()"),
+			{ "${1:${${1:aaaa}}}$0" }
+		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 
 		screen:expect({
@@ -316,7 +320,7 @@ describe("RestoreNode", function()
 		ls_helpers.static_docstring_test(
 			snip,
 			{ "aaaaaa" },
-			{ "${1:${1:${1:aaa}${2:${1:aaa}}}}$0" }
+			{ "${1:${${1:aaa}${2:${1:aaa}}}}$0" }
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 

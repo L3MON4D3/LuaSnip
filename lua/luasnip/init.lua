@@ -399,11 +399,13 @@ local function set_choice(choice_indx)
 end
 
 local function get_current_choices()
-	assert(session.active_choice_node, "No active choiceNode")
+	local node = session.active_choice_node
+	assert(node, "No active choiceNode")
 
 	local choice_lines = {}
 
-	for i, choice in ipairs(session.active_choice_node.choices) do
+	node:update_static_all()
+	for i, choice in ipairs(node.choices) do
 		choice_lines[i] = table.concat(choice:get_docstring(), "\n")
 	end
 

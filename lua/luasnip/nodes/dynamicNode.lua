@@ -50,12 +50,12 @@ function DynamicNode:input_leave(_, dry_run)
 end
 
 function DynamicNode:get_static_text()
-	if self.snip then
-		return self.snip:get_static_text()
+	if self.static_snip then
+		return self.static_snip:get_static_text()
 	else
 		self:update_static()
-		if self.snip then
-			return self.snip:get_static_text()
+		if self.static_snip then
+			return self.static_snip:get_static_text()
 		else
 			return { "" }
 		end
@@ -64,8 +64,8 @@ end
 
 function DynamicNode:get_docstring()
 	if not self.docstring then
-		if self.snip then
-			self.docstring = self.snip:get_docstring()
+		if self.static_snip then
+			self.docstring = self.static_snip:get_docstring()
 		else
 			self.docstring = { "" }
 		end
@@ -205,13 +205,13 @@ Error while evaluating dynamicNode@%d for snippet '%s':
 :h luasnip-docstring for more info]]
 function DynamicNode:update_static()
 	local args = self:get_static_args()
-	if vim.deep_equal(self.last_args, args) then
+	if vim.deep_equal(self.last_static_args, args) then
 		-- no update, the args still match.
 		return
 	end
 
 	local tmp, ok
-	if self.snip then
+	if self.static_snip then
 		if not args then
 			-- a snippet exists, don't delete it.
 			return
@@ -242,12 +242,12 @@ function DynamicNode:update_static()
 		-- set empty snippet on failure
 		tmp = SnippetNode(nil, {})
 	end
-	self.last_args = args
+	self.last_static_args = args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
 	tmp.indx = self.indx
-	tmp.pos = self.pos
+	tmp.pos = rawget(self, "pos")
 
 	tmp.next = self
 	tmp.prev = self
@@ -288,7 +288,7 @@ function DynamicNode:update_static()
 	-- updates dependents in tmp.
 	tmp:update_all_dependents_static()
 
-	self.snip = tmp
+	self.static_snip = tmp
 	-- updates own dependents.
 	self:update_dependents_static()
 end

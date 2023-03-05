@@ -201,6 +201,12 @@ function ChoiceNode:update()
 	self.active_choice:update()
 end
 
+function ChoiceNode:update_static_all()
+	for _, choice in ipairs(self.choices) do
+		choice:update_static()
+	end
+end
+
 function ChoiceNode:update_static()
 	self.active_choice:update_static()
 end
