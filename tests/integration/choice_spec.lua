@@ -85,8 +85,8 @@ describe("ChoiceNode", function()
 			{ 1, 1, 2, 1 }
 		)
 		assert.are.same(exec_lua("return ls.get_current_choices()"), {
-			'${${1:a} ${2:a}}',
-			'b'
+			"${${1:a} ${2:a}}",
+			"b",
 		})
 
 		screen:expect({
@@ -210,8 +210,8 @@ describe("ChoiceNode", function()
 			{2:-- SELECT --}                                      |]],
 		})
 		assert.are.same(exec_lua("return ls.get_current_choices()"), {
-			'${${1:a}}',
-			'none'
+			"${${1:a}}",
+			"none",
 		})
 
 		exec_lua("ls.change_choice(1)")
@@ -264,11 +264,11 @@ describe("ChoiceNode", function()
 		]])
 
 		assert.are.same(exec_lua("return ls.get_current_choices()"), {
-			'a',
-			'${c}',
-			'b',
-			'd',
-			'${e}'
+			"a",
+			"${c}",
+			"b",
+			"d",
+			"${e}",
 		})
 	end)
 end)

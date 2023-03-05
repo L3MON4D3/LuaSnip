@@ -47,7 +47,7 @@ function Node:get_static_text()
 	-- By also allowing visible, and not only static_visible, the docstrings
 	-- generated during `get_current_choices` (ie. without having the whole
 	-- snippet `static_init`ed) get better.
-	if (not self.visible) and (not self.static_visible) then
+	if not self.visible and not self.static_visible then
 		return nil
 	end
 	return self.static_text

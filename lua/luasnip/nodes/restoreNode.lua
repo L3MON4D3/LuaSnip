@@ -201,7 +201,8 @@ end
 function RestoreNode:get_static_text()
 	-- cache static_text, no need to recalculate function.
 	if not self.static_text then
-		self.static_text = self.parent.snippet.stored[self.key]:get_static_text()
+		self.static_text =
+			self.parent.snippet.stored[self.key]:get_static_text()
 	end
 	return self.static_text
 end
