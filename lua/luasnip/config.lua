@@ -44,6 +44,7 @@ local lazy_snip_env = {
 	postfix = function() return require("luasnip.extras.postfix").postfix end,
 	types = function() return require("luasnip.util.types") end,
 	parse = function() return require("luasnip.util.parser").parse_snippet end,
+	ms = function() return require("luasnip.nodes.multiSnippet").new_multisnippet end,
 }
 
 local defaults = {

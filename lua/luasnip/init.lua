@@ -731,6 +731,7 @@ local ls_lazy = {
 	restore_node = function() return require("luasnip.nodes.restoreNode").R end,
 	parser = function() return require("luasnip.util.parser") end,
 	config = function() return require("luasnip.config") end,
+	multi_snippet = function() return require("luasnip.nodes.multiSnippet").new_multisnippet end,
 }
 
 ls = util.lazy_table({
