@@ -44,6 +44,7 @@ local conds = require("luasnip.extras.expand_conditions")
 local postfix = require("luasnip.extras.postfix").postfix
 local types = require("luasnip.util.types")
 local parse = require("luasnip.util.parser").parse_snippet
+local ms = ls.multi_snippet
 ```
 
 As noted in [the Lua section](#lua):
@@ -999,6 +1000,69 @@ to be accessed as `ai[restoreNodeIndx][0][1]`.
 `absolute_indexer`s' can be constructed in different ways:
 ```lua
 ai[1][2][3] == ai(1, 2, 3) == ai{1, 2, 3}
+```
+
+# MULTI_SNIPPET
+
+There are situations where it might be comfortable to access a snippet in
+different ways. For example, one might want to enable auto-triggering in regions
+where the snippets usage is common, while leaving it manual-only in others.  
+This is where `ms` should be used: A single snippet can be associated with multiple
+`context`s (the `context`-table determines the conditions under which a snippet
+may be triggered).  
+This has the advantage (compared with just registering copies) that all
+`context`s are backed by a single snippet, and not multiple, and it's (at least
+should be :D) more comfortable to use.
+
+`ms(contexts, nodes, opts) -> addable`:
+
+- `contexts`: table containing list of `contexts`, and some keywords.  
+  `context` are described in [SNIPPETS](#snippets), here they may also be tables
+  or strings.  
+  So far, there is only one valid keyword:
+  - `common`: Accepts yet another context.  
+    The options in `common` are applied to (but don't override) the other
+    contexts specified in `contexts`.
+- `nodes`: List of nodes, exactly like in [SNIPPETS](#snippets).
+- `opts`: Table, options for this function:
+  - `common_opts`: The snippet-options (see also [SNIPPETS](#snippets)) applied
+    to the snippet generated from `nodes`.
+
+The returned object is an `addable`, something which can be passed to
+`add_snippets`, or returned from the lua-loader.
+
+**Examples**:
+```lua
+ls.add_snippets("all", {
+    ms({"a", "b"}, {t"a or b"})
+})
+```
+
+```lua
+ls.add_snippets("all", {
+    ms({
+        common = {snippetType = "autosnippet"},
+        "a",
+        "b"
+    }, {
+        t"a or b (but autotriggered!!)"
+    })
+})
+```
+
+```lua
+ls.add_snippets("all", {
+    ms({
+        common = {snippetType = "autosnippet"},
+        {trig = "a", snippetType = "snippet"},
+        "b",
+        {trig = "c", condition = function(line_to_cursor)
+            return line_to_cursor == ""
+        end}
+    }, {
+        t"a or b (but autotriggered!!)"
+    })
+})
 ```
 
 # EXTRAS
