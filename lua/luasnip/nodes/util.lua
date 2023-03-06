@@ -134,11 +134,21 @@ local function snippet_extend_context(arg, extend)
 	return vim.tbl_extend("keep", arg or {}, extend or {})
 end
 
+local function wrap_context(context)
+	if type(context) == "string" then
+		return { trig = context }
+	else
+		return context
+	end
+end
+
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
 	make_args_absolute = make_args_absolute,
 	wrap_args = wrap_args,
+	wrap_context = wrap_context,
 	get_nodes_between = get_nodes_between,
 	leave_nodes_between = leave_nodes_between,
 	enter_nodes_between = enter_nodes_between,
