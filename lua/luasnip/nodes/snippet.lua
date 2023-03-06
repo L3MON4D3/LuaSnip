@@ -157,62 +157,51 @@ end
 
 -- context, opts non-nil tables.
 local function init_snippet_context(context, opts)
-	if type(context) == "string" then
-		context = { trig = context }
-	end
+	local effective_context = {}
 
 	-- trig is set by user, trigger is used internally.
-	-- maybe breaking change, but not worth it, probably.
-	context.trigger = context.trig
-	context.trig = nil
+	-- not worth a breaking change, we just make it compatible here.
+	effective_context.trigger = context.trig
 
-	context.name = context.name or context.trigger
+	effective_context.name = context.name or context.trig
 
 	-- context.dscr could be nil, string or table.
-	context.dscr = util.to_line_table(context.dscr or context.trigger)
+	effective_context.dscr = util.to_line_table(context.dscr or context.trig)
 
 	-- might be nil, but whitelisted in snippetProxy.
-	context.priority = context.priority
+	effective_context.priority = context.priority
 
 	-- might be nil, but whitelisted in snippetProxy.
 	-- shall be a string, allowed values: "snippet", "autosnippet"
+	-- stylua: ignore
 	assert(
-		not context.snippetType
-			or context.snippetType == "snippet"
-			or context.snippetType == "autosnippet",
+		   context.snippetType == nil
+		or context.snippetType == "snippet"
+		or context.snippetType == "autosnippet",
 		"snippetType has to be either 'snippet' or 'autosnippet' (or unset)"
 	)
 	-- switch to plural forms so that we can use this for indexing
-	context.snippetType = context.snippetType == "autosnippet"
-			and "autosnippets"
-		or context.snippetType == "snippet" and "snippets"
+	-- stylua: ignore
+	effective_context.snippetType =
+		   context.snippetType == "autosnippet" and "autosnippets"
+		or context.snippetType == "snippet"     and "snippets"
 		or nil
 
 	-- maybe do this in a better way when we have more parameters, but this is
-	-- fine for now.
+	-- fine for now:
 
 	-- not a necessary argument.
-	if context.docstring then
-		context.docstring = util.to_line_table(context.docstring)
+	if context.docstring ~= nil then
+		effective_context.docstring = util.to_line_table(context.docstring)
 	end
 
-	-- default: true.
-	if context.wordTrig == nil then
-		context.wordTrig = true
-	end
+	-- can't use `cond and ... or ...` since we have truthy values.
+	effective_context.wordTrig = util.ternary(context.wordTrig ~= nil, context.wordTrig, true)
+	effective_context.hidden = util.ternary(context.hidden ~= nil, context.hidden, false)
+	effective_context.regTrig = util.ternary(context.regTrig ~= nil, context.regTrig, false)
 
-	-- default: false.
-	if context.hidden == nil then
-		context.hidden = false
-	end
-
-	-- default: false.
-	if context.regTrig == nil then
-		context.regTrig = false
-	end
-
-	context.condition = context.condition or opts.condition or true_func
-	context.show_condition = context.show_condition or opts.show_condition or true_func
+	effective_context.condition = context.condition or opts.condition or true_func
+	effective_context.show_condition = context.show_condition or opts.show_condition or true_func
 
 	-- init invalidated here.
 	-- This is because invalidated is a key that can be populated without any
@@ -220,9 +209,9 @@ local function init_snippet_context(context, opts)
 	-- it should be also available to the snippet-representations in the
 	-- snippet-list, and not in the expanded snippet, as doing this in
 	-- `init_snippet_opts` would suggest.
-	context.invalidated = false
+	effective_context.invalidated = false
 
-	return context
+	return effective_context
 end
 
 -- Create snippet without initializing opts+context.
@@ -270,7 +259,7 @@ end
 local function S(context, nodes, opts)
 	opts = opts or {}
 
-	local snip = init_snippet_context(context, opts)
+	local snip = init_snippet_context(node_util.wrap_context(context), opts)
 	snip = vim.tbl_extend("error", snip, init_snippet_opts(opts))
 
 	return _S(snip, nodes, opts)

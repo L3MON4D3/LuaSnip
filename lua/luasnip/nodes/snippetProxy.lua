@@ -66,7 +66,7 @@ local function new(context, snippet, opts)
 	local sp = vim.tbl_extend(
 		"error",
 		{},
-		snip_mod.init_snippet_context(context, opts),
+		snip_mod.init_snippet_context(node_util.wrap_context(context), opts),
 		snip_mod.init_snippet_opts(opts),
 		node_util.init_node_opts(opts)
 	)

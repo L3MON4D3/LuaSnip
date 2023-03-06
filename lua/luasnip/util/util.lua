@@ -583,6 +583,14 @@ local function lazy_table(lazy_t, lazy_defs)
 	})
 end
 
+local function ternary(cond, if_val, else_val)
+	if cond == true then
+		return if_val
+	else
+		return else_val
+	end
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -628,4 +636,5 @@ return {
 	nop = nop,
 	indx_of = indx_of,
 	lazy_table = lazy_table,
+	ternary = ternary,
 }
