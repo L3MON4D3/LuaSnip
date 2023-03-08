@@ -2347,8 +2347,12 @@ and then (if there are multiple) the associated file to edit.
 
 <!-- panvimdoc-ignore-end -->
 
-`opts` contains three settings:
+`opts` contains four settings:
 
+* `ft_filter`: `fn(filetype:string) -> bool`
+  Optionally filter initially listed filetypes.
+  `true` -> filetype will be listed, `false` -> not listed.
+  Accepts all filetypes by default.
 * `format`: `fn(file:string, source_name:string) -> string|nil`  
   `file` is simply the path to the file, `source_name` is one of `"lua"`,
   `"snipmate"` or `"vscode"`.  
