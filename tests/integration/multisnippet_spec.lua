@@ -37,10 +37,12 @@ describe("multisnippets", function()
 			add_ms({"a", "b", "c", "d"}, {t"a or b or c or d"})
 		]])
 		local function test()
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				a or b or c or d^                                  |
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 		end
 
 		feed("ia<Plug>luasnip-expand-or-jump")
@@ -52,11 +54,15 @@ describe("multisnippets", function()
 		feed("<Esc>ccd<Plug>luasnip-expand-or-jump")
 		test()
 		-- can expand multiple at once.
-		feed("<Esc>cca<Plug>luasnip-expand-or-jump<Space>b<Plug>luasnip-expand-or-jump")
-		screen:expect{grid=[[
+		feed(
+			"<Esc>cca<Plug>luasnip-expand-or-jump<Space>b<Plug>luasnip-expand-or-jump"
+		)
+		screen:expect({
+			grid = [[
 			a or b or c or d a or b or c or d^                 |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		exec_lua([[
 			m_snip = ms({"a", "b", "c", "d"}, {t"a or b or c or d"})
@@ -73,10 +79,12 @@ describe("multisnippets", function()
 			add_ms({{trig="a",snippetType="autosnippet"}, "b", "c", "d"}, {t"a or b or c or d"})
 		]])
 		local function test()
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				a or b or c or d^                                  |
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 		end
 		-- autotriggered!
 		feed("ia")
@@ -95,10 +103,12 @@ describe("multisnippets", function()
 			add_ms({common={trig="a",snippetType="autosnippet"}, "b", "c", {snippetType="snippet"}}, {t"a or b or c or d"})
 		]])
 		local function test()
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				a or b or c or d^                                  |
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 		end
 		feed("ia<Plug>luasnip-expand-or-jump")
 		test()
