@@ -2,10 +2,14 @@ local snip_mod = require("luasnip.nodes.snippet")
 local node_util = require("luasnip.nodes.util")
 
 local VirtualSnippet = {}
-local VirtualSnippet_mt = {__index = VirtualSnippet}
+local VirtualSnippet_mt = { __index = VirtualSnippet }
 
-function VirtualSnippet:get_docstring() return self.snippet:get_docstring() end
-function VirtualSnippet:copy() return self.snippet:copy() end
+function VirtualSnippet:get_docstring()
+	return self.snippet:get_docstring()
+end
+function VirtualSnippet:copy()
+	return self.snippet:copy()
+end
 
 -- VirtualSnippet has all the fields for executing these methods.
 VirtualSnippet.matches = snip_mod.Snippet.matches
@@ -27,16 +31,18 @@ local function new_virtual_snippet(context, snippet, opts)
 	return o
 end
 
-
 local MultiSnippet = {}
-local MultiSnippet_mt = {__index = MultiSnippet}
+local MultiSnippet_mt = { __index = MultiSnippet }
 
 function MultiSnippet:retrieve_all()
 	return self.v_snips
 end
 
 local function new_multisnippet(contexts, nodes, opts)
-	assert(type(contexts) == "table", "multisnippet: expected contexts to be a table.")
+	assert(
+		type(contexts) == "table",
+		"multisnippet: expected contexts to be a table."
+	)
 	opts = opts or {}
 	local common_snip_opts = opts.common_opts or {}
 
@@ -45,16 +51,27 @@ local function new_multisnippet(contexts, nodes, opts)
 	-- create snippet without `context`-fields!
 	-- compare to `S` (aka `s`, the default snippet-constructor) in
 	-- `nodes/snippet.lua`.
-	local snippet = snip_mod._S(snip_mod.init_snippet_opts(common_snip_opts), nodes, common_snip_opts)
+	local snippet = snip_mod._S(
+		snip_mod.init_snippet_opts(common_snip_opts),
+		nodes,
+		common_snip_opts
+	)
 
 	local v_snips = {}
 	for _, context in ipairs(contexts) do
-		local complete_context = vim.tbl_extend("keep", node_util.wrap_context(context), common_context)
-		table.insert(v_snips, new_virtual_snippet(complete_context, snippet, common_snip_opts))
+		local complete_context = vim.tbl_extend(
+			"keep",
+			node_util.wrap_context(context),
+			common_context
+		)
+		table.insert(
+			v_snips,
+			new_virtual_snippet(complete_context, snippet, common_snip_opts)
+		)
 	end
 
 	local o = {
-		v_snips = v_snips
+		v_snips = v_snips,
 	}
 
 	setmetatable(o, MultiSnippet_mt)
@@ -63,5 +80,5 @@ local function new_multisnippet(contexts, nodes, opts)
 end
 
 return {
-	new_multisnippet = new_multisnippet
+	new_multisnippet = new_multisnippet,
 }

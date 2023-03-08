@@ -686,35 +686,86 @@ describe("snippets_basic", function()
 		end
 	)
 
-	it("wordTrig, regTrig, hidden, name, description, docstring work and default correctly", function()
-		local snip_wt_val = {
-			{[[ s({trig="a", wordTrig = false}, { t"justsometext" }) ]], "wordTrig", "false"},
-			{[[ s({trig="a", wordTrig = true}, { t"justsometext" }) ]], "wordTrig", "true"},
-			{[[ s({trig="a"}, { t"justsometext" }) ]], "wordTrig", "true"},
+	it(
+		"wordTrig, regTrig, hidden, name, description, docstring work and default correctly",
+		function()
+			local snip_wt_val = {
+				{
+					[[ s({trig="a", wordTrig = false}, { t"justsometext" }) ]],
+					"wordTrig",
+					"false",
+				},
+				{
+					[[ s({trig="a", wordTrig = true}, { t"justsometext" }) ]],
+					"wordTrig",
+					"true",
+				},
+				{
+					[[ s({trig="a"}, { t"justsometext" }) ]],
+					"wordTrig",
+					"true",
+				},
 
-			{[[ s({trig="a", regTrig = false}, { t"justsometext" }) ]], "regTrig", "false"},
-			{[[ s({trig="a", regTrig = true}, { t"justsometext" }) ]], "regTrig", "true"},
-			{[[ s({trig="a"}, { t"justsometext" }) ]], "regTrig", "false"},
+				{
+					[[ s({trig="a", regTrig = false}, { t"justsometext" }) ]],
+					"regTrig",
+					"false",
+				},
+				{
+					[[ s({trig="a", regTrig = true}, { t"justsometext" }) ]],
+					"regTrig",
+					"true",
+				},
+				{
+					[[ s({trig="a"}, { t"justsometext" }) ]],
+					"regTrig",
+					"false",
+				},
 
-			{[[ s({trig="a", hidden = false}, { t"justsometext" }) ]], "hidden", "false"},
-			{[[ s({trig="a", hidden = true}, { t"justsometext" }) ]], "hidden", "true"},
-			{[[ s({trig="a"}, { t"justsometext" }) ]], "hidden", "false"},
+				{
+					[[ s({trig="a", hidden = false}, { t"justsometext" }) ]],
+					"hidden",
+					"false",
+				},
+				{
+					[[ s({trig="a", hidden = true}, { t"justsometext" }) ]],
+					"hidden",
+					"true",
+				},
+				{ [[ s({trig="a"}, { t"justsometext" }) ]], "hidden", "false" },
 
-			{[[ s({trig="a", name = "thename"}, { t"justsometext" }) ]], "name", [["thename"]]},
-			{[[ s({trig="a"}, { t"justsometext" }) ]], "name", [["a"]]},
+				{
+					[[ s({trig="a", name = "thename"}, { t"justsometext" }) ]],
+					"name",
+					[["thename"]],
+				},
+				{ [[ s({trig="a"}, { t"justsometext" }) ]], "name", [["a"]] },
 
-			{[[ s({trig="a", dscr = "thedescription"}, { t"justsometext" }) ]], "dscr", [[{"thedescription"}]]},
-			{[[ s({trig="a"}, { t"justsometext" }) ]], "dscr", [[{"a"}]]},
+				{
+					[[ s({trig="a", dscr = "thedescription"}, { t"justsometext" }) ]],
+					"dscr",
+					[[{"thedescription"}]],
+				},
+				{ [[ s({trig="a"}, { t"justsometext" }) ]], "dscr", [[{"a"}]] },
 
-			{[[ s({trig="a", docstring = "thedocstring"}, { t"justsometext" }) ]], "docstring", [[{"thedocstring"}]]},
-			{[[ s({trig="a"}, { t"justsometext" }) ]], "docstring", "nil"},
-		}
+				{
+					[[ s({trig="a", docstring = "thedocstring"}, { t"justsometext" }) ]],
+					"docstring",
+					[[{"thedocstring"}]],
+				},
+				{
+					[[ s({trig="a"}, { t"justsometext" }) ]],
+					"docstring",
+					"nil",
+				},
+			}
 
-		for _, pair in ipairs(snip_wt_val) do
-			assert.is_true(exec_lua(([[
+			for _, pair in ipairs(snip_wt_val) do
+				assert.is_true(exec_lua(([[
 				local snip = %s
 				return vim.deep_equal(snip.%s, %s)
 			]]):format(pair[1], pair[2], pair[3])))
+			end
 		end
-	end)
+	)
 end)

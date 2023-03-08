@@ -142,7 +142,6 @@ local function wrap_context(context)
 	end
 end
 
-
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
