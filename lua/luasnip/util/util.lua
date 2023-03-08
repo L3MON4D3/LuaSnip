@@ -547,7 +547,7 @@ local function no()
 end
 
 local function yes()
-	return false
+	return true
 end
 
 local function reverse_lookup(t)

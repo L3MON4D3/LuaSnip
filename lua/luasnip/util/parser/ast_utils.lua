@@ -173,45 +173,6 @@ local function replace_position(ast, p1, p2)
 	end)
 end
 
-local is_interactive
-local has_interactive_children = function(node, root)
-	-- make sure all children are not interactive
-	for _, child in ipairs(node.children) do
-		if is_interactive(child, root) then
-			return false
-		end
-	end
-	return true
-end
-local type_is_interactive = {
-	[types.SNIPPET] = has_interactive_children,
-	[types.TEXT] = util.no,
-	[types.TABSTOP] = function(node, root)
-		local tabstop_is_copy = false
-		predicate_ltr_nodes(root, function(pred_node)
-			-- stop at this tabstop
-			if pred_node == node then
-				return true
-			end
-			-- stop if match found
-			if pred_node.tabstop == node.tabstop then
-				tabstop_is_copy = true
-				return true
-			end
-			-- otherwise, continue.
-			return false
-		end)
-		-- this tabstop is interactive if it is not a copy.
-		return not tabstop_is_copy
-	end,
-	[types.PLACEHOLDER] = has_interactive_children,
-	[types.VARIABLE] = util.no,
-	[types.CHOICE] = util.yes,
-}
-local function is_interactive(node, snippet)
-	return type_is_interactive[node.type](node, snippet)
-end
-
 function M.fix_zero(ast)
 	local zn, ast_child_with_0_indx, is_copied = real_zero_node(ast)
 	-- if zn exists, is a tabstop, an immediate child of `ast`, and does not
