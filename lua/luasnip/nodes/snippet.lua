@@ -196,12 +196,19 @@ local function init_snippet_context(context, opts)
 	end
 
 	-- can't use `cond and ... or ...` since we have truthy values.
-	effective_context.wordTrig = util.ternary(context.wordTrig ~= nil, context.wordTrig, true)
-	effective_context.hidden = util.ternary(context.hidden ~= nil, context.hidden, false)
-	effective_context.regTrig = util.ternary(context.regTrig ~= nil, context.regTrig, false)
+	effective_context.wordTrig =
+		util.ternary(context.wordTrig ~= nil, context.wordTrig, true)
+	effective_context.hidden =
+		util.ternary(context.hidden ~= nil, context.hidden, false)
+	effective_context.regTrig =
+		util.ternary(context.regTrig ~= nil, context.regTrig, false)
 
-	effective_context.condition = context.condition or opts.condition or true_func
-	effective_context.show_condition = context.show_condition or opts.show_condition or true_func
+	effective_context.condition = context.condition
+		or opts.condition
+		or true_func
+	effective_context.show_condition = context.show_condition
+		or opts.show_condition
+		or true_func
 
 	-- init invalidated here.
 	-- This is because invalidated is a key that can be populated without any
@@ -1204,7 +1211,7 @@ end
 
 -- used in add_snippets to get variants of snippet.
 function Snippet:retrieve_all()
-	return {self}
+	return { self }
 end
 
 return {

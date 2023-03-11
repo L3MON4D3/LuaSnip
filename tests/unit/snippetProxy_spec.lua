@@ -37,7 +37,7 @@ describe("snippetProxy", function()
 		".priority",
 		':matches("asd")',
 		":get_docstring()",
-		":retrieve_all()"
+		":retrieve_all()",
 	}) do
 		no_inst_on_access_test(v)
 	end
