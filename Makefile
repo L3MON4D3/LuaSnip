@@ -28,9 +28,10 @@ nvim: | ${NVIM_PATH}
 
 OS:=$(shell uname)
 LUAJIT:=$(shell nvim -v | grep -o LuaJIT)
+LUAJIT_OSX_PATH?=/opt/homebrew/opt/luajit
 ifeq ($(LUAJIT),LuaJIT)
 	ifeq ($(OS),Darwin)
-		LUA_LDLIBS=-lluajit-5.1.2 -L/opt/homebrew/opt/luajit/lib/
+		LUA_LDLIBS=-lluajit-5.1.2 -L${LUAJIT_OSX_PATH}/lib/
 	else
 		LUA_LDLIBS=-lluajit-5.1
 	endif
