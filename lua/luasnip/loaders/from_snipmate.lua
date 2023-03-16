@@ -4,6 +4,8 @@ local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local sp = require("luasnip.nodes.snippetProxy")
 local snipmate_parse_fn = require("luasnip.util.parser").parse_snipmate
+local source = require("luasnip.session.snippet_collection.source")
+local session = require("luasnip.session")
 
 local log = require("luasnip.util.log").new("snipmate-loader")
 
@@ -26,6 +28,7 @@ local function parse_snipmate(buffer, filename)
 			line:match("^" .. snippet_type .. [[%s+(%S+)%s*(.*)]])
 		local body = {}
 
+		local snip_begin_line = i
 		i = i + 1
 		---@type number
 		local indent
@@ -58,6 +61,9 @@ local function parse_snipmate(buffer, filename)
 				parse_fn = snipmate_parse_fn,
 			}
 		)
+		if session.config.loaders_store_source then
+			snip._source = source.from_location(filename, {line = snip_begin_line, line_end = i-1})
+		end
 		table.insert(snippets[snippet_type], snip)
 	end
 
