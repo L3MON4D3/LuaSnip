@@ -1,3 +1,5 @@
+local source = require("luasnip.session.snippet_collection.source")
+
 -- store snippets by some key.
 -- also ordered by filetype, eg.
 -- {
@@ -266,6 +268,12 @@ function M.add_snippets(snippets, opts)
 				table.insert(by_prio[snip.snippetType][snip.priority][ft], snip)
 				table.insert(by_ft[snip.snippetType][ft], snip)
 				by_id[snip.id] = snip
+
+				-- set source if it was passed, and remove from snippet.
+				if snip._source then
+					source.set(snip, snip._source)
+					snip._source = nil
+				end
 			end
 		end
 	end

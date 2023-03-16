@@ -13,6 +13,8 @@ local pattern_tokenizer = require("luasnip.util.pattern_tokenizer")
 local dict = require("luasnip.util.dict")
 local snippet_collection = require("luasnip.session.snippet_collection")
 local extend_decorator = require("luasnip.util.extend_decorator")
+local source = require("luasnip.session.snippet_collection.source")
+local loader_util = require("luasnip.loaders.util")
 
 local true_func = function()
 	return true
@@ -269,7 +271,14 @@ local function S(context, nodes, opts)
 	local snip = init_snippet_context(node_util.wrap_context(context), opts)
 	snip = vim.tbl_extend("error", snip, init_snippet_opts(opts))
 
-	return _S(snip, nodes, opts)
+	snip = _S(snip, nodes, opts)
+
+	if __luasnip_get_loaded_file_frame_debuginfo ~= nil then
+		-- this snippet is being lua-loaded, and the source should be recorded.
+		snip._source = source.from_debuginfo(__luasnip_get_loaded_file_frame_debuginfo())
+	end
+
+	return snip
 end
 extend_decorator.register(
 	S,

@@ -152,6 +152,7 @@ local defaults = {
 	load_ft_func = ft_functions.from_filetype_load,
 	-- globals injected into luasnippet-files.
 	snip_env = util.lazy_table({}, lazy_snip_env),
+	loaders_store_source = false,
 }
 
 local function set_snip_env(target_conf_defaults, user_config)

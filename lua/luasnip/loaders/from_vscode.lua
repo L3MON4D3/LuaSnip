@@ -5,6 +5,8 @@ local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 local sp = require("luasnip.nodes.snippetProxy")
 local log = require("luasnip.util.log").new("vscode-loader")
+local session = require("luasnip.session")
+local source = require("luasnip.session.snippet_collection.source")
 
 local json_decoders = {
 	json = util.json_decode,
@@ -66,6 +68,11 @@ local function get_file_snippets(file)
 					wordTrig = ls_conf.wordTrig,
 					priority = ls_conf.priority,
 				}, body)
+
+				if session.config.loaders_store_source then
+					-- only know file, not line or line_end.
+					snip._source = source.from_location(file)
+				end
 
 				if ls_conf.autotrigger then
 					table.insert(auto_lang_snips, snip)
