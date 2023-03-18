@@ -238,6 +238,60 @@ local function _S(snip, nodes, opts)
 			dependents = {},
 			active = false,
 			type = types.snippet,
+			-- dependents_dict is responsible for associating
+			-- function/dynamicNodes ("dependents") with their argnodes.
+			-- There are a few important requirements that have to be
+			-- fulfilled:
+			-- Allow associating present dependent with non-present argnode
+			-- (and vice-versa).
+			-- This is required, because a node outside some dynamicNode
+			-- could depend on a node inside it, and since the content of a
+			-- dynamicNode changes, it is possible that the argnode will be
+			-- generated.
+			-- As soon as that happens, it should be possible to immediately
+			-- find the dependents that depend on the newly-generated argnode,
+			-- without searching the snippet.
+			--
+			-- The dependents_dict enables all of this by storing every node
+			-- which is addressable by either `absolute_indexer` or
+			-- `key_indexer` (or even directly, just with its own
+			-- table, ie. `self`) under its path.
+			-- * `absolute_indexer`: the path is the sequence of jump_indices
+			-- which leads to this node, for example {1,3,1}.
+			-- * `key_indexer`: the path is {"key", <the_key>}.
+			-- * `node`: the path is {node}.
+			-- With each type of node-reference (absolute_indexer, key, node),
+			-- the node which is referenced by it, is stored under path ..
+			-- {"node"} (if it exists inside the current snippet!!), while the
+			-- dependents are stored at path .. {"dependents"}.
+			-- The manner in which the dependents are stored is also
+			-- interesting:
+			-- They are not stored in eg a list, since we would then have to
+			-- deal with explicitly invalidating them (remove them from the
+			-- list to prevent its growing too large). No, the dependents are
+			-- stored under their own absolute position (not absolute _insert_
+			-- position, functionNodes don't have a jump-index, and thus can't
+			-- be addressed using absolute insert position), which means that 
+			--
+			-- a) once a dependent is re-generated, for example by a
+			-- dynamicNode, it will not take up new space, but simply overwrite
+			-- the old one (which is very desirable!!)
+			-- b) we will still store some older, unnecessary dependents
+			--
+			-- (imo) a outweighs b, which is why this design was chosen.
+			-- (non-visible nodes are ignored by tracking their visibility in
+			-- the snippet separately, it is then queried in eg.
+			-- `update_dependents`)
+			--
+			-- Related functions:
+			-- * `dependent:set_dependents` to insert argnode+dependent in
+			--   `dependents_dict`, in the according to the above description.
+			-- * `set_argnodes` to insert the absolute_insert_position ..
+			--   {"node"} into dependents_dict.
+			-- * `get_args` to get the text of the argnodes to some dependent
+			--   node.
+			-- * `update_dependents` can be called to find all dependents, and
+			--   update the visible ones.
 			dependents_dict = dict.new(),
 		}),
 		opts
@@ -1222,6 +1276,11 @@ end
 -- used in add_snippets to get variants of snippet.
 function Snippet:retrieve_all()
 	return { self }
+end
+
+function Snippet:get_keyed_node(key)
+	-- get key-node from dependents_dict.
+	return self.dependents_dict:get({"key", key, "node"})
 end
 
 return {

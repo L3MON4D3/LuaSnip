@@ -837,4 +837,34 @@ describe("snippets_basic", function()
 		})
 		feed("<Cr>")
 	end)
+
+	it("get_keyed_node works", function()
+		exec_lua([[
+			ls.snip_expand(s("", {
+				i(1, "a", {key = "a"}),
+				c(2, {
+					{t"asdf", i(1, "b", {key = "b"})},
+					d(nil, function()
+						return sn(nil, {i(1, "c", {key = "c"})})
+					end, {})
+				})
+			}))
+		]])
+		exec_lua("snip = ls.session.current_nodes[1].parent.snippet")
+		assert.are.same(
+			{"a"},
+			exec_lua[[return snip:get_keyed_node("a"):get_text()]])
+		assert.are.same(
+			{"b"},
+			exec_lua[[return snip:get_keyed_node("b"):get_text()]])
+		assert.are.same(
+			exec_lua([[return vim.NIL]]),
+			exec_lua[[return snip:get_keyed_node("c")]])
+
+		exec_lua("ls.jump(1) ls.change_choice(1)")
+
+		assert.are.same(
+			{"c"},
+			exec_lua[[return snip:get_keyed_node("c"):get_text()]])
+	end)
 end)

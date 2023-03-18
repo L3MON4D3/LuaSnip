@@ -1,6 +1,7 @@
 local util = require("luasnip.util.util")
 local ext_util = require("luasnip.util.ext_opts")
 local types = require("luasnip.util.types")
+local key_indexer = require("luasnip.nodes.key_indexer")
 
 local function subsnip_init_children(parent, children)
 	for _, child in ipairs(children) do
@@ -41,7 +42,8 @@ local function make_args_absolute(args, parent_insert_position, target)
 			table.insert(t, arg)
 			target[i] = { absolute_insert_position = t }
 		else
-			-- insert node or absolute_indexer itself, node's absolute_insert_position may be nil, check for that during
+			-- insert node, absolute_indexer, or key itself, node's
+			-- absolute_insert_position may be nil, check for that during
 			-- usage.
 			target[i] = arg
 		end
@@ -51,7 +53,8 @@ end
 local function wrap_args(args)
 	-- stylua: ignore
 	if type(args) ~= "table" or
-	  (type(args) == "table" and args.absolute_insert_position) then
+	  (type(args) == "table" and args.absolute_insert_position) or
+	  key_indexer.is_key(args) then
 		-- args is one single arg, wrap it.
 		return { args }
 	else
@@ -121,6 +124,8 @@ local function init_node_opts(opts)
 	else
 		in_node.merge_node_ext_opts = opts.merge_node_ext_opts
 	end
+
+	in_node.key = opts.key
 
 	return in_node
 end
