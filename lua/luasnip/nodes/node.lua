@@ -3,6 +3,7 @@ local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local ext_util = require("luasnip.util.ext_opts")
 local events = require("luasnip.util.events")
+local key_indexer = require("luasnip.nodes.key_indexer")
 
 local Node = {}
 
@@ -183,14 +184,24 @@ end
 local function find_dependents(self, position_self, dict)
 	local nodes = {}
 
-	position_self[#position_self + 1] = "dependents"
-	vim.list_extend(nodes, dict:find_all(position_self, "dependent") or {})
-	position_self[#position_self] = nil
+	-- this might also be called from a node which does not possess a position!
+	-- (for example, a functionNode may be depended upon via its key)
+	if position_self then
+		position_self[#position_self + 1] = "dependents"
+		vim.list_extend(nodes, dict:find_all(position_self, "dependent") or {})
+		position_self[#position_self] = nil
+	end
 
 	vim.list_extend(
 		nodes,
 		dict:find_all({ self, "dependents" }, "dependent") or {}
 	)
+
+	if self.key then
+		vim.list_extend(nodes,
+			dict:find_all({"key", self.key, "dependents"}, "dependent") or {}
+		)
+	end
 
 	return nodes
 end
@@ -284,38 +295,43 @@ function Node:event(event)
 end
 
 local function get_args(node, get_text_func_name)
-	local args = {}
-
-	-- Insp(node.parent.snippet.dependents_dict)
-	for _, arg in pairs(node.args_absolute) do
-		-- since arg may be a node, it may not be initialized in the snippet
-		-- and therefore not have an absolute_insert_position. Check for that.
-		if not arg.absolute_insert_position then
-			-- the node is not (yet, maybe) visible.
-			return nil
+	local argnodes_text = {}
+	for _, arg in ipairs(node.args_absolute) do
+		local argnode
+		if key_indexer.is_key(arg) then
+			argnode = node.parent.snippet.dependents_dict:get({"key", arg.key, "node"})
+		else
+			-- since arg may be a node, it may not be initialized in the snippet
+			-- and therefore not have an absolute_insert_position. Check for that.
+			if not arg.absolute_insert_position then
+				-- the node is not (yet, maybe) visible.
+				return nil
+			end
+			local dict_key = arg.absolute_insert_position
+			-- will append to arg.absolute_insert_position, but it's restored
+			-- two lines down.
+			-- (dict:get shouldn't (yeah yeah, you never know, but this really
+			-- shouldn't) fail, so we don't worry with pcall)
+			table.insert(dict_key, "node")
+			argnode = node.parent.snippet.dependents_dict:get(dict_key)
+			dict_key[#dict_key] = nil
 		end
-		local arg_table = node.parent.snippet.dependents_dict:get(
-			arg.absolute_insert_position
-		)
-		if not arg_table then
-			return nil
-		end
-		local arg_node = arg_table.node
 		-- maybe the node is part of a dynamicNode and not yet generated.
-		if not arg_node then
+		if not argnode then
 			return nil
 		end
-		local argnode_text = arg_node[get_text_func_name](arg_node)
+
+		local argnode_text = argnode[get_text_func_name](argnode)
 		-- can only occur with `get_text`. If one returns nil, the argnode
 		-- isn't visible or some other error occured. Either way, return nil
 		-- to signify that not all argnodes are available.
 		if not argnode_text then
 			return nil
 		end
-		args[#args + 1] = arg_node[get_text_func_name](arg_node)
+		table.insert(argnodes_text, argnode_text)
 	end
 
-	return args
+	return argnodes_text
 end
 
 function Node:get_args()
@@ -366,6 +382,9 @@ function Node:set_argnodes(dict)
 		table.insert(self.absolute_insert_position, "node")
 		dict:set(self.absolute_insert_position, self)
 		self.absolute_insert_position[#self.absolute_insert_position] = nil
+	end
+	if self.key then
+		dict:set({"key", self.key, "node"}, self)
 	end
 end
 

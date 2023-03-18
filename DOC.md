@@ -45,6 +45,7 @@ local postfix = require("luasnip.extras.postfix").postfix
 local types = require("luasnip.util.types")
 local parse = require("luasnip.util.parser").parse_snippet
 local ms = ls.multi_snippet
+local k = require("luasnip.nodes.key_indexer").new_key
 ```
 
 As noted in the [Loaders-Lua](#lua)-section:
@@ -120,10 +121,20 @@ It is possible to make snippets from one filetype available to another using
 # Node
 
 Every node accepts, as its last parameter, an optional table of arguments.
-There are some common ones (e.g. `node_ext_opts`, described in
-[ext_opts](#ext_opts)), and some that only apply to some nodes (`user_args`
-for both function and dynamicNode). These `opts` are only mentioned if they
-accept options that are not common to all nodes.
+There are some common ones (which are listed here), and some that only apply to
+some nodes (`user_args` for function/dynamicNode). These `opts` are
+only mentioned if they accept options that are not common to all nodes.
+
+Common opts:
+* `node_ext_opts` and `merge_node_ext_opts`: Control `ext_opts` (most likely
+  highlighting) of the node. Described in detail in [ext_opts](#ext_opts)
+* `key`: The node can be reffered to by this key. Useful for either [Key
+  Indexer](#key-indexer) or for finding the node at runtime (See
+  [Snippets-api](#snippets-api)), for example inside a `dynamicNode`. The keys
+  do not have to be unique across the entire lifetime of the snippet, but at any
+  point in time, the snippet may contain each key only once. This means it is
+  fine to return a keyed node from a `dynamicNode`, because even if it will be
+  generated multiple times, those will not be valid at the same time.
 
 ## Api
 
@@ -251,6 +262,7 @@ which is passed to the function.
 (in most cases `parent == parent.snippet`, but the `parent` of the dynamicNode
 is not always the surrounding snippet, it could be a `snippetNode`).
 
+<a id="snippets-api"></a>
 ## Api
 
 - `invalidate()`: call this method to effectively remove the snippet. The
@@ -258,6 +270,8 @@ is not always the surrounding snippet, it could be a `snippetNode`).
   will also be hidden from lists (at least if the plugin creating the list
   respects the `hidden`-key), but it might be necessary to call
   `ls.refresh_notify(ft)` after invalidating snippets.
+- `get_keyed_node(key)`: Returns the currently visible node associated with
+  `key`.
 
 
 # TextNode
@@ -536,17 +550,24 @@ For example, argnodes in functionNode, dynamicNode or lambda are
 node references.  
 These references can be either of:
   - `number`: the jump-index of the node.
-  This will be resolved relative to the parent of the node this is passed to.
-  (So, only nodes with the same parent can be referenced. This is very easy to
-  grasp, but also limiting)
-  - `absolute_indexer`: the absolute position of the
-  node. This will come in handy if the node that is being referred to is not in the same
-  snippet/snippetNode as the one the node reference is passed to (More in
-  [Absolute Indexer](#absolute-indexer)).
+    This will be resolved relative to the parent of the node this is passed to.
+    (So, only nodes with the same parent can be referenced. This is very easy to
+    grasp, but also limiting)
+  - `key_indexer`: the key of the node, if it is present. This will come in
+    handy if the node that is being referred to is not in the same
+    snippet/snippetNode as the one the node reference is passed to.
+    Also, it is the proper way to refer to a non-interactive node (a
+    functionNode, for example)
+  - `absolute_indexer`: the absolute position of the node. Just like
+    `key_indexer`, it allows addressing non-sibling nodes, but is a bit more
+    awkward to handle since a path from root to node has to be determined,
+    whereas `key_indexer` just needs the key to match.  
+    Due to this, `key_indexer` should be generally preferred.
+    (More information in [Absolute Indexer](#absolute-indexer)).
   - `node`: just the node. Usage of this is discouraged since it can lead to
-  subtle errors (for example, if the node passed here is captured in a closure
-  and therefore not copied with the remaining tables in the snippet; there's a
-  big comment about just this in commit 8bfbd61).
+    subtle errors (for example, if the node passed here is captured in a closure
+    and therefore not copied with the remaining tables in the snippet; there's a
+    big comment about just this in commit 8bfbd61).
 
 # ChoiceNode
 
@@ -928,33 +949,50 @@ that really bothers you feel free to open an issue.
 
 <!-- panvimdoc-ignore-end -->
 
-# Absolute Indexer
+# Key Indexer
 
-The most capable way of referencing nodes ([Node Reference](#node-reference)).  
-Using only a [Jump-Index](#jump-index), accessing an outer `i(1)` isn't possible
-from inside e.g. a snippetNode, since only nodes with the same parent can be
-referenced (jump indices are interpreted relative to the parent of the node
-that's passed the reference).  
-The `absolute_indexer` can be used to reference nodes based on their absolute
-position in the snippet, which lifts this restriction.  
+A very flexible way of referencing nodes ([Node Reference](#node-reference)).  
+While the straightforward way of addressing nodes via their
+[Jump-Index](#jump-index) suffices in most cases, a `dynamic/functionNode` can
+only depend on nodes in the same snippet(Node), its siblings (since the index is
+interpreted as relative to their parent). Accessing a node with a different
+parent is thus not possible. Secondly, and less relevant, only nodes that
+actually have a jump-index can be referred to (a `functionNode`, for example,
+cannot be depended on).  
+Both of these restrictions are lifted with `key_indexer`:  
+It allows addressing nodes by their key, which can be set when the node is
+constructed, and is wholly independent of the nodes' position in the snippet,
+thus enabling descriptive labeling.
 
+The following snippets demonstrate the issue and the solution by using
+`key_indexer`:
+
+First, the addressed problem of referring to nodes outside the `functionNode`s
+parent:
 ```lua
 s("trig", {
 	i(1), c(2, {
 		sn(nil, {
-			t"cannot access the argnode :(", f(function(args) return args[1] end, {???})
+			t"cannot access the argnode :(",
+			f(function(args)
+			    return args[1]
+            end, {???}) -- can't refer to i(1), since it isn't a sibling of `f`.
 		}),
 		t"sample_text"
 	})
 })
 ```
 
-Using `absolute_indexer`, it's possible to do so:
+And the solution: first give the node we want to refer to a key, and then pass
+the same to the `functionNode`.
 ```lua
 s("trig", {
-	i(1), c(2, {
+	i(1, "", {key = "i1-key"}), c(2, {
 		sn(nil, { i(1),
-			t"can access the argnode :)", f(function(args) return args[1] end, ai[1])
+			t"can access the argnode :)",
+			f(function(args)
+                return args[1]
+            end, k("i1-key") )
 		}),
 		t"sample_text"
 	})
@@ -963,9 +1001,35 @@ s("trig", {
 
 <!-- panvimdoc-ignore-start -->
 
-![AbsoluteIndexer](https://user-images.githubusercontent.com/25300418/184359369-3bbd2b30-33d1-4a5d-9474-19367867feff.gif)
+![Key/AbsoluteIndexer](https://user-images.githubusercontent.com/25300418/184359369-3bbd2b30-33d1-4a5d-9474-19367867feff.gif)
 
 <!-- panvimdoc-ignore-end -->
+
+
+# Absolute Indexer
+
+`absolute_indexer` allows accessing nodes by their unique jump-index path from
+the snippet-root. This makes it almost as powerful as [Key
+Indexer](#key-indexer), but again removes the possibility of referring to
+non-jumpable nodes and makes it all a bit more error-prone since the jump-index
+paths are hard to follow, and (unfortunately) have to be a bit verbose (see the
+long example of `absolute_indexer`-positions below). Consider just using [Key
+Indexer](#key-indexer) instead.  
+
+(The solution-snippet from [Key Indexer](#key-indexer), but using `ai` instead.)
+```lua
+s("trig", {
+	i(1), c(2, {
+		sn(nil, { i(1),
+			t"can access the argnode :)",
+			f(function(args)
+                return args[1]
+            end, ai(1) )
+		}),
+		t"sample_text"
+	})
+})
+```
 
 There are some quirks in addressing nodes:
 ```lua

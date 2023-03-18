@@ -103,6 +103,7 @@ function M.session_setup_luasnip(opts)
 			ai = require("luasnip.nodes.absolute_indexer")
 			sp = require("luasnip.nodes.snippetProxy")
 			pf = require("luasnip.extras.postfix").postfix
+			k = require("luasnip.nodes.key_indexer").new_key
 		]])
 	end
 end
@@ -210,5 +211,23 @@ M.loaders = {
 		)
 	end,
 }
+
+function M.check_global_node_refs(test_name, resolve_map, fn)
+	for _, index_strategy in ipairs({"absolute_indexer", "key_indexer"}) do
+		getfenv(2).it(("%s (%s)."):format(test_name, index_strategy), function()
+			exec_lua([[
+				resolve_map, strategy = ...
+				function _luasnip_test_resolve(key)
+					if strategy == "absolute_indexer" then
+						return ai(resolve_map[key][1])
+					else
+						return k(resolve_map[key][2])
+					end
+				end
+			]], resolve_map, index_strategy)
+			fn()
+		end)
+	end
+end
 
 return M
