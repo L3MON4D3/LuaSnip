@@ -99,4 +99,87 @@ function M.lsp_static_test(snip_str, static)
 	)
 end
 
+M.loaders = {
+	["vscode(rtp)"] = function()
+		exec(
+			"set rtp+="
+				.. os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/vscode-snippets"
+		)
+		exec_lua('require("luasnip.loaders.from_vscode").load()')
+	end,
+	["vscode(path)"] = function()
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_vscode").load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
+			)
+		)
+	end,
+	["vscode(lazy)"] = function()
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_vscode").lazy_load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
+			)
+		)
+	end,
+
+	["snipmate(rtp)"] = function()
+		exec(
+			"set rtp+="
+				.. os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/snipmate-snippets"
+		)
+		exec_lua('require("luasnip.loaders.from_snipmate").load()')
+	end,
+	["snipmate(path)"] = function(dir)
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_snipmate").load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/"
+					.. dir
+			)
+		)
+	end,
+	["snipmate(lazy)"] = function(dir)
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_snipmate").lazy_load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/"
+					.. dir
+			)
+		)
+	end,
+
+	["lua(rtp)"] = function()
+		exec(
+			"set rtp+="
+				.. os.getenv("LUASNIP_SOURCE")
+				.. "/tests/data/lua-snippets"
+		)
+		exec_lua('require("luasnip.loaders.from_lua").load()')
+	end,
+	["lua(path)"] = function()
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets"
+			)
+		)
+	end,
+	["lua(lazy)"] = function()
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").lazy_load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets"
+			)
+		)
+	end,
+}
+
 return M
