@@ -4,91 +4,8 @@ local ls_helpers = require("helpers")
 local Screen = require("test.functional.ui.screen")
 local assert = require("luassert")
 
-local loaders = {
-	["vscode(rtp)"] = function()
-		exec(
-			"set rtp+="
-				.. os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/vscode-snippets"
-		)
-		exec_lua('require("luasnip.loaders.from_vscode").load()')
-	end,
-	["vscode(path)"] = function()
-		exec_lua(
-			string.format(
-				[[require("luasnip.loaders.from_vscode").load({paths="%s"})]],
-				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
-			)
-		)
-	end,
-	["vscode(lazy)"] = function()
-		exec_lua(
-			string.format(
-				[[require("luasnip.loaders.from_vscode").lazy_load({paths="%s"})]],
-				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
-			)
-		)
-	end,
-
-	["snipmate(rtp)"] = function()
-		exec(
-			"set rtp+="
-				.. os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/snipmate-snippets"
-		)
-		exec_lua('require("luasnip.loaders.from_snipmate").load()')
-	end,
-	["snipmate(path)"] = function(dir)
-		exec_lua(
-			string.format(
-				[[require("luasnip.loaders.from_snipmate").load({paths="%s"})]],
-				os.getenv("LUASNIP_SOURCE")
-					.. "/tests/data/snipmate-snippets/"
-					.. dir
-			)
-		)
-	end,
-	["snipmate(lazy)"] = function(dir)
-		exec_lua(
-			string.format(
-				[[require("luasnip.loaders.from_snipmate").lazy_load({paths="%s"})]],
-				os.getenv("LUASNIP_SOURCE")
-					.. "/tests/data/snipmate-snippets/"
-					.. dir
-			)
-		)
-	end,
-
-	["lua(rtp)"] = function()
-		exec(
-			"set rtp+="
-				.. os.getenv("LUASNIP_SOURCE")
-				.. "/tests/data/lua-snippets"
-		)
-		exec_lua('require("luasnip.loaders.from_lua").load()')
-	end,
-	["lua(path)"] = function()
-		exec_lua(
-			string.format(
-				[[require("luasnip.loaders.from_lua").load({paths="%s"})]],
-				os.getenv("LUASNIP_SOURCE")
-					.. "/tests/data/lua-snippets/luasnippets"
-			)
-		)
-	end,
-	["lua(lazy)"] = function()
-		exec_lua(
-			string.format(
-				[[require("luasnip.loaders.from_lua").lazy_load({paths="%s"})]],
-				os.getenv("LUASNIP_SOURCE")
-					.. "/tests/data/lua-snippets/luasnippets"
-			)
-		)
-	end,
-}
-
 local function for_all_loaders(message, fn)
-	for name, load in pairs(loaders) do
+	for name, load in pairs(ls_helpers.loaders) do
 		it(name .. " " .. message, function()
 			-- needed for snipmate-loader.
 			load("snippets")
@@ -188,9 +105,9 @@ describe("loaders:", function()
 	end)
 
 	it("Can lazy-load from multiple sources", function()
-		loaders["snipmate(lazy)"]("snippets")
-		loaders["vscode(lazy)"]()
-		loaders["lua(lazy)"]()
+		ls_helpers.loaders["snipmate(lazy)"]("snippets")
+		ls_helpers.loaders["vscode(lazy)"]()
+		ls_helpers.loaders["lua(lazy)"]()
 		-- triggers actual load for `lazy_load()`s'
 		exec("set ft=lua")
 		-- wait a bit for async-operations to finish
@@ -200,8 +117,8 @@ describe("loaders:", function()
 	end)
 
 	it("Can lazy-load from multiple snipmate-collections.", function()
-		loaders["snipmate(lazy)"]("snippets")
-		loaders["snipmate(lazy)"]("snippets1")
+		ls_helpers.loaders["snipmate(lazy)"]("snippets")
+		ls_helpers.loaders["snipmate(lazy)"]("snippets1")
 		exec("set ft=lua")
 		-- triggers actual load for `lazy_load()`s'
 		-- wait a bit for async-operations to finish
@@ -211,7 +128,7 @@ describe("loaders:", function()
 	end)
 
 	it("Can load with extends (snipmate)", function()
-		loaders["snipmate(lazy)"]("snippets")
+		ls_helpers.loaders["snipmate(lazy)"]("snippets")
 		-- triggers actual load for `lazy_load()`s'
 		exec("set ft=vim")
 		-- wait a bit for async-operations to finish
@@ -371,7 +288,7 @@ describe("loaders:", function()
 	end)
 
 	it("vscode-options work.", function()
-		loaders["vscode(rtp)"]()
+		ls_helpers.loaders["vscode(rtp)"]()
 		exec("set ft=prio")
 
 		feed("ibbbb")
@@ -406,7 +323,7 @@ describe("loaders:", function()
 	end)
 
 	it("snipmate-options work.", function()
-		loaders["snipmate(rtp)"]()
+		ls_helpers.loaders["snipmate(rtp)"]()
 		exec("set ft=prio")
 
 		feed("ibbbb")
@@ -444,7 +361,7 @@ describe("loaders:", function()
 	end)
 
 	it("Can load jsonc.", function()
-		loaders["vscode(rtp)"]()
+		ls_helpers.loaders["vscode(rtp)"]()
 
 		feed("ijsonc")
 		exec_lua("ls.expand()")
@@ -460,21 +377,21 @@ describe("loaders:", function()
 
 	reload_test(
 		"snipmate-reload works",
-		loaders["snipmate(rtp)"],
+		ls_helpers.loaders["snipmate(rtp)"],
 		"/tests/data/snipmate-snippets/snippets/all.snippets",
 		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1"
 	)
 
 	reload_test(
 		"vscode-reload works",
-		loaders["vscode(rtp)"],
+		ls_helpers.loaders["vscode(rtp)"],
 		"/tests/data/vscode-snippets/snippets/all.json",
 		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
 	)
 
 	reload_test(
 		"lua-reload works",
-		loaders["lua(rtp)"],
+		ls_helpers.loaders["lua(rtp)"],
 		"/tests/data/lua-snippets/luasnippets/all.lua",
 		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
 	)
