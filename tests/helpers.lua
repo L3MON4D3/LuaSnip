@@ -1,5 +1,6 @@
 local helpers = require("test.functional.helpers")(after_each)
 local exec_lua = helpers.exec_lua
+local exec = helpers.exec
 local assert = require("luassert")
 
 local M = {}
@@ -28,6 +29,8 @@ function M.session_setup_luasnip(opts)
 	opts = opts or {}
 	local no_snip_globals = opts.no_snip_globals ~= nil and opts.no_snip_globals
 		or false
+	local setup_extend = opts.setup_extend ~= nil and opts.setup_extend
+		or {}
 
 	-- stylua: ignore
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
@@ -39,15 +42,14 @@ function M.session_setup_luasnip(opts)
 	)
 
 	helpers.exec_lua([[
+		-- MYVIMRC might not be set when nvim is loaded like this.
+		vim.env.MYVIMRC = "/.vimrc"
 
-	-- MYVIMRC might not be set when nvim is loaded like this.
-	vim.env.MYVIMRC = "/.vimrc"
-
-	ls = require("luasnip")
-	ls.setup({
-		store_selection_keys = "<Tab>"
-	})
-	]])
+		ls = require("luasnip")
+		ls.setup(vim.tbl_extend("force", {
+			store_selection_keys = "<Tab>"
+		}, ...))
+	]], setup_extend)
 
 	if not no_snip_globals then
 		helpers.exec_lua([[
