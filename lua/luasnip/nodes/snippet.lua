@@ -557,10 +557,9 @@ function Snippet:trigger_expand(current_node, pos_id, env)
 	local old_pos = vim.deepcopy(pos)
 	self:put_initial(pos)
 
-	-- update() may insert text, set marks appropriately.
 	local mark_opts = vim.tbl_extend("keep", {
 		right_gravity = false,
-		end_right_gravity = true,
+		end_right_gravity = false,
 	}, self:get_passive_ext_opts())
 	self.mark = mark(old_pos, pos, mark_opts)
 
@@ -630,43 +629,6 @@ function Snippet:matches(line_to_cursor)
 	return { trigger = match, captures = captures }
 end
 
-function Snippet:enter_node(node_id)
-	if self.parent then
-		self.parent:enter_node(self.indx)
-	end
-
-	for i = 1, node_id - 1 do
-		self.nodes[i]:set_mark_rgrav(false, false)
-	end
-
-	local node = self.nodes[node_id]
-	node:set_mark_rgrav(
-		node.ext_gravities_active[1],
-		node.ext_gravities_active[2]
-	)
-
-	local _, node_to = node.mark:pos_begin_end_raw()
-	local i = node_id + 1
-	while i <= #self.nodes do
-		local other = self.nodes[i]
-		local other_from, other_to = other.mark:pos_begin_end_raw()
-
-		local end_equal = util.pos_equal(other_to, node_to)
-		other:set_mark_rgrav(util.pos_equal(other_from, node_to), end_equal)
-		i = i + 1
-
-		-- As soon as one end-mark wasn't equal, we no longer have to check as the
-		-- marks don't overlap.
-		if not end_equal then
-			break
-		end
-	end
-	while i <= #self.nodes do
-		self.nodes[i]:set_mark_rgrav(false, false)
-		i = i + 1
-	end
-end
-
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
 local function copy3(obj, seen)
 	-- Handle non-tables and previously-seen tables.
@@ -689,26 +651,6 @@ end
 
 function Snippet:copy()
 	return copy3(self)
-end
-
-function Snippet:set_text(node, text)
-	local node_from, node_to = node.mark:pos_begin_end_raw()
-
-	self:enter_node(node.indx)
-	local ok = pcall(
-		vim.api.nvim_buf_set_text,
-		0,
-		node_from[1],
-		node_from[2],
-		node_to[1],
-		node_to[2],
-		text
-	)
-	-- we can assume that (part of) the snippet was deleted; remove it from
-	-- the jumplist.
-	if not ok then
-		error("[LuaSnip Failed]: " .. vim.inspect(text))
-	end
 end
 
 function Snippet:del_marks()
@@ -1007,94 +949,6 @@ function Snippet:exit()
 	self.active = false
 end
 
-function Snippet:set_mark_rgrav(val_begin, val_end)
-	-- set own markers.
-	node_mod.Node.set_mark_rgrav(self, val_begin, val_end)
-
-	local snip_pos_begin, snip_pos_end = self.mark:pos_begin_end_raw()
-
-	if
-		snip_pos_begin[1] == snip_pos_end[1]
-		and snip_pos_begin[2] == snip_pos_end[2]
-	then
-		for _, node in ipairs(self.nodes) do
-			node:set_mark_rgrav(val_begin, val_end)
-		end
-		return
-	end
-
-	local node_indx = 1
-	-- the first node starts at begin-mark.
-	local node_on_begin_mark = true
-
-	-- only change gravities on nodes that absolutely have to.
-	while node_on_begin_mark do
-		-- will be set later if the next node has to be updated as well.
-		node_on_begin_mark = false
-		local node = self.nodes[node_indx]
-		if not node then
-			break
-		end
-		local node_pos_begin, node_pos_end = node.mark:pos_begin_end_raw()
-		-- use false, false as default, this is what most nodes will be set to.
-		local new_rgrav_begin, new_rgrav_end =
-			node.mark.opts.right_gravity, node.mark.opts.end_right_gravity
-		if
-			node_pos_begin[1] == snip_pos_begin[1]
-			and node_pos_begin[2] == snip_pos_begin[2]
-		then
-			new_rgrav_begin = val_begin
-
-			if
-				node_pos_end[1] == snip_pos_begin[1]
-				and node_pos_end[2] == snip_pos_begin[2]
-			then
-				new_rgrav_end = val_begin
-				-- both marks of this node were on the beginning of the snippet
-				-- so this has to be checked again for the next node.
-				node_on_begin_mark = true
-				node_indx = node_indx + 1
-			end
-		end
-		node:set_mark_rgrav(new_rgrav_begin, new_rgrav_end)
-	end
-
-	-- the first node starts at begin-mark.
-	local node_on_end_mark = true
-
-	node_indx = #self.nodes
-	while node_on_end_mark do
-		local node = self.nodes[node_indx]
-		if not node then
-			break
-		end
-		local node_pos_begin, node_pos_end = node.mark:pos_begin_end_raw()
-		-- will be set later if the next node has to be updated as well.
-		node_on_end_mark = false
-		-- use false, false as default, this is what most nodes will be set to.
-		local new_rgrav_begin, new_rgrav_end =
-			node.mark.opts.right_gravity, node.mark.opts.end_right_gravity
-		if
-			node_pos_end[1] == snip_pos_end[1]
-			and node_pos_end[2] == snip_pos_end[2]
-		then
-			new_rgrav_end = val_end
-
-			if
-				node_pos_begin[1] == snip_pos_end[1]
-				and node_pos_begin[2] == snip_pos_end[2]
-			then
-				new_rgrav_begin = val_end
-				-- both marks of this node were on the end-mark of the snippet
-				-- so this has to be checked again for the next node.
-				node_on_end_mark = true
-				node_indx = node_indx - 1
-			end
-		end
-		node:set_mark_rgrav(new_rgrav_begin, new_rgrav_end)
-	end
-end
-
 function Snippet:text_only()
 	for _, node in ipairs(self.nodes) do
 		if node.type ~= types.textNode then
@@ -1281,6 +1135,59 @@ end
 function Snippet:get_keyed_node(key)
 	-- get key-node from dependents_dict.
 	return self.dependents_dict:get({ "key", key, "node" })
+end
+
+-- assumption: direction-endpoint of node at child_from_indx is on child_endpoint.
+-- (caller responsible)
+local function adjust_children_rgravs(self, child_endpoint, child_from_indx, direction, rgrav)
+	local i = child_from_indx
+	local node = self.nodes[i]
+	while node do
+		local direction_node_endpoint = node.mark:get_endpoint(direction)
+		if util.pos_equal(direction_node_endpoint, child_endpoint) then
+			-- both endpoints of node are on top of child_endpoint (we wouldn't
+			-- be in the loop with `node` if the -direction-endpoint didn't
+			-- match), so update rgravs of the entire subtree to match rgrav
+			node:subtree_set_rgrav(rgrav)
+		else
+			-- only the -direction-endpoint matches child_endpoint, adjust its
+			-- position and break the loop (don't need to look at any other
+			-- siblings).
+			node:subtree_set_pos_rgrav(child_endpoint, direction, rgrav)
+			break
+		end
+
+		i = i+direction
+		node = self.nodes[i]
+	end
+end
+
+-- adjust rgrav of nodes left (direction=-1) or right (direction=1) of node at
+-- child_indx.
+-- (direction is the direction into which is searched, from child_indx outward)
+function Snippet:set_sibling_rgravs(child_endpoint, child_indx, direction, rgrav)
+	adjust_children_rgravs(self, child_endpoint, child_indx+direction, direction, rgrav)
+end
+
+-- called only if the "-direction"-endpoint has to be changed, but the
+-- "direction"-endpoint not.
+function Snippet:subtree_set_pos_rgrav(pos, direction, rgrav)
+	self.mark:set_rgrav(-direction, rgrav)
+
+	local child_from_indx
+	if direction == 1 then
+		child_from_indx = 1
+	else
+		child_from_indx = #self.nodes
+	end
+	adjust_children_rgravs(self, pos, child_from_indx, direction, rgrav)
+end
+-- changes rgrav of all nodes and all endpoints in this snippetNode to `rgrav`.
+function Snippet:subtree_set_rgrav(rgrav)
+	self.mark:set_rgravs(rgrav, rgrav)
+	for _, node in ipairs(self.nodes) do
+		node:subtree_set_rgrav(rgrav)
+	end
 end
 
 return {

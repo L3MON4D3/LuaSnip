@@ -1,4 +1,5 @@
-local InsertNode = require("luasnip.nodes.node").Node:new()
+local Node = require("luasnip.nodes.node")
+local InsertNode = Node.Node:new()
 local ExitNode = InsertNode:new()
 local util = require("luasnip.util.util")
 local types = require("luasnip.util.types")
@@ -42,24 +43,44 @@ function ExitNode:input_enter(no_move, dry_run)
 		InsertNode.input_enter(self, no_move, dry_run)
 	else
 		-- -1-node:
-		self:set_mark_rgrav(true, true)
-		if not no_move then
-			local mark_begin_pos = self.mark:pos_begin_raw()
+		-- set rgrav true on left side of snippet. Text inserted now pushes the
+		-- snippet, and is not contained in it.
+		local begin_pos = self.mark:pos_begin_raw()
+		self.parent:subtree_set_pos_rgrav(begin_pos, 1, true)
 
+		if not no_move then
 			if vim.fn.mode() == "i" then
-				util.insert_move_on(mark_begin_pos)
+				util.insert_move_on(begin_pos)
 			else
 				vim.api.nvim_feedkeys(
 					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
 					"n",
 					true
 				)
-				util.normal_move_on_insert(mark_begin_pos)
+				util.normal_move_on_insert(begin_pos)
 			end
 		end
 
 		self:event(events.enter)
 	end
+end
+
+function ExitNode:focus()
+	local lrgrav, rrgrav
+	local snippet = self.parent
+	-- if last of first node of the snippet, make inserted text move out of snippet.
+	if snippet.nodes[#snippet.nodes] == self then
+		lrgrav = false
+		rrgrav = false
+	elseif snippet.nodes[1] == self then
+		lrgrav = true
+		rrgrav = true
+	else
+		lrgrav = false
+		rrgrav = true
+	end
+
+	Node.focus_node(self, lrgrav, rrgrav)
 end
 
 function ExitNode:input_leave(no_move, dry_run)
@@ -111,9 +132,11 @@ function InsertNode:input_enter(no_move, dry_run)
 	self.visited = true
 	self.mark:update_opts(self.ext_opts.active)
 
-	if not no_move then
-		self.parent:enter_node(self.indx)
+	-- no_move only prevents moving the cursor, but the active node should
+	-- still be focused.
+	self:focus()
 
+	if not no_move then
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 		local mark_begin_pos, mark_end_pos = self.mark:pos_begin_end_raw()
 		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
@@ -132,8 +155,6 @@ function InsertNode:input_enter(no_move, dry_run)
 				util.normal_move_on_insert(mark_begin_pos)
 			end
 		end
-	else
-		self.parent:enter_node(self.indx)
 	end
 
 	self:event(events.enter)

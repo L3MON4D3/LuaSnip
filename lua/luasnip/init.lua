@@ -414,7 +414,7 @@ end
 
 local function active_update_dependents()
 	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
-	-- special case for startNode, cannot enter_node on those (and they can't
+	-- special case for startNode, cannot focus on those (and they can't
 	-- have dependents)
 	-- don't update if a jump/change_choice is in progress.
 	if not session.jump_active and active and active.pos > 0 then
@@ -440,7 +440,7 @@ local function active_update_dependents()
 		end
 
 		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
-		ok, err = pcall(active.parent.enter_node, active.parent, active.indx)
+		ok, err = pcall(active.focus, active)
 		if not ok then
 			log.warn(
 				"Error while entering node in snippet %s: %s",
