@@ -139,7 +139,7 @@ function ChoiceNode:input_enter(_, dry_run)
 	end
 
 	self.mark:update_opts(self.ext_opts.active)
-	self.parent:enter_node(self.indx)
+	self:focus()
 
 	self.prev_choice_node = session.active_choice_node
 	session.active_choice_node = self
@@ -254,9 +254,9 @@ function ChoiceNode:set_choice(choice, current_node)
 	--
 	-- active_choice has to be disabled (nilled?) to prevent reading from
 	-- cleared mark in set_mark_rgrav (which will be called in
-	-- parent:set_text(self,...) a few lines below).
+	-- self:set_text({""}) a few lines below).
 	self.active_choice = nil
-	self.parent:set_text(self, { "" })
+	self:set_text({ "" })
 
 	self.active_choice = choice
 
@@ -269,14 +269,19 @@ function ChoiceNode:set_choice(choice, current_node)
 	self:init_positions(self.absolute_position)
 	self:init_insert_positions(self.absolute_insert_position)
 
+	-- self is still focused, from `set_text`.
 	self.active_choice:put_initial(self.mark:pos_begin_raw())
+	-- adjust gravity in left side of inserted node, such that it matches the
+	-- current gravity of self.
+	local _, to = self.mark:pos_begin_end_raw()
+	self.active_choice:subtree_set_pos_rgrav(to, -1, true)
 
 	self.active_choice:update_restore()
 	self.active_choice:update_all_dependents()
 	self:update_dependents()
 
 	-- Another node may have been entered in update_dependents.
-	self.parent:enter_node(self.indx)
+	self:focus()
 	self:event(events.change_choice)
 
 	if self.restore_cursor then
@@ -339,15 +344,6 @@ function ChoiceNode:exit()
 	self.active = false
 end
 
--- val_begin/end may be nil, in this case that gravity won't be changed.
-function ChoiceNode:set_mark_rgrav(rgrav_beg, rgrav_end)
-	Node.set_mark_rgrav(self, rgrav_beg, rgrav_end)
-	-- may be set to temporarily in change_choice.
-	if self.active_choice then
-		self.active_choice:set_mark_rgrav(rgrav_beg, rgrav_end)
-	end
-end
-
 function ChoiceNode:set_ext_opts(name)
 	Node.set_ext_opts(self, name)
 
@@ -401,6 +397,20 @@ end
 function ChoiceNode:static_init()
 	Node.static_init(self)
 	self.active_choice:static_init()
+end
+
+function ChoiceNode:subtree_set_pos_rgrav(pos, direction, rgrav)
+	self.mark:set_rgrav(-direction, rgrav)
+	if self.active_choice then
+		self.active_choice:subtree_set_pos_rgrav(pos, direction, rgrav)
+	end
+end
+
+function ChoiceNode:subtree_set_rgrav(rgrav)
+	self.mark:set_rgravs(rgrav, rgrav)
+	if self.active_choice then
+		self.active_choice:subtree_set_rgrav(rgrav)
+	end
 end
 
 return {

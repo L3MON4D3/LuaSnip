@@ -146,15 +146,48 @@ function Mark:set_opts(opts)
 	)
 end
 
-function Mark:update_rgravs(rgrav_beg, rgrav_end)
+function Mark:set_rgravs(rgrav_left, rgrav_right)
 	-- don't update if nothing would change.
 	if
-		self.opts.right_gravity ~= rgrav_beg
-		or self.opts.end_right_gravity ~= rgrav_end
+		self.opts.right_gravity ~= rgrav_left
+		or self.opts.end_right_gravity ~= rgrav_right
 	then
-		self.opts.right_gravity = rgrav_beg
-		self.opts.end_right_gravity = rgrav_end
+		self.opts.right_gravity = rgrav_left
+		self.opts.end_right_gravity = rgrav_right
 		self:set_opts(self.opts)
+	end
+end
+
+function Mark:get_rgrav(which)
+	if which == -1 then
+		return self.opts.right_gravity
+	else
+		return self.opts.end_right_gravity
+	end
+end
+
+function Mark:set_rgrav(which, rgrav)
+	if which == -1 then
+		if self.opts.right_gravity == rgrav then
+			return
+		end
+		self.opts.right_gravity = rgrav
+	else
+		if self.opts.end_right_gravity == rgrav then
+			return
+		end
+		self.opts.end_right_gravity = rgrav
+	end
+	self:set_opts(self.opts)
+end
+
+function Mark:get_endpoint(which)
+	-- simpler for now, look into perf here later.
+	local l, r = self:pos_begin_end_raw()
+	if which == -1 then
+		return l
+	else
+		return r
 	end
 end
 

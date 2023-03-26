@@ -73,7 +73,7 @@ function DynamicNode:get_docstring()
 	return self.docstring
 end
 
--- DynamicNode's don't have static text, nop these.
+-- DynamicNode's don't have static text, only set as visible.
 function DynamicNode:put_initial(_)
 	self.visible = true
 end
@@ -136,10 +136,10 @@ function DynamicNode:update()
 		self.snip:exit()
 		self.snip = nil
 
-		-- enters node.
-		self.parent:set_text(self, { "" })
+		-- focuses node.
+		self:set_text({ "" })
 	else
-		self.parent:enter_node(self.indx)
+		self:focus()
 		if not args then
 			-- no snippet exists, set an empty one.
 			tmp = SnippetNode(nil, {})
@@ -184,8 +184,16 @@ function DynamicNode:update()
 	end
 	tmp:indent(self.parent.indentstr)
 
-	self.parent:enter_node(self.indx)
-	tmp:put_initial(self.mark:pos_begin_raw())
+	-- sets own extmarks false,true
+	self:focus()
+	local from, to = self.mark:pos_begin_end_raw()
+	-- inserts nodes with extmarks false,false
+	tmp:put_initial(from)
+	-- adjust gravity in left side of snippet, such that it matches the current
+	-- gravity of self.
+	tmp:subtree_set_pos_rgrav(to, -1, true)
+
+	self.snip = tmp
 
 	-- Update, tbh no idea how that could come in handy, but should be done.
 	-- Both are needed, because
@@ -194,7 +202,6 @@ function DynamicNode:update()
 	tmp:update()
 	tmp:update_all_dependents()
 
-	self.snip = tmp
 	self:update_dependents()
 end
 
@@ -293,13 +300,6 @@ function DynamicNode:update_static()
 	self:update_dependents_static()
 end
 
-function DynamicNode:set_mark_rgrav(val_begin, val_end)
-	Node.set_mark_rgrav(self, val_begin, val_end)
-	if self.snip then
-		self.snip:set_mark_rgrav(val_begin, val_end)
-	end
-end
-
 function DynamicNode:exit()
 	self.visible = false
 	self.mark:clear()
@@ -331,7 +331,6 @@ end
 function DynamicNode:update_restore()
 	-- only restore snippet if arg-values still match.
 	if self.stored_snip and vim.deep_equal(self:get_args(), self.last_args) then
-		-- prevent entering the uninitialized snip in enter_node in a few lines.
 		local tmp = self.stored_snip
 
 		tmp.mark =
@@ -347,8 +346,15 @@ function DynamicNode:update_restore()
 		tmp:set_dependents()
 		tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
-		self.parent:enter_node(self.indx)
-		tmp:put_initial(self.mark:pos_begin_raw())
+		-- sets own extmarks false,true
+		self:focus()
+		-- inserts nodes with extmarks false,false
+		local from, to = self.mark:pos_begin_end_raw()
+		tmp:put_initial(from)
+		-- adjust gravity in left side of snippet, such that it matches the current
+		-- gravity of self.
+		tmp:subtree_set_pos_rgrav(to, -1, true)
+
 		tmp:update_restore()
 
 		self.snip = tmp
@@ -397,6 +403,20 @@ DynamicNode.set_dependents = FunctionNode.set_dependents
 function DynamicNode:resolve_position(position)
 	-- position must be 0, there are no other options.
 	return self.snip
+end
+
+function DynamicNode:subtree_set_pos_rgrav(pos, direction, rgrav)
+	self.mark:set_rgrav(-direction, rgrav)
+	if self.snip then
+		self.snip:subtree_set_pos_rgrav(pos, direction, rgrav)
+	end
+end
+
+function DynamicNode:subtree_set_rgrav(rgrav)
+	self.mark:set_rgravs(rgrav, rgrav)
+	if self.snip then
+		self.snip:subtree_set_rgrav(rgrav)
+	end
 end
 
 return {
