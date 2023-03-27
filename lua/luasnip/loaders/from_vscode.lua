@@ -15,7 +15,7 @@ local function json_decode(data)
 	end
 end
 
-local function get_file_snippets(file)
+local function get_file_snippets(lang, file)
 	local lang_snips = {}
 	local auto_lang_snips = {}
 
@@ -33,6 +33,14 @@ local function get_file_snippets(file)
 	for name, parts in pairs(snippet_set_data) do
 		local body = type(parts.body) == "string" and parts.body
 			or table.concat(parts.body, "\n")
+
+			-- Skip entire snippet if entry has `scope` field mismatching lang
+			-- This prevents snippets mapped by package.json to one language
+			-- to be used for another. This is not part of LSP Snippets! See:
+			-- https://code.visualstudio.com/docs/editor/userdefinedsnippets#_snippet-scope
+			if type(parts.scope) == "string" and not parts.scope:match(lang) then
+				goto continue
+			end
 
 		-- There are still some snippets that fail while loading
 		pcall(function()
@@ -57,6 +65,8 @@ local function get_file_snippets(file)
 				end
 			end
 		end)
+
+		::continue::
 	end
 
 	return lang_snips, auto_lang_snips
@@ -73,7 +83,7 @@ local function load_snippet_files(lang, files, add_opts)
 				auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
 				cached_path.fts[lang] = true
 			else
-				lang_snips, auto_lang_snips = get_file_snippets(file)
+				lang_snips, auto_lang_snips = get_file_snippets(lang, file)
 				-- store snippets to prevent parsing the same file more than once.
 				cache.path_snippets[file] = {
 					snippets = vim.deepcopy(lang_snips),
@@ -82,7 +92,6 @@ local function load_snippet_files(lang, files, add_opts)
 					fts = { [lang] = true },
 				}
 			end
-
 			ls.add_snippets(
 				lang,
 				lang_snips,
@@ -264,7 +273,6 @@ function M.lazy_load(opts)
 
 	local ft_files = get_snippet_files(opts)
 	local add_opts = loader_util.add_opts(opts)
-
 	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
 
 	-- immediately load filetypes that have already been loaded.
