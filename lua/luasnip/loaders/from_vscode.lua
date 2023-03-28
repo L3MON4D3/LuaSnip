@@ -34,13 +34,13 @@ local function get_file_snippets(lang, file)
 		local body = type(parts.body) == "string" and parts.body
 			or table.concat(parts.body, "\n")
 
-			-- Skip entire snippet if entry has `scope` field mismatching lang
-			-- This prevents snippets mapped by package.json to one language
-			-- to be used for another. This is not part of LSP Snippets! See:
-			-- https://code.visualstudio.com/docs/editor/userdefinedsnippets#_snippet-scope
-			if type(parts.scope) == "string" and not parts.scope:match(lang) then
-				goto continue
-			end
+		-- Skip entire snippet if entry has `scope` field mismatching lang
+		-- This prevents snippets mapped by package.json to one language
+		-- to be used for another. This is not part of LSP Snippets! See:
+		-- https://code.visualstudio.com/docs/editor/userdefinedsnippets#_snippet-scope
+		if type(parts.scope) == "string" and not parts.scope:match(lang) then
+			goto continue
+		end
 
 		-- There are still some snippets that fail while loading
 		pcall(function()
