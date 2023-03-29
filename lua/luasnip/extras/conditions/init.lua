@@ -42,6 +42,7 @@ local condition_mt = {
 		return tab.func(line_to_cursor, matched_trigger, captures)
 	end,
 }
+
 function M.make_condition(func)
 	return setmetatable({ func = func }, condition_mt)
 end

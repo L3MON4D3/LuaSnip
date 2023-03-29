@@ -1355,6 +1355,8 @@ a snippet's `condition` or `show_condition`. These are grouped accordingly into
 
 **`show`**:
 - `line_end`: only expand at the end of the line.
+- `has_selected_text`: only expand if there's selected text stored after pressing
+  `store_selection_keys`. 
 
 Additionally, `expand` contains all conditions provided by `show`.
 
