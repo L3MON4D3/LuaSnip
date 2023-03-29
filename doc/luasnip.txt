@@ -1304,7 +1304,9 @@ into `luasnip.extras.conditions.expand` and `luasnip.extras.conditions.show`:
 **expand**: - `line_begin`: only expand if the cursor is at the beginning of
 the line.
 
-**show**: - `line_end`: only expand at the end of the line.
+**show**: - `line_end`: only expand at the end of the line. -
+`has_selected_text`: only expand if there’s selected text stored after
+pressing `store_selection_keys`.
 
 Additionally, `expand` contains all conditions provided by `show`.
 

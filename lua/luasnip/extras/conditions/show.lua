@@ -13,4 +13,9 @@ local function line_end(line_to_cursor)
 end
 M.line_end = cond_obj.make_condition(line_end)
 
+local function has_selected_text()
+	return vim.b.LUASNIP_TM_SELECT ~= nil
+end
+M.has_selected_text = cond_obj.make_condition(has_selected_text)
+
 return M
