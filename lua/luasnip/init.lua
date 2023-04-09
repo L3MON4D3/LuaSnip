@@ -187,7 +187,7 @@ local function in_snippet()
 end
 
 local function expand_or_locally_jumpable()
-	return expandable() or (in_snippet() and jumpable())
+	return expandable() or (in_snippet() and jumpable(1))
 end
 
 local function locally_jumpable(dir)
