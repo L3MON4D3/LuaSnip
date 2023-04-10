@@ -31,11 +31,14 @@ NIX:=$(shell command -v nix 2> /dev/null)
 LUAJIT:=$(shell nvim -v | grep -o LuaJIT)
 LUAJIT_OSX_PATH?=/opt/homebrew/opt/luajit
 LUAJIT_NIX_PATH:=$(shell dirname $(shell dirname $(shell which luajit)))
+LUAJIT_BREW_PATH:=$(shell brew --prefix luajit 2>/dev/null)
 ifeq ($(LUAJIT),LuaJIT)
 	ifdef NIX
 		LUA_LDLIBS=-lluajit-5.1.2 -L${LUAJIT_NIX_PATH}/lib/
 	else ifeq ($(OS),Darwin)
 		LUA_LDLIBS=-lluajit-5.1.2 -L${LUAJIT_OSX_PATH}/lib/
+	else ifdef LUAJIT_BREW_PATH
+		LUA_LDLIBS=-lluajit-5.1 -L${LUAJIT_BREW_PATH}/lib/
 	else
 		LUA_LDLIBS=-lluajit-5.1
 	endif
