@@ -34,7 +34,7 @@ Neovim >= 0.5 (extmarks)
   use({
   	"L3MON4D3/LuaSnip",
   	-- follow latest release.
-  	tag = "v<CurrentMajor>.*",
+  	tag = "v<CurrentMajor>.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
   	-- install jsregexp (optional!:).
   	run = "make install_jsregexp"
   })
@@ -44,7 +44,7 @@ Neovim >= 0.5 (extmarks)
   {
   	"L3MON4D3/LuaSnip",
   	-- follow latest release.
-  	version = "<CurrentMajor>.*",
+  	version = "<CurrentMajor>.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
   	-- install jsregexp (optional!).
   	build = "make install_jsregexp"
   }
@@ -52,7 +52,7 @@ Neovim >= 0.5 (extmarks)
   **vim-plug**:
   ```vim
   " follow latest release and install jsregexp.
-  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*', 'do': 'make install_jsregexp'}
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*', 'do': 'make install_jsregexp'} " Replace <CurrentMajor> by the latest released major (first number of latest release)
   ```
   Check the `Releases`-section to the right for the latest major version.
 
