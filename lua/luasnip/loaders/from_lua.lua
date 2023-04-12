@@ -31,6 +31,19 @@ local M = {}
 
 local function load_files(ft, files, add_opts)
 	for _, file in ipairs(files) do
+		-- vim.loader.enabled does not seem to be official api, so always reset
+		-- if the loader is available.
+		-- To be sure, even pcall it, in case there are conditions under which
+		-- it might error.
+		if vim.loader then
+			-- pcall, not sure if this can fail in some way..
+			-- Does not seem like it though
+			local ok, res = pcall(vim.loader.reset, file)
+			if not ok then
+				log.warn("Could not reset cache for file %s\n: %s", file, res)
+			end
+		end
+
 		local func, error_msg = loadfile(file)
 		if error_msg then
 			log.error("Failed to load %s\n: %s", file, func)
