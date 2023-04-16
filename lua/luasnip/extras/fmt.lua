@@ -222,10 +222,44 @@ end
 
 extend_decorator.register(format_nodes, { arg_indx = 3 })
 
+-- Use file that contains format string with placeholders to interpolate nodes.
+--
+-- See `interpolate` documentation for details on the format.
+--
+-- Arguments:
+--   path: path to file that contains format string
+--   nodes: snippet node or list of nodes
+--   opts: optional table
+--     trim_empty: boolean, remove whitespace-only first/last lines, default true
+--     dedent: boolean, remove all common indent in `str`, default true
+--     ... the rest is passed to `interpolate`
+-- Returns: list of snippet nodes
+local function file_format_nodes(path, nodes, opts)
+	local uv = vim.loop
+	local abs_path = vim.fn.fnamemodify(path, ":p")
+	local st = uv.fs_stat(abs_path)
+	local file_content = ""
+	if not st then
+		vim.notify(string.format([[%s does not exist.]], abs_path))
+	else
+		local file = io.open(abs_path, "r")
+		if file then -- `file` may be `nil` when failed
+			local content = file:read("*a") -- Read the whole file
+			if content then -- content may be `nil` when failed
+				file_content = content
+			end
+		end
+	end
+	return format_nodes(file_content, nodes, opts)
+end
+
+extend_decorator.register(file_format_nodes, { arg_indx = 3 })
+
 return {
 	interpolate = interpolate,
 	format_nodes = format_nodes,
 	-- alias
 	fmt = format_nodes,
 	fmta = extend_decorator.apply(format_nodes, { delimiters = "<>" }),
+	ffmt = file_format_nodes,
 }
