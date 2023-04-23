@@ -46,8 +46,8 @@ local function load_files(ft, files, add_opts)
 
 		local func, error_msg = loadfile(file)
 		if error_msg then
-			log.error("Failed to load %s\n: %s", file, func)
-			error(string.format("Failed to load %s\n: %s", file, func))
+			log.error("Failed to load %s\n: %s", file, error_msg)
+			error(string.format("Failed to load %s\n: %s", file, error_msg))
 		end
 
 		-- the loaded file may add snippets to these tables, they'll be
