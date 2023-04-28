@@ -62,7 +62,7 @@ vim.api.nvim_create_user_command("LuaSnipUnlinkCurrent", function()
 	require("luasnip").unlink_current()
 end, { force = true })
 vim.api.nvim_create_user_command("LuaSnipListAvailable", function()
-	vim.pretty_print(require("luasnip").available())
+	vim.print(require("luasnip").available())
 end, { force = true })
 
 require("luasnip.config")._setup()
