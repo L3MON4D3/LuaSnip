@@ -275,7 +275,8 @@ local function S(context, nodes, opts)
 
 	if __luasnip_get_loaded_file_frame_debuginfo ~= nil then
 		-- this snippet is being lua-loaded, and the source should be recorded.
-		snip._source = source.from_debuginfo(__luasnip_get_loaded_file_frame_debuginfo())
+		snip._source =
+			source.from_debuginfo(__luasnip_get_loaded_file_frame_debuginfo())
 	end
 
 	return snip

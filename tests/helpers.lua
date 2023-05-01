@@ -29,8 +29,7 @@ function M.session_setup_luasnip(opts)
 	opts = opts or {}
 	local no_snip_globals = opts.no_snip_globals ~= nil and opts.no_snip_globals
 		or false
-	local setup_extend = opts.setup_extend ~= nil and opts.setup_extend
-		or {}
+	local setup_extend = opts.setup_extend ~= nil and opts.setup_extend or {}
 	local setup_parsers
 	if opts.setup_parsers ~= nil then
 		setup_parsers = opts.setup_parsers
@@ -50,7 +49,7 @@ function M.session_setup_luasnip(opts)
 	if setup_parsers then
 		-- adding the lua-parser, is either a nop or adds the parser on
 		-- versions where it does not exist by default.
-		exec_lua[[
+		exec_lua([[
 			ts_lang_add =
 				(vim.treesitter.language and vim.treesitter.language.add)
 				and function(lang, path)
@@ -63,10 +62,11 @@ function M.session_setup_luasnip(opts)
 
 			ts_lang_add("json", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/json.so")
 			ts_lang_add("jsonc", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/jsonc.so")
-		]]
+		]])
 	end
 
-	helpers.exec_lua([[
+	helpers.exec_lua(
+		[[
 		-- MYVIMRC might not be set when nvim is loaded like this.
 		vim.env.MYVIMRC = "/.vimrc"
 

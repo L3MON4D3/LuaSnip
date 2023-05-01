@@ -91,7 +91,7 @@ describe("loaders:", function()
 			                        "expands? jumps? $1 $2 !" |
 			                ]                                 |
 			        },                                        |
-			Could not determine ran...help treesitter-parsers |]]
+			Could not determine ran...help treesitter-parsers |]],
 		})
 	end)
 
@@ -135,14 +135,16 @@ describe("loaders:", function()
 	it("vscode: correctly highlights definition if parser installed", function()
 		ls_helpers.session_setup_luasnip({
 			no_snip_globals = true,
-			setup_extend = {loaders_store_source = true},
-			setup_parsers = true })
+			setup_extend = { loaders_store_source = true },
+			setup_parsers = true,
+		})
 
 		ls_helpers.loaders["vscode(rtp)"]()
 
 		feed("iall1")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			expands? jumps? ^  !                               |
 			{0:~                                                 }|
 			{0:~                                                 }|
@@ -150,10 +152,14 @@ describe("loaders:", function()
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("<esc>")
-		exec_lua([[require("luasnip.extras.snip_location").jump_to_active_snippet()]])
-		screen:expect{grid=[[
+		exec_lua(
+			[[require("luasnip.extras.snip_location").jump_to_active_snippet()]]
+		)
+		screen:expect({
+			grid = [[
 			{                                                 |
 			{3:       ^ "snip1": {}                                |
 			{3:                "prefix": "all1",}                 |
@@ -161,19 +167,24 @@ describe("loaders:", function()
 			{3:                        "expands? jumps? $1 $2 !"} |
 			{3:                ]}                                 |
 			{3:        },}                                        |
-			                                                  |]]}
+			                                                  |]],
+		})
 	end)
 
-	it("lua: highlights definition (should always work, the lua-parser is installed by default).", function()
-		ls_helpers.session_setup_luasnip({
-			no_snip_globals = true,
-			setup_extend = {loaders_store_source = true},
-			setup_parsers = true })
-		ls_helpers.loaders["lua(rtp)"]()
+	it(
+		"lua: highlights definition (should always work, the lua-parser is installed by default).",
+		function()
+			ls_helpers.session_setup_luasnip({
+				no_snip_globals = true,
+				setup_extend = { loaders_store_source = true },
+				setup_parsers = true,
+			})
+			ls_helpers.loaders["lua(rtp)"]()
 
-		feed("iall1")
-		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+			feed("iall1")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
 			expands? jumps? ^  !                               |
 			{0:~                                                 }|
 			{0:~                                                 }|
@@ -181,10 +192,14 @@ describe("loaders:", function()
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-		feed("<esc>")
-		exec_lua([[require("luasnip.extras.snip_location").jump_to_active_snippet()]])
-		screen:expect{grid=[[
+			{2:-- INSERT --}                                      |]],
+			})
+			feed("<esc>")
+			exec_lua(
+				[[require("luasnip.extras.snip_location").jump_to_active_snippet()]]
+			)
+			screen:expect({
+				grid = [[
 			return {                                          |
 			{3:       ^ s("all1", fmt("expands? jumps? {} {} !", {}|
 			{3: i(1), i(2) })),}                                  |
@@ -192,6 +207,8 @@ describe("loaders:", function()
 			        parse("auto???", "autotriggered????????"),|
 			}                                                 |
 			{0:~                                                 }|
-			                                                  |]]}
-	end)
+			                                                  |]],
+			})
+		end
+	)
 end)

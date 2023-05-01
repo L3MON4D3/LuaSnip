@@ -62,7 +62,10 @@ local function parse_snipmate(buffer, filename)
 			}
 		)
 		if session.config.loaders_store_source then
-			snip._source = source.from_location(filename, {line = snip_begin_line, line_end = i-1})
+			snip._source = source.from_location(
+				filename,
+				{ line = snip_begin_line, line_end = i - 1 }
+			)
 		end
 		table.insert(snippets[snippet_type], snip)
 	end

@@ -63,7 +63,9 @@ local function json_find_snippet_definition(bufnr, extension, snippet_name)
 	local root = parser:parse()[1]:root()
 	-- don't want to pass through whether this file is json or jsonc, just use
 	-- parser-language.
-	local query = tsquery_parse(parser:lang(), ([[
+	local query = tsquery_parse(
+		parser:lang(),
+		([[
 		(pair
 		  key: (string (string_content) @key (#eq? @key "%s"))
 		) @snippet
@@ -134,7 +136,8 @@ function M.jump_to_snippet(snip, opts)
 	elseif vim.api.nvim_buf_get_name(0):match("%.jsonc?$") then
 		local extension = vim.api.nvim_buf_get_name(0):match("jsonc?$")
 		local ok
-		ok, fcall_range = pcall(json_find_snippet_definition, 0, extension, snip.name)
+		ok, fcall_range =
+			pcall(json_find_snippet_definition, 0, extension, snip.name)
 		if not ok then
 			print(
 				"Could not determine range of snippet-definition: "
