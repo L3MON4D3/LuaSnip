@@ -38,7 +38,7 @@ local M = {}
 -- Instead, it is inserted into the global environment before a luasnippet-file
 -- is loaded, and removed from it immediately when this is done
 local function get_loaded_file_debuginfo()
-	-- we can skip looking at the first four stackframes, since 
+	-- we can skip looking at the first four stackframes, since
 	-- 1   is this function
 	-- 2   is the snippet-constructor
 	-- ... (here anything is going on, could be 0 stackframes, could be many)
@@ -51,7 +51,7 @@ local function get_loaded_file_debuginfo()
 	repeat
 		current_call_depth = current_call_depth + 1
 		debuginfo = debug.getinfo(current_call_depth, "n")
-	until (debuginfo.name == "_luasnip_load_files")
+	until debuginfo.name == "_luasnip_load_files"
 
 	-- ret is stored into a local, and not returned immediately to prevent tail
 	-- call optimization, which seems to invalidate the stackframe-numbers
@@ -112,10 +112,14 @@ local function _luasnip_load_files(ft, files, add_opts)
 		-- Since this function has to reach the snippet-constructor, and fenvs
 		-- aren't inherited by called functions, we have to set it in the global
 		-- environment.
-		_G.__luasnip_get_loaded_file_frame_debuginfo  = util.ternary(session.config.loaders_store_source, get_loaded_file_debuginfo, nil)
+		_G.__luasnip_get_loaded_file_frame_debuginfo = util.ternary(
+			session.config.loaders_store_source,
+			get_loaded_file_debuginfo,
+			nil
+		)
 		local run_ok, file_snippets, file_autosnippets = pcall(func)
 		-- immediately nil it.
-		_G.__luasnip_get_loaded_file_frame_debuginfo  = nil
+		_G.__luasnip_get_loaded_file_frame_debuginfo = nil
 
 		if not run_ok then
 			log.error("Failed to execute\n: %s", file, file_snippets)
@@ -169,7 +173,11 @@ end
 
 function M._load_lazy_loaded_ft(ft)
 	for _, load_call_paths in ipairs(cache.lazy_load_paths) do
-		_luasnip_load_files(ft, load_call_paths[ft] or {}, load_call_paths.add_opts)
+		_luasnip_load_files(
+			ft,
+			load_call_paths[ft] or {},
+			load_call_paths.add_opts
+		)
 	end
 end
 

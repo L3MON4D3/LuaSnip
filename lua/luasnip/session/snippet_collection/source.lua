@@ -4,12 +4,15 @@ local M = {}
 
 function M.from_debuginfo(debuginfo)
 	assert(debuginfo.source, "debuginfo contains source")
-	assert(debuginfo.source:match("^@"), "debuginfo-source is a file: " .. debuginfo.source)
+	assert(
+		debuginfo.source:match("^@"),
+		"debuginfo-source is a file: " .. debuginfo.source
+	)
 
 	return {
 		-- omit leading '@'.
 		file = debuginfo.source:sub(2),
-		line = debuginfo.currentline
+		line = debuginfo.currentline,
 	}
 end
 
@@ -17,7 +20,7 @@ function M.from_location(file, opts)
 	assert(file, "source needs file")
 	opts = opts or {}
 
-	return {file = file, line = opts.line, line_end = opts.line_end}
+	return { file = file, line = opts.line, line_end = opts.line_end }
 end
 
 function M.set(snippet, source)
