@@ -776,13 +776,13 @@ describe("snippets_basic", function()
 		screen = Screen.new(50, 40)
 		screen:attach()
 		screen:set_default_attr_ids({
-			[0] = {bold = true, foreground = Screen.colors.Blue1};
-			[1] = {bold = true, foreground = Screen.colors.Brown};
-			[2] = {bold = true};
-			[3] = {background = Screen.colors.LightGrey};
-			[4] = {bold = true, reverse = true};
-			[5] = {bold = true, foreground = Screen.colors.SeaGreen4};
-			[6] = {foreground = Screen.colors.Red1};
+			[0] = { bold = true, foreground = Screen.colors.Blue1 },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
+			[3] = { background = Screen.colors.LightGrey },
+			[4] = { bold = true, reverse = true },
+			[5] = { bold = true, foreground = Screen.colors.SeaGreen4 },
+			[6] = { foreground = Screen.colors.Red1 },
 		})
 		exec_lua([[
 			ls.add_snippets("all", {
@@ -792,7 +792,8 @@ describe("snippets_basic", function()
 			})
 		]])
 		feed(":LuaSnipListAvailable<Cr>")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			                                                  |
 			{0:~                                                 }|
 			{0:~                                                 }|
@@ -832,7 +833,8 @@ describe("snippets_basic", function()
 			      wordTrig = true                             |
 			    } }                                           |
 			}                                                 |
-			{5:Press ENTER or type command to continue}^           |]]}
+			{5:Press ENTER or type command to continue}^           |]],
+		})
 		feed("<Cr>")
 	end)
 end)
