@@ -24,7 +24,8 @@ ${NVIM_PATH}:
 # |: don't update `nvim` if `${NVIM_PATH}` is changed.
 nvim: | ${NVIM_PATH}
 	# only update master
-	git -C ${NVIM_MASTER_PATH} fetch --depth 1
+	git -C ${NVIM_MASTER_PATH} fetch origin master --depth 1
+	git -C ${NVIM_MASTER_PATH} checkout FETCH_HEAD
 
 OS:=$(shell uname)
 NIX:=$(shell command -v nix 2> /dev/null)
