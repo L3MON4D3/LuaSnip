@@ -198,8 +198,9 @@ local function find_dependents(self, position_self, dict)
 	)
 
 	if self.key then
-		vim.list_extend(nodes,
-			dict:find_all({"key", self.key, "dependents"}, "dependent") or {}
+		vim.list_extend(
+			nodes,
+			dict:find_all({ "key", self.key, "dependents" }, "dependent") or {}
 		)
 	end
 
@@ -299,7 +300,11 @@ local function get_args(node, get_text_func_name)
 	for _, arg in ipairs(node.args_absolute) do
 		local argnode
 		if key_indexer.is_key(arg) then
-			argnode = node.parent.snippet.dependents_dict:get({"key", arg.key, "node"})
+			argnode = node.parent.snippet.dependents_dict:get({
+				"key",
+				arg.key,
+				"node",
+			})
 		else
 			-- since arg may be a node, it may not be initialized in the snippet
 			-- and therefore not have an absolute_insert_position. Check for that.
@@ -384,7 +389,7 @@ function Node:set_argnodes(dict)
 		self.absolute_insert_position[#self.absolute_insert_position] = nil
 	end
 	if self.key then
-		dict:set({"key", self.key, "node"}, self)
+		dict:set({ "key", self.key, "node" }, self)
 	end
 end
 
