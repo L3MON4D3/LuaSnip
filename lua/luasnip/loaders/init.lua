@@ -20,7 +20,7 @@ local function default_edit(file)
 end
 
 --- Quickly jump to snippet-file from any source for the active filetypes.
----@param opts table, options for this function:
+---@param opts nil|table, options for this function:
 --- - ft_filter: fn(filetype:string) -> bool
 ---   Optionally filter filetypes which can be picked from. `true` -> filetype
 ---   is listed, `false` -> not listed.
