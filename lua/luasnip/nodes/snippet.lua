@@ -271,7 +271,7 @@ local function _S(snip, nodes, opts)
 			-- list to prevent its growing too large). No, the dependents are
 			-- stored under their own absolute position (not absolute _insert_
 			-- position, functionNodes don't have a jump-index, and thus can't
-			-- be addressed using absolute insert position), which means that 
+			-- be addressed using absolute insert position), which means that
 			--
 			-- a) once a dependent is re-generated, for example by a
 			-- dynamicNode, it will not take up new space, but simply overwrite
@@ -1280,7 +1280,7 @@ end
 
 function Snippet:get_keyed_node(key)
 	-- get key-node from dependents_dict.
-	return self.dependents_dict:get({"key", key, "node"})
+	return self.dependents_dict:get({ "key", key, "node" })
 end
 
 return {

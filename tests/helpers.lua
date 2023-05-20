@@ -213,9 +213,10 @@ M.loaders = {
 }
 
 function M.check_global_node_refs(test_name, resolve_map, fn)
-	for _, index_strategy in ipairs({"absolute_indexer", "key_indexer"}) do
+	for _, index_strategy in ipairs({ "absolute_indexer", "key_indexer" }) do
 		getfenv(2).it(("%s (%s)."):format(test_name, index_strategy), function()
-			exec_lua([[
+			exec_lua(
+				[[
 				resolve_map, strategy = ...
 				function _luasnip_test_resolve(key)
 					if strategy == "absolute_indexer" then
@@ -224,7 +225,10 @@ function M.check_global_node_refs(test_name, resolve_map, fn)
 						return k(resolve_map[key][2])
 					end
 				end
-			]], resolve_map, index_strategy)
+			]],
+				resolve_map,
+				index_strategy
+			)
 			fn()
 		end)
 	end

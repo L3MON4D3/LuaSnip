@@ -132,13 +132,7 @@ function FunctionNode:set_dependents()
 				self
 			)
 		elseif key_indexer.is_key(arg) then
-			dict:set(
-				vim.list_extend(
-					{"key", arg.key},
-					append_list
-				),
-				self
-			)
+			dict:set(vim.list_extend({ "key", arg.key }, append_list), self)
 		end
 	end
 end

@@ -163,10 +163,13 @@ describe("FunctionNode", function()
 		})
 	end)
 
-	ls_helpers.check_global_node_refs("Updates after all argnodes become available.", {
-		first = {{2,2}, "second_choice"}
-	}, function()
-		local snip = [[
+	ls_helpers.check_global_node_refs(
+		"Updates after all argnodes become available.",
+		{
+			first = { { 2, 2 }, "second_choice" },
+		},
+		function()
+			local snip = [[
 			s("trig", {
 				i(1, "cccc"),
 				t" ",
@@ -177,53 +180,54 @@ describe("FunctionNode", function()
 				f(function(args) return args[1][1]..args[2][1] end, {_luasnip_test_resolve("first"), 1} )
 			})
 		]]
-		assert.are.same(
-			exec_lua("return " .. snip .. ":get_static_text()"),
-			{ "cccc aaaa" }
-		)
-		-- the functionNode shouldn't be evaluated after expansion, the ai[2][2] isn't available.
-		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect({
-			grid = [[
+			assert.are.same(
+				exec_lua("return " .. snip .. ":get_static_text()"),
+				{ "cccc aaaa" }
+			)
+			-- the functionNode shouldn't be evaluated after expansion, the ai[2][2] isn't available.
+			exec_lua("ls.snip_expand(" .. snip .. ")")
+			screen:expect({
+				grid = [[
 			^c{3:ccc} aaaa                                         |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
-		})
+			})
 
-		-- change choice, the functionNode should now update.
-		exec_lua("ls.jump(1)")
-		exec_lua("ls.change_choice(1)")
+			-- change choice, the functionNode should now update.
+			exec_lua("ls.jump(1)")
+			exec_lua("ls.change_choice(1)")
 
-		screen:expect({
-			grid = [[
+			screen:expect({
+				grid = [[
 			cccc ^b{3:bbb}bbbbcccc                                 |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
-		})
+			})
 
-		-- change choice once more, so the necessary choice isn't visible, jump back,
-		-- change text and update -> should lead to no new evaluation.
-		exec_lua("ls.change_choice(1)")
-		exec_lua("ls.jump(-1)")
-		feed("aaaa")
-		exec_lua("ls.active_update_dependents()")
-		screen:expect({
-			grid = [[
+			-- change choice once more, so the necessary choice isn't visible, jump back,
+			-- change text and update -> should lead to no new evaluation.
+			exec_lua("ls.change_choice(1)")
+			exec_lua("ls.jump(-1)")
+			feed("aaaa")
+			exec_lua("ls.active_update_dependents()")
+			screen:expect({
+				grid = [[
 			aaaa^ aaaabbbbcccc                                 |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
+			})
 
-		-- change choice once more, this time the fNode should be evaluated again.
-		exec_lua("ls.jump(1)")
-		exec_lua("ls.change_choice(1)")
-		screen:expect({
-			grid = [[
+			-- change choice once more, this time the fNode should be evaluated again.
+			exec_lua("ls.jump(1)")
+			exec_lua("ls.change_choice(1)")
+			screen:expect({
+				grid = [[
 			aaaa ^b{3:bbb}bbbbaaaa                                 |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
-		})
-	end)
+			})
+		end
+	)
 
 	it("Is correctly indented inside ISN.", function()
 		local snip = [[
@@ -260,26 +264,34 @@ describe("FunctionNode", function()
 			}))
 		]])
 		exec_lua("ls.jump(1) ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf^asdfbbbb                                      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(1) ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdfasdf^asdf                                      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(-1) ls.change_choice(1) ls.jump(-1)")
 		feed("1234")
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			1234^eeeeasdf                                      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.change_choice(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			1234^12341234                                      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
