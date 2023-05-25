@@ -1139,7 +1139,13 @@ end
 
 -- assumption: direction-endpoint of node at child_from_indx is on child_endpoint.
 -- (caller responsible)
-local function adjust_children_rgravs(self, child_endpoint, child_from_indx, direction, rgrav)
+local function adjust_children_rgravs(
+	self,
+	child_endpoint,
+	child_from_indx,
+	direction,
+	rgrav
+)
 	local i = child_from_indx
 	local node = self.nodes[i]
 	while node do
@@ -1157,7 +1163,7 @@ local function adjust_children_rgravs(self, child_endpoint, child_from_indx, dir
 			break
 		end
 
-		i = i+direction
+		i = i + direction
 		node = self.nodes[i]
 	end
 end
@@ -1165,8 +1171,19 @@ end
 -- adjust rgrav of nodes left (direction=-1) or right (direction=1) of node at
 -- child_indx.
 -- (direction is the direction into which is searched, from child_indx outward)
-function Snippet:set_sibling_rgravs(child_endpoint, child_indx, direction, rgrav)
-	adjust_children_rgravs(self, child_endpoint, child_indx+direction, direction, rgrav)
+function Snippet:set_sibling_rgravs(
+	child_endpoint,
+	child_indx,
+	direction,
+	rgrav
+)
+	adjust_children_rgravs(
+		self,
+		child_endpoint,
+		child_indx + direction,
+		direction,
+		rgrav
+	)
 end
 
 -- called only if the "-direction"-endpoint has to be changed, but the

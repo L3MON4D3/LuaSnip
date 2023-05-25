@@ -489,7 +489,7 @@ end
 -- set the rgrav of snippet adjacent to (sharing an endpoint with) the node we
 -- want to focus, regardless of its position in the tree, will lead to extmarks
 -- covering the wrong regions.
--- 
+--
 -- More complications: focusing a node does not always mean setting the rgravs
 -- such that text will end up inside the node!
 -- For example, in the case of a terminating i(0) (like s("trig", {i(1,
@@ -520,7 +520,7 @@ local function focus_node(self, lrgrav, rrgrav)
 	-- the tree-representation of the snippet.
 	-- This is dubbed "direction" because it is the direction we will search in
 	-- to find nodes on one endpoint of self.
-	for _, direction in ipairs({-1,1}) do
+	for _, direction in ipairs({ -1, 1 }) do
 		local self_direction_endpoint = self.mark:get_endpoint(direction)
 		local direction_rgrav = util.ternary(direction == -1, lrgrav, rrgrav)
 
@@ -530,7 +530,12 @@ local function focus_node(self, lrgrav, rrgrav)
 			local node = nodes_path[i]
 			local node_direction_endpoint = node.mark:get_endpoint(direction)
 
-			if not util.pos_equal(node_direction_endpoint, self_direction_endpoint) then
+			if
+				not util.pos_equal(
+					node_direction_endpoint,
+					self_direction_endpoint
+				)
+			then
 				-- stop adjusting rgravs once self no longer is on the boundary of
 				-- its parents, or if the rgrav is already set correctly.
 				break
@@ -541,13 +546,28 @@ local function focus_node(self, lrgrav, rrgrav)
 			-- can't use node.parent, since that might skip nodes (in the case of
 			-- dynamicNode, for example, the generated snippets parent is not the
 			-- dynamicNode, but its parent).
-			-- also: don't need to check for nil, because the 
-			local node_above = nodes_path[i-1]
-			if node_above and (node_above.type == types.snippetNode or node_above.type == types.snippet) then
-				node_above:set_sibling_rgravs(self_direction_endpoint, abs_pos[i], direction, direction_rgrav)
+			-- also: don't need to check for nil, because the
+			local node_above = nodes_path[i - 1]
+			if
+				node_above
+				and (
+					node_above.type == types.snippetNode
+					or node_above.type == types.snippet
+				)
+			then
+				node_above:set_sibling_rgravs(
+					self_direction_endpoint,
+					abs_pos[i],
+					direction,
+					direction_rgrav
+				)
 			end
 		end
-		self:subtree_set_pos_rgrav(self_direction_endpoint, -direction, direction_rgrav)
+		self:subtree_set_pos_rgrav(
+			self_direction_endpoint,
+			-direction,
+			direction_rgrav
+		)
 	end
 end
 
@@ -585,5 +605,5 @@ end
 
 return {
 	Node = Node,
-	focus_node = focus_node
+	focus_node = focus_node,
 }

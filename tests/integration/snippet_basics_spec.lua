@@ -882,152 +882,201 @@ describe("snippets_basic", function()
 		]])
 
 		feed("aa")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aa^                                                |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
 
 		-- will insert here later.
 		exec_lua("ls.jump(1)")
 
 		feed("cc")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aacc^                                              |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
 
 		feed("dd")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aadd^cc                                            |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
 
 		feed("ee")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aaddccee^                                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		exec_lua("ls.jump(-1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aa^d{3:d}ccee                                          |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(-1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aadd^c{3:c}ee                                          |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(-1)")
 		feed("bb")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aabb^ddccee                                        |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(-1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^a{3:a}bbddccee                                        |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aa^b{3:b}ddccee                                        |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
-	it("text is inserted into the selected node, when dynamicNode is present", function()
-		exec_lua([[
+	it(
+		"text is inserted into the selected node, when dynamicNode is present",
+		function()
+			exec_lua([[
 			ls.snip_expand(s("", {
 				i(4), i(1), d(2, function()
 					return sn(nil, {i(2), i(1)})
 				end, {3}), i(3, "text??")
 			}))
 		]])
-		screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 			^text??                                            |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		exec_lua("ls.jump(1) ls.jump(1) ls.jump(1)")
-		feed("refresh dNode ")
-		screen:expect{grid=[[
+			exec_lua("ls.jump(1) ls.jump(1) ls.jump(1)")
+			feed("refresh dNode ")
+			screen:expect({
+				grid = [[
 			refresh dNode ^                                    |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+			{2:-- INSERT --}                                      |]],
+			})
+			exec_lua("ls.jump(1)")
+			screen:expect({
+				grid = [[
 			^refresh dNode                                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-		feed("shifts dNode?")
-		screen:expect{grid=[[
+			{2:-- INSERT --}                                      |]],
+			})
+			feed("shifts dNode?")
+			screen:expect({
+				grid = [[
 			shifts dNode?^refresh dNode                        |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-		-- doing all jump in the same exec_lua fails :/
-		-- Maybe some weird timing-issue with feed..
-		exec_lua("ls.jump(-1)")
-		exec_lua("ls.jump(-1)")
-		exec_lua("ls.jump(-1)")
-		exec_lua("ls.jump(-1)")
-		feed(" also shifts dNode ")
-		screen:expect{grid=[[
+			{2:-- INSERT --}                                      |]],
+			})
+			-- doing all jump in the same exec_lua fails :/
+			-- Maybe some weird timing-issue with feed..
+			exec_lua("ls.jump(-1)")
+			exec_lua("ls.jump(-1)")
+			exec_lua("ls.jump(-1)")
+			exec_lua("ls.jump(-1)")
+			feed(" also shifts dNode ")
+			screen:expect({
+				grid = [[
 			shifts dNode?also shifts dNode ^refresh dNode      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-		exec_lua("ls.jump(1)")
-		feed(" dNode1 ")
-		screen:expect{grid=[[
+			{2:-- INSERT --}                                      |]],
+			})
+			exec_lua("ls.jump(1)")
+			feed(" dNode1 ")
+			screen:expect({
+				grid = [[
 			shifts dNode?also shifts dNode dNode1 ^refresh dNod|
 			e                                                 |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		exec_lua("ls.jump(1)")
-		feed(" dNode2 ")
-		screen:expect{grid=[[
+			exec_lua("ls.jump(1)")
+			feed(" dNode2 ")
+			screen:expect({
+				grid = [[
 			shifts dNode?also shifts dNode dNode2 ^dNode1 refre|
 			sh dNode                                          |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		exec_lua("ls.jump(-1)")
-		exec_lua("ls.jump(-1)")
-		screen:expect{grid=[[
+			exec_lua("ls.jump(-1)")
+			exec_lua("ls.jump(-1)")
+			screen:expect({
+				grid = [[
 			shifts dNode?^a{3:lso shifts dNode }dNode2 dNode1 refre|
 			sh dNode                                          |
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+			})
 
-		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+			exec_lua("ls.jump(1)")
+			screen:expect({
+				grid = [[
 			shifts dNode?also shifts dNode dNode2 ^d{3:Node1 }refre|
 			sh dNode                                          |
-			{2:-- SELECT --}                                      |]]}
-		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+			{2:-- SELECT --}                                      |]],
+			})
+			exec_lua("ls.jump(1)")
+			screen:expect({
+				grid = [[
 			shifts dNode?also shifts dNode ^d{3:Node2 }dNode1 refre|
 			sh dNode                                          |
-			{2:-- SELECT --}                                      |]]}
-		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+			{2:-- SELECT --}                                      |]],
+			})
+			exec_lua("ls.jump(1)")
+			screen:expect({
+				grid = [[
 			shifts dNode?also shifts dNode dNode2 dNode1 ^r{3:efre}|
 			{3:sh dNode }                                         |
-			{2:-- SELECT --}                                      |]]}
-		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+			{2:-- SELECT --}                                      |]],
+			})
+			exec_lua("ls.jump(1)")
+			screen:expect({
+				grid = [[
 			^s{3:hifts dNode?}also shifts dNode dNode2 dNode1 refre|
 			sh dNode                                          |
-			{2:-- SELECT --}                                      |]]}
-		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+			{2:-- SELECT --}                                      |]],
+			})
+			exec_lua("ls.jump(1)")
+			screen:expect({
+				grid = [[
 			shifts dNode?also shifts dNode dNode2 dNode1 refre|
 			sh dNode ^                                         |
-			{2:-- INSERT --}                                      |]]}
-	end)
-	it("text is inserted into the selected node, when choiceNode is present", function()
-		exec_lua([[
+			{2:-- INSERT --}                                      |]],
+			})
+		end
+	)
+	it(
+		"text is inserted into the selected node, when choiceNode is present",
+		function()
+			exec_lua([[
 			ls.snip_expand(s("", {
 				i(1),
 				c(2, {
@@ -1037,40 +1086,51 @@ describe("snippets_basic", function()
 				i(3, "text??")
 			}))
 		]])
-		screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 			^asdftext??                                        |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		-- jump to i3
-		exec_lua("ls.jump(1) ls.jump(1)")
-		feed("1111")
-		screen:expect{grid=[[
+			-- jump to i3
+			exec_lua("ls.jump(1) ls.jump(1)")
+			feed("1111")
+			screen:expect({
+				grid = [[
 			asdf1111^                                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		-- change choice, jump back
-		exec_lua("ls.jump(-1) ls.change_choice(1) ls.jump(1)")
-		feed("2222")
-		screen:expect{grid=[[
+			-- change choice, jump back
+			exec_lua("ls.jump(-1) ls.change_choice(1) ls.jump(1)")
+			feed("2222")
+			screen:expect({
+				grid = [[
 			2222^                                              |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		-- back to i1
-		exec_lua("ls.jump(-1) ls.jump(-1)")
-		feed("3333")
-		screen:expect{grid=[[
+			-- back to i1
+			exec_lua("ls.jump(-1) ls.jump(-1)")
+			feed("3333")
+			screen:expect({
+				grid = [[
 			3333^2222                                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		exec_lua("ls.jump(1)")
-		feed("4444")
-		screen:expect{grid=[[
+			exec_lua("ls.jump(1)")
+			feed("4444")
+			screen:expect({
+				grid = [[
 			33334444^2222                                      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-	end)
+			{2:-- INSERT --}                                      |]],
+			})
+		end
+	)
 end)
