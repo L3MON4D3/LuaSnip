@@ -497,4 +497,47 @@ describe("loaders:", function()
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]]}
 	end)
+
+	it("Respects `scope` (vscode)", function()
+		ls_helpers.loaders["vscode(rtp)"]()
+
+		feed("icc")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			cc^                                                |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		exec("set ft=c")
+		feed("<Cr>cc")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			cc                                                |
+			3^                                                 |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		-- check if invalidation affects the duplicated snippet.
+		exec_lua([[ls.get_snippets("c")[1]:invalidate()]])
+		feed("<Cr>cc")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			cc                                                |
+			3                                                 |
+			cc^                                                |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		exec("set ft=cpp")
+		feed("<Cr>cc")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			cc                                                |
+			3                                                 |
+			cc                                                |
+			3^                                                 |
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)
