@@ -1,5 +1,8 @@
 local snip = require("luasnip.nodes.snippet").S
 local events = require("luasnip.util.events")
+local extend_decorator = require("luasnip.util.extend_decorator")
+local node_util = require("luasnip.nodes.util")
+
 local matches = {
 	default = [[[%w%.%_%-%"%']+$]],
 	line = "^.+$",
@@ -80,6 +83,11 @@ local function postfix(context, nodes, opts)
 	)
 	return snip(context, nodes, opts)
 end
+extend_decorator.register(
+	postfix,
+	{ arg_indx = 1, extend = node_util.snippet_extend_context },
+	{ arg_indx = 3 }
+)
 
 return {
 	postfix = postfix,
