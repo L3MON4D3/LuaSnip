@@ -31,6 +31,12 @@
 					"all"
 				],
 				"path": "snippets/all.jsonc"
+			},
+			{
+				"language": [
+					"all"
+				],
+				"path": "./snippets/all.code-snippets"
 			}
 		]
 	}

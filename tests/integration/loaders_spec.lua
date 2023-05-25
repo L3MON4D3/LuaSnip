@@ -484,4 +484,17 @@ describe("loaders:", function()
 		"/tests/symlinked_data/lua-snippets/luasnippets/all.lua",
 		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
 	)
+
+	it("Can load files with `code-snippets`-extension.", function()
+		ls_helpers.loaders["vscode(rtp)"]()
+
+		feed("icodesnippets")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			code-snippets!!!^                                  |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)
