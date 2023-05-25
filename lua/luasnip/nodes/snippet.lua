@@ -159,6 +159,8 @@ end
 
 -- context, opts non-nil tables.
 local function init_snippet_context(context, opts)
+	context = opts and vim.tbl_extend("error", context, opts) or context
+
 	local effective_context = {}
 
 	-- trig is set by user, trigger is used internally.
@@ -205,12 +207,8 @@ local function init_snippet_context(context, opts)
 	effective_context.regTrig =
 		util.ternary(context.regTrig ~= nil, context.regTrig, false)
 
-	effective_context.condition = context.condition
-		or opts.condition
-		or true_func
-	effective_context.show_condition = context.show_condition
-		or opts.show_condition
-		or true_func
+	effective_context.condition = context.condition or true_func
+	effective_context.show_condition = context.show_condition or true_func
 
 	-- init invalidated here.
 	-- This is because invalidated is a key that can be populated without any
