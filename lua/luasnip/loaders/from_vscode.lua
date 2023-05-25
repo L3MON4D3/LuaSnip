@@ -1,5 +1,6 @@
 local ls = require("luasnip")
 local package_cache = require("luasnip.loaders._caches").vscode_packages
+local standalone_cache = require("luasnip.loaders._caches").vscode_standalone
 local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
@@ -40,7 +41,7 @@ local function read_json(fname)
 	end
 end
 
--- return table mapping ft -> {snippets, autosnippets}
+-- return table mapping ft -> snippets (which is immediately compatible with what ls.add_snippets(nil, snippets) expects.)
 -- default_filetype will be used for snippets without a `scope`-field.
 -- set opts.ignore_scope to add all snippets to default_filetype, regardless of scope.
 local function get_file_snippets(file, default_filetype, opts)
@@ -334,30 +335,56 @@ function M.edit_snippet_files()
 	loader_util.edit_snippet_files(package_cache.ft_paths)
 end
 
--- Make sure filename is normalized.
-function M._reload_file(filename)
-	local cached_data = package_cache.path_snippets[filename]
-	if not cached_data then
-		-- file is not loaded by this loader.
-		return
-	end
-	log.info("Re-loading snippets contributed by %s", filename)
+local function standalone_add(path, add_opts)
+	local file_snippets = get_file_snippets(path, "all")
+	standalone_cache.path_snippets[path] = {
+		snippets = vim.deepcopy(file_snippets),
+		add_opts = add_opts
+	}
 
-	package_cache.path_snippets[filename] = nil
-	local add_opts = cached_data.add_opts
-
-	-- reload file for all filetypes it occurs in.
-	for ft, _ in pairs(cached_data.fts) do
-		load_snippet_files(ft, { filename }, add_opts)
-
-		ls.clean_invalidated({ inv_limit = 100 })
-	end
+	ls.add_snippets(
+		-- nil: provided snippets are a table mapping filetype->snippets.
+		nil,
+		file_snippets,
+		vim.tbl_extend("keep", {
+			key = string.format("__snippets_%s", path),
+		}, add_opts)
+	)
 end
 
-function M.load_standalone(path, opts)
+function M.load_standalone(opts)
 	opts = opts or {}
+	local add_opts = loader_util.add_opts(opts)
+	local path = opts.path
 
+	standalone_add(path, add_opts)
+end
 
+-- Make sure filename is normalized.
+function M._reload_file(filename)
+	local package_cached_data = package_cache.path_snippets[filename]
+	if package_cached_data then
+		log.info("Re-loading snippets contributed by %s", filename)
+
+		package_cache.path_snippets[filename] = nil
+		local add_opts = package_cached_data.add_opts
+
+		-- reload file for all filetypes it occurs in.
+		for ft, _ in pairs(package_cached_data.fts) do
+			load_snippet_files(ft, { filename }, add_opts)
+
+		end
+		ls.clean_invalidated({ inv_limit = 100 })
+	end
+	local standalone_cached_data = standalone_cache.path_snippets[filename]
+	if standalone_cached_data then
+		log.info("Re-loading snippets contributed by %s", filename)
+		package_cache.path_snippets[filename] = nil
+		local add_opts = package_cached_data.add_opts
+
+		standalone_add(filename, add_opts)
+		ls.clean_invalidated({ inv_limit = 100 })
+	end
 end
 
 return M
