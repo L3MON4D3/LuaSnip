@@ -40,14 +40,20 @@ local function read_json(fname)
 	end
 end
 
-local function get_file_snippets(file)
-	local lang_snips = {}
-	local auto_lang_snips = {}
+-- return table mapping ft -> {snippets, autosnippets}
+-- default_filetype will be used for snippets without a `scope`-field.
+-- set opts.ignore_scope to add all snippets to default_filetype, regardless of scope.
+local function get_file_snippets(file, default_filetype, opts)
+	opts = opts or {}
+	local ignore_scope = util.ternary(opts.ignore_scope, opts.ignore_scope, false)
+
+	-- since most snippets we load don't have a scope-field, we just insert this here by default.
+	local snippets_by_ft = {[default_filetype] = {snippets = {}, autosnippets = {}}}
 
 	local snippet_set_data = read_json(file)
 	if snippet_set_data == nil then
 		log.error("Reading json from file `%s` failed, skipping it.", file)
-		return {}, {}
+		return snippets_by_ft
 	end
 
 	for name, parts in pairs(snippet_set_data) do
@@ -75,34 +81,46 @@ local function get_file_snippets(file)
 					snip._source = source.from_location(file)
 				end
 
-				if ls_conf.autotrigger then
-					table.insert(auto_lang_snips, snip)
+				-- snippet can be provided to multiple filetypes via scope.
+				local ft_tables = {}
+
+				-- https://code.visualstudio.com/docs/editor/userdefinedsnippets#_language-snippet-scope
+				-- scope can have multiple components.
+				if parts.scope and not ignore_scope then
+					for _, scope in ipairs(vim.split(parts.scope, ",", { plain = true })) do
+						snippets_by_ft[scope] = snippets_by_ft[scope] or {snippets = {}, autosnippets = {}}
+						table.insert(ft_tables, snippets_by_ft[scope])
+					end
 				else
-					table.insert(lang_snips, snip)
+					table.insert(ft_tables, snippets_by_ft[default_filetype])
+				end
+
+				local snippet_type = ls_conf.autotrigger and "autosnippets" or "snippets"
+				for _, t in ipairs(ft_tables) do
+					table.insert(t[snippet_type], snip)
 				end
 			end
 		end)
 	end
 
-	return lang_snips, auto_lang_snips
+	return snippets_by_ft
 end
 
 local function load_snippet_files(lang, files, add_opts)
 	for _, file in ipairs(files) do
 		if Path.exists(file) then
-			local lang_snips, auto_lang_snips
+			local file_lang_snippets
 
 			local cached_path = package_cache.path_snippets[file]
 			if cached_path then
-				lang_snips = vim.deepcopy(cached_path.snippets)
-				auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
+				file_lang_snippets = vim.deepcopy(cached_path.snippets)
 				cached_path.fts[lang] = true
 			else
-				lang_snips, auto_lang_snips = get_file_snippets(file)
+				-- get all snippets from file, regardless of scope.
+				file_lang_snippets = get_file_snippets(file, lang, {ignore_scope = true})[lang]
 				-- store snippets to prevent parsing the same file more than once.
 				package_cache.path_snippets[file] = {
-					snippets = vim.deepcopy(lang_snips),
-					autosnippets = vim.deepcopy(auto_lang_snips),
+					snippets = vim.deepcopy(file_lang_snippets),
 					add_opts = add_opts,
 					fts = { [lang] = true },
 				}
@@ -110,7 +128,8 @@ local function load_snippet_files(lang, files, add_opts)
 
 			ls.add_snippets(
 				lang,
-				lang_snips,
+				-- only load snippets matching the language set in `package.json`.
+				file_lang_snippets.snippets,
 				vim.tbl_extend("keep", {
 					type = "snippets",
 					-- again, include filetype, same reasoning as with augroup.
@@ -120,7 +139,7 @@ local function load_snippet_files(lang, files, add_opts)
 			)
 			ls.add_snippets(
 				lang,
-				auto_lang_snips,
+				file_lang_snippets.autosnippets,
 				vim.tbl_extend("keep", {
 					type = "autosnippets",
 					key = string.format("__%s_autosnippets_%s", lang, file),
@@ -129,8 +148,8 @@ local function load_snippet_files(lang, files, add_opts)
 			)
 			log.info(
 				"Adding %s snippets and %s autosnippets for filetype `%s` from %s",
-				#lang_snips,
-				#auto_lang_snips,
+				#file_lang_snippets.snippets,
+				#file_lang_snippets.autosnippets,
 				lang,
 				file
 			)
