@@ -4,6 +4,12 @@ local Path = require("luasnip.util.path")
 
 local M = {}
 
+-- used to map cache-name to name passed to format.
+local clean_name = {
+	vscode_packages = "vscode",
+	snipmate = "snipmate",
+	lua = "lua"
+}
 local function default_format(path, _)
 	path = path:gsub(
 		vim.pesc(vim.fn.stdpath("data") .. "/site/pack/packer/start"),
@@ -48,9 +54,9 @@ function M.edit_snippet_files(opts)
 			local items = {}
 
 			-- concat files from all loaders for the selected filetype ft.
-			for _, cache_name in ipairs({ "vscode", "snipmate", "lua" }) do
+			for _, cache_name in ipairs({ "vscode_packages", "snipmate", "lua" }) do
 				for _, path in ipairs(Cache[cache_name].ft_paths[ft] or {}) do
-					local fmt_name = format(path, cache_name)
+					local fmt_name = format(path, clean_name[cache_name])
 					if fmt_name then
 						table.insert(ft_paths, path)
 						table.insert(items, fmt_name)

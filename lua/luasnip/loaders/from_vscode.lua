@@ -1,5 +1,5 @@
 local ls = require("luasnip")
-local cache = require("luasnip.loaders._caches").vscode
+local package_cache = require("luasnip.loaders._caches").vscode_packages
 local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
@@ -92,7 +92,7 @@ local function load_snippet_files(lang, files, add_opts)
 		if Path.exists(file) then
 			local lang_snips, auto_lang_snips
 
-			local cached_path = cache.path_snippets[file]
+			local cached_path = package_cache.path_snippets[file]
 			if cached_path then
 				lang_snips = vim.deepcopy(cached_path.snippets)
 				auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
@@ -100,7 +100,7 @@ local function load_snippet_files(lang, files, add_opts)
 			else
 				lang_snips, auto_lang_snips = get_file_snippets(file)
 				-- store snippets to prevent parsing the same file more than once.
-				cache.path_snippets[file] = {
+				package_cache.path_snippets[file] = {
 					snippets = vim.deepcopy(lang_snips),
 					autosnippets = vim.deepcopy(auto_lang_snips),
 					add_opts = add_opts,
@@ -259,7 +259,7 @@ function M.load(opts)
 	local ft_files = get_snippet_files(opts)
 	local add_opts = loader_util.add_opts(opts)
 
-	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
+	loader_util.extend_ft_paths(package_cache.ft_paths, ft_files)
 
 	log.info("Loading snippet:", vim.inspect(ft_files))
 	for ft, files in pairs(ft_files) do
@@ -268,7 +268,7 @@ function M.load(opts)
 end
 
 function M._load_lazy_loaded_ft(ft)
-	for _, load_call_paths in ipairs(cache.lazy_load_paths) do
+	for _, load_call_paths in ipairs(package_cache.lazy_load_paths) do
 		load_snippet_files(
 			ft,
 			load_call_paths[ft] or {},
@@ -281,10 +281,10 @@ function M._load_lazy_loaded(bufnr)
 	local fts = loader_util.get_load_fts(bufnr)
 
 	for _, ft in ipairs(fts) do
-		if not cache.lazy_loaded_ft[ft] then
+		if not package_cache.lazy_loaded_ft[ft] then
 			M._load_lazy_loaded_ft(ft)
 			log.info("Loading lazy-load-snippets for filetype `%s`", ft)
-			cache.lazy_loaded_ft[ft] = true
+			package_cache.lazy_loaded_ft[ft] = true
 		end
 	end
 end
@@ -295,12 +295,12 @@ function M.lazy_load(opts)
 	local ft_files = get_snippet_files(opts)
 	local add_opts = loader_util.add_opts(opts)
 
-	loader_util.extend_ft_paths(cache.ft_paths, ft_files)
+	loader_util.extend_ft_paths(package_cache.ft_paths, ft_files)
 
 	-- immediately load filetypes that have already been loaded.
 	-- They will not be loaded otherwise.
 	for ft, files in pairs(ft_files) do
-		if cache.lazy_loaded_ft[ft] then
+		if package_cache.lazy_loaded_ft[ft] then
 			-- instantly load snippets if they were already loaded...
 			load_snippet_files(ft, files, add_opts)
 			log.info(
@@ -316,26 +316,26 @@ function M.lazy_load(opts)
 	log.info("Registering lazy-load-snippets:\n%s", vim.inspect(ft_files))
 
 	ft_files.add_opts = add_opts
-	table.insert(cache.lazy_load_paths, ft_files)
+	table.insert(package_cache.lazy_load_paths, ft_files)
 
 	-- load for current buffer on startup.
 	M._load_lazy_loaded(vim.api.nvim_get_current_buf())
 end
 
 function M.edit_snippet_files()
-	loader_util.edit_snippet_files(cache.ft_paths)
+	loader_util.edit_snippet_files(package_cache.ft_paths)
 end
 
 -- Make sure filename is normalized.
 function M._reload_file(filename)
-	local cached_data = cache.path_snippets[filename]
+	local cached_data = package_cache.path_snippets[filename]
 	if not cached_data then
 		-- file is not loaded by this loader.
 		return
 	end
 	log.info("Re-loading snippets contributed by %s", filename)
 
-	cache.path_snippets[filename] = nil
+	package_cache.path_snippets[filename] = nil
 	local add_opts = cached_data.add_opts
 
 	-- reload file for all filetypes it occurs in.
@@ -344,6 +344,12 @@ function M._reload_file(filename)
 
 		ls.clean_invalidated({ inv_limit = 100 })
 	end
+end
+
+function M.load_standalone(path, opts)
+	opts = opts or {}
+
+
 end
 
 return M
