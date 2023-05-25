@@ -11,6 +11,7 @@ local source = require("luasnip.session.snippet_collection.source")
 local json_decoders = {
 	json = util.json_decode,
 	jsonc = require("luasnip.util.jsonc").decode,
+	["code-snippets"] = require("luasnip.util.jsonc").decode
 }
 
 local function read_json(fname)
@@ -21,9 +22,9 @@ local function read_json(fname)
 	end
 
 	local fname_extension = Path.extension(fname)
-	if fname_extension ~= "json" and fname_extension ~= "jsonc" then
+	if json_decoders[fname_extension] == nil then
 		log.error(
-			"`%s` was expected to have file-extension either `json` or `jsonc`, but doesn't.",
+			"`%s` was expected to have file-extension either `json`, `jsonc` or `code-snippets`, but doesn't.",
 			fname
 		)
 		return nil
