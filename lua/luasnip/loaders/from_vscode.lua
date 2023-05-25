@@ -7,6 +7,8 @@ local sp = require("luasnip.nodes.snippetProxy")
 local log = require("luasnip.util.log").new("vscode-loader")
 local session = require("luasnip.session")
 local source = require("luasnip.session.snippet_collection.source")
+local multisnippet = require("luasnip.nodes.multiSnippet")
+local duplicate = require("luasnip.nodes.duplicate")
 
 local json_decoders = {
 	json = util.json_decode,
@@ -40,110 +42,119 @@ local function read_json(fname)
 	end
 end
 
+-- return all snippets in `file`.
 local function get_file_snippets(file)
-	local lang_snips = {}
-	local auto_lang_snips = {}
+	-- since most snippets we load don't have a scope-field, we just insert this here by default.
+	local snippets = {}
 
 	local snippet_set_data = read_json(file)
 	if snippet_set_data == nil then
 		log.error("Reading json from file `%s` failed, skipping it.", file)
-		return {}, {}
+		return {}
 	end
 
 	for name, parts in pairs(snippet_set_data) do
 		local body = type(parts.body) == "string" and parts.body
 			or table.concat(parts.body, "\n")
 
-		-- There are still some snippets that fail while loading
-		pcall(function()
-			-- Sometimes it's a list of prefixes instead of a single one
-			local prefixes = type(parts.prefix) == "table" and parts.prefix
-				or { parts.prefix }
-			for _, prefix in ipairs(prefixes) do
-				local ls_conf = parts.luasnip or {}
+		local ls_conf = parts.luasnip or {}
 
-				local snip = sp({
-					trig = prefix,
-					name = name,
-					dscr = parts.description or name,
-					wordTrig = ls_conf.wordTrig,
-					priority = ls_conf.priority,
-				}, body)
+		-- we may generate multiple interfaces to the same snippet
+		-- (different filetype, different triggers)
 
-				if session.config.loaders_store_source then
-					-- only know file, not line or line_end.
-					snip._source = source.from_location(file)
-				end
+		-- context common to all snippets generated here.
+		local common_context = {
+			name = name,
+			dscr = parts.description or name,
+			wordTrig = ls_conf.wordTrig,
+			priority = ls_conf.priority,
+			snippetType = ls_conf.autotrigger and "autosnippet" or "snippet"
+		}
 
-				if ls_conf.autotrigger then
-					table.insert(auto_lang_snips, snip)
-				else
-					table.insert(lang_snips, snip)
-				end
+		-- Sometimes it's a list of prefixes instead of a single one
+		local prefixes = type(parts.prefix) == "table" and parts.prefix
+			or { parts.prefix }
+
+		-- vscode documents `,`, but `.` also works.
+		-- an entry `false` in this list will cause a `ft=nil` for the snippet.
+		local filetypes = parts.scope and vim.split(parts.scope, "[.,]") or {false}
+
+		local contexts = {}
+		for _, prefix in ipairs(prefixes) do
+			for _, filetype in ipairs(filetypes) do
+				table.insert(contexts, {filetype = filetype or nil, trig = prefix})
 			end
-		end)
-	end
+		end
 
-	return lang_snips, auto_lang_snips
-end
+		local snip
+		if #contexts > 1 then
+			-- only construct multisnippet if it is actually necessary.
+			contexts.common = common_context
+			snip = multisnippet._raw_ms(contexts, sp(nil, body), {})
+		elseif #contexts == 1 then
+			-- have to add options from common context to the trig/filetype-context.
+			snip = sp(vim.tbl_extend("keep", contexts[1], common_context), body)
+		end
 
-local function load_snippet_files(lang, files, add_opts)
-	for _, file in ipairs(files) do
-		if Path.exists(file) then
-			local lang_snips, auto_lang_snips
-
-			local cached_path = package_cache.path_snippets[file]
-			if cached_path then
-				lang_snips = vim.deepcopy(cached_path.snippets)
-				auto_lang_snips = vim.deepcopy(cached_path.autosnippets)
-				cached_path.fts[lang] = true
-			else
-				lang_snips, auto_lang_snips = get_file_snippets(file)
-				-- store snippets to prevent parsing the same file more than once.
-				package_cache.path_snippets[file] = {
-					snippets = vim.deepcopy(lang_snips),
-					autosnippets = vim.deepcopy(auto_lang_snips),
-					add_opts = add_opts,
-					fts = { [lang] = true },
-				}
+		if snip then
+			if session.config.loaders_store_source then
+				-- only know file, not line or line_end.
+				snip._source = source.from_location(file)
 			end
 
-			ls.add_snippets(
-				lang,
-				lang_snips,
-				vim.tbl_extend("keep", {
-					type = "snippets",
-					-- again, include filetype, same reasoning as with augroup.
-					key = string.format("__%s_snippets_%s", lang, file),
-					refresh_notify = false,
-				}, add_opts)
-			)
-			ls.add_snippets(
-				lang,
-				auto_lang_snips,
-				vim.tbl_extend("keep", {
-					type = "autosnippets",
-					key = string.format("__%s_autosnippets_%s", lang, file),
-					refresh_notify = false,
-				}, add_opts)
-			)
-			log.info(
-				"Adding %s snippets and %s autosnippets for filetype `%s` from %s",
-				#lang_snips,
-				#auto_lang_snips,
-				lang,
-				file
-			)
-		else
-			log.error(
-				"Trying to read snippets from file %s, but it does not exist.",
-				lang,
-				file
-			)
+			table.insert(snippets, snip)
 		end
 	end
 
-	ls.refresh_notify(lang)
+	return snippets
+end
+
+-- `refresh` to optionally delay refresh_notify.
+-- (it has to be called by the caller, for filetype!)
+-- opts may contain:
+-- `refresh_notify`: refresh snippets for filetype immediately, default false.
+-- `force_reload`: don't use cache when reloading, default false
+local function load_snippet_file(file, filetype, add_opts, opts)
+	opts = opts or {}
+	local refresh_notify = util.ternary(opts.refresh_notify ~= nil, opts.refresh_notify, false)
+	local force_reload = util.ternary(opts.force_reload ~= nil, opts.force_reload, false)
+
+	if not Path.exists(file) then
+		log.error(
+			"Trying to read snippets from file %s, but it does not exist.", file
+		)
+		return
+	end
+
+	local file_snippets
+	local cache = package_cache.path_snippets[file]
+	if cache.snippets and not force_reload then
+		file_snippets = vim.tbl_map(duplicate.duplicate_addable, cache.snippets)
+	else
+		file_snippets = get_file_snippets(file)
+
+		-- store snippets as-is (eg. don't copy), they will be copied when read
+		-- from.
+		package_cache.path_snippets[file].snippets = file_snippets
+	end
+
+	ls.add_snippets(
+		filetype,
+		-- only load snippets matching the language set in `package.json`.
+		file_snippets,
+		vim.tbl_extend("keep", {
+			-- include filetype, a file may contribute snippets to multiple
+			-- filetypes, and we don't want to remove snippets for ft1 when
+			-- adding those for ft2.
+			key = string.format("__%s_snippets_%s", filetype, file),
+			refresh_notify = refresh_notify,
+		}, add_opts)
+	)
+	log.info(
+		"Adding %s snippets from %s",
+		#file_snippets,
+		file
+	)
 end
 
 --- Find all files+associated filetypes in a package.
@@ -151,8 +162,7 @@ end
 --- package.json)
 ---@param filter function that filters filetypes, generate from in/exclude-list
 --- via loader_util.ft_filter.
----@return table, string -> string[] (ft -> files).
---- Paths are normalized.
+---@return table: string -> string[] (ft -> files)
 local function package_files(root, filter)
 	local package = Path.join(root, "package.json")
 	-- if root doesn't contain a package.json, or it contributes no snippets,
@@ -222,7 +232,9 @@ local function get_snippet_rtp()
 	end, vim.api.nvim_get_runtime_file("package.json", true))
 end
 
--- sanitizes opts and returns ft -> files-map for `opts` (respects in/exclude).
+-- sanitizes opts and returns
+-- * ft -> files-map for `opts` (respects in/exclude).
+-- * files -> ft-map (need to look up which filetypes a file contributes).
 local function get_snippet_files(opts)
 	local paths
 	-- list of paths to crawl for loading (could be a table or a comma-separated-list)
@@ -233,6 +245,7 @@ local function get_snippet_files(opts)
 	else
 		paths = opts.paths
 	end
+
 	paths = vim.tbl_map(Path.expand, paths) -- Expand before deduping, fake paths will become nil
 	paths = vim.tbl_filter(function(v)
 		return v
@@ -252,10 +265,28 @@ local function get_snippet_files(opts)
 	return ft_paths
 end
 
+-- initializes ft_paths for `file`, and stores the add_opts for the filetype-file combination.
+-- We can't just store add_opts for a single file, since via in/exclude, they
+-- may differ for a single file which contributes multiple snippet-filetypes.
+local function update_cache(cache, file, filetype, add_opts)
+	local filecache = cache.path_snippets[file]
+	if not filecache then
+		filecache = {
+			filetype_add_opts = {},
+			filetypes = {}
+		}
+		cache.path_snippets[file] = filecache
+	end
+
+	filecache.filetype_add_opts[filetype] = add_opts
+	filecache.filetypes[filetype] = true
+end
+
 local M = {}
 function M.load(opts)
 	opts = opts or {}
 
+	-- applies in/exclude.
 	local ft_files = get_snippet_files(opts)
 	local add_opts = loader_util.add_opts(opts)
 
@@ -263,18 +294,26 @@ function M.load(opts)
 
 	log.info("Loading snippet:", vim.inspect(ft_files))
 	for ft, files in pairs(ft_files) do
-		load_snippet_files(ft, files, add_opts)
+		for _, file in ipairs(files) do
+			update_cache(package_cache, file, ft, add_opts)
+
+			-- `false`: don't refresh while adding.
+			load_snippet_file(file, ft, add_opts, {refresh_notify = false})
+		end
+		ls.refresh_notify(ft)
 	end
 end
 
 function M._load_lazy_loaded_ft(ft)
-	for _, load_call_paths in ipairs(package_cache.lazy_load_paths) do
-		load_snippet_files(
+	for _, file in ipairs(package_cache.lazy_load_paths[ft] or {}) do
+		load_snippet_file(
+			file,
 			ft,
-			load_call_paths[ft] or {},
-			load_call_paths.add_opts
+			package_cache.path_snippets[file].filetype_add_opts[ft],
+			{refresh_notify = false}
 		)
 	end
+	ls.refresh_notify(ft)
 end
 
 function M._load_lazy_loaded(bufnr)
@@ -292,6 +331,8 @@ end
 function M.lazy_load(opts)
 	opts = opts or {}
 
+	-- get two maps, one mapping filetype->associated files, and another
+	-- mapping files->default-filetypes.
 	local ft_files = get_snippet_files(opts)
 	local add_opts = loader_util.add_opts(opts)
 
@@ -300,23 +341,33 @@ function M.lazy_load(opts)
 	-- immediately load filetypes that have already been loaded.
 	-- They will not be loaded otherwise.
 	for ft, files in pairs(ft_files) do
+		-- first register add_opts for all files, then iterate over files again
+		-- if they are already loaded.
+
+		for _, file in ipairs(files) do
+			update_cache(package_cache, file, ft, add_opts)
+		end
+
 		if package_cache.lazy_loaded_ft[ft] then
-			-- instantly load snippets if they were already loaded...
-			load_snippet_files(ft, files, add_opts)
-			log.info(
-				"Immediately loading lazy-load-snippets for already-active filetype %s from files:\n%s",
-				ft,
-				vim.inspect(files)
-			)
+			for _, file in ipairs(files) do
+				-- instantly load snippets if they were already loaded...
+				load_snippet_file(file, ft, add_opts, {refresh_notify = false})
+				log.info(
+					"Immediately loading lazy-load-snippets for already-active filetype %s from files:\n%s",
+					ft,
+					vim.inspect(files)
+				)
+			end
+			ls.refresh_notify(ft)
 
 			-- don't load these files again.
+			-- clearing while iterating is fine: https://www.lua.org/manual/5.1/manual.html#pdf-next
 			ft_files[ft] = nil
 		end
 	end
 	log.info("Registering lazy-load-snippets:\n%s", vim.inspect(ft_files))
 
-	ft_files.add_opts = add_opts
-	table.insert(package_cache.lazy_load_paths, ft_files)
+	loader_util.extend_ft_paths(package_cache.lazy_load_paths, ft_files)
 
 	-- load for current buffer on startup.
 	M._load_lazy_loaded(vim.api.nvim_get_current_buf())
@@ -335,21 +386,15 @@ function M._reload_file(filename)
 	end
 	log.info("Re-loading snippets contributed by %s", filename)
 
-	package_cache.path_snippets[filename] = nil
-	local add_opts = cached_data.add_opts
-
 	-- reload file for all filetypes it occurs in.
-	for ft, _ in pairs(cached_data.fts) do
-		load_snippet_files(ft, { filename }, add_opts)
-
-		ls.clean_invalidated({ inv_limit = 100 })
+	local force_reload = true
+	for ft, _ in pairs(cached_data.filetypes) do
+		load_snippet_file(filename, ft, cached_data.filetype_add_opts[ft], {force_reload = force_reload})
+		-- only force-reload once, then reuse updated snippets.
+		force_reload = false
 	end
-end
 
-function M.load_standalone(path, opts)
-	opts = opts or {}
-
-
+	ls.clean_invalidated({ inv_limit = 100 })
 end
 
 return M

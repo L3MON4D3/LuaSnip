@@ -2183,7 +2183,7 @@ filetype is changed luasnip actually loads `lazy_load`ed snippets for the
 filetypes associated with this buffer. This association can be changed by
 customizing `load_ft_func` in `setup`: the option takes a function that, passed
 a `bufnr`, returns the filetypes that should be loaded (`fn(bufnr) -> filetypes
-(string[])`)).
+(string[])`)).  
 
 All of the loaders support reloading, so simply editing any file contributing
 snippets will reload its snippets (only in the session the file was edited in;
@@ -2192,6 +2192,46 @@ we use `BufWritePost` for reloading, not some lower-level mechanism).
 For easy editing of these files, LuaSnip provides a `vim.ui.select`-based dialog
 ([Loaders-edit_snippets](#edit_snippets)) where first the filetype, and then the
 file can be selected.
+
+### Snippet-specific filetypes
+Some loaders (vscode,lua) support giving snippets generated in some file their
+own filetype (vscode via `scope`, lua via the underlying `filetype`-option for
+snippets). These snippet-specific filetypes are not considered when determining
+which files to `lazy_load` for some filetype, this is exclusively determined by
+the `language` associated with a file in vscodes' `package.json`, and the
+file/directory-name in lua.  
+This can be resolved relatively easily in vscode, where the `language`
+advertised in `package.json` can just be a superset of the `scope`s in the file.  
+Another simplistic solution is to set the language to `all` (in lua, it might
+make sense to create a directory `luasnippets/all/*.lua` to group these files
+together).  
+Another approach is to modify `load_ft_func` to load a custom filetype if the
+snippets should be activated, and store the snippets in a file for that
+filetype. This can be used to group snippets by e.g. framework, and load them
+once a file belonging to such a framework is edited.
+
+**Example**:  
+`react.lua`
+```lua
+return {
+    s({filetype = "css", trig = ...}, ...),
+    s({filetype = "html", trig = ...}, ...),
+    s({filetype = "js", trig = ...}, ...),
+}
+```
+
+`luasnip_config.lua`
+```lua
+load_ft_func = function(bufnr)
+    if "<bufnr-in-react-framework>" then
+        -- will load `react.lua` for this buffer
+        return {"react"}
+    else
+        return require("luasnip.extras.filetype_functions").from_filetype_load
+    end
+end
+```
+
 
 ## Troubleshooting
 
