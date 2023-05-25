@@ -48,7 +48,7 @@ local function get_file_snippets(file, default_filetype, opts)
 	local ignore_scope = util.ternary(opts.ignore_scope, opts.ignore_scope, false)
 
 	-- since most snippets we load don't have a scope-field, we just insert this here by default.
-	local snippets_by_ft = {[default_filetype] = {snippets = {}, autosnippets = {}}}
+	local snippets_by_ft = {[default_filetype] = {}}
 
 	local snippet_set_data = read_json(file)
 	if snippet_set_data == nil then
@@ -74,6 +74,7 @@ local function get_file_snippets(file, default_filetype, opts)
 					dscr = parts.description or name,
 					wordTrig = ls_conf.wordTrig,
 					priority = ls_conf.priority,
+					snippetType = ls_conf.autotrigger and "autosnippet" or "snippet"
 				}, body)
 
 				if session.config.loaders_store_source then
@@ -88,16 +89,15 @@ local function get_file_snippets(file, default_filetype, opts)
 				-- scope can have multiple components.
 				if parts.scope and not ignore_scope then
 					for _, scope in ipairs(vim.split(parts.scope, ",", { plain = true })) do
-						snippets_by_ft[scope] = snippets_by_ft[scope] or {snippets = {}, autosnippets = {}}
+						snippets_by_ft[scope] = snippets_by_ft[scope] or {}
 						table.insert(ft_tables, snippets_by_ft[scope])
 					end
 				else
 					table.insert(ft_tables, snippets_by_ft[default_filetype])
 				end
 
-				local snippet_type = ls_conf.autotrigger and "autosnippets" or "snippets"
 				for _, t in ipairs(ft_tables) do
-					table.insert(t[snippet_type], snip)
+					table.insert(t, snip)
 				end
 			end
 		end)
@@ -129,27 +129,16 @@ local function load_snippet_files(lang, files, add_opts)
 			ls.add_snippets(
 				lang,
 				-- only load snippets matching the language set in `package.json`.
-				file_lang_snippets.snippets,
+				file_lang_snippets,
 				vim.tbl_extend("keep", {
-					type = "snippets",
 					-- again, include filetype, same reasoning as with augroup.
 					key = string.format("__%s_snippets_%s", lang, file),
 					refresh_notify = false,
 				}, add_opts)
 			)
-			ls.add_snippets(
-				lang,
-				file_lang_snippets.autosnippets,
-				vim.tbl_extend("keep", {
-					type = "autosnippets",
-					key = string.format("__%s_autosnippets_%s", lang, file),
-					refresh_notify = false,
-				}, add_opts)
-			)
 			log.info(
-				"Adding %s snippets and %s autosnippets for filetype `%s` from %s",
-				#file_lang_snippets.snippets,
-				#file_lang_snippets.autosnippets,
+				"Adding %s snippets for filetype `%s` from %s",
+				#file_lang_snippets,
 				lang,
 				file
 			)
