@@ -52,13 +52,13 @@ local function new_cache()
 end
 
 local M = {
-	vscode = new_cache(),
+	vscode_packages = new_cache(),
 	snipmate = new_cache(),
 	lua = new_cache(),
 }
 
 function M.cleanup()
-	M.vscode:clean()
+	M.vscode_packages:clean()
 	M.snipmate:clean()
 	M.lua:clean()
 end
