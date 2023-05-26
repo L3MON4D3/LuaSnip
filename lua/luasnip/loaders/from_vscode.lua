@@ -361,7 +361,7 @@ end
 function M.load_standalone(opts)
 	opts = opts or {}
 	local add_opts = loader_util.add_opts(opts)
-	local path = opts.path
+	local path = Path.expand(opts.path)
 
 	standalone_add(path, add_opts)
 end
