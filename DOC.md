@@ -1652,8 +1652,7 @@ The optional third argument is the same as the third (`opts`) argument to the
 
 The postfix snippet works using a callback on the pre_expand event of the
 snippet. If you pass a callback on the pre_expand event (structure example
-below) it will get run after the builtin callback. This means that your
-callback will have access to the `POSTFIX_MATCH` field as well.
+below) it will get run after the builtin callback.
 
 ```lua
 {
