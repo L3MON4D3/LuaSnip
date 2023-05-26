@@ -833,8 +833,6 @@ local function count(_, _, old_state)
 	return snip
 end
 
-...
-
 ls.add_snippets("all",
 	s("trig", {
 		i(1, "change to update"),
@@ -915,7 +913,7 @@ end
 s("rest", {
 	i(1, "preset"), t{"",""},
 	d(2, simple_restore, 1)
-}),
+})
 ```
 
 <!-- panvimdoc-ignore-start -->
@@ -936,7 +934,7 @@ end
 s("rest", {
 	i(1, "preset"), t{"",""},
 	d(2, simple_restore, 1)
-}),
+})
 ```
 Now the entered text is stored.
 
@@ -1048,17 +1046,15 @@ s("trig", {
 		return sn(nil, { -- ai[4][0]
 			i(1), -- ai[4][0][1]
 		})
-	end, {})
-	}))
+	end, {}),
 	r(5, "restore_key", -- ai[5]
 		i(1) -- ai[5][0][1]: restoreNodes always store snippetNodes.
-	)
+	),
 	r(6, "restore_key_2", -- ai[6]
 		sn(nil, { -- ai[6][0]
 			i(1) -- ai[6][0][1]
 		})
 	)
-	}))
 })
 ```
 
@@ -1068,9 +1064,10 @@ snippetNode, so even if the restoreNode only contains one node, that node has
 to be accessed as `ai[restoreNodeIndx][0][1]`.
 
 `absolute_indexer`s' can be constructed in different ways:
-```lua
-ai[1][2][3] == ai(1, 2, 3) == ai{1, 2, 3}
-```
+* `ai[1][2][3]`
+* `ai(1, 2, 3)`
+* `ai{1, 2, 3}`
+are all the same node.
 
 # MultiSnippet
 
@@ -1205,7 +1202,7 @@ Examples:
 * ```lua
     s("extras1", {
       i(1), t { "", "" }, m(1, "^ABC$", "A")
-    }),
+    })
   ```
   Inserts "A" if the node with jump-index `n` matches "ABC" exactly, nothing otherwise.
 
@@ -1218,7 +1215,7 @@ Examples:
 * ```lua
   s("extras2", {
     i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
-  }),
+  })
   ```
   Inserts `"PALINDROME"` if i(1) contains a palindrome.
 
@@ -1231,7 +1228,7 @@ Examples:
   s("extras3", {
     i(1), t { "", "" }, i(2), t { "", "" },
     m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
-  }),
+  })
   ```
   This inserts the text of the node with jump-index 1, with all occurences of
   `a` replaced with `e`, if the second insertNode matches the first exactly.
@@ -1250,7 +1247,7 @@ Inserts the text of the passed node.
 - `node_reference`, a single [Node Reference](#node-reference).
 
 ```lua
-s("extras4", { i(1), t { "", "" }, extras.rep(1) }),
+s("extras4", { i(1), t { "", "" }, extras.rep(1) })
 ```
 
 <!-- panvimdoc-ignore-start -->
@@ -1271,7 +1268,7 @@ For example `partial(os.date, "%Y")` inserts the current year on expansion.
 
 
 ```lua
-s("extras5", { extras.partial(os.date, "%Y") }),
+s("extras5", { extras.partial(os.date, "%Y") })
 ```
 
 <!-- panvimdoc-ignore-start -->
@@ -1290,7 +1287,7 @@ Inserts text if the referenced node doesn't contain any text.
 - `empty`, `string`: inserted if the node is empty.
 
 ```lua
-s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") }),
+s("extras6", { i(1, ""), t { "", "" }, extras.nonempty(1, "not empty!", "empty!") })
 ```
 
 <!-- panvimdoc-ignore-start -->
@@ -1310,7 +1307,7 @@ insertNode, and, as such, it can be quickly overridden.
 The remaining arguments carry over from lambda.
 
 ```lua
-s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) }),
+s("extras7", { i(1), t { "", "" }, extras.dynamic_lambda(2, l._1 .. l._1, 1) })
 ```
 
 <!-- panvimdoc-ignore-start -->
@@ -1614,7 +1611,7 @@ postfix(".brd", {
 	d(1, function (_, parent)
 		return sn(nil, {t("[" .. parent.env.POSTFIX_MATCH .. "]")})
 	end)
-}),
+})
 ```
 
 <!-- panvimdoc-ignore-start -->
@@ -1913,7 +1910,7 @@ LuaSnip, best copy the source file: `/lua/luasnip/util/extend_decorator.lua`).
 One more example for registering a new function:
 ```lua
 local function somefn(arg1, arg2, opts1, opts2)
-	... -- not important
+	-- not important
 end
 
 -- note the reversed arg_indx!!
@@ -2155,9 +2152,7 @@ the well-established VSCode and SnipMate format, as well as plain Lua files for
 snippets written in Lua.
 
 All loaders share a similar interface:
-```lua
-require("luasnip.loaders.from_{vscode,snipmate,lua}").{lazy_,}load(opts:table|nil)
-```
+`require("luasnip.loaders.from_{vscode,snipmate,lua}").{lazy_,}load(opts:table|nil)`
 
 where `opts` can contain the following keys:
 
@@ -2586,8 +2581,6 @@ local ext_opts = {
 	snippet_passive = {}
 }
 
-...
-
 s("trig", {
 	i(1, "text1", {
 		node_ext_opts = ext_opts
@@ -2697,8 +2690,6 @@ ls.setup({
 	}
 })
 
-...
-
 s("trig", {
 	i(1, "text1", {
 		node_ext_opts = {
@@ -2788,7 +2779,7 @@ s({trig = "(%d)", regTrig = true}, {
 	f(function(args, snip)
 		return string.rep("repeatme ", tonumber(snip.captures[1]))
 	end, {})
-}),
+})
 ```
 
 This snippet works fine because	`snippet.captures[1]` is always a number.
@@ -2802,7 +2793,7 @@ s({trig = "(%d)", regTrig = true, docTrig = "3"}, {
 	f(function(args, snip)
 		return string.rep("repeatme ", tonumber(snip.captures[1]))
 	end, {})
-}),
+})
 ```
 
 `snippet.captures` and `snippet.trigger` will be populated as if actually
@@ -2816,7 +2807,7 @@ s({trig = "(%d)", regTrig = true, docstring = "repeatmerepeatmerepeatme"}, {
 	f(function(args, snip)
 		return string.rep("repeatme ", tonumber(snip.captures[1]))
 	end, {})
-}),
+})
 ```
 
 Refer to [#515](https://github.com/L3MON4D3/LuaSnip/pull/515) for a
