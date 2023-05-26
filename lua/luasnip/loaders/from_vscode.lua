@@ -90,15 +90,13 @@ local function get_file_snippets(file, default_filetype, opts)
 				-- scope can have multiple components.
 				if parts.scope and not ignore_scope then
 					for _, scope in ipairs(vim.split(parts.scope, ",", { plain = true })) do
+						-- set table in case it does not exist yet.
 						snippets_by_ft[scope] = snippets_by_ft[scope] or {}
-						table.insert(ft_tables, snippets_by_ft[scope])
+
+						table.insert(snippets_by_ft[scope], snip)
 					end
 				else
-					table.insert(ft_tables, snippets_by_ft[default_filetype])
-				end
-
-				for _, t in ipairs(ft_tables) do
-					table.insert(t, snip)
+					table.insert(snippets_by_ft[default_filetype], snip)
 				end
 			end
 		end)
