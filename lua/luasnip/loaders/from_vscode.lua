@@ -132,7 +132,8 @@ local function load_snippet_files(lang, files, add_opts)
 				-- only load snippets matching the language set in `package.json`.
 				file_lang_snippets,
 				vim.tbl_extend("keep", {
-					-- again, include filetype, same reasoning as with augroup.
+					-- provide key s.t. snippets will be replaced if the file
+					-- is reloaded.
 					key = string.format("__%s_package_snippets_%s", lang, file),
 					refresh_notify = false,
 				}, add_opts)
@@ -336,7 +337,11 @@ function M.edit_snippet_files()
 end
 
 local function standalone_add(path, add_opts)
+	-- by default, put snippets into global scope.
 	local file_snippets = get_file_snippets(path, "all")
+
+	-- store add_opts for this file: file might be edited, and then we want to
+	-- reload it with these same add_opts.
 	standalone_cache.path_snippets[path] = {
 		add_opts = add_opts
 	}
@@ -346,6 +351,8 @@ local function standalone_add(path, add_opts)
 		nil,
 		file_snippets,
 		vim.tbl_extend("keep", {
+			-- provide key s.t. snippets will be replaced if the file is
+			-- reloaded.
 			key = string.format("__standalone_snippets_%s", path),
 		}, add_opts)
 	)
@@ -375,6 +382,7 @@ function M._reload_file(filename)
 		end
 		ls.clean_invalidated({ inv_limit = 100 })
 	end
+
 	local standalone_cached_data = standalone_cache.path_snippets[filename]
 	if standalone_cached_data then
 		log.info("Re-loading snippets contributed by %s", filename)
