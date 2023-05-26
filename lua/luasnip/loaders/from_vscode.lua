@@ -338,7 +338,6 @@ end
 local function standalone_add(path, add_opts)
 	local file_snippets = get_file_snippets(path, "all")
 	standalone_cache.path_snippets[path] = {
-		snippets = vim.deepcopy(file_snippets),
 		add_opts = add_opts
 	}
 
@@ -379,8 +378,9 @@ function M._reload_file(filename)
 	local standalone_cached_data = standalone_cache.path_snippets[filename]
 	if standalone_cached_data then
 		log.info("Re-loading snippets contributed by %s", filename)
-		package_cache.path_snippets[filename] = nil
-		local add_opts = package_cached_data.add_opts
+
+		standalone_cache.path_snippets[filename] = nil
+		local add_opts = standalone_cached_data.add_opts
 
 		standalone_add(filename, add_opts)
 		ls.clean_invalidated({ inv_limit = 100 })
