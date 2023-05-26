@@ -133,7 +133,7 @@ local function load_snippet_files(lang, files, add_opts)
 				file_lang_snippets,
 				vim.tbl_extend("keep", {
 					-- again, include filetype, same reasoning as with augroup.
-					key = string.format("__%s_snippets_%s", lang, file),
+					key = string.format("__%s_package_snippets_%s", lang, file),
 					refresh_notify = false,
 				}, add_opts)
 			)
@@ -346,7 +346,7 @@ local function standalone_add(path, add_opts)
 		nil,
 		file_snippets,
 		vim.tbl_extend("keep", {
-			key = string.format("__snippets_%s", path),
+			key = string.format("__standalone_snippets_%s", path),
 		}, add_opts)
 	)
 end
