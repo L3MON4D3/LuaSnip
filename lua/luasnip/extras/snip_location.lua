@@ -1,4 +1,5 @@
 local Source = require("luasnip.session.snippet_collection.source")
+local util = require("luasnip.util.util")
 
 -- stylua: ignore
 local tsquery_parse =
@@ -54,8 +55,8 @@ local function range_highlight(line_start, line_end, hl_duration_ms)
 	end
 end
 
-local function json_find_snippet_definition(bufnr, extension, snippet_name)
-	local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, extension)
+local function json_find_snippet_definition(bufnr, filetype, snippet_name)
+	local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
 	if not parser_ok then
 		error("Error while getting parser: " .. parser)
 	end
@@ -113,7 +114,8 @@ function M.jump_to_snippet(snip, opts)
 	end
 
 	local fcall_range
-	if vim.api.nvim_buf_get_name(0):match("%.lua$") then
+	local ft = util.ternary(vim.bo[0].filetype ~= "", vim.bo[0].filetype, vim.api.nvim_buf_get_name(0):match("%.([^%.]+)$"))
+	if ft == "lua" then
 		if source.line then
 			-- in lua-file, can get region of definition via treesitter.
 			-- 0: current buffer.
@@ -133,11 +135,10 @@ function M.jump_to_snippet(snip, opts)
 			return
 		end
 	-- matches *.json or *.jsonc.
-	elseif vim.api.nvim_buf_get_name(0):match("%.jsonc?$") then
-		local extension = vim.api.nvim_buf_get_name(0):match("jsonc?$")
+	elseif ft == "json" or ft == "jsonc" then
 		local ok
 		ok, fcall_range =
-			pcall(json_find_snippet_definition, 0, extension, snip.name)
+			pcall(json_find_snippet_definition, 0, ft, snip.name)
 		if not ok then
 			print(
 				"Could not determine range of snippet-definition: "
