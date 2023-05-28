@@ -53,6 +53,9 @@ local license_to_nil = { priority = true, snippetType = true, _source = true, fi
 -- opts can aditionally contain the key `parse_fn`, which will be used to parse
 -- the snippet. This is useful, since snipmate-snippets are parsed with a
 -- function than regular lsp-snippets.
+-- context can be nil, in that case the resulting object can't be inserted into
+-- the snippet-tables, but may be used after expansion (i.e. returned from
+-- snippet:copy)
 local function new(context, snippet, opts)
 	opts = opts or {}
 
@@ -66,7 +69,7 @@ local function new(context, snippet, opts)
 	local sp = vim.tbl_extend(
 		"error",
 		{},
-		snip_mod.init_snippet_context(node_util.wrap_context(context), opts),
+		context and snip_mod.init_snippet_context(node_util.wrap_context(context), opts) or {},
 		snip_mod.init_snippet_opts(opts),
 		node_util.init_node_opts(opts)
 	)
