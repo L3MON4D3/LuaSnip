@@ -212,6 +212,8 @@ s({trig="trigger"}, {})
     LuaSnip on snippet expansion (and thus has access to the matched trigger and
 	captures), while `show_condition` is (should be) evaluated by the
 	completion engines when scanning for available snippet candidates.
+  - `filetype`: `string`, the filetype of the snippet.
+    This overrides the filetype the snippet is added (via `add_snippet`) as.
 
 - `nodes`: A single node or a list of nodes. The nodes that make up the
   snippet.
