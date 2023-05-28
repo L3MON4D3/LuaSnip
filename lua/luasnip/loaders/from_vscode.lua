@@ -12,7 +12,7 @@ local source = require("luasnip.session.snippet_collection.source")
 local json_decoders = {
 	json = util.json_decode,
 	jsonc = require("luasnip.util.jsonc").decode,
-	["code-snippets"] = require("luasnip.util.jsonc").decode
+	["code-snippets"] = require("luasnip.util.jsonc").decode,
 }
 
 local function read_json(fname)
@@ -46,10 +46,11 @@ end
 -- set opts.ignore_scope to add all snippets to default_filetype, regardless of scope.
 local function get_file_snippets(file, default_filetype, opts)
 	opts = opts or {}
-	local ignore_scope = util.ternary(opts.ignore_scope, opts.ignore_scope, false)
+	local ignore_scope =
+		util.ternary(opts.ignore_scope, opts.ignore_scope, false)
 
 	-- since most snippets we load don't have a scope-field, we just insert this here by default.
-	local snippets_by_ft = {[default_filetype] = {}}
+	local snippets_by_ft = { [default_filetype] = {} }
 
 	local snippet_set_data = read_json(file)
 	if snippet_set_data == nil then
@@ -75,7 +76,8 @@ local function get_file_snippets(file, default_filetype, opts)
 					dscr = parts.description or name,
 					wordTrig = ls_conf.wordTrig,
 					priority = ls_conf.priority,
-					snippetType = ls_conf.autotrigger and "autosnippet" or "snippet"
+					snippetType = ls_conf.autotrigger and "autosnippet"
+						or "snippet",
 				}, body)
 
 				if session.config.loaders_store_source then
@@ -86,7 +88,9 @@ local function get_file_snippets(file, default_filetype, opts)
 				-- https://code.visualstudio.com/docs/editor/userdefinedsnippets#_language-snippet-scope
 				-- scope can have multiple components.
 				if parts.scope and not ignore_scope then
-					for _, scope in ipairs(vim.split(parts.scope, ",", { plain = true })) do
+					for _, scope in
+						ipairs(vim.split(parts.scope, ",", { plain = true }))
+					do
 						-- set table in case it does not exist yet.
 						snippets_by_ft[scope] = snippets_by_ft[scope] or {}
 
@@ -113,7 +117,8 @@ local function load_snippet_files(lang, files, add_opts)
 				cached_path.fts[lang] = true
 			else
 				-- get all snippets from file, regardless of scope.
-				file_lang_snippets = get_file_snippets(file, lang, {ignore_scope = true})[lang]
+				file_lang_snippets =
+					get_file_snippets(file, lang, { ignore_scope = true })[lang]
 				-- store snippets to prevent parsing the same file more than once.
 				package_cache.path_snippets[file] = {
 					snippets = vim.deepcopy(file_lang_snippets),
@@ -338,7 +343,7 @@ local function standalone_add(path, add_opts)
 	-- store add_opts for this file: file might be edited, and then we want to
 	-- reload it with these same add_opts.
 	standalone_cache.path_snippets[path] = {
-		add_opts = add_opts
+		add_opts = add_opts,
 	}
 
 	ls.add_snippets(
@@ -373,7 +378,6 @@ function M._reload_file(filename)
 		-- reload file for all filetypes it occurs in.
 		for ft, _ in pairs(package_cached_data.fts) do
 			load_snippet_files(ft, { filename }, add_opts)
-
 		end
 		ls.clean_invalidated({ inv_limit = 100 })
 	end
