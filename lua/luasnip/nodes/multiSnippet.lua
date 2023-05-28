@@ -38,24 +38,12 @@ function MultiSnippet:retrieve_all()
 	return self.v_snips
 end
 
-local function new_multisnippet(contexts, nodes, opts)
+local function multisnippet_from_snippet_obj(contexts, snippet, snippet_opts)
 	assert(
 		type(contexts) == "table",
 		"multisnippet: expected contexts to be a table."
 	)
-	opts = opts or {}
-	local common_snip_opts = opts.common_opts or {}
-
 	local common_context = node_util.wrap_context(contexts.common) or {}
-
-	-- create snippet without `context`-fields!
-	-- compare to `S` (aka `s`, the default snippet-constructor) in
-	-- `nodes/snippet.lua`.
-	local snippet = snip_mod._S(
-		snip_mod.init_snippet_opts(common_snip_opts),
-		nodes,
-		common_snip_opts
-	)
 
 	local v_snips = {}
 	for _, context in ipairs(contexts) do
@@ -66,7 +54,7 @@ local function new_multisnippet(contexts, nodes, opts)
 		)
 		table.insert(
 			v_snips,
-			new_virtual_snippet(complete_context, snippet, common_snip_opts)
+			new_virtual_snippet(complete_context, snippet, snippet_opts)
 		)
 	end
 
@@ -79,6 +67,21 @@ local function new_multisnippet(contexts, nodes, opts)
 	return o
 end
 
+local function multisnippet_from_nodes(contexts, nodes, opts)
+	opts = opts or {}
+	local common_snip_opts = opts.common_opts or {}
+
+	-- create snippet without `context`-fields!
+	-- compare to `S` (aka `s`, the default snippet-constructor) in
+	-- `nodes/snippet.lua`.
+	return multisnippet_from_snippet_obj(contexts, snip_mod._S(
+		snip_mod.init_snippet_opts(common_snip_opts),
+		nodes,
+		common_snip_opts
+	), common_snip_opts)
+end
+
 return {
-	new_multisnippet = new_multisnippet,
+	new_multisnippet = multisnippet_from_nodes,
+	_raw_ms = multisnippet_from_snippet_obj
 }
