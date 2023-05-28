@@ -388,6 +388,12 @@ describe("loaders:", function()
 		"/tests/data/vscode-snippets/snippets/all.json",
 		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
 	)
+	reload_test(
+		"vscode-standalone-reload works",
+		ls_helpers.loaders["vscode(standalone)"],
+		"/tests/data/vscode-standalone.code-snippets",
+		"<Esc>11jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+	)
 
 	reload_test(
 		"lua-reload works",
