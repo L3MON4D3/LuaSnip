@@ -83,9 +83,6 @@ local function get_file_snippets(file, default_filetype, opts)
 					snip._source = source.from_location(file)
 				end
 
-				-- snippet can be provided to multiple filetypes via scope.
-				local ft_tables = {}
-
 				-- https://code.visualstudio.com/docs/editor/userdefinedsnippets#_language-snippet-scope
 				-- scope can have multiple components.
 				if parts.scope and not ignore_scope then
