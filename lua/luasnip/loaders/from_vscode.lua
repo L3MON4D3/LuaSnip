@@ -93,7 +93,7 @@ local function get_file_snippets(file, default_filetype, opts)
 						-- set table in case it does not exist yet.
 						snippets_by_ft[scope] = snippets_by_ft[scope] or {}
 
-						table.insert(snippets_by_ft[scope], snip)
+						table.insert(snippets_by_ft[scope], snip:copy())
 					end
 				else
 					table.insert(snippets_by_ft[default_filetype], snip)
