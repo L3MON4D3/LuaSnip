@@ -229,11 +229,11 @@ function M.clean_invalidated(opts)
 	M.invalidated_count = 0
 end
 
-local function invalidate_snippets(snippets_by_ft)
-	for _, ft_snippets in pairs(snippets_by_ft) do
-		for _, addable in ipairs(ft_snippets) do
-			for _, snip in ipairs(addable:retrieve_all()) do
-				snip:invalidate()
+local function invalidate_addables(addables_by_ft)
+	for _, addables in pairs(addables_by_ft) do
+		for _, addable in ipairs(addables) do
+			for _, expandable in ipairs(addable:retrieve_all()) do
+				expandable:invalidate()
 			end
 		end
 	end
@@ -282,7 +282,7 @@ function M.add_snippets(snippets, opts)
 
 	if opts.key then
 		if by_key[opts.key] then
-			invalidate_snippets(by_key[opts.key])
+			invalidate_addables(by_key[opts.key])
 		end
 		by_key[opts.key] = snippets
 	end
