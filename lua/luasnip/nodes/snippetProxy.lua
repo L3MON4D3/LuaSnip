@@ -102,7 +102,10 @@ local function new(context, snippet, opts)
 	-- when the metatable has been changed. Therefore: set copy in each instance
 	-- of snippetProxy.
 	function sp:copy()
-		return self._snippet:copy()
+		local copy = self._snippet:copy()
+		copy.id = self.id
+
+		return copy
 	end
 
 	return sp
