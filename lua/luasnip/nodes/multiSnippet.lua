@@ -8,7 +8,10 @@ function VirtualSnippet:get_docstring()
 	return self.snippet:get_docstring()
 end
 function VirtualSnippet:copy()
-	return self.snippet:copy()
+	local copy = self.snippet:copy()
+	copy.id = self.id
+
+	return copy
 end
 
 -- VirtualSnippet has all the fields for executing these methods.
