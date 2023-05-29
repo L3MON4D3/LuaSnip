@@ -1,5 +1,6 @@
 local ls = require("luasnip")
 local package_cache = require("luasnip.loaders._caches").vscode_packages
+local standalone_cache = require("luasnip.loaders._caches").vscode_standalone
 local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
@@ -377,24 +378,70 @@ function M.edit_snippet_files()
 	loader_util.edit_snippet_files(package_cache.ft_paths)
 end
 
--- Make sure filename is normalized.
+local function standalone_add(path, add_opts)
+	local file_snippets = get_file_snippets(path)
+
+	ls.add_snippets(
+		-- nil: provided snippets are a table mapping filetype->snippets.
+		"all",
+		file_snippets,
+		vim.tbl_extend("keep", {
+			key = string.format("__snippets_%s", path),
+		}, add_opts)
+	)
+end
+
+function M.load_standalone(opts)
+	opts = opts or {}
+	local path = Path.expand(opts.path)
+	local add_opts = loader_util.add_opts(opts)
+
+	-- register file for `all`-filetype in cache.
+	if not standalone_cache.ft_paths.all then
+		standalone_cache.ft_paths.all = {}
+	end
+
+	-- record in cache, so edit_snippet_files can find it.
+	-- Store under "all" for now, alternative: collect all filetypes the
+	-- snippets contribute to.
+	-- Since .code-snippets are mainly (?) project-local, that behaviour does
+	-- not seem to bad.
+	table.insert(standalone_cache.ft_paths.all, path)
+
+	-- only store add_opts, we don't need to remember filetypes and the like,
+	-- and here the filename is enough to identify add_opts.
+	standalone_cache.path_snippets[path] = add_opts
+
+	standalone_add(path, add_opts)
+end
+
+-- filename is normalized
 function M._reload_file(filename)
-	local cached_data = package_cache.path_snippets[filename]
-	if not cached_data then
-		-- file is not loaded by this loader.
-		return
-	end
-	log.info("Re-loading snippets contributed by %s", filename)
+	local package_cached_data = package_cache.path_snippets[filename]
+	if package_cached_data then
+		log.info("Re-loading snippets contributed by %s", filename)
 
-	-- reload file for all filetypes it occurs in.
-	local force_reload = true
-	for ft, _ in pairs(cached_data.filetypes) do
-		load_snippet_file(filename, ft, cached_data.filetype_add_opts[ft], {force_reload = force_reload})
-		-- only force-reload once, then reuse updated snippets.
-		force_reload = false
+		-- reload file for all filetypes it occurs in.
+		-- only the first call actually needs to force-reload, all other can
+		-- just use its snippets.
+		local force_reload = true
+		for ft, _ in pairs(package_cached_data.filetypes) do
+			load_snippet_file(filename, ft, package_cached_data.filetype_add_opts[ft], {force_reload = force_reload})
+			-- only force-reload once, then reuse updated snippets.
+			force_reload = false
+		end
+
+		ls.clean_invalidated({ inv_limit = 100 })
 	end
 
-	ls.clean_invalidated({ inv_limit = 100 })
+	local standalone_cached_data = standalone_cache.path_snippets[filename]
+	if standalone_cached_data then
+		log.info("Re-loading snippets contributed by %s", filename)
+		local add_opts = standalone_cached_data
+
+		standalone_add(filename, add_opts)
+		ls.clean_invalidated({ inv_limit = 100 })
+	end
 end
 
 return M

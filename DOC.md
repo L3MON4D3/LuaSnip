@@ -2152,7 +2152,7 @@ Luasnip is capable of loading snippets from different formats, including both
 the well-established VSCode and SnipMate format, as well as plain Lua files for
 snippets written in Lua.
 
-All loaders share a similar interface:
+All loaders (except the vscode-standalone-loader) share a similar interface:
 `require("luasnip.loaders.from_{vscode,snipmate,lua}").{lazy_,}load(opts:table|nil)`
 
 where `opts` can contain the following keys:
@@ -2353,6 +2353,69 @@ require("luasnip.loaders.from_vscode").lazy_load()
 require("luasnip.loaders.from_vscode").lazy_load({paths = "~/.config/nvim/my_snippets"})
 -- or relative to the directory of $MYVIMRC
 require("luasnip.loaders.from_vscode").load({paths = "./my_snippets"})
+```
+
+### Standalone
+Beside snippet-libraries provided by packages, vscode also supports another
+format which can be used for project-local snippets, or user-defined snippets,
+`.code-snippets`.  
+
+The layout of these files is almost identical to that of the package-provided
+snippets, but there is one additional field supported in the
+snippet-definitions, `scope`, with which the filetype of the snippet can be set.
+If `scope` is not set, the snippet will be added to the global filetype (`all`).
+
+`require("luasnip.loaders.from_vscode").load_standalone(opts)`
+
+- `opts`: `table`, can contain the following keys:
+  - `path`: `string`, Path to the `*.code-snippets`-file that should be loaded.
+    Just like the paths in `load`, this one can begin with a `"~/"` to be
+    relative to `$HOME`, and a `"./"` to be relative to the
+    neovim-config-directory.
+  - `{override,default}_priority`: These keys are passed straight to the
+    `add_snippets`-calls (documented in [API](#api)) and can be used to change
+    the priority of the loaded snippets.
+
+**Example**:
+`a.code-snippets`:
+```jsonc
+{
+    // a comment, since `.code-snippets` may contain jsonc.
+    "c/cpp-snippet": {
+        "prefix": [
+            "trigger1",
+            "trigger2"
+        ],
+        "body": [
+            "this is $1",
+            "my snippet $2"
+        ],
+        "description": "A description of the snippet.",
+        "scope": "c,cpp"
+    },
+    "python-snippet": {
+        "prefix": "trig",
+        "body": [
+            "this is $1",
+            "a different snippet $2"
+        ],
+        "description": "Another snippet-description.",
+        "scope": "python"
+    },
+    "global snippet": {
+        "prefix": "trigg",
+        "body": [
+            "this is $1",
+            "the last snippet $2"
+        ],
+        "description": "One last snippet-description.",
+    }
+}
+```
+
+This file can be loaded by calling
+```lua
+require("luasnip.loaders.from_vscode").load_standalone({path = "a.code-snippets"})
 ```
 
 ## SNIPMATE

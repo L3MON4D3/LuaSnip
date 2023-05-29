@@ -7,6 +7,7 @@ local M = {}
 -- used to map cache-name to name passed to format.
 local clean_name = {
 	vscode_packages = "vscode",
+	vscode_standalone = "vscode-standalone",
 	snipmate = "snipmate",
 	lua = "lua"
 }
@@ -44,7 +45,7 @@ function M.edit_snippet_files(opts)
 	opts = opts or {}
 	local format = opts.format or default_format
 	local edit = opts.edit or default_edit
-	local extend = opts.extend or function()
+	local extend = opts.extend or function(_,_)
 		return {}
 	end
 
@@ -54,7 +55,7 @@ function M.edit_snippet_files(opts)
 			local items = {}
 
 			-- concat files from all loaders for the selected filetype ft.
-			for _, cache_name in ipairs({ "vscode_packages", "snipmate", "lua" }) do
+			for _, cache_name in ipairs({ "vscode_packages", "vscode_standalone", "snipmate", "lua" }) do
 				for _, path in ipairs(Cache[cache_name].ft_paths[ft] or {}) do
 					local fmt_name = format(path, clean_name[cache_name])
 					if fmt_name then

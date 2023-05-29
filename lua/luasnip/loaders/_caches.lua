@@ -62,12 +62,14 @@ end
 
 local M = {
 	vscode_packages = new_cache(),
+	vscode_standalone = new_cache(),
 	snipmate = new_cache(),
 	lua = new_cache(),
 }
 
 function M.cleanup()
 	M.vscode_packages:clean()
+	M.vscode_standalone:clean()
 	M.snipmate:clean()
 	M.lua:clean()
 end
