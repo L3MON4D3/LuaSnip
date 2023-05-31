@@ -47,7 +47,8 @@ end
 
 -- some values of the snippet are nil by default, list them here so snippets
 -- aren't instantiated because of them.
-local license_to_nil = { priority = true, snippetType = true, _source = true, filetype = true }
+local license_to_nil =
+	{ priority = true, snippetType = true, _source = true, filetype = true }
 
 -- context and opts are (almost) the same objects as in s(contex, nodes, opts), snippet is a string representing the snippet.
 -- opts can aditionally contain the key `parse_fn`, which will be used to parse
@@ -69,7 +70,12 @@ local function new(context, snippet, opts)
 	local sp = vim.tbl_extend(
 		"error",
 		{},
-		context and snip_mod.init_snippet_context(node_util.wrap_context(context), opts) or {},
+		context
+				and snip_mod.init_snippet_context(
+					node_util.wrap_context(context),
+					opts
+				)
+			or {},
 		snip_mod.init_snippet_opts(opts),
 		node_util.init_node_opts(opts)
 	)

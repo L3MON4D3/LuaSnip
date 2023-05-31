@@ -77,14 +77,18 @@ local function multisnippet_from_nodes(contexts, nodes, opts)
 	-- create snippet without `context`-fields!
 	-- compare to `S` (aka `s`, the default snippet-constructor) in
 	-- `nodes/snippet.lua`.
-	return multisnippet_from_snippet_obj(contexts, snip_mod._S(
-		snip_mod.init_snippet_opts(common_snip_opts),
-		nodes,
+	return multisnippet_from_snippet_obj(
+		contexts,
+		snip_mod._S(
+			snip_mod.init_snippet_opts(common_snip_opts),
+			nodes,
+			common_snip_opts
+		),
 		common_snip_opts
-	), common_snip_opts)
+	)
 end
 
 return {
 	new_multisnippet = multisnippet_from_nodes,
-	_raw_ms = multisnippet_from_snippet_obj
+	_raw_ms = multisnippet_from_snippet_obj,
 }
