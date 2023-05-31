@@ -14,7 +14,7 @@ local duplicate = require("luasnip.nodes.duplicate")
 local json_decoders = {
 	json = util.json_decode,
 	jsonc = require("luasnip.util.jsonc").decode,
-	["code-snippets"] = require("luasnip.util.jsonc").decode
+	["code-snippets"] = require("luasnip.util.jsonc").decode,
 }
 
 local function read_json(fname)
@@ -69,7 +69,7 @@ local function get_file_snippets(file)
 			dscr = parts.description or name,
 			wordTrig = ls_conf.wordTrig,
 			priority = ls_conf.priority,
-			snippetType = ls_conf.autotrigger and "autosnippet" or "snippet"
+			snippetType = ls_conf.autotrigger and "autosnippet" or "snippet",
 		}
 
 		-- Sometimes it's a list of prefixes instead of a single one
@@ -78,12 +78,16 @@ local function get_file_snippets(file)
 
 		-- vscode documents `,`, but `.` also works.
 		-- an entry `false` in this list will cause a `ft=nil` for the snippet.
-		local filetypes = parts.scope and vim.split(parts.scope, "[.,]") or {false}
+		local filetypes = parts.scope and vim.split(parts.scope, "[.,]")
+			or { false }
 
 		local contexts = {}
 		for _, prefix in ipairs(prefixes) do
 			for _, filetype in ipairs(filetypes) do
-				table.insert(contexts, {filetype = filetype or nil, trig = prefix})
+				table.insert(
+					contexts,
+					{ filetype = filetype or nil, trig = prefix }
+				)
 			end
 		end
 
@@ -117,12 +121,15 @@ end
 -- `force_reload`: don't use cache when reloading, default false
 local function load_snippet_file(file, filetype, add_opts, opts)
 	opts = opts or {}
-	local refresh_notify = util.ternary(opts.refresh_notify ~= nil, opts.refresh_notify, false)
-	local force_reload = util.ternary(opts.force_reload ~= nil, opts.force_reload, false)
+	local refresh_notify =
+		util.ternary(opts.refresh_notify ~= nil, opts.refresh_notify, false)
+	local force_reload =
+		util.ternary(opts.force_reload ~= nil, opts.force_reload, false)
 
 	if not Path.exists(file) then
 		log.error(
-			"Trying to read snippets from file %s, but it does not exist.", file
+			"Trying to read snippets from file %s, but it does not exist.",
+			file
 		)
 		return
 	end
@@ -151,11 +158,7 @@ local function load_snippet_file(file, filetype, add_opts, opts)
 			refresh_notify = refresh_notify,
 		}, add_opts)
 	)
-	log.info(
-		"Adding %s snippets from %s",
-		#file_snippets,
-		file
-	)
+	log.info("Adding %s snippets from %s", #file_snippets, file)
 end
 
 --- Find all files+associated filetypes in a package.
@@ -274,7 +277,7 @@ local function update_cache(cache, file, filetype, add_opts)
 	if not filecache then
 		filecache = {
 			filetype_add_opts = {},
-			filetypes = {}
+			filetypes = {},
 		}
 		cache.path_snippets[file] = filecache
 	end
@@ -299,7 +302,7 @@ function M.load(opts)
 			update_cache(package_cache, file, ft, add_opts)
 
 			-- `false`: don't refresh while adding.
-			load_snippet_file(file, ft, add_opts, {refresh_notify = false})
+			load_snippet_file(file, ft, add_opts, { refresh_notify = false })
 		end
 		ls.refresh_notify(ft)
 	end
@@ -311,7 +314,7 @@ function M._load_lazy_loaded_ft(ft)
 			file,
 			ft,
 			package_cache.path_snippets[file].filetype_add_opts[ft],
-			{refresh_notify = false}
+			{ refresh_notify = false }
 		)
 	end
 	ls.refresh_notify(ft)
@@ -352,7 +355,12 @@ function M.lazy_load(opts)
 		if package_cache.lazy_loaded_ft[ft] then
 			for _, file in ipairs(files) do
 				-- instantly load snippets if they were already loaded...
-				load_snippet_file(file, ft, add_opts, {refresh_notify = false})
+				load_snippet_file(
+					file,
+					ft,
+					add_opts,
+					{ refresh_notify = false }
+				)
 				log.info(
 					"Immediately loading lazy-load-snippets for already-active filetype %s from files:\n%s",
 					ft,
@@ -426,7 +434,12 @@ function M._reload_file(filename)
 		-- just use its snippets.
 		local force_reload = true
 		for ft, _ in pairs(package_cached_data.filetypes) do
-			load_snippet_file(filename, ft, package_cached_data.filetype_add_opts[ft], {force_reload = force_reload})
+			load_snippet_file(
+				filename,
+				ft,
+				package_cached_data.filetype_add_opts[ft],
+				{ force_reload = force_reload }
+			)
 			-- only force-reload once, then reuse updated snippets.
 			force_reload = false
 		end

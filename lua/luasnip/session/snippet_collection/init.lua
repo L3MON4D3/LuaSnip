@@ -256,8 +256,7 @@ function M.add_snippets(snippets, opts)
 				local snip_type = snip.snippetType ~= nil and snip.snippetType
 					or opts.type
 				assert(
-					snip_type == "autosnippets"
-						or snip_type == "snippets",
+					snip_type == "autosnippets" or snip_type == "snippets",
 					"snippetType must be either 'autosnippets' or 'snippets'"
 				)
 

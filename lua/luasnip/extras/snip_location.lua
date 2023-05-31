@@ -114,7 +114,11 @@ function M.jump_to_snippet(snip, opts)
 	end
 
 	local fcall_range
-	local ft = util.ternary(vim.bo[0].filetype ~= "", vim.bo[0].filetype, vim.api.nvim_buf_get_name(0):match("%.([^%.]+)$"))
+	local ft = util.ternary(
+		vim.bo[0].filetype ~= "",
+		vim.bo[0].filetype,
+		vim.api.nvim_buf_get_name(0):match("%.([^%.]+)$")
+	)
 	if ft == "lua" then
 		if source.line then
 			-- in lua-file, can get region of definition via treesitter.
@@ -137,8 +141,7 @@ function M.jump_to_snippet(snip, opts)
 	-- matches *.json or *.jsonc.
 	elseif ft == "json" or ft == "jsonc" then
 		local ok
-		ok, fcall_range =
-			pcall(json_find_snippet_definition, 0, ft, snip.name)
+		ok, fcall_range = pcall(json_find_snippet_definition, 0, ft, snip.name)
 		if not ok then
 			print(
 				"Could not determine range of snippet-definition: "

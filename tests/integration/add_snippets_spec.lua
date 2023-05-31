@@ -319,16 +319,20 @@ describe("add_snippets", function()
 		exec("set ft=c")
 		feed("iin_lua")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			in_lua^                                            |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec("set ft=lua")
 		feed("<Cr>in_lua")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			in_lua                                            |
 			expanded in lua^                                   |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)

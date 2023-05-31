@@ -158,7 +158,8 @@ M.loaders = {
 		exec_lua(
 			string.format(
 				[[require("luasnip.loaders.from_vscode").load_standalone({path="%s"})]],
-				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-standalone.code-snippets"
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/vscode-standalone.code-snippets"
 			)
 		)
 	end,
