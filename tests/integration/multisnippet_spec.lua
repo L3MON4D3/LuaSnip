@@ -149,7 +149,9 @@ describe("multisnippets", function()
 	end)
 
 	it("work with extend_decorator", function()
-		ls_helpers.session_setup_luasnip({setup_extend = {enable_autosnippets = true}})
+		ls_helpers.session_setup_luasnip({
+			setup_extend = { enable_autosnippets = true },
+		})
 
 		exec_lua([[
 			-- contexts without trigger get "asdf", add one context which has
@@ -161,16 +163,20 @@ describe("multisnippets", function()
 			}, {key = "asdf"})
 		]])
 		feed("iasdf")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			csdf^                                              |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		feed("<Cr>bsdf")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			csdf                                              |
 			csdf^                                              |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
