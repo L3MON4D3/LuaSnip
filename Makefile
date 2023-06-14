@@ -27,24 +27,12 @@ nvim: | ${NVIM_PATH}
 	git -C ${NVIM_MASTER_PATH} fetch origin master --depth 1
 	git -C ${NVIM_MASTER_PATH} checkout FETCH_HEAD
 
-OS:=$(shell uname)
-NIX:=$(shell command -v nix 2> /dev/null)
-LUAJIT:=$(shell nvim -v | grep -o LuaJIT)
-LUAJIT_OSX_PATH?=/opt/homebrew/opt/luajit
-LUAJIT_NIX_PATH:=$(shell dirname $(shell dirname $(shell which luajit)))
-LUAJIT_BREW_PATH:=$(shell brew --prefix luajit 2>/dev/null)
-ifeq ($(LUAJIT),LuaJIT)
-	ifdef NIX
-		LUA_LDLIBS=-lluajit-5.1.2 -L${LUAJIT_NIX_PATH}/lib/
-	else ifeq ($(OS),Darwin)
-		LUA_LDLIBS=-lluajit-5.1.2 -L${LUAJIT_OSX_PATH}/lib/
-	else ifdef LUAJIT_BREW_PATH
-		LUA_LDLIBS=-lluajit-5.1 -L${LUAJIT_BREW_PATH}/lib/
-	else
-		LUA_LDLIBS=-lluajit-5.1
-	endif
-else
-	LUA_LDLIBS=-llua5.1
+OS?=$(shell uname)
+ifeq ($(OS),Darwin)
+	# flags for dynamic linking on macos, from luarocks
+	# (https://github.com/luarocks/luarocks/blob/9a3c5a879849f4f411a96cf1bdc0c4c7e26ade42/src/luarocks/core/cfg.lua#LL468C37-L468C80)
+	# remove -bundle, should be equivalent to the -shared hardcoded by jsregexp.
+	LUA_LDLIBS=-undefined dynamic_lookup -all_load
 endif
 JSREGEXP_PATH=deps/jsregexp
 jsregexp:
