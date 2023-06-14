@@ -1,5 +1,6 @@
 local snip_mod = require("luasnip.nodes.snippet")
 local node_util = require("luasnip.nodes.util")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local VirtualSnippet = {}
 local VirtualSnippet_mt = { __index = VirtualSnippet }
@@ -87,6 +88,24 @@ local function multisnippet_from_nodes(contexts, nodes, opts)
 		common_snip_opts
 	)
 end
+
+local function extend_multisnippet_contexts(passed_arg, extend_arg)
+	-- extend passed arg with contexts passed in extend-call
+	vim.list_extend(passed_arg, extend_arg)
+
+	-- extend ("keep") valid keyword-arguments.
+	passed_arg.common = passed_arg.common or extend_arg.common
+
+	return passed_arg
+end
+extend_decorator.register(
+	multisnippet_from_nodes,
+	-- first arg needs special handling (extend list of contexts (index i
+	-- becomes i+#passed_arg, not i again))
+	{ arg_indx = 1, extend = extend_multisnippet_contexts },
+	-- opts can just be `vim.tbl_extend`ed.
+	{ arg_indx = 3 }
+)
 
 return {
 	new_multisnippet = multisnippet_from_nodes,
