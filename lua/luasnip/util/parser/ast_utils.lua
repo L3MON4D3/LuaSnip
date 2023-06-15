@@ -3,12 +3,7 @@ local types = Ast.node_type
 local util = require("luasnip.util.util")
 local Str = require("luasnip.util.str")
 local log = require("luasnip.util.log").new("parser")
-
--- jsregexp: first try loading the version installed by luasnip, then global ones.
-local jsregexp_ok, jsregexp = pcall(require, "luasnip-jsregexp")
-if not jsregexp_ok then
-	jsregexp_ok, jsregexp = pcall(require, "jsregexp")
-end
+local jsregexp = require("luasnip.util.util").jsregexp
 
 local directed_graph = require("luasnip.util.directed_graph")
 
@@ -308,7 +303,7 @@ local function apply_transform_format(nodes, captures)
 end
 
 function M.apply_transform(transform)
-	if jsregexp_ok then
+	if jsregexp then
 		local reg_compiled =
 			jsregexp.compile(transform.pattern, transform.option)
 		-- can be passed to functionNode!

@@ -1,5 +1,11 @@
 local session = require("luasnip.session")
 
+-- jsregexp: first try loading the version installed by luasnip, then global ones.
+local jsregexp_ok, jsregexp = pcall(require, "luasnip-jsregexp")
+if not jsregexp_ok then
+	jsregexp_ok, jsregexp = pcall(require, "jsregexp")
+end
+
 local function get_cursor_0ind()
 	local c = vim.api.nvim_win_get_cursor(0)
 	c[1] = c[1] - 1
@@ -637,4 +643,5 @@ return {
 	indx_of = indx_of,
 	lazy_table = lazy_table,
 	ternary = ternary,
+	jsregexp = jsregexp_ok and jsregexp
 }
