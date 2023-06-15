@@ -94,7 +94,11 @@ local function extend_multisnippet_contexts(passed_arg, extend_arg)
 	vim.list_extend(passed_arg, extend_arg)
 
 	-- extend ("keep") valid keyword-arguments.
-	passed_arg.common = passed_arg.common or extend_arg.common
+	passed_arg.common = vim.tbl_deep_extend(
+		"keep",
+		passed_arg.common or {},
+		extend_arg.common or {}
+	)
 
 	return passed_arg
 end
