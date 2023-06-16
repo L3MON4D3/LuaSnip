@@ -212,6 +212,8 @@ s({trig="trigger"}, {})
     LuaSnip on snippet expansion (and thus has access to the matched trigger and
 	captures), while `show_condition` is (should be) evaluated by the
 	completion engines when scanning for available snippet candidates.
+  - `filetype`: `string`, the filetype of the snippet.
+    This overrides the filetype the snippet is added (via `add_snippet`) as.
 
 - `nodes`: A single node or a list of nodes. The nodes that make up the
   snippet.
@@ -2150,7 +2152,7 @@ Luasnip is capable of loading snippets from different formats, including both
 the well-established VSCode and SnipMate format, as well as plain Lua files for
 snippets written in Lua.
 
-All loaders share a similar interface:
+All loaders (except the vscode-standalone-loader) share a similar interface:
 `require("luasnip.loaders.from_{vscode,snipmate,lua}").{lazy_,}load(opts:table|nil)`
 
 where `opts` can contain the following keys:
@@ -2181,7 +2183,7 @@ filetype is changed luasnip actually loads `lazy_load`ed snippets for the
 filetypes associated with this buffer. This association can be changed by
 customizing `load_ft_func` in `setup`: the option takes a function that, passed
 a `bufnr`, returns the filetypes that should be loaded (`fn(bufnr) -> filetypes
-(string[])`)).
+(string[])`)).  
 
 All of the loaders support reloading, so simply editing any file contributing
 snippets will reload its snippets (only in the session the file was edited in;
@@ -2190,6 +2192,46 @@ we use `BufWritePost` for reloading, not some lower-level mechanism).
 For easy editing of these files, LuaSnip provides a `vim.ui.select`-based dialog
 ([Loaders-edit_snippets](#edit_snippets)) where first the filetype, and then the
 file can be selected.
+
+### Snippet-specific filetypes
+Some loaders (vscode,lua) support giving snippets generated in some file their
+own filetype (vscode via `scope`, lua via the underlying `filetype`-option for
+snippets). These snippet-specific filetypes are not considered when determining
+which files to `lazy_load` for some filetype, this is exclusively determined by
+the `language` associated with a file in vscodes' `package.json`, and the
+file/directory-name in lua.  
+This can be resolved relatively easily in vscode, where the `language`
+advertised in `package.json` can just be a superset of the `scope`s in the file.  
+Another simplistic solution is to set the language to `all` (in lua, it might
+make sense to create a directory `luasnippets/all/*.lua` to group these files
+together).  
+Another approach is to modify `load_ft_func` to load a custom filetype if the
+snippets should be activated, and store the snippets in a file for that
+filetype. This can be used to group snippets by e.g. framework, and load them
+once a file belonging to such a framework is edited.
+
+**Example**:  
+`react.lua`
+```lua
+return {
+    s({filetype = "css", trig = ...}, ...),
+    s({filetype = "html", trig = ...}, ...),
+    s({filetype = "js", trig = ...}, ...),
+}
+```
+
+`luasnip_config.lua`
+```lua
+load_ft_func = function(bufnr)
+    if "<bufnr-in-react-framework>" then
+        -- will load `react.lua` for this buffer
+        return {"react"}
+    else
+        return require("luasnip.extras.filetype_functions").from_filetype_load
+    end
+end
+```
+
 
 ## Troubleshooting
 
@@ -2311,6 +2353,69 @@ require("luasnip.loaders.from_vscode").lazy_load()
 require("luasnip.loaders.from_vscode").lazy_load({paths = "~/.config/nvim/my_snippets"})
 -- or relative to the directory of $MYVIMRC
 require("luasnip.loaders.from_vscode").load({paths = "./my_snippets"})
+```
+
+### Standalone
+Beside snippet-libraries provided by packages, vscode also supports another
+format which can be used for project-local snippets, or user-defined snippets,
+`.code-snippets`.  
+
+The layout of these files is almost identical to that of the package-provided
+snippets, but there is one additional field supported in the
+snippet-definitions, `scope`, with which the filetype of the snippet can be set.
+If `scope` is not set, the snippet will be added to the global filetype (`all`).
+
+`require("luasnip.loaders.from_vscode").load_standalone(opts)`
+
+- `opts`: `table`, can contain the following keys:
+  - `path`: `string`, Path to the `*.code-snippets`-file that should be loaded.
+    Just like the paths in `load`, this one can begin with a `"~/"` to be
+    relative to `$HOME`, and a `"./"` to be relative to the
+    neovim-config-directory.
+  - `{override,default}_priority`: These keys are passed straight to the
+    `add_snippets`-calls (documented in [API](#api)) and can be used to change
+    the priority of the loaded snippets.
+
+**Example**:
+`a.code-snippets`:
+```jsonc
+{
+    // a comment, since `.code-snippets` may contain jsonc.
+    "c/cpp-snippet": {
+        "prefix": [
+            "trigger1",
+            "trigger2"
+        ],
+        "body": [
+            "this is $1",
+            "my snippet $2"
+        ],
+        "description": "A description of the snippet.",
+        "scope": "c,cpp"
+    },
+    "python-snippet": {
+        "prefix": "trig",
+        "body": [
+            "this is $1",
+            "a different snippet $2"
+        ],
+        "description": "Another snippet-description.",
+        "scope": "python"
+    },
+    "global snippet": {
+        "prefix": "trigg",
+        "body": [
+            "this is $1",
+            "the last snippet $2"
+        ],
+        "description": "One last snippet-description.",
+    }
+}
+```
+
+This file can be loaded by calling
+```lua
+require("luasnip.loaders.from_vscode").load_standalone({path = "a.code-snippets"})
 ```
 
 ## SNIPMATE

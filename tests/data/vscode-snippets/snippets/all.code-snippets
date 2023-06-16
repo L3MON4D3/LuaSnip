@@ -1,0 +1,10 @@
+// uh oh, a comment.
+{
+	"a": {
+		"prefix": "codesnippets",
+		"body": [
+			"code-snippets!!!"
+		]
+	}
+	/* oh no a block comment */
+}

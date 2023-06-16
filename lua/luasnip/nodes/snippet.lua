@@ -189,6 +189,9 @@ local function init_snippet_context(context, opts)
 		or context.snippetType == "snippet"     and "snippets"
 		or nil
 
+	-- may be nil.
+	effective_context.filetype = context.filetype
+
 	-- maybe do this in a better way when we have more parameters, but this is
 	-- fine for now:
 

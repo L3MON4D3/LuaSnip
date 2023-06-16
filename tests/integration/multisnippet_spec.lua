@@ -147,4 +147,36 @@ describe("multisnippets", function()
 			assert(ls.__did_expand)
 		]])
 	end)
+
+	it("work with extend_decorator", function()
+		ls_helpers.session_setup_luasnip({
+			setup_extend = { enable_autosnippets = true },
+		})
+
+		exec_lua([[
+			-- contexts without trigger get "asdf", add one context which has
+			-- the default-trigger and is an autosnippet.
+			local auto_multisnippet = ls.extend_decorator.apply(ls.multi_snippet, {common = "asdf", {snippetType = "autosnippet"}})
+
+			ls.add_snippets("all", {
+				auto_multisnippet({"bsdf"}, {t"csdf"})
+			}, {key = "asdf"})
+		]])
+		feed("iasdf")
+		screen:expect({
+			grid = [[
+			csdf^                                              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		feed("<Cr>bsdf")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			csdf                                              |
+			csdf^                                              |
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)

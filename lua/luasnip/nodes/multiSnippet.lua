@@ -1,5 +1,6 @@
 local snip_mod = require("luasnip.nodes.snippet")
 local node_util = require("luasnip.nodes.util")
+local extend_decorator = require("luasnip.util.extend_decorator")
 
 local VirtualSnippet = {}
 local VirtualSnippet_mt = { __index = VirtualSnippet }
@@ -8,7 +9,10 @@ function VirtualSnippet:get_docstring()
 	return self.snippet:get_docstring()
 end
 function VirtualSnippet:copy()
-	return self.snippet:copy()
+	local copy = self.snippet:copy()
+	copy.id = self.id
+
+	return copy
 end
 
 -- VirtualSnippet has all the fields for executing these methods.
@@ -38,24 +42,12 @@ function MultiSnippet:retrieve_all()
 	return self.v_snips
 end
 
-local function new_multisnippet(contexts, nodes, opts)
+local function multisnippet_from_snippet_obj(contexts, snippet, snippet_opts)
 	assert(
 		type(contexts) == "table",
 		"multisnippet: expected contexts to be a table."
 	)
-	opts = opts or {}
-	local common_snip_opts = opts.common_opts or {}
-
 	local common_context = node_util.wrap_context(contexts.common) or {}
-
-	-- create snippet without `context`-fields!
-	-- compare to `S` (aka `s`, the default snippet-constructor) in
-	-- `nodes/snippet.lua`.
-	local snippet = snip_mod._S(
-		snip_mod.init_snippet_opts(common_snip_opts),
-		nodes,
-		common_snip_opts
-	)
 
 	local v_snips = {}
 	for _, context in ipairs(contexts) do
@@ -66,7 +58,7 @@ local function new_multisnippet(contexts, nodes, opts)
 		)
 		table.insert(
 			v_snips,
-			new_virtual_snippet(complete_context, snippet, common_snip_opts)
+			new_virtual_snippet(complete_context, snippet, snippet_opts)
 		)
 	end
 
@@ -79,6 +71,47 @@ local function new_multisnippet(contexts, nodes, opts)
 	return o
 end
 
+local function multisnippet_from_nodes(contexts, nodes, opts)
+	opts = opts or {}
+	local common_snip_opts = opts.common_opts or {}
+
+	-- create snippet without `context`-fields!
+	-- compare to `S` (aka `s`, the default snippet-constructor) in
+	-- `nodes/snippet.lua`.
+	return multisnippet_from_snippet_obj(
+		contexts,
+		snip_mod._S(
+			snip_mod.init_snippet_opts(common_snip_opts),
+			nodes,
+			common_snip_opts
+		),
+		common_snip_opts
+	)
+end
+
+local function extend_multisnippet_contexts(passed_arg, extend_arg)
+	-- extend passed arg with contexts passed in extend-call
+	vim.list_extend(passed_arg, extend_arg)
+
+	-- extend ("keep") valid keyword-arguments.
+	passed_arg.common = vim.tbl_deep_extend(
+		"keep",
+		node_util.wrap_context(passed_arg.common) or {},
+		node_util.wrap_context(extend_arg.common) or {}
+	)
+
+	return passed_arg
+end
+extend_decorator.register(
+	multisnippet_from_nodes,
+	-- first arg needs special handling (extend list of contexts (index i
+	-- becomes i+#passed_arg, not i again))
+	{ arg_indx = 1, extend = extend_multisnippet_contexts },
+	-- opts can just be `vim.tbl_extend`ed.
+	{ arg_indx = 3 }
+)
+
 return {
-	new_multisnippet = new_multisnippet,
+	new_multisnippet = multisnippet_from_nodes,
+	_raw_ms = multisnippet_from_snippet_obj,
 }

@@ -1,0 +1,36 @@
+{
+	"snip1": {
+		"prefix": "vscode_lua1",
+		"body": [
+			"vscode$1lualualua"
+		],
+		"scope": "lua"
+	},
+	"snip1": {
+		"prefix": "all1",
+		"body": [
+			"expands? jumps? $1 $2 !"
+		],
+		"scope": "all"
+	},
+	"snip2": {
+		"prefix": "all2",
+		"body": [
+			"multi $1",
+			"line $2",
+			"#not removed??",
+			"snippet$0"
+		],
+		// empty scope should be all
+	},
+	"snip2": {
+		"prefix": "vscode_lua2",
+		"body": [
+			"vscode$1lualualua"
+		],
+		"luasnip": {
+			"autotrigger": true
+		},
+		"scope": "all"
+	}
+}

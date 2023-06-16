@@ -15,6 +15,13 @@
 		"luasnip": {
 			"priority": 2000
 		}
+	},
+	"c": {
+		"prefix": "cc",
+		"body": [
+			"3"
+		],
+		"scope": "cpp,c"
 	}
 }
 

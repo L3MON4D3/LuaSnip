@@ -309,4 +309,30 @@ describe("add_snippets", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("snippets' filetype overrides add_snippets-filetype", function()
+		exec_lua([[
+			ls.add_snippets("c", {
+				s({trig = "in_lua", filetype = "lua"}, {t"expanded in lua"})
+			})
+		]])
+		exec("set ft=c")
+		feed("iin_lua")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			in_lua^                                            |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+		exec("set ft=lua")
+		feed("<Cr>in_lua")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			in_lua                                            |
+			expanded in lua^                                   |
+			{2:-- INSERT --}                                      |]],
+		})
+	end)
 end)

@@ -40,11 +40,20 @@ local function new_cache()
 		lazy_loaded_ft = { all = true },
 
 		-- key is file type, value are normalized!! paths of .snippets files.
+		-- shall contain all files loaded by any loader.
 		ft_paths = {},
 
 		-- key is _normalized!!!!_ file path, value are loader-specific.
 		-- Might contain the snippets from the file, or the filetype(s) it
 		-- contributes to.
+		--
+		-- for vscode:
+		-- stores {
+		-- 	 snippets, -- the snippets provided by the file
+		--   filetype_add_opts, -- add_opts for some filetype
+		--   filetypes -- filetypes for which this file is active (important for
+		--   reload).
+		-- }
 		path_snippets = {},
 	}, {
 		__index = Cache,
@@ -52,13 +61,15 @@ local function new_cache()
 end
 
 local M = {
-	vscode = new_cache(),
+	vscode_packages = new_cache(),
+	vscode_standalone = new_cache(),
 	snipmate = new_cache(),
 	lua = new_cache(),
 }
 
 function M.cleanup()
-	M.vscode:clean()
+	M.vscode_packages:clean()
+	M.vscode_standalone:clean()
 	M.snipmate:clean()
 	M.lua:clean()
 end

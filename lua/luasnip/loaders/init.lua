@@ -1,9 +1,17 @@
 local Cache = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
+local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
 
 local M = {}
 
+-- used to map cache-name to name passed to format.
+local clean_name = {
+	vscode_packages = "vscode",
+	vscode_standalone = "vscode-standalone",
+	snipmate = "snipmate",
+	lua = "lua",
+}
 local function default_format(path, _)
 	path = path:gsub(
 		vim.pesc(vim.fn.stdpath("data") .. "/site/pack/packer/start"),
@@ -38,7 +46,7 @@ function M.edit_snippet_files(opts)
 	opts = opts or {}
 	local format = opts.format or default_format
 	local edit = opts.edit or default_edit
-	local extend = opts.extend or function()
+	local extend = opts.extend or function(_, _)
 		return {}
 	end
 
@@ -48,9 +56,14 @@ function M.edit_snippet_files(opts)
 			local items = {}
 
 			-- concat files from all loaders for the selected filetype ft.
-			for _, cache_name in ipairs({ "vscode", "snipmate", "lua" }) do
+			for _, cache_name in ipairs({
+				"vscode_packages",
+				"vscode_standalone",
+				"snipmate",
+				"lua",
+			}) do
 				for _, path in ipairs(Cache[cache_name].ft_paths[ft] or {}) do
-					local fmt_name = format(path, cache_name)
+					local fmt_name = format(path, clean_name[cache_name])
 					if fmt_name then
 						table.insert(ft_paths, path)
 						table.insert(items, fmt_name)
@@ -86,8 +99,16 @@ function M.edit_snippet_files(opts)
 
 	local ft_filter = opts.ft_filter or util.yes
 
+	local all_fts = {}
+	vim.list_extend(all_fts, util.get_snippet_filetypes())
+	vim.list_extend(
+		all_fts,
+		loader_util.get_load_fts(vim.api.nvim_get_current_buf())
+	)
+	all_fts = util.deduplicate(all_fts)
+
 	local filtered_fts = {}
-	for _, ft in ipairs(util.get_snippet_filetypes()) do
+	for _, ft in ipairs(all_fts) do
 		if ft_filter(ft) then
 			table.insert(filtered_fts, ft)
 		end

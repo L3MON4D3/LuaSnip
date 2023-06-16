@@ -229,11 +229,11 @@ function M.clean_invalidated(opts)
 	M.invalidated_count = 0
 end
 
-local function invalidate_snippets(snippets_by_ft)
-	for _, ft_snippets in pairs(snippets_by_ft) do
-		for _, addable in ipairs(ft_snippets) do
-			for _, snip in ipairs(addable:retrieve_all()) do
-				snip:invalidate()
+local function invalidate_addables(addables_by_ft)
+	for _, addables in pairs(addables_by_ft) do
+		for _, addable in ipairs(addables) do
+			for _, expandable in ipairs(addable:retrieve_all()) do
+				expandable:invalidate()
 			end
 		end
 	end
@@ -247,26 +247,27 @@ function M.add_snippets(snippets, opts)
 	for ft, ft_snippets in pairs(snippets) do
 		for _, addable in ipairs(ft_snippets) do
 			for _, snip in ipairs(addable:retrieve_all()) do
-				snip.priority = opts.override_priority
+				local snip_prio = opts.override_priority
 					or (snip.priority and snip.priority)
 					or opts.default_priority
 					or 1000
 
 				-- if snippetType undefined by snippet, take default value from opts
-				snip.snippetType = snip.snippetType ~= nil and snip.snippetType
+				local snip_type = snip.snippetType ~= nil and snip.snippetType
 					or opts.type
 				assert(
-					snip.snippetType == "autosnippets"
-						or snip.snippetType == "snippets",
-					"snipptType must be either 'autosnippets' or 'snippets'"
+					snip_type == "autosnippets" or snip_type == "snippets",
+					"snippetType must be either 'autosnippets' or 'snippets'"
 				)
+
+				local snip_ft = snip.filetype or ft
 
 				snip.id = current_id
 				current_id = current_id + 1
 
 				-- do the insertion
-				table.insert(by_prio[snip.snippetType][snip.priority][ft], snip)
-				table.insert(by_ft[snip.snippetType][ft], snip)
+				table.insert(by_prio[snip_type][snip_prio][snip_ft], snip)
+				table.insert(by_ft[snip_type][snip_ft], snip)
 				by_id[snip.id] = snip
 
 				-- set source if it was passed, and remove from snippet.
@@ -280,7 +281,7 @@ function M.add_snippets(snippets, opts)
 
 	if opts.key then
 		if by_key[opts.key] then
-			invalidate_snippets(by_key[opts.key])
+			invalidate_addables(by_key[opts.key])
 		end
 		by_key[opts.key] = snippets
 	end

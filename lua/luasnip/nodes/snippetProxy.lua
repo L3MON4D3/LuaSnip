@@ -47,12 +47,16 @@ end
 
 -- some values of the snippet are nil by default, list them here so snippets
 -- aren't instantiated because of them.
-local license_to_nil = { priority = true, snippetType = true, _source = true }
+local license_to_nil =
+	{ priority = true, snippetType = true, _source = true, filetype = true }
 
 -- context and opts are (almost) the same objects as in s(contex, nodes, opts), snippet is a string representing the snippet.
 -- opts can aditionally contain the key `parse_fn`, which will be used to parse
 -- the snippet. This is useful, since snipmate-snippets are parsed with a
 -- function than regular lsp-snippets.
+-- context can be nil, in that case the resulting object can't be inserted into
+-- the snippet-tables, but may be used after expansion (i.e. returned from
+-- snippet:copy)
 local function new(context, snippet, opts)
 	opts = opts or {}
 
@@ -66,7 +70,12 @@ local function new(context, snippet, opts)
 	local sp = vim.tbl_extend(
 		"error",
 		{},
-		snip_mod.init_snippet_context(node_util.wrap_context(context), opts),
+		context
+				and snip_mod.init_snippet_context(
+					node_util.wrap_context(context),
+					opts
+				)
+			or {},
 		snip_mod.init_snippet_opts(opts),
 		node_util.init_node_opts(opts)
 	)
@@ -99,7 +108,10 @@ local function new(context, snippet, opts)
 	-- when the metatable has been changed. Therefore: set copy in each instance
 	-- of snippetProxy.
 	function sp:copy()
-		return self._snippet:copy()
+		local copy = self._snippet:copy()
+		copy.id = self.id
+
+		return copy
 	end
 
 	return sp
