@@ -4,12 +4,7 @@ local standalone_cache = require("luasnip.loaders._caches").vscode_standalone
 local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
-local sp = require("luasnip.nodes.snippetProxy")
 local log = require("luasnip.util.log").new("vscode-loader")
-local session = require("luasnip.session")
-local source = require("luasnip.session.snippet_collection.source")
-local multisnippet = require("luasnip.nodes.multiSnippet")
-local duplicate = require("luasnip.nodes.duplicate")
 
 local json_decoders = {
 	json = util.json_decode,
@@ -45,6 +40,11 @@ end
 
 -- return all snippets in `file`.
 local function get_file_snippets(file)
+	local sp = require("luasnip.nodes.snippetProxy")
+	local session = require("luasnip.session")
+	local source = require("luasnip.session.snippet_collection.source")
+	local multisnippet = require("luasnip.nodes.multiSnippet")
+
 	-- since most snippets we load don't have a scope-field, we just insert this here by default.
 	local snippets = {}
 
@@ -120,6 +120,8 @@ end
 -- `refresh_notify`: refresh snippets for filetype immediately, default false.
 -- `force_reload`: don't use cache when reloading, default false
 local function load_snippet_file(file, filetype, add_opts, opts)
+	local duplicate = require("luasnip.nodes.duplicate")
+
 	opts = opts or {}
 	local refresh_notify =
 		util.ternary(opts.refresh_notify ~= nil, opts.refresh_notify, false)

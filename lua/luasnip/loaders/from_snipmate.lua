@@ -2,14 +2,15 @@ local ls = require("luasnip")
 local cache = require("luasnip.loaders._caches").snipmate
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
-local sp = require("luasnip.nodes.snippetProxy")
-local snipmate_parse_fn = require("luasnip.util.parser").parse_snipmate
-local source = require("luasnip.session.snippet_collection.source")
-local session = require("luasnip.session")
 
 local log = require("luasnip.util.log").new("snipmate-loader")
 
 local function parse_snipmate(buffer, filename)
+	local sp = require("luasnip.nodes.snippetProxy")
+	local snipmate_parse_fn = require("luasnip.util.parser").parse_snipmate
+	local source = require("luasnip.session.snippet_collection.source")
+	local session = require("luasnip.session")
+
 	-- could also be separate variables, but easier to access this way.
 	local snippets = {
 		snippet = {},
