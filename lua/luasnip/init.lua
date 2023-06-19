@@ -379,7 +379,6 @@ end
 -- ... is passed to pcall as-is.
 local function safe_choice_action(snip, ...)
 	local ok, res = pcall(...)
-	print(ok, res)
 	if ok then
 		return res
 	else
