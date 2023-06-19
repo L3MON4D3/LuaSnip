@@ -14,8 +14,9 @@ setmetatable(M.ft_redirect, {
 
 M.current_nodes = {}
 M.ns_id = vim.api.nvim_create_namespace("Luasnip")
+M.active_choice_nodes = {}
+
 -- only here for overview.
-M.active_choice_node = nil
 M.latest_load_ft = nil
 
 M.last_expand_snip = nil

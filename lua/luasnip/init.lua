@@ -371,7 +371,7 @@ local function lsp_expand(body, opts)
 end
 
 local function choice_active()
-	return session.active_choice_node ~= nil
+	return session.active_choice_nodes[vim.api.nvim_get_current_buf()] ~= nil
 end
 
 -- attempts to do some action on the snippet (like change_choice, set_choice),
@@ -394,12 +394,13 @@ local function safe_choice_action(snip, ...)
 	end
 end
 local function change_choice(val)
-	assert(session.active_choice_node, "No active choiceNode")
+	local active_choice = session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+	assert(active_choice, "No active choiceNode")
 	local new_active = util.no_region_check_wrap(
 		safe_choice_action,
-		session.active_choice_node.parent.snippet,
-		session.active_choice_node.change_choice,
-		session.active_choice_node,
+		active_choice.parent.snippet,
+		active_choice.change_choice,
+		active_choice,
 		val,
 		session.current_nodes[vim.api.nvim_get_current_buf()]
 	)
@@ -407,14 +408,15 @@ local function change_choice(val)
 end
 
 local function set_choice(choice_indx)
-	assert(session.active_choice_node, "No active choiceNode")
-	local choice = session.active_choice_node.choices[choice_indx]
+	local active_choice = session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+	assert(active_choice, "No active choiceNode")
+	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
 	local new_active = util.no_region_check_wrap(
 		safe_choice_action,
-		session.active_choice_node.parent.snippet,
-		session.active_choice_node.set_choice,
-		session.active_choice_node,
+		active_choice.parent.snippet,
+		active_choice.set_choice,
+		active_choice,
 		choice,
 		session.current_nodes[vim.api.nvim_get_current_buf()]
 	)
@@ -422,13 +424,13 @@ local function set_choice(choice_indx)
 end
 
 local function get_current_choices()
-	local node = session.active_choice_node
-	assert(node, "No active choiceNode")
+	local active_choice = session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+	assert(active_choice, "No active choiceNode")
 
 	local choice_lines = {}
 
-	node:update_static_all()
-	for i, choice in ipairs(node.choices) do
+	active_choice:update_static_all()
+	for i, choice in ipairs(active_choice.choices) do
 		choice_lines[i] = table.concat(choice:get_docstring(), "\n")
 	end
 

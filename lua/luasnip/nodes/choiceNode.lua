@@ -141,8 +141,8 @@ function ChoiceNode:input_enter(_, dry_run)
 	self.mark:update_opts(self.ext_opts.active)
 	self:focus()
 
-	self.prev_choice_node = session.active_choice_node
-	session.active_choice_node = self
+	self.prev_choice_node = session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+	session.active_choice_nodes[vim.api.nvim_get_current_buf()] = self
 	self.visited = true
 	self.active = true
 
@@ -159,7 +159,7 @@ function ChoiceNode:input_leave(_, dry_run)
 
 	self.mark:update_opts(self:get_passive_ext_opts())
 	self:update_dependents()
-	session.active_choice_node = self.prev_choice_node
+	session.active_choice_nodes[vim.api.nvim_get_current_buf()] = self.prev_choice_node
 	self.active = false
 end
 
@@ -341,7 +341,7 @@ function ChoiceNode:exit()
 	end
 	self.mark:clear()
 	if self.active then
-		session.active_choice_node = self.prev_choice_node
+		session.active_choice_nodes[vim.api.nvim_get_current_buf()] = self.prev_choice_node
 	end
 	self.active = false
 end
