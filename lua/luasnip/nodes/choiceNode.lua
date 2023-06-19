@@ -336,7 +336,9 @@ end
 
 function ChoiceNode:exit()
 	self.visible = false
-	self.active_choice:exit()
+	if self.active_choice then
+		self.active_choice:exit()
+	end
 	self.mark:clear()
 	if self.active then
 		session.active_choice_node = self.prev_choice_node

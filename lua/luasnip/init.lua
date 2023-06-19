@@ -374,9 +374,31 @@ local function choice_active()
 	return session.active_choice_node ~= nil
 end
 
+-- attempts to do some action on the snippet (like change_choice, set_choice),
+-- if it fails the snippet is removed and the next snippet becomes the current node.
+-- ... is passed to pcall as-is.
+local function safe_choice_action(snip, ...)
+	local ok, res = pcall(...)
+	print(ok, res)
+	if ok then
+		return res
+	else
+		log.warn("Removing snippet `%s` due to error %s", snip.trigger, res)
+
+		snip:remove_from_jumplist()
+		return safe_jump(
+			-- jump to next or previous snippet.
+			snip.next.next or snip.prev.prev,
+			snip.next.next and 1 or -1
+		)
+	end
+
+end
 local function change_choice(val)
 	assert(session.active_choice_node, "No active choiceNode")
 	local new_active = util.no_region_check_wrap(
+		safe_choice_action,
+		session.active_choice_node.parent.snippet,
 		session.active_choice_node.change_choice,
 		session.active_choice_node,
 		val,
@@ -390,6 +412,8 @@ local function set_choice(choice_indx)
 	local choice = session.active_choice_node.choices[choice_indx]
 	assert(choice, "Invalid Choice")
 	local new_active = util.no_region_check_wrap(
+		safe_choice_action,
+		session.active_choice_node.parent.snippet,
 		session.active_choice_node.set_choice,
 		session.active_choice_node,
 		choice,
