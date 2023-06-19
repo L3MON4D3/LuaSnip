@@ -392,7 +392,6 @@ local function safe_choice_action(snip, ...)
 			snip.next.next and 1 or -1
 		)
 	end
-
 end
 local function change_choice(val)
 	assert(session.active_choice_node, "No active choiceNode")
