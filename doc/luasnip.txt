@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.8.0            Last change: 2023 June 19
+*luasnip.txt*             For NVIM v0.8.0            Last change: 2023 June 24
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -243,24 +243,92 @@ The most direct way to define snippets is `s`:
         }
     <
     The following keys are valid:
-    - `trig`: string, plain text by default. The only entry that must be given.
+    - `trig`: string, the trigger of the snippet. If the text in front of (to the
+        left of) the cursor when `ls.expand()` is called matches it, the snippet will
+        be expanded. By default, "matches" means the text in front of the cursor
+        matches the trigger exactly, this behaviour can be modified through
+        `trigEngine`
     - `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
-    - `dscr`: string, description of the snippet, -separated or table
-        for multiple lines.
+    - `dscr`: string, description of the snippet, -separated or table for multiple
+        lines.
     - `wordTrig`: boolean, if true, the snippet is only expanded if the word
-        (`[%w_]+`) before the cursor matches the trigger entirely.
-        True by default.
-    - `regTrig`: boolean, whether the trigger should be interpreted as a
-        lua pattern. False by default.
+        (`[%w_]+`) before the cursor matches the trigger entirely. True by default.
+    - `regTrig`: boolean, whether the trigger should be interpreted as a lua pattern.
+        False by default. Consider setting `trigEngine` to `"pattern"` instead, it is
+        more expressive, and in line with other settings.
+    - `trigEngine`: (function|string), determines how `trig` is interpreted, and what
+        it means for it to "match" the text in front of the cursor. This behaviour can
+        be completely customized by passing a function, but the predefined ones, which
+        are accessible by passing their identifier, should suffice in most cases:
+        - `"plain"`: the default-behaviour, the trigger has to match the text before
+            the cursor exactly.
+        - `"pattern"`: the trigger is interpreted as a lua-pattern, and is a match if
+            `trig .. "$"` matches the line up to the cursor. Capture-groups will be
+            accessible as `snippet.captures`.
+        - `"ecma"`: the trigger is interpreted as an ECMAscript-regex, and is a
+            match if `trig .. "$"` matches the line up to the cursor. Capture-groups
+            will be accessible as `snippet.captures`.
+            This `trigEngine` requires `jsregexp` (see
+            |luasnip-lsp-snippets-transformations|) to be installed, if it
+            is not, this engine will behave like `"plain"`.
+        - `"vim"`: the trigger is interpreted as a vim-regex, and is a match if
+            `trig .. "$"` matches the line up to the cursor. As with the other
+            regex/pattern-engines, captures will be available as `snippet.captures`,
+            but there is one caveat: the matching is done using `matchlist`, so for
+            now empty-string submatches will be interpreted as unmatched, and the
+            corresponding `snippet.capture[i]` will be `nil` (this will most likely
+            change, don’t rely on this behavior).
+        Besides these predefined engines, it is also possible to create new ones:
+        Instead of a string, pass a function which satisfies `trigEngine(trigger) ->
+        (matcher(line_to_cursor, trigger) -> whole_match, captures)` (ie. the function
+        receives `trig`, can, for example, precompile a regex, and then returns a
+        function responsible for determining whether the current cursor-position
+        (represented by the line up to the cursor) matches the trigger (it is passed
+        again here so engines which don’t do any trigger-specific work (like
+        compilation) can just return a static `matcher`), and what the capture-groups
+        are). The `lua`-engine, for example, can be (and is!) implemented like this:
+        >lua
+            local function matcher(line_to_cursor, trigger)
+                -- look for match which ends at the cursor.
+                -- put all results into a list, there might be many capture-groups.
+                local find_res = { line_to_cursor:find(trigger .. "$") }
+            
+                if #find_res > 0 then
+                    -- if there is a match, determine matching string, and the
+                    -- capture-groups.
+                    local captures = {}
+                    -- find_res[1] is `from`, find_res[2] is `to` (which we already know
+                    -- anyway).
+                    local from = find_res[1]
+                    local match = line_to_cursor:sub(from, #line_to_cursor)
+                    -- collect capture-groups.
+                    for i = 3, #find_res do
+                        captures[i - 2] = find_res[i]
+                    end
+                    return match, captures
+                else
+                    return nil
+                end
+            end
+            
+            local function engine(trigger)
+                -- don't do any special work here, can't precompile lua-pattern.
+                return matcher
+            end
+        <
+        The predefined engines are defined in `trig_engines.lua`
+        <https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/nodes/util/trig_engines.lua>,
+        read it for more examples.
     - `docstring`: string, textual representation of the snippet, specified like
         `dscr`. Overrides docstrings loaded from json.
-    - `docTrig`: string, for snippets triggered using a lua pattern: define the
-        trigger that is used during docstring-generation.
-    - `hidden`: boolean, hint for completion-engines.
-        If set, the snippet should not show up when querying snippets.
-    - `priority`: positive number, Priority of the snippet, 1000 by default.
-        Snippets with high priority will be matched to a trigger before those with a
-        lower one.
+    - `docTrig`: string, used as `line_to_cursor` during docstring-generation. This
+        might be relevant if the snippet relies on specific values in the
+        capture-groups (for example, numbers, which won’t work with the default
+        `$CAPTURESN` used during docstring-generation)
+    - `hidden`: boolean, hint for completion-engines. If set, the snippet should not
+        show up when querying snippets.
+    - `priority`: positive number, Priority of the snippet, 1000 by default. Snippets
+        with high priority will be matched to a trigger before those with a lower one.
         The priority for multiple snippets can also be set in `add_snippets`.
     - `snippetType`: string, should be either `snippet` or `autosnippet` (ATTENTION:
         singular form is used), decides whether this snippet has to be triggered by
@@ -279,13 +347,13 @@ The most direct way to define snippets is `s`:
         - `line_to_cursor`: `string`, the line up to the cursor.
         This function is (should be) evaluated by completion engines, indicating
         whether the snippet should be included in current completion candidates.
-        Defaults to a function returning `true`.
-        This is different from `condition` because `condition` is evaluated by
-        LuaSnip on snippet expansion (and thus has access to the matched trigger and
-        captures), while `show_condition` is (should be) evaluated by the
-        completion engines when scanning for available snippet candidates.
-    - `filetype`: `string`, the filetype of the snippet.
-        This overrides the filetype the snippet is added (via `add_snippet`) as.
+        Defaults to a function returning `true`. This is different from `condition`
+        because `condition` is evaluated by LuaSnip on snippet expansion (and thus has
+        access to the matched trigger and captures), while `show_condition` is (should
+        be) evaluated by the completion engines when scanning for available snippet
+        candidates.
+    - `filetype`: `string`, the filetype of the snippet. This overrides the filetype
+        the snippet is added (via `add_snippet`) as.
 - `nodes`: A single node or a list of nodes. The nodes that make up the snippet.
 - `opts`: A table with the following valid keys:
     - `callbacks`: Contains functions that are called upon entering/leaving a node of
