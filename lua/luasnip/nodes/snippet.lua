@@ -219,7 +219,11 @@ local function init_snippet_context(context, opts)
 		-- otherwise, it is nil or string, if it is string, that is the name,
 		-- otherwise use "pattern" if regTrig is set, and finally fall back to
 		-- "plain" if it is not.
-		local engine_name = util.ternary(context.trigEngine ~= nil, context.trigEngine, util.ternary(context.regTrig ~= nil, "pattern", "plain"))
+		local engine_name = util.ternary(
+			context.trigEngine ~= nil,
+			context.trigEngine,
+			util.ternary(context.regTrig ~= nil, "pattern", "plain")
+		)
 		engine = trig_engines[engine_name]
 	end
 	effective_context.trig_matcher = engine(effective_context.trigger)

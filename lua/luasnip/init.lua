@@ -394,7 +394,8 @@ local function safe_choice_action(snip, ...)
 	end
 end
 local function change_choice(val)
-	local active_choice = session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+	local active_choice =
+		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
 	local new_active = util.no_region_check_wrap(
 		safe_choice_action,
@@ -408,7 +409,8 @@ local function change_choice(val)
 end
 
 local function set_choice(choice_indx)
-	local active_choice = session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+	local active_choice =
+		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
 	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
@@ -424,7 +426,8 @@ local function set_choice(choice_indx)
 end
 
 local function get_current_choices()
-	local active_choice = session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+	local active_choice =
+		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
 
 	local choice_lines = {}

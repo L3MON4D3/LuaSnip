@@ -1142,20 +1142,28 @@ describe("snippets_basic", function()
 		ecma = [[(\d+)]],
 	}
 	for engine, trig in pairs(engine_data) do
-		it("trigEngine \"" .. engine .. "\" works", function()
-			exec_lua([[
+		it('trigEngine "' .. engine .. '" works', function()
+			exec_lua(
+				[[
 				trigEngine, trig, body, doctrig = ...
 				snip = s({trig = trig, docTrig = "3", trigEngine = trigEngine}, {t"c1: ", l(l.CAPTURE1)})
 				ls.add_snippets("all", {snip})
-			]], engine, trig)
+			]],
+				engine,
+				trig
+			)
 			feed("i3")
 			exec_lua("ls.expand()")
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				c1: 3^                                             |
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 			-- make sure docTrig works with all engines.
-			assert.is_true(exec_lua([[return snip:get_docstring()[1] == "c1: 3$0"]]))
+			assert.is_true(
+				exec_lua([[return snip:get_docstring()[1] == "c1: 3$0"]])
+			)
 		end)
 	end
 
@@ -1173,9 +1181,11 @@ describe("snippets_basic", function()
 		]])
 		feed("iasdf")
 		exec_lua([[ ls.expand() ]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			aaaaa^                                             |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
