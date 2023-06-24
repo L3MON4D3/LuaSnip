@@ -8,6 +8,7 @@ describe("snippets_basic", function()
 
 	before_each(function()
 		helpers.clear()
+		ls_helpers.setup_jsregexp()
 		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 3)
@@ -1133,4 +1134,48 @@ describe("snippets_basic", function()
 			})
 		end
 	)
+
+	local engine_data = {
+		-- list of: trigger, snippet-body, docTrig/inserted text, expected expansion, expected docstring
+		vim = [[\(\d\+\)]],
+		pattern = [[(%d+)]],
+		ecma = [[(\d+)]],
+	}
+	for engine, trig in pairs(engine_data) do
+		it("trigEngine \"" .. engine .. "\" works", function()
+			exec_lua([[
+				trigEngine, trig, body, doctrig = ...
+				snip = s({trig = trig, docTrig = "3", trigEngine = trigEngine}, {t"c1: ", l(l.CAPTURE1)})
+				ls.add_snippets("all", {snip})
+			]], engine, trig)
+			feed("i3")
+			exec_lua("ls.expand()")
+			screen:expect{grid=[[
+				c1: 3^                                             |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]]}
+			-- make sure docTrig works with all engines.
+			assert.is_true(exec_lua([[return snip:get_docstring()[1] == "c1: 3$0"]]))
+		end)
+	end
+
+	it("custom trigEngine works", function()
+		exec_lua([[
+			ls.add_snippets("all", {
+				s({trig = "", trigEngine = function(trigger)
+					return function(line_to_cursor, trigger)
+						if line_to_cursor:match("asdf") then
+							return "asdf", {}
+						end
+					end
+				end}, {t"aaaaa"})
+			})
+		]])
+		feed("iasdf")
+		exec_lua([[ ls.expand() ]])
+		screen:expect{grid=[[
+			aaaaa^                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
 end)

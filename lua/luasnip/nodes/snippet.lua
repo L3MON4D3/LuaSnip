@@ -15,6 +15,7 @@ local snippet_collection = require("luasnip.session.snippet_collection")
 local extend_decorator = require("luasnip.util.extend_decorator")
 local source = require("luasnip.session.snippet_collection.source")
 local loader_util = require("luasnip.loaders.util")
+local trig_engines = require("luasnip.nodes.util.trig_engines")
 
 local true_func = function()
 	return true
@@ -205,10 +206,23 @@ local function init_snippet_context(context, opts)
 		util.ternary(context.wordTrig ~= nil, context.wordTrig, true)
 	effective_context.hidden =
 		util.ternary(context.hidden ~= nil, context.hidden, false)
+
 	effective_context.regTrig =
 		util.ternary(context.regTrig ~= nil, context.regTrig, false)
 
 	effective_context.docTrig = context.docTrig
+	local engine
+	if type(context.trigEngine) == "function" then
+		-- if trigEngine is function, just use that.
+		engine = context.trigEngine
+	else
+		-- otherwise, it is nil or string, if it is string, that is the name,
+		-- otherwise use "pattern" if regTrig is set, and finally fall back to
+		-- "plain" if it is not.
+		local engine_name = util.ternary(context.trigEngine ~= nil, context.trigEngine, util.ternary(context.regTrig ~= nil, "pattern", "plain"))
+		engine = trig_engines[engine_name]
+	end
+	effective_context.trig_matcher = engine(effective_context.trigger)
 
 	effective_context.condition = context.condition
 		or opts.condition
@@ -581,30 +595,7 @@ end
 
 -- returns copy of snip if it matches, nil if not.
 function Snippet:matches(line_to_cursor)
-	local from
-	local match
-	local captures = {}
-	if self.regTrig then
-		-- capture entire trigger, must be put into match.
-		local find_res = { string.find(line_to_cursor, self.trigger .. "$") }
-		if #find_res > 0 then
-			from = find_res[1]
-			match = line_to_cursor:sub(from, #line_to_cursor)
-			for i = 3, #find_res do
-				captures[i - 2] = find_res[i]
-			end
-		end
-	else
-		if
-			line_to_cursor:sub(
-				#line_to_cursor - #self.trigger + 1,
-				#line_to_cursor
-			) == self.trigger
-		then
-			from = #line_to_cursor - #self.trigger + 1
-			match = self.trigger
-		end
-	end
+	local match, captures = self.trig_matcher(line_to_cursor, self.trigger)
 
 	-- Trigger or regex didn't match.
 	if not match then
@@ -614,6 +605,8 @@ function Snippet:matches(line_to_cursor)
 	if not self.condition(line_to_cursor, match, captures) then
 		return nil
 	end
+
+	local from = #line_to_cursor - #match + 1
 
 	-- if wordTrig is set, the char before the trigger can't be \w or the
 	-- word has to start at the beginning of the line.
@@ -722,10 +715,10 @@ function Snippet:fake_expand(opts)
 		end,
 	})
 	if self.docTrig then
-		-- This fills captures[1] with docTrig if no capture groups are defined
-		-- and therefore slightly differs from normal expansion where it won't
-		-- be filled, but that's alright.
-		self.captures = { self.docTrig:match(self.trigger) }
+		-- use docTrig as entire line up to cursor, this assumes that it
+		-- actually matches the trigger.
+		local _
+		_, self.captures = self.trig_matcher(self.docTrig, self.trigger)
 		self.trigger = self.docTrig
 	else
 		self.trigger = "$TRIGGER"
