@@ -8,10 +8,8 @@ local jsregexp = require("luasnip.util.util").jsregexp
 
 local function match_plain(line_to_cursor, trigger)
 	if
-		line_to_cursor:sub(
-			#line_to_cursor - #trigger + 1,
-			#line_to_cursor
-		) == trigger
+		line_to_cursor:sub(#line_to_cursor - #trigger + 1, #line_to_cursor)
+		== trigger
 	then
 		-- no captures for plain trigger.
 		return trigger, {}
@@ -53,14 +51,16 @@ if jsregexp then
 			local match = trig_compiled(line_to_cursor)[1]
 			if match then
 				-- return full match, and all groups.
-				return line_to_cursor:sub(match.begin_ind-1), match.groups
+				return line_to_cursor:sub(match.begin_ind - 1), match.groups
 			else
 				return nil
 			end
 		end
 	end
 else
-	ecma_engine = function() return match_plain end
+	ecma_engine = function()
+		return match_plain
+	end
 end
 
 local function match_vim(line_to_cursor, trigger)
@@ -82,8 +82,14 @@ local function match_vim(line_to_cursor, trigger)
 end
 
 return {
-	plain = function() return match_plain end,
-	pattern = function() return match_pattern end,
+	plain = function()
+		return match_plain
+	end,
+	pattern = function()
+		return match_pattern
+	end,
 	ecma = ecma_engine,
-	vim = function() return match_vim end
+	vim = function()
+		return match_vim
+	end,
 }

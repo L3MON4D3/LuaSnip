@@ -643,5 +643,5 @@ return {
 	indx_of = indx_of,
 	lazy_table = lazy_table,
 	ternary = ternary,
-	jsregexp = jsregexp_ok and jsregexp
+	jsregexp = jsregexp_ok and jsregexp,
 }
