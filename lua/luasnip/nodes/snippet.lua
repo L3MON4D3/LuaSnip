@@ -208,6 +208,8 @@ local function init_snippet_context(context, opts)
 	effective_context.regTrig =
 		util.ternary(context.regTrig ~= nil, context.regTrig, false)
 
+	effective_context.docTrig = context.docTrig
+
 	effective_context.condition = context.condition
 		or opts.condition
 		or true_func
