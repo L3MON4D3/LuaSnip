@@ -27,8 +27,8 @@ nvim: | ${NVIM_PATH}
 	git -C ${NVIM_MASTER_PATH} fetch origin master --depth 1
 	git -C ${NVIM_MASTER_PATH} checkout FETCH_HEAD
 
-OS?=$(shell uname)
-ifeq ($(OS),Darwin)
+LUASNIP_DETECTED_OS?=$(shell uname)
+ifeq ($(LUASNIP_DETECTED_OS),Darwin)
 	# flags for dynamic linking on macos, from luarocks
 	# (https://github.com/luarocks/luarocks/blob/9a3c5a879849f4f411a96cf1bdc0c4c7e26ade42/src/luarocks/core/cfg.lua#LL468C37-L468C80)
 	# remove -bundle, should be equivalent to the -shared hardcoded by jsregexp.

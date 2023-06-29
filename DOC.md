@@ -2084,15 +2084,6 @@ This process can be automated by `packer.nvim`:
 use { "L3MON4D3/LuaSnip", run = "make install_jsregexp" }
 ```
 
-If you are on MacOS and not using Homebrew then you will need to specify the
-location of your LuaJIT dylib via the `LUAJIT_OSX_PATH` variable without adding */lib/*
-at the end. So `/opt/local/lib/` becomes `/opt/local`.
-
-When using MacPorts for example:
-```lua
-use { "L3MON4D3/LuaSnip", run = "make install_jsregexp LUAJIT_OSX_PATH=/opt/local" }
-```
-
 If this fails, first open an issue :P, and then try installing the
 `jsregexp`-luarock. This is also possible via 
 `packer.nvim`, although actual usage may require a small workaround, see
