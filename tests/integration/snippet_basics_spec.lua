@@ -1152,11 +1152,11 @@ describe("snippets_basic", function()
 				engine,
 				trig
 			)
-			feed("i3")
+			feed("i<Space>3")
 			exec_lua("ls.expand()")
 			screen:expect({
 				grid = [[
-				c1: 3^                                             |
+				 c1: 3^                                            |
 				{0:~                                                 }|
 				{2:-- INSERT --}                                      |]],
 			})

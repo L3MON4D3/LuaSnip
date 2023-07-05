@@ -51,7 +51,7 @@ if jsregexp then
 			local match = trig_compiled(line_to_cursor)[1]
 			if match then
 				-- return full match, and all groups.
-				return line_to_cursor:sub(match.begin_ind - 1), match.groups
+				return line_to_cursor:sub(match.begin_ind), match.groups
 			else
 				return nil
 			end
