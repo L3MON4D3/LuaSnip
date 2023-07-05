@@ -1505,9 +1505,14 @@ Additionally, `expand` contains all conditions provided by `show`.
 like functions, be passed to `condition` or `show_condition`, but can also be
 combined with each other into logical expressions:
 
-- `c1 + c2 -> c1 or c2`
-- `c1 * c2 -> c1 and c2`
 - `-c1 -> not c1`
+- `c1 * c2 -> c1 and c2`
+- `c1 + c2 -> c1 or c2`
+- `c1 - c2 -> c1 and not c2`: This is similar to set differences:
+  `A \ B = {a in A | a not in B}`. This makes `-(a + b) = -a - b` an identity
+  representing de Morgan's law: `not (a or b) = not a and not b`. However,
+  since boolean algebra lacks an additive inverse, `a + (-b) = a - b` does not
+  hold. Thus, this is NOT the same as `c1 + (-c2)`.
 - `c1 ^ c2 -> c1 xor(!=) c2`
 - `c1 % c2 -> c1 xnor(==) c2`: This decision may seem weird, considering how
   there is an overload for the `==`-operator. Unfortunately, it's not possible
