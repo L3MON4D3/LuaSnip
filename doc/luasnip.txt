@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.8.0            Last change: 2023 June 29
+*luasnip.txt*             For NVIM v0.8.0            Last change: 2023 July 05
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -248,7 +248,7 @@ The most direct way to define snippets is `s`:
         be expanded. By default, "matches" means the text in front of the cursor
         matches the trigger exactly, this behaviour can be modified through
         `trigEngine`
-    - `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
+    - `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
     - `dscr`: string, description of the snippet, -separated or table for multiple
         lines.
     - `wordTrig`: boolean, if true, the snippet is only expanded if the word
@@ -373,7 +373,7 @@ The most direct way to define snippets is `s`:
     - `child_ext_opts`, `merge_child_ext_opts`: Control `ext_opts` applied to the
         children of this snippet. More info on those in the |luasnip-ext_opts|-section.
 
-The `opts`-table, as described here, can also be passed to e.g. `snippetNode`
+The `opts`-table, as described here, can also be passed to e.g. `snippetNode`
 and `indentSnippetNode`. It is also possible to set `condition` and
 `show_condition` (described in the documentation of the `context`-table) from
 `opts`. They should, however, not be set from both.
@@ -499,7 +499,7 @@ detail is that the jump-indices restart at 1 in nested snippets:
     })
 <
 
-as opposed to e.g. the textmate syntax, where tabstops are snippet-global:
+as opposed to e.g. the textmate syntax, where tabstops are snippet-global:
 
 >snippet
     ${1:First jump} :: ${2: ${3:Third jump} : ${4:Fourth jump}}
@@ -549,7 +549,7 @@ user-defined function:
 
 `f(fn, argnode_references, node_opts)`: - `fn`: `function(argnode_text, parent,
 user_args1,...,user_argsn) -> text` - `argnode_text`: `string[][]`, the text
-currently contained in the argnodes (e.g. `{{line1}, {line1, line2}}`). The
+currently contained in the argnodes (e.g. `{{line1}, {line1, line2}}`). The
 snippet indent will be removed from all lines following the first.
 
 - `parent`: The immediate parent of the `functionNode`. It is included here as it
@@ -560,7 +560,7 @@ snippet indent will be removed from all lines following the first.
     surrounding snippet (only the surrounding snippet contains data like `env` or
     `captures`).
 - `user_args`: The `user_args` passed in `opts`. Note that there may be multiple
-    user_args (e.g. `user_args1, ..., user_argsn`).
+    user_args (e.g. `user_args1, ..., user_argsn`).
 
 `fn` shall return a string, which will be inserted as is, or a table of strings
 for multiline strings, where all lines following the first will be prefixed
@@ -701,7 +701,7 @@ choiceNodes’.
 As it is only possible (for now) to change choices from within the choiceNode,
 make sure that all of the choices have some place for the cursor to stop at!
 
-This means that in `sn(nil, {...nodes...})` `nodes` has to contain e.g. an
+This means that in `sn(nil, {...nodes...})` `nodes` has to contain e.g. an
 `i(1)`, otherwise luasnip will just "jump through" the nodes, making it
 impossible to change the choice.
 
@@ -788,7 +788,7 @@ indent on the line where the snippet was triggered using `ISN` (That is
 possible via regex triggers where the entire line before the trigger is
 matched).
 
-Another nice use case for `ISN` is inserting text, e.g. `//` or some other
+Another nice use case for `ISN` is inserting text, e.g. `//` or some other
 comment string before the nodes of the snippet:
 
 >lua
@@ -1222,7 +1222,7 @@ Both `then` and `else` can be either text, lambda or function (with the same
 parameters as specified above). `then`’s default-value depends on the
 `condition`:
 
-- `pattern`: Simply the return value from the `match`, e.g. the entire match,
+- `pattern`: Simply the return value from the `match`, e.g. the entire match,
     or, if there were capture groups, the first capture group.
 - `function`: the return value of the function if it is either a string, or a
     table (if there is no `then`, the function cannot return a table containing
@@ -1424,9 +1424,14 @@ CONDITION OBJECTS ~
 like functions, be passed to `condition` or `show_condition`, but can also be
 combined with each other into logical expressions:
 
-- `c1 + c2 -> c1 or c2`
-- `c1 * c2 -> c1 and c2`
 - `-c1 -> not c1`
+- `c1 * c2 -> c1 and c2`
+- `c1 + c2 -> c1 or c2`
+- `c1 - c2 -> c1 and not c2`: This is similar to set differences:
+    `A \ B = {a in A | a not in B}`. This makes `-(a + b) = -a - b` an identity
+    representing de Morgan’s law: `not (a or b) = not a and not b`. However,
+    since boolean algebra lacks an additive inverse, `a + (-b) = a - b` does not
+    hold. Thus, this is NOT the same as `c1 + (-c2)`.
 - `c1 ^ c2 -> c1 xor(!=) c2`
 - `c1 % c2 -> c1 xnor(==) c2`: This decision may seem weird, considering how
     there is an overload for the `==`-operator. Unfortunately, it’s not possible
@@ -2131,7 +2136,7 @@ where the `language` advertised in `package.json` can just be a superset of the
 `luasnippets/all/*.lua` to group these files together). Another approach is to
 modify `load_ft_func` to load a custom filetype if the snippets should be
 activated, and store the snippets in a file for that filetype. This can be used
-to group snippets by e.g. framework, and load them once a file belonging to
+to group snippets by e.g. framework, and load them once a file belonging to
 such a framework is edited.
 
 **Example**: `react.lua`
@@ -2180,7 +2185,7 @@ TROUBLESHOOTING                              *luasnip-loaders-troubleshooting*
     <
 - As we only load `lazy_load`ed snippets on some events, `lazy_load` will
     probably not play nice when a non-default `ft_func` is used: if it depends on
-    e.g. the cursor position, only the filetypes for the cursor position when the
+    e.g. the cursor position, only the filetypes for the cursor position when the
     `lazy_load` events are triggered will be loaded. Check
     |luasnip-extras-filetype-function|’s `extend_load_ft` for a solution.
 
@@ -2553,7 +2558,7 @@ One comfortable way to call this function is registering it as a command:
 21. SnippetProxy                                        *luasnip-snippetproxy*
 
 `SnippetProxy` is used internally to alleviate the upfront cost of loading
-snippets from e.g. a SnipMate library or a VSCode package. This is achieved by
+snippets from e.g. a SnipMate library or a VSCode package. This is achieved by
 only parsing the snippet on expansion, not immediately after reading it from
 some file. `SnippetProxy` may also be used from Lua directly to get the same
 benefits:
@@ -2641,7 +2646,7 @@ less specific ones:
 - `active` from `visited`
 
 To disable a key from a less specific state, it has to be explicitly set to its
-default, e.g. to disable highlighting inherited from `passive` when the node
+default, e.g. to disable highlighting inherited from `passive` when the node
 is `active`, `hl_group` should be set to `None`.
 
 ------------------------------------------------------------------------------
@@ -2745,7 +2750,7 @@ kind of node in PascalCase (or "Snippet").
 
 ------------------------------------------------------------------------------
 One problem that might arise when nested nodes are highlighted is that the
-highlight of inner nodes should be visible, e.g. above that of nodes they are
+highlight of inner nodes should be visible, e.g. above that of nodes they are
 nested inside.
 
 This can be controlled using the `priority`-key in `ext_opts`. In
@@ -2787,12 +2792,12 @@ always visible on top of it.
 
 Snippet docstrings can be queried using `snippet:get_docstring()`. The function
 evaluates the snippet as if it was expanded regularly, which can be problematic
-if e.g. a dynamicNode in the snippet relies on inputs other than the argument
+if e.g. a dynamicNode in the snippet relies on inputs other than the argument
 nodes. `snip.env` and `snip.captures` are populated with the names of the
 queried variable and the index of the capture respectively
 (`snip.env.TM_SELECTED_TEXT` -> `'$TM_SELECTED_TEXT'`, `snip.captures[1]` ->
 `'$CAPTURES1'`). Although this leads to more expressive docstrings, it can
-cause errors in functions that e.g. rely on a capture being a number:
+cause errors in functions that e.g. rely on a capture being a number:
 
 >lua
     s({trig = "(%d)", regTrig = true}, {
@@ -2889,7 +2894,7 @@ The node and `event_args` can be accessed through `require("luasnip").session`:
 - `enter/leave`: Called when a node is entered/left (for example when jumping
     around in a snippet).
     `User-event`: `"Luasnip<Node>{Enter,Leave}"`, with `<Node>` in
-    PascalCase, e.g. `InsertNode` or `DynamicNode`.
+    PascalCase, e.g. `InsertNode` or `DynamicNode`.
     `event_args`: none
 - `change_choice`: When the active choice in a choiceNode is changed.
     `User-event`: `"LuasnipChangeChoice"`
@@ -2906,7 +2911,7 @@ The node and `event_args` can be accessed through `require("luasnip").session`:
         snippet’s environment (`snip.env`).
 
 A pretty useless, beyond serving as an example here, application of these would
-be printing e.g. the node’s text after entering:
+be printing e.g. the node’s text after entering:
 
 >lua
     vim.api.nvim_create_autocmd("User", {
@@ -3110,7 +3115,7 @@ These are the settings you can provide to `luasnip.setup()`:
 - `get_id_snippet(id)`: returns snippet corresponding to id.
 - `in_snippet()`: returns true if the cursor is inside the current snippet.
 - `jumpable(direction)`: returns true if the current node has a next(`direction`
-    = 1) or previous(`direction` = -1), e.g. whether it’s possible to jump
+    = 1) or previous(`direction` = -1), e.g. whether it’s possible to jump
     forward or backward to another node.
 - `jump(direction)`: returns true if the jump was successful.
 - `expandable()`: true if a snippet can be expanded at the current cursor
@@ -3162,7 +3167,7 @@ These are the settings you can provide to `luasnip.setup()`:
 - `change_choice(direction)`: changes the choice in the innermost currently
     active choiceNode forward (`direction` = 1) or backward (`direction` = -1).
 - `unlink_current()`: removes the current snippet from the jumplist (useful if
-    luasnip fails to automatically detect e.g. deletion of a snippet) and sets the
+    luasnip fails to automatically detect e.g. deletion of a snippet) and sets the
     current node behind the snippet, or, if not possible, before it.
 - `lsp_expand(snip_string, opts)`: expands the LSP snippet defined via
     `snip_string` at the cursor. `opts` can have the same options as `opts` in
@@ -3193,7 +3198,7 @@ These are the settings you can provide to `luasnip.setup()`:
     been added to `snippet_table` is a way to avoide regenerating the (unchanged)
     docstrings on each startup. (Depending on when the docstrings are required and
     how luasnip is loaded, it may be more sensible to let them load lazily,
-    e.g. just before they are required). `snippet_table` should be laid out just
+    e.g. just before they are required). `snippet_table` should be laid out just
     like `luasnip.snippets` (it will most likely always _be_ `luasnip.snippets`).
 - `load_snippet_docstrings(snippet_table)`: Load docstrings for all snippets in
     `snippet_table` from `stdpath("cache")/luasnip/docstrings.json`. The docstrings
