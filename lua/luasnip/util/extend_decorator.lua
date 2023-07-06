@@ -25,7 +25,7 @@ function M.apply(fn, ...)
 	local extend_properties = function_properties[fn]
 	assert(
 		extend_properties,
-		"Cannot extend this function, it was not registered! Check :h luasnip-extend_decorator for more infos."
+		"Cannot extend this function, it was not registered! Check :h luasnip-extend-decorator for more infos."
 	)
 
 	local extend_values = { ... }
