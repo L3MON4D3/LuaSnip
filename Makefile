@@ -38,16 +38,16 @@ JSREGEXP_PATH=deps/jsregexp
 jsregexp:
 	git submodule init
 	git submodule update
-	make INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/ LDLIBS="${LUA_LDLIBS}" -C ${JSREGEXP_PATH}
+	make "INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/" LDLIBS="${LUA_LDLIBS}" -C ${JSREGEXP_PATH}
 
 install_jsregexp: jsregexp
 	# access via require("luasnip-jsregexp")
 	# The hyphen must be used here, otherwise the luaopen_*-call will fail.
 	# See the package.loaders-section [here](https://www.lua.org/manual/5.1/manual.html#pdf-require)
-	cp $(shell pwd)/${JSREGEXP_PATH}/jsregexp.so $(shell pwd)/lua/luasnip-jsregexp.so
+	cp "$(shell pwd)/${JSREGEXP_PATH}/jsregexp.so" "$(shell pwd)/lua/luasnip-jsregexp.so"
 
 uninstall_jsregexp:
-	rm $(shell pwd)/lua/luasnip-jsregexp.so
+	rm "$(shell pwd)/lua/luasnip-jsregexp.so"
 
 TEST_07?=true
 TEST_MASTER?=true
