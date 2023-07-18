@@ -23,7 +23,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 - Snippets that make use of the entire functionality of this plugin have to be defined in Lua (but 95% of snippets can be written in lsp-syntax).
 
 # Requirements
-Neovim >= 0.5 (extmarks)
+Neovim >= 0.7 (extmarks)
 `jsregexp` for lsp-snippet-transformations (see [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) for some tips on installing it).
 
 # Setup
@@ -34,7 +34,7 @@ Neovim >= 0.5 (extmarks)
   use({
   	"L3MON4D3/LuaSnip",
   	-- follow latest release.
-  	tag = "v<CurrentMajor>.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+  	tag = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
   	-- install jsregexp (optional!:).
   	run = "make install_jsregexp"
   })
@@ -44,7 +44,7 @@ Neovim >= 0.5 (extmarks)
   {
   	"L3MON4D3/LuaSnip",
   	-- follow latest release.
-  	version = "<CurrentMajor>.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+  	version = "2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
   	-- install jsregexp (optional!).
   	build = "make install_jsregexp"
   }
@@ -52,7 +52,7 @@ Neovim >= 0.5 (extmarks)
   **vim-plug**:
   ```vim
   " follow latest release and install jsregexp.
-  Plug 'L3MON4D3/LuaSnip', {'tag': 'v<CurrentMajor>.*', 'do': 'make install_jsregexp'} " Replace <CurrentMajor> by the latest released major (first number of latest release)
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp'} " Replace <CurrentMajor> by the latest released major (first number of latest release)
   ```
   Check the `Releases`-section to the right for the latest major version.
 
