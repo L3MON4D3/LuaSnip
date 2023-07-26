@@ -77,6 +77,14 @@ function Path.scandir(root)
 		while name do
 			name, type = uv.fs_scandir_next(fs)
 			local path = Path.join(root, name)
+			-- On networked filesystems, it can happen that we get
+			-- a name, but no type. In this case, we must query the
+			-- type manually via fs_stat(). See issue:
+			-- https://github.com/luvit/luv/issues/660
+			if name and not type then
+				local stat = uv.fs_stat(path)
+				type = stat and stat.type
+			end
 			if type == "file" then
 				table.insert(files, path)
 			elseif type == "directory" then
