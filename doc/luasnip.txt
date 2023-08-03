@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.8.0            Last change: 2023 July 26
+*luasnip.txt*            For NVIM v0.8.0           Last change: 2023 August 03
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -114,7 +114,7 @@ As noted in the |luasnip-loaders-lua|-section:
 
 
   By default, the names from `luasnip.config.snip_env`
-  <https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L122-L147>
+  <https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22-L48>
   will be used, but it’s possible to customize them by setting `snip_env` in
   `setup`.
 Furthermore, note that while this document assumes you have defined `ls` to be
@@ -2455,7 +2455,7 @@ There are two ways to add snippets:
 As defining all of the snippet constructors (`s`, `c`, `t`, …) in every file
 is rather cumbersome, LuaSnip will bring some globals into scope for executing
 these files. By default, the names from `luasnip.config.snip_env`
-<https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L122-L147>
+<https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22-L48>
 will be used, but it’s possible to customize them by setting `snip_env` in
 `setup`.
 
