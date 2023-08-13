@@ -37,7 +37,11 @@ local function wrap_resolve_expand_params(match_pattern, user_resolve)
 				res.trigger = user_res.trigger
 				res.captures = user_res.captures
 				res.clear_region = user_res.clear_region or res.clear_region
-				res.env_override = vim.tbl_extend("force", res.env_override, user_res.env_override or {})
+				res.env_override = vim.tbl_extend(
+					"force",
+					res.env_override,
+					user_res.env_override or {}
+				)
 			else
 				return nil
 			end

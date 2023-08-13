@@ -254,11 +254,10 @@ local function init_snippet_context(context, opts)
 	end
 	effective_context.trig_matcher = engine(effective_context.trigger)
 
-	effective_context.resolveExpandParams =
-		generate_resolve_expand_params_func(
-			context.condition or opts.condition,
-			context.resolveExpandParams
-		)
+	effective_context.resolveExpandParams = generate_resolve_expand_params_func(
+		context.condition or opts.condition,
+		context.resolveExpandParams
+	)
 	effective_context.show_condition = context.show_condition
 		or opts.show_condition
 		or true_func

@@ -39,7 +39,8 @@ describe("postfix snippets", function()
 
 			feed("ibar.parens")
 			exec_lua("ls.expand()")
-			screen:expect({grid = [[
+			screen:expect({
+				grid = [[
 				(bar)^                                             |
 				{0:~                                                 }|
 				{2:-- INSERT --}                                      |]],
@@ -61,7 +62,8 @@ describe("postfix snippets", function()
 		feed("ithis_is-a.weird_variable.parens")
 		exec_lua("ls.expand()")
 
-		screen:expect({grid = [[
+		screen:expect({
+			grid = [[
 			(this_is-a.weird_variable)^                        |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
@@ -82,7 +84,8 @@ describe("postfix snippets", function()
 		feed([[ithis should take the whole line.parens]])
 		exec_lua("ls.expand()")
 
-		screen:expect({grid = [[
+		screen:expect({
+			grid = [[
 			(this should take the whole line)^                 |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
@@ -103,7 +106,8 @@ describe("postfix snippets", function()
 		feed([[ithis should take the whole line.parens]])
 		exec_lua("ls.expand()")
 
-		screen:expect({grid = [[
+		screen:expect({
+			grid = [[
 			(this should take the whole line)^                 |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
@@ -144,7 +148,8 @@ describe("postfix snippets", function()
 		feed([[ifoo.parens]])
 		exec_lua("ls.expand()")
 
-		screen:expect({grid = [[
+		screen:expect({
+			grid = [[
 			(foo data from another env field)^                 |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
@@ -174,10 +179,12 @@ describe("postfix snippets", function()
 		feed([[ithis should expand.parens]])
 		exec_lua("ls.expand()")
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			(this should expand)asdf^                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("respects user-provided condition.", function()
@@ -200,9 +207,11 @@ describe("postfix snippets", function()
 		feed([[ithis should not expand.parens]])
 		exec_lua("ls.expand()")
 
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			this should not expand.parens^                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)
