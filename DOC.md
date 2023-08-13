@@ -271,6 +271,35 @@ s({trig="trigger"}, {})
     `ls.config.setup({ enable_autosnippets = true })` if you want to use this
     feature). If unset it depends on how the snippet is added of which type the
     snippet will be.
+  - `resolveExpandParams`: `fn(snippet, line_to_cursor, matched_trigger, captures) -> table|nil`, where
+    - `snippet`: `Snippet`, the expanding snippet object
+    - `line_to_cursor`: `string`, the line up to the cursor.
+    - `matched_trigger`: `string`, the fully matched trigger (can be retrieved
+    	from `line_to_cursor`, but we already have that info here :D)
+    - `captures`: `captures` as returned by `trigEngine`.
+
+    This function will be evaluated in `Snippet:matches()` to decide whether
+    the snippet can be expanded or not.  
+    Returns a table if the snippet can be expanded, `nil` if can not. The
+    returned table can contain any of these fields:
+      - `trigger`: `string`, the fully matched trigger.
+      - `captures`: `table`, this list could update the capture-groups from
+        parameter in snippet expansion.
+        Both `trigger` and `captures` can override the values returned via
+        `trigEngine`.  
+      - `clear_region`: `{ "from": {<row>, <column>}, "to": {<row>, <column>} }`,
+        both (0, 0)-indexed, the region where text has to be cleared before
+        inserting the snippet.
+      - `env_override`: `map string->(string[]|string)`, override or extend
+        the snippet's environment (`snip.env`)
+
+      If any of these is `nil`, the default is used (`trigger` and `captures` as
+      returned by `trigEngine`, `clear_region` such that exactly the trigger is
+      deleted, no overridden environment-variables).
+
+      A good example for the usage of `resolveExpandParams` can be found in
+      the implementation of
+      [`postfix`](https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/extras/postfix.lua).
   - `condition`: `fn(line_to_cursor, matched_trigger, captures) -> bool`, where
       - `line_to_cursor`: `string`, the line up to the cursor.
       - `matched_trigger`: `string`, the fully matched trigger (can be retrieved
@@ -3302,11 +3331,19 @@ These are the settings you can provide to `luasnip.setup()`:
       byte-positions.
       If the variables don't have to be populated with the correct values, it's
       safe to remove the text manually.
-    - `expand_params`: table for overriding the `trigger` used in the snippet
-      and setting the `captures` (useful for pattern-triggered nodes where the
-      trigger has to be changed from the pattern to the actual text triggering the
-      node).
-      Pass as `trigger` and `captures`.
+    - `expand_params`: table, override `trigger`, `captures` or environment of
+      the snippet.  
+      This is useful for manually expanding snippets where the trigger passed
+      via `trig` is not the text triggering the snippet, or those which expect
+      `captures` (basically, snippets with a non-plaintext `trigEngine`).  
+
+      One example:
+      ```lua
+      snip_expand(snip, {
+      	trigger = "override_trigger",
+      	captures = {"first capture", "second capture"},
+      	env_override = { this_key = "some value", other_key = {"multiple", "lines"}, TM_FILENAME = "some_other_filename.lua" }
+      })
     - `pos`: position (`{line, col}`), (0,0)-indexed (in bytes, as returned by
       `nvim_win_get_cursor()`), where the snippet should be expanded. The
       snippet will be put between `(line,col-1)` and `(line,col)`. The snippet

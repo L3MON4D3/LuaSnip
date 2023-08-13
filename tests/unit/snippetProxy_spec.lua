@@ -32,7 +32,7 @@ describe("snippetProxy", function()
 		".filetype",
 		".name",
 		".callbacks",
-		".condition",
+		".resolveExpandParams",
 		".show_condition",
 		".stored",
 		".priority",

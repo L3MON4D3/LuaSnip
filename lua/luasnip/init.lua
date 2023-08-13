@@ -214,6 +214,7 @@ local function snip_expand(snippet, opts)
 	local info =
 		{ trigger = snip.trigger, captures = snip.captures, pos = opts.pos }
 	local env = Environ:new(info)
+	Environ:override(env, opts.expand_params.env_override or {})
 
 	local pos_id = vim.api.nvim_buf_set_extmark(
 		0,
@@ -302,19 +303,24 @@ local function expand(opts)
 		local jump_into_func = opts and opts.jump_into_func
 
 		local cursor = util.get_cursor_0ind()
-		-- override snip with expanded copy.
-		snip = snip_expand(snip, {
-			expand_params = expand_params,
-			-- clear trigger-text.
-			clear_region = {
+
+		local clear_region = expand_params.clear_region
+			or {
 				from = {
 					cursor[1],
 					cursor[2] - #expand_params.trigger,
 				},
 				to = cursor,
-			},
+			}
+
+		-- override snip with expanded copy.
+		snip = snip_expand(snip, {
+			expand_params = expand_params,
+			-- clear trigger-text.
+			clear_region = clear_region,
 			jump_into_func = jump_into_func,
 		})
+
 		return true
 	end
 	return false
@@ -325,16 +331,18 @@ local function expand_auto()
 		match_snippet(util.get_current_line_to_cursor(), "autosnippets")
 	if snip then
 		local cursor = util.get_cursor_0ind()
-		snip = snip_expand(snip, {
-			expand_params = expand_params,
-			-- clear trigger-text.
-			clear_region = {
+		local clear_region = expand_params.clear_region
+			or {
 				from = {
 					cursor[1],
 					cursor[2] - #expand_params.trigger,
 				},
 				to = cursor,
-			},
+			}
+		snip = snip_expand(snip, {
+			expand_params = expand_params,
+			-- clear trigger-text.
+			clear_region = clear_region,
 		})
 	end
 end

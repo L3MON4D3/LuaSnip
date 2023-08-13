@@ -20,6 +20,32 @@ local trig_engines = require("luasnip.nodes.util.trig_engines")
 local true_func = function()
 	return true
 end
+
+local generate_resolve_expand_params_func = function(condition, user_resolve)
+	return function(self, line_to_cursor, match, captures)
+		if condition then
+			if not condition(line_to_cursor, match, captures) then
+				return nil
+			end
+		end
+
+		local default_expand_params = {
+			trigger = match,
+			captures = captures,
+		}
+
+		if user_resolve then
+			local res = user_resolve(self, line_to_cursor, match, captures)
+			if res == nil then
+				return nil
+			end
+			return vim.tbl_extend("force", default_expand_params, res)
+		else
+			return default_expand_params
+		end
+	end
+end
+
 local callbacks_mt = {
 	__index = function(table, key)
 		rawset(table, key, {})
@@ -228,9 +254,11 @@ local function init_snippet_context(context, opts)
 	end
 	effective_context.trig_matcher = engine(effective_context.trigger)
 
-	effective_context.condition = context.condition
-		or opts.condition
-		or true_func
+	effective_context.resolveExpandParams =
+		generate_resolve_expand_params_func(
+			context.condition or opts.condition,
+			context.resolveExpandParams
+		)
 	effective_context.show_condition = context.show_condition
 		or opts.show_condition
 		or true_func
@@ -606,7 +634,9 @@ function Snippet:matches(line_to_cursor)
 		return nil
 	end
 
-	if not self.condition(line_to_cursor, match, captures) then
+	local expand_params =
+		self:resolveExpandParams(line_to_cursor, match, captures)
+	if not expand_params then
 		return nil
 	end
 
@@ -628,7 +658,7 @@ function Snippet:matches(line_to_cursor)
 		return nil
 	end
 
-	return { trigger = match, captures = captures }
+	return expand_params
 end
 
 -- https://gist.github.com/tylerneylon/81333721109155b2d244
