@@ -27,127 +27,182 @@ describe("postfix snippets", function()
 	it(
 		"creates a postfix snippet which changes the previous text once expanded",
 		function()
-			local postfix_snip = [[
-	    pf(".parens", {
-	      f(function(_, parent)
-	        return "(" .. parent.env.POSTFIX_MATCH .. ")"
-        end, {})
-      })
-	  ]]
+			exec_lua([[
+				ls.add_snippets("all", {
+					pf(".parens", {
+						f(function(_, parent)
+							return "(" .. parent.env.POSTFIX_MATCH .. ")"
+						end, {})
+					})
+				})
+			]])
 
-			feed("ibar")
-			exec_lua("ls.snip_expand(" .. postfix_snip .. ")")
-			screen:expect({
-				grid = [[
-          (bar)^                                             |
-          {0:~                                                 }|
-          {2:-- INSERT --}                                      |
-        ]],
+			feed("ibar.parens")
+			exec_lua("ls.expand()")
+			screen:expect({grid = [[
+				(bar)^                                             |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]],
 			})
 		end
 	)
 
 	it("default pattern works with a _, -, and .", function()
-		local postfix_snip = [[
-	    pf(".parens", {
-	      f(function(_, parent)
-	        return "(" .. parent.env.POSTFIX_MATCH .. ")"
-        end, {})
-      })
-	  ]]
+		exec_lua([[
+			ls.add_snippets("all", {
+				pf(".parens", {
+					f(function(_, parent)
+						return "(" .. parent.env.POSTFIX_MATCH .. ")"
+					end, {})
+				})
+			})
+		]])
 
-		feed("ithis_is-a.weird_variable")
-		exec_lua("ls.snip_expand(" .. postfix_snip .. ")")
+		feed("ithis_is-a.weird_variable.parens")
+		exec_lua("ls.expand()")
 
-		screen:expect({
-			grid = [[
-        (this_is-a.weird_variable)^                        |
-        {0:~                                                 }|
-        {2:-- INSERT --}                                      |
-      ]],
+		screen:expect({grid = [[
+			(this_is-a.weird_variable)^                        |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 
 	it("can take alternate matching strings", function()
-		local postfix_snip = [[
-	    pf({trig = ".parens", match_pattern = "^.+$"}, {
-	      f(function(_, parent)
-	        return "(" .. parent.env.POSTFIX_MATCH .. ")"
-        end, {})
-      })
-	  ]]
+		exec_lua([[
+			ls.add_snippets("all", {
+				pf({trig = ".parens", match_pattern = "^.+$"}, {
+					f(function(_, parent)
+						return "(" .. parent.env.POSTFIX_MATCH .. ")"
+					end, {})
+				})
+			})
+		]])
 
-		feed([[ithis should take the whole line]])
-		exec_lua("ls.snip_expand(" .. postfix_snip .. ")")
+		feed([[ithis should take the whole line.parens]])
+		exec_lua("ls.expand()")
 
-		screen:expect({
-			grid = [[
-        (this should take the whole line)^                 |
-        {0:~                                                 }|
-        {2:-- INSERT --}                                      |
-      ]],
+		screen:expect({grid = [[
+			(this should take the whole line)^                 |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 
 	it("wordTrig can't accidentally be set", function()
-		local postfix_snip = [[
-	    pf({trig = ".parens", match_pattern = "^.+$", wordTrig = true}, {
-	      f(function(_, parent)
-	        return "(" .. parent.env.POSTFIX_MATCH .. ")"
-        end, {})
-      })
-	  ]]
+		exec_lua([[
+			ls.add_snippets("all", {
+				pf({trig = ".parens", match_pattern = "^.+$", wordTrig = true}, {
+					f(function(_, parent)
+						return "(" .. parent.env.POSTFIX_MATCH .. ")"
+					end, {})
+				})
+			})
+		]])
 
-		feed([[ithis should take the whole line]])
-		exec_lua("ls.snip_expand(" .. postfix_snip .. ")")
+		feed([[ithis should take the whole line.parens]])
+		exec_lua("ls.expand()")
 
-		screen:expect({
-			grid = [[
-        (this should take the whole line)^                 |
-        {0:~                                                 }|
-        {2:-- INSERT --}                                      |
-      ]],
+		screen:expect({grid = [[
+			(this should take the whole line)^                 |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 
 	it("allows the user to set a callback on the same event", function()
-		local postfix_snip = [[
-      pf(
-        ".parens",
-        {
-          f(function(_, parent)
-            return "("
-              .. parent.env.POSTFIX_MATCH
-              .. " "
-              .. parent.env.another_field 
-              .. ")"
-          end),
-        },
-        {
-          callbacks = {
-            [-1] = {
-              [events.pre_expand] = function(snippet, event_args)
-                return {
-                  env_override = {
-                    another_field = "data from another env field",
-                  },
-                }
-              end,
-            },
-          },
-        }
-      )
-	  ]]
+		exec_lua([[
+			ls.add_snippets("all", {
+				pf(
+					".parens",
+					{
+					  f(function(_, parent)
+						return "("
+						  .. parent.env.POSTFIX_MATCH
+						  .. " "
+						  .. parent.env.another_field 
+						  .. ")"
+					  end),
+					},
+					{
+						callbacks = {
+							[-1] = {
+								[events.pre_expand] = function(snippet, event_args)
+									return {
+										env_override = {
+											another_field = "data from another env field",
+										},
+									}
+								end,
+							},
+						},
+					}
+				)
+			})
+		]])
 
-		feed([[ifoo]])
-		exec_lua("ls.snip_expand(" .. postfix_snip .. ")")
+		feed([[ifoo.parens]])
+		exec_lua("ls.expand()")
 
-		screen:expect({
-			grid = [[
-      (foo data from another env field)^                 |
-      {0:~                                                 }|
-      {2:-- INSERT --}                                      |
-    ]],
+		screen:expect({grid = [[
+			(foo data from another env field)^                 |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
+	end)
+
+	-- test resolveExpandParams in general.
+	it("respects user-provided resolveExpandParams.", function()
+		exec_lua([[
+			ls.add_snippets("all", {
+				pf({
+					trig = ".parens",
+					match_pattern = "^.+$",
+					resolveExpandParams = function(snip, line_to_cursor, matched_trigger, captures)
+						return {
+							env_override = { asdf = "asdf" }
+						}
+					end
+				}, {
+					f(function(_, parent)
+						return "(" .. parent.env.POSTFIX_MATCH .. ")" .. parent.env.asdf
+					end, {})
+				})
+			})
+		]])
+
+		feed([[ithis should expand.parens]])
+		exec_lua("ls.expand()")
+
+		screen:expect{grid=[[
+			(this should expand)asdf^                          |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("respects user-provided condition.", function()
+		exec_lua([[
+			ls.add_snippets("all", {
+				pf({
+					trig = ".parens",
+					match_pattern = "^.+$",
+					condition = function()
+						return false
+					end
+				}, {
+					f(function(_, parent)
+						return "(" .. parent.env.POSTFIX_MATCH .. ")" .. parent.env.asdf
+					end, {})
+				})
+			})
+		]])
+
+		feed([[ithis should not expand.parens]])
+		exec_lua("ls.expand()")
+
+		screen:expect{grid=[[
+			this should not expand.parens^                     |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
 	end)
 end)
