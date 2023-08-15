@@ -2294,22 +2294,23 @@ For easy editing of these files, LuaSnip provides a `vim.ui.select`-based dialog
 ([Loaders-edit_snippets](#edit_snippets)) where first the filetype, and then the
 file can be selected.
 
-### Snippet-specific filetypes
+## Snippet-specific filetypes
 Some loaders (vscode,lua) support giving snippets generated in some file their
 own filetype (vscode via `scope`, lua via the underlying `filetype`-option for
 snippets). These snippet-specific filetypes are not considered when determining
 which files to `lazy_load` for some filetype, this is exclusively determined by
 the `language` associated with a file in vscodes' `package.json`, and the
-file/directory-name in lua.  
-This can be resolved relatively easily in vscode, where the `language`
-advertised in `package.json` can just be a superset of the `scope`s in the file.  
-Another simplistic solution is to set the language to `all` (in lua, it might
-make sense to create a directory `luasnippets/all/*.lua` to group these files
-together).  
-Another approach is to modify `load_ft_func` to load a custom filetype if the
-snippets should be activated, and store the snippets in a file for that
-filetype. This can be used to group snippets by e.g. framework, and load them
-once a file belonging to such a framework is edited.
+file/directory-name in lua.
+
+ * This can be resolved relatively easily in vscode, where the `language`
+   advertised in `package.json` can just be a superset of the `scope`s in the file.
+ * Another simplistic solution is to set the language to `all` (in lua, it might
+   make sense to create a directory `luasnippets/all/*.lua` to group these files
+   together).
+ * Another approach is to modify `load_ft_func` to load a custom filetype if the
+   snippets should be activated, and store the snippets in a file for that
+   filetype. This can be used to group snippets by e.g. framework, and load them
+   once a file belonging to such a framework is edited.
 
 **Example**:  
 `react.lua`
@@ -2333,35 +2334,8 @@ load_ft_func = function(bufnr)
 end
 ```
 
-
-## Troubleshooting
-
-* LuaSnip uses `all` as the global filetype. As most snippet collections don't
-  explicitly target LuaSnip, they may not provide global snippets for this
-  filetype, but another, like `_` (`honza/vim-snippets`).
-  In these cases, it's necessary to extend LuaSnip's global filetype with the
-  collection's global filetype:
-  ```lua
-  ls.filetype_extend("all", { "_" })
-  ```
-
-  In general, if some snippets don't show up when loading a collection, a good
-  first step is checking the filetype LuaSnip is actually looking into (print
-  them for the current buffer via `:lua
-  print(vim.inspect(require("luasnip").get_snippet_filetypes()))`), against the
-  one the missing snippet is provided for (in the collection).  
-  If there is indeed a mismatch, `filetype_extend` can be used to also search
-  the collection's filetype:
-  ```lua
-  ls.filetype_extend("<luasnip-filetype>", { "<collection-filetype>" })
-  ```
-
-* As we only load `lazy_load`ed snippets on some events, `lazy_load` will
-  probably not play nice when a non-default `ft_func` is used: if it depends on
-  e.g. the cursor position, only the filetypes for the cursor position when the
-  `lazy_load` events are triggered will be loaded. Check
-  [Extras-Filetype-Function](#filetype-functions)'s `extend_load_ft` for a
-  solution.
+See the [Troubleshooting-Adding Snippets-Loaders](#troubleshooting-adding-snippets-loaders)
+section if one is having issues adding snippets via loaders.
 
 ## VS-Code
 
@@ -3252,6 +3226,77 @@ These are the settings you can provide to `luasnip.setup()`:
   Enabling this means that the definition of any snippet can be jumped to via
   [Extras-Snippet-Location](#snippet-location), but also entails slightly
   increased memory consumption (and load-time, but it's not really noticeable).
+
+# Troubleshooting
+
+## Adding Snippets
+
+<a id="troubleshooting-adding-snippets-loaders"></a>
+### Loaders
+
+* **Filetypes**. LuaSnip uses `all` as the global filetype. As most snippet
+  collections don't explicitly target LuaSnip, they may not provide global
+  snippets for this filetype, but another, like `_` (`honza/vim-snippets`).
+  In these cases, it's necessary to extend LuaSnip's global filetype with
+  the collection's global filetype:
+  ```lua
+  ls.filetype_extend("all", { "_" })
+  ```
+
+  In general, if some snippets don't show up when loading a collection, a good
+  first step is checking the filetype LuaSnip is actually looking into (print
+  them for the current buffer via `:lua
+  print(vim.inspect(require("luasnip").get_snippet_filetypes()))`), against the
+  one the missing snippet is provided for (in the collection).  
+  If there is indeed a mismatch, `filetype_extend` can be used to also search
+  the collection's filetype:
+  ```lua
+  ls.filetype_extend("<luasnip-filetype>", { "<collection-filetype>" })
+  ```
+
+* **Non-default `ft_func` loading**. As we only load `lazy_load`ed snippets on
+  some events, `lazy_load` will probably not play nice when a non-default
+  `ft_func` is used: if it depends on e.g. the cursor position, only the
+  filetypes for the cursor position when the `lazy_load` events are triggered
+  will be loaded. Check [Extras-Filetype-Function](#filetype-functions)'s
+  `extend_load_ft` for a solution.
+
+### General
+
+* **Snippets sharing triggers**. If multiple snippets could be triggered at
+  the current buffer-position, the snippet that was defined first in one's
+  configuration will be expanded first. As a small, real-world LaTeX math
+  example, given the following two snippets with triggers `.ov` and `ov`:
+  
+  ```lua
+  postfix( -- Insert over-line command to text via post-fix
+      { trig = ".ov", snippetType = "autosnippet" },
+      {
+          f(function(_, parent)
+              return "\\overline{" .. parent.snippet.env.POSTFIX_MATCH .. "}"
+          end, {}),
+      }
+  ),
+  s( -- Insert over-line command
+      { trig = "ov", snippetType="autosnippet" },
+      fmt(
+          [[\overline{<>}]],
+          { i(1) },
+          { delimiters = "<>" }
+      )
+  ),
+  ```
+  
+  If one types `x` followed by `.ov`, the postfix snippet expands producing
+  `\overline{x}`. However, if the `postfix` snippet above is defined *after*
+  the normal snippet `s`, then the same key press sequence produces
+  `x.\overline{}`.
+  This behaviour can be overridden by explicitly providing a priority to
+  such snippets. For example, in the above code, if the `postfix` snippet
+  was defined after the normal snippet `s`, then adding `priority=1001` to the
+  `postfix` snippet will cause it to expand as if it were defined before
+  the normal snippet `s`. Snippet `priority` is discussed in the
+   [Snippets section](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#snippets) of the documentation.
 
 # API
 
