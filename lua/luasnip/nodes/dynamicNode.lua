@@ -355,9 +355,13 @@ function DynamicNode:update_restore()
 		-- gravity of self.
 		tmp:subtree_set_pos_rgrav(to, -1, true)
 
-		tmp:update_restore()
-
+		-- set snip before update_restore, since update_restore involves
+		-- calling `focus`, and that needs `snip` to be set.
+		-- If it is not set, tmp is not reachable via get_nodes_between.
+		-- (TODO: This is pretty bad, have to rethink design sometime).
 		self.snip = tmp
+
+		tmp:update_restore()
 	else
 		self:update()
 	end
