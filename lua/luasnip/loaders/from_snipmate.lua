@@ -53,7 +53,7 @@ local function parse_snipmate(buffer, filename)
 		local snip = sp(
 			{
 				trig = prefix,
-				dscr = description,
+				desc = description,
 				wordTrig = true,
 				priority = snipmate_opts.priority,
 			},

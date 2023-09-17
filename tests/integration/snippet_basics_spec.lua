@@ -744,10 +744,15 @@ describe("snippets_basic", function()
 
 				{
 					[[ s({trig="a", dscr = "thedescription"}, { t"justsometext" }) ]],
+					"description",
+					[[{"thedescription"}]],
+				},
+				{ [[ s({trig="a"}, { t"justsometext" }) ]], "description", [[{"a"}]] },
+				{
+					[[ s({trig="a", dscr = "thedescription"}, { t"justsometext" }) ]],
 					"dscr",
 					[[{"thedescription"}]],
 				},
-				{ [[ s({trig="a"}, { t"justsometext" }) ]], "dscr", [[{"a"}]] },
 
 				{
 					[[ s({trig="a", docstring = "thedocstring"}, { t"justsometext" }) ]],

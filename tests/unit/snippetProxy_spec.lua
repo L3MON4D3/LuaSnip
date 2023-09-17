@@ -29,6 +29,7 @@ describe("snippetProxy", function()
 		".wordTrig",
 		".regTrig",
 		".dscr",
+		".description",
 		".filetype",
 		".name",
 		".callbacks",
