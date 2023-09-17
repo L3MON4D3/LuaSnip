@@ -12,6 +12,7 @@ jobs:
           ref: ${{ github.head_ref }}
       # only install required dependencies, make build uses bundled libraries, etc.
       # from here: https://github.com/neovim/neovim/blob/3a5dddf24f9d4d8959194b0cd3c6a7dd0cbd73ae/.github/scripts/install_deps_ubuntu.sh
+      # gperf is needed for neovim 0.7, the bundled version does not seem to build.
       - run: |
           sudo add-apt-repository ppa:neovim-ppa/stable
           sudo apt-get update
@@ -27,7 +28,8 @@ jobs:
           locales-all \
           ninja-build \
           pkg-config \
-          unzip
+          unzip \
+          gperf
 
           # install luajit+headers for jsregexp
           sudo apt-get install -y libluajit-5.1-dev luajit
