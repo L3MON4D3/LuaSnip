@@ -196,7 +196,8 @@ local function init_snippet_context(context, opts)
 
 	-- context.{desc,dscr} could be nil, string or table.
 	-- (defaults to trigger)
-	effective_context.description = util.to_line_table(context.desc or context.dscr or context.trig)
+	effective_context.description =
+		util.to_line_table(context.desc or context.dscr or context.trig)
 	-- (keep dscr to avoid breaking downstream usages)
 	effective_context.dscr = effective_context.description
 
