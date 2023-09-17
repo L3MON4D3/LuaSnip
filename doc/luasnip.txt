@@ -251,8 +251,8 @@ The most direct way to define snippets is `s`:
         matches the trigger exactly, this behaviour can be modified through
         `trigEngine`
     - `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
-    - `desc` (or `dscr`): string, description of the snippet, -separated or table for multiple
-        lines.
+    - `desc` (or `dscr`): string, description of the snippet, -separated or table for
+        multiple lines.
     - `wordTrig`: boolean, if true, the snippet is only expanded if the word
         (`[%w_]+`) before the cursor matches the trigger entirely. True by default.
     - `regTrig`: boolean, whether the trigger should be interpreted as a lua pattern.
