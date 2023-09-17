@@ -56,7 +56,7 @@ local function default_snip_info(snip)
 	return {
 		name = snip.name,
 		trigger = snip.trigger,
-		description = snip.dscr,
+		description = snip.description,
 		wordTrig = snip.wordTrig and true or false,
 		regTrig = snip.regTrig and true or false,
 	}

@@ -66,7 +66,7 @@ local function get_file_snippets(file)
 		-- context common to all snippets generated here.
 		local common_context = {
 			name = name,
-			dscr = parts.description or name,
+			desc = parts.description or name,
 			wordTrig = ls_conf.wordTrig,
 			priority = ls_conf.priority,
 			snippetType = ls_conf.autotrigger and "autosnippet" or "snippet",

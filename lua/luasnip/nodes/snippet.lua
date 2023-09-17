@@ -194,8 +194,11 @@ local function init_snippet_context(context, opts)
 
 	effective_context.name = context.name or context.trig
 
-	-- context.dscr could be nil, string or table.
-	effective_context.dscr = util.to_line_table(context.dscr or context.trig)
+	-- context.{desc,dscr} could be nil, string or table.
+	-- (defaults to trigger)
+	effective_context.description = util.to_line_table(context.desc or context.dscr or context.trig)
+	-- (keep dscr to avoid breaking downstream usages)
+	effective_context.dscr = effective_context.description
 
 	-- might be nil, but whitelisted in snippetProxy.
 	effective_context.priority = context.priority

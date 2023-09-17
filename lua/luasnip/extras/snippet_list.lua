@@ -4,7 +4,7 @@ local function snip_info(snippet)
 	return {
 		name = snippet.name,
 		trigger = snippet.trigger,
-		description = snippet.dscr,
+		description = snippet.description,
 		wordTrig = snippet.wordTrig and true or false,
 		regTrig = snippet.regTrig and true or false,
 		docstring = snippet:get_docstring(),

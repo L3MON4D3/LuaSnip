@@ -176,7 +176,7 @@ s({trig="trigger"}, {})
     By default, "matches" means the text in front of the cursor matches the
     trigger exactly, this behaviour can be modified through `trigEngine`
   - `name`: string, can be used by e.g. `nvim-compe` to identify the snippet.
-  - `dscr`: string, description of the snippet, \n-separated or table
+  - `desc` (or `dscr`): string, description of the snippet, \n-separated or table
     for multiple lines.
   - `wordTrig`: boolean, if true, the snippet is only expanded if the word
     (`[%w_]+`) before the cursor matches the trigger entirely.
@@ -254,7 +254,7 @@ s({trig="trigger"}, {})
     read it for more examples.
 
   - `docstring`: string, textual representation of the snippet, specified like
-    `dscr`. Overrides docstrings loaded from json.
+    `desc`. Overrides docstrings loaded from json.
   - `docTrig`: string, used as `line_to_cursor` during docstring-generation.
     This might be relevant if the snippet relies on specific values in the
     capture-groups (for example, numbers, which won't work with the default
