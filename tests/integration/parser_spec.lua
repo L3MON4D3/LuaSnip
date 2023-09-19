@@ -662,9 +662,6 @@ describe("Parser", function()
 			{3:        asdf}b                                     |
 			{2:-- SELECT --}                                      |]],
 		})
-
-		-- just make sure this also works.
-		snip = "b\n\t$TM_SELECTED_TEXTb"
 	end)
 
 	it("Inserts variable as placeholder on unknown varname.", function()
