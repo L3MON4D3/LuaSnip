@@ -1200,23 +1200,48 @@ describe("snippets_basic", function()
 
 	it("Selection is yanked correctly.", function()
 		feed("iasdfasdfasdf<Cr>")
-		feed( "𝔼sdfasdfasdf<Cr>")
-		feed( "asdfasdfasdf<Cr>")
+		feed("𝔼sdfasdfasdf<Cr>")
+		feed("asdfasdfasdf<Cr>")
 		feed("<Esc>ggvjjll<Tab><Esc>u")
-		assert.are.same(exec_lua([[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]), {"asdfasdfasdf", "𝔼sdfasdfasdf", "asd"})
+		assert.are.same(
+			exec_lua(
+				[[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]
+			),
+			{ "asdfasdfasdf", "𝔼sdfasdfasdf", "asd" }
+		)
 
 		feed("ggll<C-V>lllljj<Tab><Esc>u")
-		assert.are.same(exec_lua([[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]), {"dfasd", "dfasd", "dfasd"})
+		assert.are.same(
+			exec_lua(
+				[[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]
+			),
+			{ "dfasd", "dfasd", "dfasd" }
+		)
 	end)
 
 	it("Selection is yanked correctly with mutlibyte characters.", function()
 		feed("i𝔼f-𝔼abc<Esc>v^<Tab><Esc>u")
-		assert.are.same(exec_lua([[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]), {"𝔼f-𝔼abc"})
+		assert.are.same(
+			exec_lua(
+				[[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]
+			),
+			{ "𝔼f-𝔼abc" }
+		)
 
 		feed("^lvlll<Tab><Esc>u")
-		assert.are.same(exec_lua([[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]), {"f-𝔼a"})
+		assert.are.same(
+			exec_lua(
+				[[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]
+			),
+			{ "f-𝔼a" }
+		)
 
 		feed("^V<Tab><Esc>u")
-		assert.are.same(exec_lua([[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]), {"𝔼f-𝔼abc"})
+		assert.are.same(
+			exec_lua(
+				[[return vim.api.nvim_buf_get_var(0, "LUASNIP_SELECT_RAW")]]
+			),
+			{ "𝔼f-𝔼abc" }
+		)
 	end)
 end)

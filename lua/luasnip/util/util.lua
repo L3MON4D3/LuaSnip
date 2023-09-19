@@ -317,8 +317,9 @@ local function displaycol_trim_line(line, displaycol_from, displaycol_to)
 	-- bytes are 0-based, start- and end-inclusive.
 	-- str_byteindex gives last byte, get first byte is last byte of previous
 	-- symbol +1.
-	local start_byte = vim.str_byteindex(line, displaycol_from-1)+1
-	local end_byte = vim.str_byteindex(line, math.min(displaycol_to or maxcol, line_len))
+	local start_byte = vim.str_byteindex(line, displaycol_from - 1) + 1
+	local end_byte =
+		vim.str_byteindex(line, math.min(displaycol_to or maxcol, line_len))
 
 	return line:sub(start_byte, end_byte)
 end
@@ -341,7 +342,7 @@ local function store_selection()
 	end
 
 	-- include final line.
-	local lines = vim.api.nvim_buf_get_lines(0, start_line, end_line+1, true)
+	local lines = vim.api.nvim_buf_get_lines(0, start_line, end_line + 1, true)
 
 	local chunks = {}
 	if start_line == end_line then
@@ -358,9 +359,15 @@ local function store_selection()
 
 		-- potentially trim lines (Block).
 		for cl = 2, #lines - 1 do
-			table.insert(chunks, displaycol_trim_line(lines[cl], first_col, last_col))
+			table.insert(
+				chunks,
+				displaycol_trim_line(lines[cl], first_col, last_col)
+			)
 		end
-		table.insert(chunks, displaycol_trim_line(lines[#lines], first_col, end_col))
+		table.insert(
+			chunks,
+			displaycol_trim_line(lines[#lines], first_col, end_col)
+		)
 	end
 
 	-- init with raw selection.
