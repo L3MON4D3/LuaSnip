@@ -184,6 +184,14 @@ local _is_table = {
 
 return {
 	is_table = function(key)
+		-- variables generated at runtime by treesitter-postfix.
+		if
+			key:match("LS_TSCAPTURE_.*")
+			or key == "LS_TSPOSTFIX_MATCH"
+			or key == "LS_TSPOSTFIX_DATA"
+		then
+			return true
+		end
 		return _is_table[key] or false
 	end,
 	vars = lazy_vars,
