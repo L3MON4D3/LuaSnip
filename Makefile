@@ -4,22 +4,28 @@ NVIM_PATH=deps/nvim_multiversion
 # relative to ${NVIM_PATH} and relative to this makefile.
 NVIM_MASTER_PATH_REL=worktree_master
 NVIM_0.7_PATH_REL=worktree_0.7
+NVIM_0.9_PATH_REL=worktree_0.9
 NVIM_MASTER_PATH=${NVIM_PATH}/${NVIM_MASTER_PATH_REL}
 NVIM_0.7_PATH=${NVIM_PATH}/${NVIM_0.7_PATH_REL}
+NVIM_0.9_PATH=${NVIM_PATH}/${NVIM_0.9_PATH_REL}
 
 # directory as target.
 ${NVIM_PATH}:
-	# fetch current master and 0.7.0 (the minimum version we support).
+	# fetch current master and 0.7.0 (the minimum version we support) and 0.9.0
+	# (the minimum version for treesitter-postfix to work).
 	git clone --bare --depth 1 https://github.com/neovim/neovim ${NVIM_PATH}
 	git -C ${NVIM_PATH} fetch --depth 1 origin tag v0.7.0
+	git -C ${NVIM_PATH} fetch --depth 1 origin tag v0.9.0
 	# create one worktree for master, and one for 0.7.
 	# The rationale behind this is that switching from 0.7 to master (and
 	# vice-versa) requires a `make distclean`, and full clean build, which takes
 	# a lot of time.
 	# The most straightforward solution seems to be too keep two worktrees, one
-	# for master, one for 0.7, which are used for the respective builds/tests.
+	# for master, one for 0.7, and one for 0.9 which are used for the
+	# respective builds/tests.
 	git -C ${NVIM_PATH} worktree add ${NVIM_MASTER_PATH_REL} master
 	git -C ${NVIM_PATH} worktree add ${NVIM_0.7_PATH_REL} v0.7.0
+	git -C ${NVIM_PATH} worktree add ${NVIM_0.9_PATH_REL} v0.9.0
 
 # |: don't update `nvim` if `${NVIM_PATH}` is changed.
 nvim: | ${NVIM_PATH}
@@ -50,6 +56,7 @@ uninstall_jsregexp:
 	rm "$(shell pwd)/lua/luasnip-jsregexp.so"
 
 TEST_07?=true
+TEST_09?=true
 TEST_MASTER?=true
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
 test: nvim jsregexp
@@ -63,4 +70,5 @@ test: nvim jsregexp
 	export BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua; \
 	set -e; \
 	if ${TEST_07}; then make -C ${NVIM_0.7_PATH} functionaltest DEPS_CMAKE_FLAGS=-DUSE_BUNDLED_GPERF=OFF; fi; \
+	if ${TEST_09}; then make -C ${NVIM_0.9_PATH} functionaltest; fi; \
 	if ${TEST_MASTER}; then make -C ${NVIM_MASTER_PATH} functionaltest; fi;
