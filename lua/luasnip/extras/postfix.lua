@@ -34,14 +34,9 @@ local function wrap_resolve_expand_params(match_pattern, user_resolve)
 			local user_res =
 				user_resolve(snippet, line_to_cursor, match, captures)
 			if user_res then
-				res.trigger = user_res.trigger
-				res.captures = user_res.captures
-				res.clear_region = user_res.clear_region or res.clear_region
-				res.env_override = vim.tbl_extend(
-					"force",
-					res.env_override,
-					user_res.env_override or {}
-				)
+				res = vim.tbl_deep_extend("force", res, user_res, {
+					env_override = {},
+				})
 			else
 				return nil
 			end
