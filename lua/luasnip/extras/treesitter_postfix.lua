@@ -224,7 +224,7 @@ local function generate_simple_parent_lookup_function(lookup_fun)
 		---@param pos { [1]: number, [2]: number }
 		return function(parser, pos)
 			-- check node just before the position.
-			local root = parser:get_node_at_pos({pos[1], pos[2]-1})
+			local root = parser:get_node_at_pos({ pos[1], pos[2] - 1 })
 
 			if root == nil then
 				return
@@ -256,7 +256,7 @@ local function find_nth_parent(n)
 	---@param parser LuaSnip.extra.TSParser
 	---@param pos { [1]: number, [2]: number }
 	return function(parser, pos)
-		local inner_node = parser:get_node_at_pos({pos[1], pos[2]-1})
+		local inner_node = parser:get_node_at_pos({ pos[1], pos[2] - 1 })
 
 		if inner_node == nil then
 			return

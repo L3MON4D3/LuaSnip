@@ -284,7 +284,10 @@ function TSParser:get_node_at_pos(pos)
 		"Invalid position: row and col must be non-negative"
 	)
 	local range = { row, col, row, col }
-	return self.parser:named_node_for_range(range, {ignore_injections = false})
+	return self.parser:named_node_for_range(
+		range,
+		{ ignore_injections = false }
+	)
 end
 
 ---Get the root for the smallest tree containing `pos`.
