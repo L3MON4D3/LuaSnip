@@ -38,7 +38,11 @@ describe("treesitter-postfix", function()
 				local err = exec_lua(
 					[[return {pcall(require, "luasnip.extras.treesitter_postfix")}]]
 				)[2]
-				assert(err:match("treesitter_postfix does not support neovim < 0.9"))
+				assert(
+					err:match(
+						"treesitter_postfix does not support neovim < 0.9"
+					)
+				)
 				return
 			end
 			-- overrides snippet from previous iteration.
@@ -135,7 +139,8 @@ describe("treesitter-postfix", function()
 			exec("set ft=c")
 			feed("iint main() {\n\tint a = 0;\n\tint b = a;\n}<Esc>k$i")
 			feed(".mv")
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				int main() {                                      |
 				        int a = 0;                                |
 				        int b = a.mv^;                             |
@@ -143,9 +148,11 @@ describe("treesitter-postfix", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 			exec_lua("ls.expand()")
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				int main() {                                      |
 				        int a = 0;                                |
 				        int b = std::move(a)^;                     |
@@ -153,7 +160,8 @@ describe("treesitter-postfix", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 		end)
 	end
 end)
