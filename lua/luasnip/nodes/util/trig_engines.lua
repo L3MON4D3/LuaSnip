@@ -44,7 +44,10 @@ end
 local ecma_engine
 if jsregexp then
 	ecma_engine = function(trig)
-		local trig_compiled = jsregexp.compile(trig .. "$", "")
+		local trig_compiled, err_maybe = jsregexp.compile(trig .. "$", "")
+		if not trig_compiled then
+			error(("Error while compiling regex: %s"):format(err_maybe))
+		end
 
 		return function(line_to_cursor, _)
 			-- get first (very likely only, since we appended the "$") match.
