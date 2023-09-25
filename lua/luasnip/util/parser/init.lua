@@ -16,7 +16,7 @@ local M = {}
 --- - number: Returns a snippetNode, `context` is its' jump-position.
 --- - nil: Returns a flat list of luasnip-nodes, to be used however.
 ---@param body string: the representation of the snippet.
----@param opts table: optional parameters. Valid keys:
+---@param opts table|nil: optional parameters. Valid keys:
 --- - `trim_empty`: boolean, remove empty lines from the snippet.
 --- - `dedent`: boolean, remove common indent from the snippet's lines.
 --- - `variables`: map[string-> (fn()->string)], variables to be used only in this
