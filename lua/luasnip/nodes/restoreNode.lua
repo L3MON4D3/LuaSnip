@@ -7,6 +7,7 @@ local RestoreNode = Node:new()
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local mark = require("luasnip.util.mark").mark
 local extend_decorator = require("luasnip.util.extend_decorator")
 
@@ -290,6 +291,10 @@ function RestoreNode:subtree_set_rgrav(rgrav)
 	if self.snip then
 		self.snip:subtree_set_rgrav(rgrav)
 	end
+end
+
+function RestoreNode:extmarks_valid()
+	return node_util.generic_extmarks_valid(self, self.snip)
 end
 
 return {

@@ -423,6 +423,13 @@ function DynamicNode:subtree_set_rgrav(rgrav)
 	end
 end
 
+function DynamicNode:extmarks_valid()
+	if self.snip then
+		return node_util.generic_extmarks_valid(self, self.snip)
+	end
+	return true
+end
+
 return {
 	D = D,
 }
