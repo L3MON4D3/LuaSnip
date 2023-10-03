@@ -1297,53 +1297,24 @@ function Snippet:get_keyed_node(key)
 	return self.dependents_dict:get({ "key", key, "node" })
 end
 
--- assumption: direction-endpoint of node at child_from_indx is on child_endpoint.
--- (caller responsible)
-local function adjust_children_rgravs(
-	self,
-	child_endpoint,
-	child_from_indx,
-	direction,
-	rgrav
-)
-	local i = child_from_indx
-	local node = self.nodes[i]
-	while node do
-		local direction_node_endpoint = node.mark:get_endpoint(direction)
-		if util.pos_equal(direction_node_endpoint, child_endpoint) then
-			-- both endpoints of node are on top of child_endpoint (we wouldn't
-			-- be in the loop with `node` if the -direction-endpoint didn't
-			-- match), so update rgravs of the entire subtree to match rgrav
-			node:subtree_set_rgrav(rgrav)
-		else
-			-- only the -direction-endpoint matches child_endpoint, adjust its
-			-- position and break the loop (don't need to look at any other
-			-- siblings).
-			node:subtree_set_pos_rgrav(child_endpoint, direction, rgrav)
-			break
-		end
-
-		i = i + direction
-		node = self.nodes[i]
-	end
-end
-
 -- adjust rgrav of nodes left (direction=-1) or right (direction=1) of node at
 -- child_indx.
 -- (direction is the direction into which is searched, from child_indx outward)
+-- assumption: direction-endpoint of node is on child_endpoint. (caller
+-- responsible)
 function Snippet:set_sibling_rgravs(
+	node,
 	child_endpoint,
-	child_indx,
 	direction,
-	rgrav
-)
-	adjust_children_rgravs(
-		self,
+	rgrav )
+
+	node_util.nodelist_adjust_rgravs(
+		self.nodes,
+		node.absolute_position[#node.absolute_position] + direction,
 		child_endpoint,
-		child_indx + direction,
 		direction,
-		rgrav
-	)
+		rgrav,
+		true)
 end
 
 -- called only if the "-direction"-endpoint has to be changed, but the
@@ -1357,7 +1328,14 @@ function Snippet:subtree_set_pos_rgrav(pos, direction, rgrav)
 	else
 		child_from_indx = #self.nodes
 	end
-	adjust_children_rgravs(self, pos, child_from_indx, direction, rgrav)
+
+	node_util.nodelist_adjust_rgravs(
+		self.nodes,
+		child_from_indx,
+		pos,
+		direction,
+		rgrav,
+		true)
 end
 -- changes rgrav of all nodes and all endpoints in this snippetNode to `rgrav`.
 function Snippet:subtree_set_rgrav(rgrav)

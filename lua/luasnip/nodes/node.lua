@@ -458,6 +458,9 @@ function Node:get_buf_position(opts)
 	end
 end
 
+-- only does something for insert- and snippetNode.
+function Node:set_sibling_rgravs(_, _, _, _) end
+
 -- when an insertNode receives text, its mark/region should contain all the
 -- text that is inserted.
 -- This can be achieved by setting the left and right "right-gravity"(rgrav) of
@@ -508,15 +511,8 @@ end
 -- Maybe this whole procedure could be sped up further if we can assume that
 -- identical endpoints imply identical rgravs.
 local function focus_node(self, lrgrav, rrgrav)
-	local abs_pos = vim.deepcopy(self.absolute_position)
-
 	-- find nodes on path from self to root.
-	local nodes_path = node_util.get_nodes_between(self.parent.snippet, self)
-	-- nodes_on_path_to_self does not include the outer snippet, insert it here
-	-- (and also insert some dummy-value in abs_pos, such that abs_pos[i] the
-	-- position of node_path[i] in node_path[i-1] is).
-	table.insert(nodes_path, 1, self.parent.snippet)
-	table.insert(abs_pos, 1, 0)
+	local nodes_path = node_util.root_path(self)
 
 	-- direction is the direction away from this node, towards the outside of
 	-- the tree-representation of the snippet.
@@ -528,7 +524,7 @@ local function focus_node(self, lrgrav, rrgrav)
 
 		-- adjust left rgrav of all nodes on path upwards to root/snippet:
 		-- (i st. self and the snippet are both handled)
-		for i = #abs_pos, 1, -1 do
+		for i = 1, #nodes_path do
 			local node = nodes_path[i]
 			local node_direction_endpoint = node.mark:get_endpoint(direction)
 
@@ -549,17 +545,11 @@ local function focus_node(self, lrgrav, rrgrav)
 			-- dynamicNode, for example, the generated snippets parent is not the
 			-- dynamicNode, but its parent).
 			-- also: don't need to check for nil, because the
-			local node_above = nodes_path[i - 1]
-			if
-				node_above
-				and (
-					node_above.type == types.snippetNode
-					or node_above.type == types.snippet
-				)
-			then
+			local node_above = nodes_path[i+1]
+			if node_above then
 				node_above:set_sibling_rgravs(
+					node,
 					self_direction_endpoint,
-					abs_pos[i],
 					direction,
 					direction_rgrav
 				)

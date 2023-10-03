@@ -1274,4 +1274,47 @@ describe("snippets_basic", function()
 			                                                  |
 			{2:-- SELECT --}                                      |]]}
 	end)
+
+	it("focus correctly adjusts gravities of parent-snippets.", function()
+		exec_lua[[
+			ls.setup{
+				link_children = true
+			}
+		]]
+		exec_lua([[ls.lsp_expand("a$1$1a")]])
+		exec_lua([[ls.lsp_expand("b$1")]])
+		feed("ccc")
+		exec_lua([[ls.active_update_dependents()]])
+		feed("dddd")
+		-- Here's how this fails if `focus` does not behave correctly (ie. only
+		-- adjusts extmarks in the snippet the current node is inside):  
+		-- child has a changed $1, triggers update of own snippets, and
+		-- transitively of the parent-$1.
+		-- Since the parent has a functionNode that copies the $1's text, it
+		-- has to first focus the fNode, and update the text. This shifts the
+		-- gravity of the end of the parent-$1-extmark to the left.
+		-- Here the first failure may occur: if the child-extmark is not
+		-- adjusted as well, it will contain the text that belongs to the
+		-- functionNode.
+		-- The second issue that may occur is a bit more subtle:
+		-- After the whole update procedure is done, we have to refocus the
+		-- current node (since we have to assume that the update changed focus
+		-- s.t. the current node no longer has correct extmarks).
+		-- If, in doing this, the parent-$1-extmark end-gravity is not restored
+		-- to the right, the child-snippet will extend beyond the extmark of
+		-- its parent-node, the parent-$1.
+		exec_lua[[ls.jump(-1) ls.jump(-1)]]
+		-- highlights outer $1.
+		exec_lua[[ls.jump(1)]]
+		screen:expect{grid=[[
+			a^b{3:cccdddd}bcccdddda                                |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+		-- and then inner $1.
+		exec_lua[[ls.jump(1)]]
+		screen:expect{grid=[[
+			ab^c{3:ccdddd}bcccdddda                                |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
 end)

@@ -2,9 +2,9 @@ local Node = require("luasnip.nodes.node")
 local InsertNode = Node.Node:new()
 local ExitNode = InsertNode:new()
 local util = require("luasnip.util.util")
+local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
-local session = require("luasnip.session")
 local extend_decorator = require("luasnip.util.extend_decorator")
 
 local function I(pos, static_text, opts)
@@ -277,6 +277,48 @@ end
 
 function InsertNode:is_interactive()
 	return true
+end
+
+function InsertNode:child_snippets()
+	local own_child_snippets = {}
+	for _, child_snippet in ipairs(self.parent.snippet.child_snippets) do
+		if child_snippet.parent_node == self then
+			table.insert(own_child_snippets, child_snippet)
+		end
+	end
+	return own_child_snippets
+end
+
+function InsertNode:subtree_set_pos_rgrav(pos, direction, rgrav)
+	self.mark:set_rgrav(-direction, rgrav)
+
+	local own_child_snippets = self:child_snippets()
+
+	local child_from_indx
+	if direction == 1 then
+		child_from_indx = 1
+	else
+		child_from_indx = #own_child_snippets
+	end
+
+	node_util.nodelist_adjust_rgravs(
+		own_child_snippets,
+		child_from_indx,
+		pos,
+		direction,
+		rgrav,
+		-- don't assume that the child-snippets are all adjacent.
+		false)
+end
+
+function InsertNode:subtree_set_rgrav(rgrav)
+	self.mark:set_rgravs(rgrav, rgrav)
+
+	local own_child_snippets = self:child_snippets()
+
+	for _, child_snippet in ipairs(own_child_snippets) do
+		child_snippet:subtree_set_rgrav(rgrav)
+	end
 end
 
 return {
