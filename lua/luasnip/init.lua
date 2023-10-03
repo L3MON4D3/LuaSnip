@@ -126,6 +126,7 @@ local function unlink_current()
 	unlink_set_adjacent_as_current_no_log()
 end
 
+-- return next active node.
 local function safe_jump_current(dir, no_move, dry_run)
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -158,8 +159,8 @@ local function jump_destination(dir)
 end
 
 local function jumpable(dir)
-	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
-	return (node ~= nil and node:jumpable(dir))
+	-- node is jumpable if there is a destination.
+	return jump_destination(dir) ~= session.current_nodes[vim.api.nvim_get_current_buf()]
 end
 
 local function expandable()
