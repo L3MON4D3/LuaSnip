@@ -1239,4 +1239,39 @@ describe("snippets_basic", function()
 		exec_lua([[ ls.jump(1)]])
 		screen:expect{unchanged = true}
 	end)
+
+	it("exit_out_of_region activates last node of snippet-root.", function()
+		exec_lua([[
+			ls.setup({
+				link_children = true
+			})
+
+			ls.add_snippets("all", { s("aa", { i(1), t"( ", i(0, "0-text"), t" )" }) })
+		]])
+
+		feed("iaa")
+		exec_lua("ls.expand()")
+		feed("<Esc>lllliaa")
+		exec_lua("ls.expand()")
+		exec_lua("ls.jump(-1) ls.jump(-1)")
+		screen:expect{grid=[[
+			^( 0-( 0-text )text )                              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		feed("<Esc>o")
+		exec_lua("ls.exit_out_of_region(ls.session.current_nodes[1])")
+
+		-- verify that we are in the $0 of the nested snippet.
+		exec_lua("ls.jump(-1)")
+		screen:expect{grid=[[
+			( 0-^( 0-text )text )                              |
+			                                                  |
+			{2:-- INSERT --}                                      |]]}
+		exec_lua("ls.jump(1)")
+		screen:expect{grid=[[
+			( 0-( ^0{3:-text} )text )                              |
+			                                                  |
+			{2:-- SELECT --}                                      |]]}
+	end)
 end)
