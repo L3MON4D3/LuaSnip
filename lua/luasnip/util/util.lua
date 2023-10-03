@@ -319,15 +319,14 @@ local function byte_start_to_byte_end(pos)
 	)
 end
 
---- Intended to be callsed in visual mode 
+--- Intended to be callsed in visual mode
 local function store_selection()
-
 	local srtPos = vim.fn.getpos(".")
 	local endPos = vim.fn.getpos("v")
 	-- local start_line = math.min(srtPos[2], endPos[2])
 	-- local end_line   = math.max(srtPos[2], endPos[2])
-	local start_col  = math.min(srtPos[3], endPos[3], 0)
-	local end_col    = math.max(srtPos[3], endPos[3], vim.v.maxcol)
+	local start_col = math.min(srtPos[3], endPos[3], 0)
+	local end_col = math.max(srtPos[3], endPos[3], vim.v.maxcol)
 
 	-- Assuming we are in visual mode
 	-- Do not add empty lines before ]]
@@ -338,7 +337,7 @@ local function store_selection()
 	if vim.fn.has("nvim-0.9.0") then
 		lines = vim.split(vim.fn.getreg("9"), "\n", { trimempty = false })
 	else
-		lines = vim.fn.getreg("9") 
+		lines = vim.fn.getreg("9")
 	end
 	chunks = lines
 
@@ -346,7 +345,7 @@ local function store_selection()
 		vim.fn.setreg("9", "")
 	end, 50)
 
-	-- TODO: [October 03, 2023] This insantiy below should be reworked - @hinell 
+	-- TODO: [October 03, 2023] This insantiy below should be reworked - @hinell
 
 	-- init with raw selection.
 	local tm_select, select_dedent = vim.deepcopy(chunks), vim.deepcopy(chunks)
