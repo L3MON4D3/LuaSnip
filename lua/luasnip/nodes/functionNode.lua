@@ -42,6 +42,11 @@ function FunctionNode:update()
 	if not args or vim.deep_equal(args, self.last_args) then
 		return
 	end
+
+	if not self.parent.snippet:extmarks_valid() then
+		error("Refusing to update inside a snippet with invalid extmarks")
+	end
+
 	self.last_args = args
 	local text =
 		util.to_string_table(self.fn(args, self.parent, unpack(self.user_args)))

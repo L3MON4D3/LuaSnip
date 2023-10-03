@@ -119,6 +119,10 @@ function DynamicNode:update()
 		return
 	end
 
+	if not self.parent.snippet:extmarks_valid() then
+		error("Refusing to update inside a snippet with invalid extmarks")
+	end
+
 	local tmp
 	if self.snip then
 		if not args then
