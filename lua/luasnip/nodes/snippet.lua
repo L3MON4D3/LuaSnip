@@ -358,8 +358,14 @@ local function _S(snip, nodes, opts)
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
 
-	-- the snippet may not have dependents.
-	snip._update_dependents = function() end
+	-- if the snippet is expanded inside another snippet (can be recognized by
+	-- non-nil parent_node), the node of the snippet this one is inside has to
+	-- update its dependents.
+	function snip:_update_dependents()
+		if self.parent_node then
+			self.parent_node:update_dependents()
+		end
+	end
 	snip.update_dependents = snip._update_dependents
 
 	snip:init_nodes()
