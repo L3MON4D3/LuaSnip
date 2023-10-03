@@ -319,41 +319,34 @@ local function byte_start_to_byte_end(pos)
 	)
 end
 
+--- Intended to be callsed in visual mode 
 local function store_selection()
-	local start_line, start_col = vim.fn.line("'<"), vim.fn.col("'<")
 
-	local end_line = vim.fn.line("'>")
-	-- col of '>/'< is the first byte, in case of multibyte. As the entire
-	-- multibyte-string has to be in the selection, this needs to be converted.
-	local end_col = byte_start_to_byte_end({ end_line - 1, vim.fn.col("'>") })
+	local srtPos = vim.fn.getpos(".")
+	local endPos = vim.fn.getpos("v")
+	-- local start_line = math.min(srtPos[2], endPos[2])
+	-- local end_line   = math.max(srtPos[2], endPos[2])
+	local start_col  = math.min(srtPos[3], endPos[3], 0)
+	local end_col    = math.max(srtPos[3], endPos[3], vim.v.maxcol)
 
-	local mode = vim.fn.visualmode()
-	if
-		not vim.o.selection == "exclusive"
-		and not (start_line == end_line and start_col == end_col)
-	then
-		end_col = end_col - 1
-	end
+	-- Assuming we are in visual mode
+	-- Do not add empty lines before ]]
+	vim.cmd([[noautocmd normal "9y]])
 
+	local lines = {}
 	local chunks = {}
-	local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, true)
-	if start_line == end_line then
-		chunks = { lines[1]:sub(start_col, end_col) }
+	if vim.fn.has("nvim-0.9.0") then
+		lines = vim.split(vim.fn.getreg("9"), "\n", { trimempty = false })
 	else
-		local first_col = 0
-		local last_col = nil
-		if mode:lower() ~= "v" then -- mode is block
-			first_col = start_col
-			last_col = end_col
-		end
-		chunks = { lines[1]:sub(start_col, last_col) }
-
-		-- potentially trim lines (Block).
-		for cl = 2, #lines - 1 do
-			table.insert(chunks, lines[cl]:sub(first_col, last_col))
-		end
-		table.insert(chunks, lines[#lines]:sub(first_col, end_col))
+		lines = vim.fn.getreg("9") 
 	end
+	chunks = lines
+
+	vim.defer_fn(function()
+		vim.fn.setreg("9", "")
+	end, 50)
+
+	-- TODO: [October 03, 2023] This insantiy below should be reworked - @hinell 
 
 	-- init with raw selection.
 	local tm_select, select_dedent = vim.deepcopy(chunks), vim.deepcopy(chunks)
@@ -393,7 +386,6 @@ local function store_selection()
 			end
 		end
 	end
-
 	vim.api.nvim_buf_set_var(0, SELECT_RAW, chunks)
 	vim.api.nvim_buf_set_var(0, SELECT_DEDENT, select_dedent)
 	vim.api.nvim_buf_set_var(0, TM_SELECT, tm_select)
