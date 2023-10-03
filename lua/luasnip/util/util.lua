@@ -612,6 +612,24 @@ local function ternary(cond, if_val, else_val)
 	end
 end
 
+-- just compare two integers.
+local function cmp(i1, i2)
+	-- lets hope this ends up as one cmp.
+	if i1 < i2 then
+		return -1
+	end
+	if i1 > i2 then
+		return 1
+	end
+	return 0
+end
+
+-- compare two positions, <0 => pos1<pos2,  0 => pos1=pos2,  >0 => pos1 > pos2.
+local function pos_cmp(pos1, pos2)
+	-- if row is different it determines result, otherwise the column does.
+	return 2*cmp(pos1[1], pos2[1]) + cmp(pos1[2], pos2[2])
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -659,4 +677,5 @@ return {
 	lazy_table = lazy_table,
 	ternary = ternary,
 	jsregexp = jsregexp_ok and jsregexp,
+	pos_cmp = pos_cmp,
 }

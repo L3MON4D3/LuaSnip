@@ -178,6 +178,8 @@ function Node:input_leave(_, dry_run)
 
 	self.mark:update_opts(self:get_passive_ext_opts())
 end
+function Node:input_leave_children() end
+function Node:input_enter_children() end
 
 local function find_dependents(self, position_self, dict)
 	local nodes = {}
@@ -501,15 +503,15 @@ end
 --
 -- Unfortunately, we cannot guarantee that two extmarks on the same position
 -- also have the same gravities, for exmample if the text inside a focused node
--- is deleted, and then another unrelated node is focused, the two endpoints
--- will have opposing rgravs.
+-- is deleted, and then another unrelated node is focused, the two endpoints of
+-- the previously focused node will have opposing rgravs.
 -- Maybe this whole procedure could be sped up further if we can assume that
 -- identical endpoints imply identical rgravs.
 local function focus_node(self, lrgrav, rrgrav)
 	local abs_pos = vim.deepcopy(self.absolute_position)
 
 	-- find nodes on path from self to root.
-	local nodes_path = node_util.get_nodes_between(self.parent.snippet, abs_pos)
+	local nodes_path = node_util.get_nodes_between(self.parent.snippet, self)
 	-- nodes_on_path_to_self does not include the outer snippet, insert it here
 	-- (and also insert some dummy-value in abs_pos, such that abs_pos[i] the
 	-- position of node_path[i] in node_path[i-1] is).
@@ -601,6 +603,24 @@ function Node:set_text(text)
 	if not ok then
 		error("[LuaSnip Failed]: " .. vim.inspect(text))
 	end
+end
+
+-- since parents validate the adjacency, nodes where we don't know anything
+-- about the text inside them just have to assume they haven't been deleted :D
+function Node:extmarks_valid()
+	return true
+end
+
+function Node:linkable()
+	-- linkable if insert or exitNode.
+	return vim.tbl_contains({types.insertNode, types.exitNode}, rawget(self, "type"))
+end
+function Node:interactive()
+	-- interactive if immediately inside choiceNode.
+	return vim.tbl_contains({types.insertNode, types.exitNode}, rawget(self, "type")) or rawget(self, "choice") ~= nil
+end
+function Node:leaf()
+	return vim.tbl_contains({types.textNode, types.functionNode, types.insertNode, types.exitNode}, rawget(self, "type"))
 end
 
 return {

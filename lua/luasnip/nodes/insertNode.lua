@@ -95,24 +95,6 @@ function ExitNode:input_leave(no_move, dry_run)
 	end
 end
 
-function ExitNode:jump_into(dir, no_move, dry_run)
-	if not session.config.history then
-		self:input_enter(no_move, dry_run)
-		if (dir == 1 and not self.next) or (dir == -1 and not self.prev) then
-			if self.pos == 0 then
-				-- leave instantly, self won't be active snippet.
-				self:input_leave(no_move, dry_run)
-			end
-			return nil
-		else
-			return self
-		end
-	else
-		-- if no next node, return self as next current node.
-		return InsertNode.jump_into(self, dir, no_move, dry_run) or self
-	end
-end
-
 function ExitNode:_update_dependents() end
 function ExitNode:update_dependents() end
 function ExitNode:update_all_dependents() end
@@ -180,16 +162,7 @@ function InsertNode:jump_into(dir, no_move, dry_run)
 	if self:is_inner_active(dry_run) then
 		if dir == 1 then
 			if self.next then
-				if not dry_run then
-					self.inner_active = false
-					if not session.config.history then
-						self.inner_first = nil
-						self.inner_last = nil
-					end
-				else
-					dry_run.active[self] = false
-				end
-
+				self:input_leave_children(dry_run)
 				self:input_leave(no_move, dry_run)
 				return self.next:jump_into(dir, no_move, dry_run)
 			else
@@ -197,16 +170,7 @@ function InsertNode:jump_into(dir, no_move, dry_run)
 			end
 		else
 			if self.prev then
-				if not dry_run then
-					self.inner_active = false
-					if not session.config.history then
-						self.inner_first = nil
-						self.inner_last = nil
-					end
-				else
-					dry_run.active[self] = false
-				end
-
+				self:input_leave_children(dry_run)
 				self:input_leave(no_move, dry_run)
 				return self.prev:jump_into(dir, no_move, dry_run)
 			else
@@ -219,45 +183,68 @@ function InsertNode:jump_into(dir, no_move, dry_run)
 	end
 end
 
+function ExitNode:jump_from(dir, no_move, dry_run)
+	self:init_dry_run_inner_active(dry_run)
+
+	local next_node = util.ternary(dir == 1, self.next, self.prev)
+	local next_inner_node = util.ternary(dir == 1, self.inner_first, self.inner_last)
+
+	if next_inner_node then
+		self:input_enter_children(dry_run)
+		return next_inner_node:jump_into(dir, no_move, dry_run)
+	else
+		if next_node then
+			local next_node_dry_run = { active = {} }
+			-- don't have to `init_dry_run_inner_active` since this node does
+			-- not have children active if jump_from is called.
+
+			-- true: don't move
+			local target_node = next_node:jump_into(dir, true, next_node_dry_run)
+			-- if there is no node that can serve as jump-target, just remain
+			-- here.
+			-- Regular insertNodes don't have to handle this, since there is
+			-- always an exitNode or another insertNode at their endpoints.
+			if not target_node then
+				return self
+			end
+
+			self:input_leave(no_move, dry_run)
+			return next_node:jump_into(dir, no_move, dry_run) or self
+		else
+			return self
+		end
+	end
+end
+
 function InsertNode:jump_from(dir, no_move, dry_run)
 	self:init_dry_run_inner_active(dry_run)
 
-	if dir == 1 then
-		if self.inner_first then
-			if not dry_run then
-				self.inner_active = true
-			else
-				dry_run.active[self] = true
-			end
+	local next_node = util.ternary(dir == 1, self.next, self.prev)
+	local next_inner_node = util.ternary(dir == 1, self.inner_first, self.inner_last)
 
-			return self.inner_first:jump_into(dir, no_move, dry_run)
-		else
-			if self.next then
-				self:input_leave(no_move, dry_run)
-				return self.next:jump_into(dir, no_move, dry_run)
-			else
-				-- only happens for exitNodes, but easier to include here
-				-- and reuse this impl for them.
-				return self
-			end
-		end
+	if next_inner_node then
+		self:input_enter_children(dry_run)
+		return next_inner_node:jump_into(dir, no_move, dry_run)
 	else
-		if self.inner_last then
-			if not dry_run then
-				self.inner_active = true
-			else
-				dry_run.active[self] = true
-			end
-
-			return self.inner_last:jump_into(dir, no_move, dry_run)
-		else
-			if self.prev then
-				self:input_leave(no_move, dry_run)
-				return self.prev:jump_into(dir, no_move, dry_run)
-			else
-				return self
-			end
+		if next_node then
+			self:input_leave(no_move, dry_run)
+			return next_node:jump_into(dir, no_move, dry_run)
 		end
+	end
+end
+
+function InsertNode:input_enter_children(dry_run)
+	if dry_run then
+		dry_run.active[self] = true
+	else
+		self.inner_active = true
+	end
+end
+function InsertNode:input_leave_children(dry_run)
+	if dry_run then
+		dry_run.active[self] = false
+	else
+		self.inner_active = false
 	end
 end
 

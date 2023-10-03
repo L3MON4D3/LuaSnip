@@ -48,7 +48,11 @@ local lazy_snip_env = {
 }
 
 local defaults = {
-	history = false,
+	-- corresponds to legacy "history=false".
+	keep_roots = false,
+	link_roots = false,
+	link_children = false,
+
 	update_events = "InsertLeave",
 	-- see :h User, event should never be triggered(except if it is `doautocmd`'d)
 	region_check_events = nil,
@@ -207,6 +211,16 @@ c = {
 		user_config.updateevents = nil
 
 		set_snip_env(conf, user_config)
+
+		-- handle legacy-key history.
+		if user_config.history ~= nil then
+			conf.keep_roots = user_config.history
+			conf.link_roots = user_config.history
+			conf.link_children = user_config.history
+
+			-- unset key to prevent handling twice.
+			conf.history = nil
+		end
 
 		for k, v in pairs(user_config) do
 			conf[k] = v

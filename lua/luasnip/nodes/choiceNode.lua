@@ -418,6 +418,10 @@ function ChoiceNode:subtree_set_rgrav(rgrav)
 	end
 end
 
+function ChoiceNode:extmarks_valid()
+	return node_util.generic_extmarks_valid(self, self.active_choice)
+end
+
 return {
 	C = C,
 }
