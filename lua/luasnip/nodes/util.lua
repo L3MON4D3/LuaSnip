@@ -63,6 +63,7 @@ local function wrap_args(args)
 	end
 end
 
+-- includes child, does not include parent.
 local function get_nodes_between(parent, child)
 	local nodes = {}
 
@@ -632,6 +633,54 @@ local function snippettree_find_undamaged_node(pos, opts)
 	return prev_parent, prev_parent_children, child_indx, node
 end
 
+local function root_path(node)
+	local path = {}
+
+	while node do
+		local node_snippet = node.parent.snippet
+		local snippet_node_path = get_nodes_between(node_snippet, node)
+		-- get_nodes_between gives parent -> node, but we need
+		-- node -> parent => insert back to front.
+		for i = #snippet_node_path, 1, -1 do
+			table.insert(path, snippet_node_path[i])
+		end
+		-- parent not in get_nodes_between.
+		table.insert(path, node_snippet)
+
+		node = node_snippet.parent_node
+	end
+
+	return path
+end
+
+-- adjust rgravs of siblings of the node with indx child_from_indx in nodes.
+local function nodelist_adjust_rgravs(nodes, child_from_indx, child_endpoint, direction, rgrav, nodes_adjacent)
+	-- only handle siblings, not the node with child_from_indx itself.
+	local i = child_from_indx
+	local node = nodes[i]
+	while node do
+		local direction_node_endpoint = node.mark:get_endpoint(direction)
+		if util.pos_equal(direction_node_endpoint, child_endpoint) then
+			-- both endpoints of node are on top of child_endpoint (we wouldn't
+			-- be in the loop with `node` if the -direction-endpoint didn't
+			-- match), so update rgravs of the entire subtree to match rgrav
+			node:subtree_set_rgrav(rgrav)
+		else
+			-- either assume that they are adjacent, or check.
+			if nodes_adjacent or util.pos_equal(node.mark:get_endpoint(-direction), child_endpoint) then
+				-- only the -direction-endpoint matches child_endpoint, adjust its
+				-- position and break the loop (don't need to look at any other
+				-- siblings).
+				node:subtree_set_pos_rgrav(child_endpoint, direction, rgrav)
+			end
+			break
+		end
+
+		i = i + direction
+		node = nodes[i]
+	end
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -651,5 +700,7 @@ return {
 	refocus = refocus,
 	generic_extmarks_valid = generic_extmarks_valid,
 	snippettree_find_undamaged_node = snippettree_find_undamaged_node,
-	interactive_node = interactive_node
+	interactive_node = interactive_node,
+	root_path = root_path,
+	nodelist_adjust_rgravs = nodelist_adjust_rgravs,
 }
