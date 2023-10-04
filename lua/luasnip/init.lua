@@ -123,13 +123,14 @@ function unlink_set_adjacent_as_current(snippet, reason, ...)
 	log.warn("Removing snippet %s: %s", snippet.trigger, reason:format(...))
 	unlink_set_adjacent_as_current_no_log(snippet)
 end
+
 local function unlink_current()
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not current then
 		print("No active Snippet")
 		return
 	end
-	unlink_set_adjacent_as_current_no_log()
+	unlink_set_adjacent_as_current_no_log(current.parent.snippet)
 end
 
 -- return next active node.
