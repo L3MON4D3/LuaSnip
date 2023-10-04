@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.8.0            Last change: 2023 July 18
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 October 04
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -214,7 +214,7 @@ API                                                         *luasnip-node-api*
 - `get_buf_position(opts) -> {from_position, to_position}`:
     Determines the range of the buffer occupied by this node. `from`- and
     `to_position` are `row,column`-tuples, `0,0`-indexed (first line is 0, first
-    column is 0) and end-inclusive (see `:h api-indexing`, this is extmarks
+    column is 0) and end-inclusive (see |api-indexing|, this is extmarks
     indexing).
     - `opts`: `table|nil`, options, valid keys are:
         - `raw`: `bool`, default `true`. This can be used to switch between
