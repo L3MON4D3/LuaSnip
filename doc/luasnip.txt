@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 October 03
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 October 04
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -6,6 +6,7 @@ Table of Contents                                  *luasnip-table-of-contents*
 1. Basics                                                     |luasnip-basics|
   - Jump-Index                                     |luasnip-basics-jump-index|
   - Adding Snippets                           |luasnip-basics-adding-snippets|
+  - Snippet Insertion                       |luasnip-basics-snippet-insertion|
 2. Node                                                         |luasnip-node|
   - Api                                                     |luasnip-node-api|
 3. Snippets                                                 |luasnip-snippets|
@@ -189,6 +190,41 @@ globally (in all filetypes) have to be added to the special filetype `all`.
 
 It is possible to make snippets from one filetype available to another using
 `ls.filetype_extend`, more info on that in the section |luasnip-api|.
+
+
+SNIPPET INSERTION                           *luasnip-basics-snippet-insertion*
+
+When a new snippet is expanded, it can be connected with the snippets that have
+already been expanded in the buffer in various ways. First of all, Luasnip
+distinguishes between root-snippets and child-snippets. The latter are nested
+inside other snippets, so when jumping through a snippet, one may also traverse
+the child-snippets expanded inside it, more or less as if the child just
+contains more nodes of the parent. Root-snippets are of course characterised by
+not being child-snippets. When expanding a new snippet, it becomes a child of
+the snippet whose region it is expanded inside, and a root if it is not inside
+any snippet’s region. If it is inside another snippet, the specific node it
+is inside is determined, and the snippet then nested inside that node. * If
+that node is interactive (for example, an `insertNode`), the new snippet will
+be traversed when the node is visited, as long as the configuration-option
+`link_children` is enabled. If it is not enabled, it is possible to jump from
+the snippet to the node, but not the other way around. * If that node is not
+interactive, the snippet will be linked to the currently active node, also such
+that it will not be jumped to again once it is left. This is to prevent jumping
+large distances across the buffer as much as possible. There may still be one
+large jump from the snippet back to the current node it is nested inside, but
+that seems hard to avoid. Thus, one should design snippets such that the
+regions where other snippets may be expanded are inside `insertNodes`.
+
+If the snippet is not a child, but a root, it can be linked up with the roots
+immediately adjacent to it by enabling `link_roots` in `setup`. Since by
+default only one root is remembered, one should also set `keep_roots` if
+`link_roots` is enabled. The two are separate options, since roots that are not
+linked can still be reached by `ls.activate_node()`. This setup (remember
+roots, but don’t jump to them) is useful for a super-tab like mapping
+(`<Tab>` and jump on the same key), where one would like to still enter
+previous roots. Since there would almost always be more jumps if the roots are
+linked, regular `<Tab>` would not work almost all the time, and thus
+`link_roots` has to stay disabled.
 
 
 ==============================================================================
@@ -3226,10 +3262,15 @@ It is also possible to get/set the source of a snippet via API:
 
 These are the settings you can provide to `luasnip.setup()`:
 
-- `history`: If true, snippets that were exited can still be jumped back into. As
-    snippets are not removed when their text is deleted, they have to be removed
-    manually via `LuasnipUnlinkCurrent` if `delete_check_events` is not enabled
-    (set to eg. `'TextChanged'`).
+- `keep_roots`: Whether snippet-roots should be linked. See
+    |luasnip-basics-snippet-insertion| for more context.
+- `link_roots`: Whether snippet-roots should be linked. See
+    |luasnip-basics-snippet-insertion| for more context.
+- `link_children`: Whether children should be linked. See
+    |luasnip-basics-snippet-insertion| for more context.
+- `history` (deprecated): if not nil, `keep_roots`, `link_roots`, and
+    `link_children` will bet set to the value of `history`. This is just to ensure
+    backwards-compatibility.
 - `update_events`: Choose which events trigger an update of the active nodes’
     dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would
     update on every change. These, like all other `*_events` are passed to
@@ -3239,7 +3280,7 @@ These are the settings you can provide to `luasnip.setup()`:
           update_events = {"TextChanged", "TextChangedI"}
         })
     <
-- `region_check_events`: Events on which to leave the current snippet if the
+- `region_check_events`: Events on which to leave the current snippet-root if the
     cursor is outside its’ 'region'. Disabled by default, `'CursorMoved'`,
     `'CursorHold'` or `'InsertEnter'` seem reasonable.
 - `delete_check_events`: When to check if the current snippet was deleted, and if
@@ -3464,13 +3505,11 @@ GENERAL ~
     You can use it for more granular control over the table of snippets that is
     returned.
 - `exit_out_of_region(node)`: checks whether the cursor is still within the range
-    of the snippet `node` belongs to. If yes, no change occurs; if no, the snippet
-    is exited and following snippets’ regions are checked and potentially exited
-    (the next active node will be the 0-node of the snippet before the one the
-    cursor is inside. If the cursor isn’t inside any snippet, the active node
-    will be the last node in the jumplist). If a jump causes an error (happens
-    mostly because a snippet was deleted), the snippet is removed from the
-    jumplist.
+    of the root-snippet `node` belongs to. If yes, no change occurs; if no, the
+    root-snippet is exited and its `$0` will be the new active node. If a jump
+    causes an error (happens mostly because the text of a snippet was deleted), the
+    snippet is removed from the jumplist and the current node set to the
+    end/beginning of the next/previous snippet.
 - `store_snippet_docstrings(snippet_table)`: Stores the docstrings of all
     snippets in `snippet_table` to a file
     (`stdpath("cache")/luasnip/docstrings.json`). Calling
@@ -3518,6 +3557,15 @@ GENERAL ~
     (either -1 or 1, for backwards, forwards respectively) leads to, or `nil` if
     the destination could not be determined (most likely because there is no node
     that can be jumped to in the given direction, or there is no active node).
+- `activate_node(opts)`: Activate a node in any snippet. `opts` contains the
+    following options:
+    - `pos`, `{[1]: row, [2]: byte-column}?`: The position at which a node should
+        be activated. Defaults to the position of the cursor.
+    - `strict`, `bool?`: If set, throw an error if the node under the cursor can’t
+        be jumped into. If not set, fall back to any node of the snippet and enter
+        that instead.
+    - `select`, `bool?`: Whether the text inside the node should be selected.
+        Defaults to true.
 
 Not covered in this section are the various node-constructors exposed by the
 module, their usage is shown either previously in this file or in
