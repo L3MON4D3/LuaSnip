@@ -1343,17 +1343,21 @@ describe("snippets_basic", function()
 	it("unlink_current works.", function()
 		exec_lua([[ls.lsp_expand("$1 adsf $2")]])
 		exec_lua([[ls.jump( 1)]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			 adsf ^                                            |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua([[ls.jump(-1)]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^ adsf                                             |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua([[ls.unlink_current()]])
 		exec_lua([[ls.jump( 1)]])
-		screen:expect{unchanged=true}
+		screen:expect({ unchanged = true })
 	end)
 end)
