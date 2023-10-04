@@ -104,7 +104,7 @@ local function leave_nodes_between(parent, child, no_move)
 		-- entirely (because we stop at nodes[2], and handle nodes[1]
 		-- separately)
 		nodes[i]:input_leave(no_move)
-		nodes[i-1]:input_leave_children()
+		nodes[i - 1]:input_leave_children()
 	end
 	nodes[1]:input_leave(no_move)
 end
@@ -115,7 +115,7 @@ local function enter_nodes_between(parent, child, no_move)
 		return
 	end
 
-	for i = 1, #nodes-1 do
+	for i = 1, #nodes - 1 do
 		-- only enter children for nodes before the last (lowest) one.
 		nodes[i]:input_enter(no_move)
 		nodes[i]:input_enter_children()
@@ -180,7 +180,10 @@ end
 
 local function linkable_node(node)
 	-- node.type has to be one of insertNode, exitNode.
-	return vim.tbl_contains({types.insertNode, types.exitNode}, rawget(node, "type"))
+	return vim.tbl_contains(
+		{ types.insertNode, types.exitNode },
+		rawget(node, "type")
+	)
 end
 
 -- mainly used internally, by binarysearch_pos.
@@ -190,7 +193,10 @@ end
 -- feel appropriate (higher runtime), most cases should be served well by this
 -- heuristic.
 local function non_linkable_node(node)
-	return vim.tbl_contains({types.textNode, types.functionNode}, rawget(node, "type"))
+	return vim.tbl_contains(
+		{ types.textNode, types.functionNode },
+		rawget(node, "type")
+	)
 end
 -- return whether a node is certainly (not) interactive.
 -- Coincindentially, the same nodes as (non-)linkable ones, but since there is a
@@ -228,7 +234,7 @@ local binarysearch_preference = {
 		return cmp_mid_to > 0, cmp_mid_from < 0
 	end,
 	linkable = prefer_nodes(linkable_node, non_linkable_node),
-	interactive = prefer_nodes(interactive_node, non_interactive_node)
+	interactive = prefer_nodes(interactive_node, non_interactive_node),
 }
 -- `nodes` is a list of nodes ordered by their occurrence in the buffer.
 -- `pos` is a row-column-tuble, byte-columns, and we return the node the LEFT
@@ -256,12 +262,12 @@ local binarysearch_preference = {
 -- This way, we are more likely to return a node that can handle a new
 -- snippet/is interactive.
 -- * `"prefer_outside"` makes sense when the nodes are not contiguous, and we'd
--- like to find a position between two nodes.  
+-- like to find a position between two nodes.
 -- This mode makes sense for finding the snippet a new snippet should be
 -- inserted in, since we'd like to prefer inserting before/after a snippet, if
 -- the position is ambiguous.
--- 
--- In general:  
+--
+-- In general:
 -- These options are useful for making this function more general: When
 -- searching in the contiguous nodes of a snippet, we'd like this routine to
 -- return any of them (obviously the one pos is inside/or on the border of, and
@@ -271,7 +277,12 @@ local binarysearch_preference = {
 -- the snippet/node a new snippet should be expanded inside, it seems better to
 -- shift an existing snippet to the right/left than expand the new snippet
 -- inside it (when the expand-point is on the boundary).
-local function binarysearch_pos(nodes, pos, respect_rgravs, boundary_resolve_mode)
+local function binarysearch_pos(
+	nodes,
+	pos,
+	respect_rgravs,
+	boundary_resolve_mode
+)
 	local left = 1
 	local right = #nodes
 
@@ -281,7 +292,7 @@ local function binarysearch_pos(nodes, pos, respect_rgravs, boundary_resolve_mod
 		return nil, 1
 	end
 	while true do
-		local mid = left + math.floor((right-left)/2)
+		local mid = left + math.floor((right - left) / 2)
 		local mid_mark = nodes[mid].mark
 		local ok, mid_from, mid_to = pcall(mid_mark.pos_begin_end_raw, mid_mark)
 
@@ -310,7 +321,8 @@ local function binarysearch_pos(nodes, pos, respect_rgravs, boundary_resolve_mod
 		local cmp_mid_to = util.pos_cmp(pos, mid_to)
 		local cmp_mid_from = util.pos_cmp(pos, mid_from)
 
-		local cont_behind_mid, cont_before_mid = boundary_resolve_mode(cmp_mid_to, cmp_mid_from, nodes[mid])
+		local cont_behind_mid, cont_before_mid =
+			boundary_resolve_mode(cmp_mid_to, cmp_mid_from, nodes[mid])
 
 		if cont_behind_mid then
 			-- make sure right-left becomes smaller.
@@ -342,7 +354,7 @@ local function first_common_node(a, b)
 	local i = 0
 	local last_common = a.parent.snippet
 	-- invariant: last_common is parent of both a and b.
-	while (a_pos[i+1] ~= nil) and a_pos[i + 1] == b_pos[i + 1] do
+	while (a_pos[i + 1] ~= nil) and a_pos[i + 1] == b_pos[i + 1] do
 		last_common = last_common:resolve_position(a_pos[i + 1])
 		i = i + 1
 	end
@@ -455,7 +467,11 @@ local function refocus(from, to)
 	end
 	-- pass nil if from/to is nil.
 	-- if either is nil, first_common_node is nil, and the corresponding list empty.
-	local first_common_snippet, from_snip_path, to_snip_path = first_common_snippet_ancestor_path(from and from.parent.snippet, to and to.parent.snippet)
+	local first_common_snippet, from_snip_path, to_snip_path =
+		first_common_snippet_ancestor_path(
+			from and from.parent.snippet,
+			to and to.parent.snippet
+		)
 
 	-- we want leave/enter_path to be s.t. leaving/entering all nodes between
 	-- each entry and its snippet (and the snippet itself) will leave/enter all
@@ -498,7 +514,8 @@ local function refocus(from, to)
 		-- here.
 		-- snippet does not have input_leave_children, so only input_leave
 		-- needs to be called.
-		local ok2 = pcall(from.parent.snippet.input_leave, from.parent.snippet, true)
+		local ok2 =
+			pcall(from.parent.snippet.input_leave, from.parent.snippet, true)
 		if not ok1 or not ok2 then
 			from.parent.snippet:remove_from_jumplist()
 		end
@@ -507,7 +524,8 @@ local function refocus(from, to)
 		local node = from_snip_path[i]
 		local ok1 = pcall(node.input_leave_children, node)
 		local ok2 = pcall(leave_nodes_between, node.parent.snippet, node, true)
-		local ok3 = pcall(node.parent.snippet.input_leave, node.parent.snippet, true)
+		local ok3 =
+			pcall(node.parent.snippet.input_leave, node.parent.snippet, true)
 		if not ok1 or not ok2 or not ok3 then
 			from.parent.snippet:remove_from_jumplist()
 		end
@@ -533,11 +551,17 @@ local function refocus(from, to)
 		-- This means that, if we want to enter a non-exitNode, we have to
 		-- explicitly activate the snippet for all jumps to behave correctly.
 		-- (if we enter a i(0)/i(-1), this is not necessary, of course).
-		if final_leave_node.type == types.exitNode and first_enter_node.type ~= types.exitNode then
+		if
+			final_leave_node.type == types.exitNode
+			and first_enter_node.type ~= types.exitNode
+		then
 			common_node:input_enter(true)
 		end
 		-- symmetrically, entering an i(0)/i(-1) requires leaving the snippet.
-		if final_leave_node.type ~= types.exitNode and first_enter_node.type == types.exitNode then
+		if
+			final_leave_node.type ~= types.exitNode
+			and first_enter_node.type == types.exitNode
+		then
 			common_node:input_leave(true)
 		end
 
@@ -579,10 +603,17 @@ local function generic_extmarks_valid(node, child)
 	-- valid if
 	-- - extmark-extents match.
 	-- - current choice is valid
-	local ok1, self_from, self_to = pcall(node.mark.pos_begin_end_raw, node.mark)
-	local ok2, child_from, child_to = pcall(child.mark.pos_begin_end_raw, child.mark)
+	local ok1, self_from, self_to =
+		pcall(node.mark.pos_begin_end_raw, node.mark)
+	local ok2, child_from, child_to =
+		pcall(child.mark.pos_begin_end_raw, child.mark)
 
-	if not ok1 or not ok2 or util.pos_cmp(self_from, child_from) ~= 0 or util.pos_cmp(self_to, child_to) ~= 0 then
+	if
+		not ok1
+		or not ok2
+		or util.pos_cmp(self_from, child_from) ~= 0
+		or util.pos_cmp(self_to, child_to) ~= 0
+	then
 		return false
 	end
 	return child:extmarks_valid()
@@ -595,19 +626,25 @@ end
 --          * the node of this snippet pos is on.
 local function snippettree_find_undamaged_node(pos, opts)
 	local prev_parent, child_indx, found_parent
-	local prev_parent_children = session.snippet_roots[vim.api.nvim_get_current_buf()]
+	local prev_parent_children =
+		session.snippet_roots[vim.api.nvim_get_current_buf()]
 
 	while true do
 		-- false: don't respect rgravs.
 		-- Prefer inserting the snippet outside an existing one.
-		found_parent, child_indx = binarysearch_pos(prev_parent_children, pos, opts.tree_respect_rgravs, opts.tree_preference)
+		found_parent, child_indx = binarysearch_pos(
+			prev_parent_children,
+			pos,
+			opts.tree_respect_rgravs,
+			opts.tree_preference
+		)
 		if found_parent == false then
 			-- if the procedure returns false, there was an error getting the
 			-- position of a node (in this case, that node is a snippet).
 			-- The position of the offending snippet is returned in child_indx,
 			-- and we can remove it here.
 			prev_parent_children[child_indx]:remove_from_jumplist()
-		elseif (found_parent ~= nil and not found_parent:extmarks_valid()) then
+		elseif found_parent ~= nil and not found_parent:extmarks_valid() then
 			-- found snippet damaged (the idea to sidestep the damaged snippet,
 			-- even if no error occurred _right now_, is to ensure that we can
 			-- input_enter all the nodes along the insertion-path correctly).
@@ -654,7 +691,14 @@ local function root_path(node)
 end
 
 -- adjust rgravs of siblings of the node with indx child_from_indx in nodes.
-local function nodelist_adjust_rgravs(nodes, child_from_indx, child_endpoint, direction, rgrav, nodes_adjacent)
+local function nodelist_adjust_rgravs(
+	nodes,
+	child_from_indx,
+	child_endpoint,
+	direction,
+	rgrav,
+	nodes_adjacent
+)
 	-- only handle siblings, not the node with child_from_indx itself.
 	local i = child_from_indx
 	local node = nodes[i]
@@ -667,7 +711,13 @@ local function nodelist_adjust_rgravs(nodes, child_from_indx, child_endpoint, di
 			node:subtree_set_rgrav(rgrav)
 		else
 			-- either assume that they are adjacent, or check.
-			if nodes_adjacent or util.pos_equal(node.mark:get_endpoint(-direction), child_endpoint) then
+			if
+				nodes_adjacent
+				or util.pos_equal(
+					node.mark:get_endpoint(-direction),
+					child_endpoint
+				)
+			then
 				-- only the -direction-endpoint matches child_endpoint, adjust its
 				-- position and break the loop (don't need to look at any other
 				-- siblings).

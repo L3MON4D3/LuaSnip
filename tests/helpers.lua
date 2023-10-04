@@ -67,7 +67,8 @@ function M.session_setup_luasnip(opts)
 		]])
 	end
 
-	helpers.exec_lua([[
+	helpers.exec_lua(
+		[[
 		local hl_choiceNode, setup_extend = ...
 
 		-- MYVIMRC might not be set when nvim is loaded like this.
@@ -89,7 +90,8 @@ function M.session_setup_luasnip(opts)
 	]],
 		-- passing nil here means the argument-list is terminated, I think.
 		-- Just pass false instead of nil/false.
-		hl_choiceNode or false, setup_extend
+		hl_choiceNode or false,
+		setup_extend
 	)
 
 	if not no_snip_globals then

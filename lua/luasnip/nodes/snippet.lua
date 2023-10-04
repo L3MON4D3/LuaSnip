@@ -350,7 +350,7 @@ local function _S(snip, nodes, opts)
 
 			-- list of snippets expanded within the region of this snippet.
 			-- sorted by their buffer-position, for quick searching.
-			child_snippets = {}
+			child_snippets = {},
 		}),
 		opts
 	)
@@ -487,7 +487,9 @@ function Snippet:remove_from_jumplist()
 
 	self:exit()
 
-	local sibling_list = self.parent_node ~= nil and self.parent_node.parent.snippet.child_snippets or session.snippet_roots[vim.api.nvim_get_current_buf()]
+	local sibling_list = self.parent_node ~= nil
+			and self.parent_node.parent.snippet.child_snippets
+		or session.snippet_roots[vim.api.nvim_get_current_buf()]
 	local self_indx
 	for i, snip in ipairs(sibling_list) do
 		if snip == self then
@@ -523,8 +525,15 @@ function Snippet:remove_from_jumplist()
 	end
 end
 
-local function insert_into_jumplist(snippet, start_node, current_node, parent_node, sibling_snippets, own_indx)
-	local prev_snippet = sibling_snippets[own_indx-1]
+local function insert_into_jumplist(
+	snippet,
+	start_node,
+	current_node,
+	parent_node,
+	sibling_snippets,
+	own_indx
+)
+	local prev_snippet = sibling_snippets[own_indx - 1]
 	-- have not yet inserted self!!
 	local next_snippet = sibling_snippets[own_indx]
 
@@ -620,11 +629,12 @@ function Snippet:trigger_expand(current_node, pos_id, env)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 
 	-- find tree-node the snippet should be inserted at (could be before another node).
-	local _, sibling_snippets, own_indx, parent_node = node_util.snippettree_find_undamaged_node(pos, {
-		tree_respect_rgravs = false,
-		tree_preference = node_util.binarysearch_preference.outside,
-		snippet_mode = "linkable"
-	})
+	local _, sibling_snippets, own_indx, parent_node =
+		node_util.snippettree_find_undamaged_node(pos, {
+			tree_respect_rgravs = false,
+			tree_preference = node_util.binarysearch_preference.outside,
+			snippet_mode = "linkable",
+		})
 
 	if current_node then
 		if parent_node then
@@ -718,7 +728,7 @@ function Snippet:trigger_expand(current_node, pos_id, env)
 	start_node.mark = self.nodes[1].mark
 	start_node.pos = -1
 	-- needed for querying node-path from snippet to this node.
-	start_node.absolute_position = {-1}
+	start_node.absolute_position = { -1 }
 	start_node.parent = self
 
 	-- hook up i0 and start_node, and then the snippet itself.
@@ -734,7 +744,14 @@ function Snippet:trigger_expand(current_node, pos_id, env)
 	-- parent_node is nil if the snippet is toplevel.
 	self.parent_node = parent_node
 
-	insert_into_jumplist(self, start_node, current_node, parent_node, sibling_snippets, own_indx)
+	insert_into_jumplist(
+		self,
+		start_node,
+		current_node,
+		parent_node,
+		sibling_snippets,
+		own_indx
+	)
 
 	return parent_node
 end
@@ -1302,19 +1319,15 @@ end
 -- (direction is the direction into which is searched, from child_indx outward)
 -- assumption: direction-endpoint of node is on child_endpoint. (caller
 -- responsible)
-function Snippet:set_sibling_rgravs(
-	node,
-	child_endpoint,
-	direction,
-	rgrav )
-
+function Snippet:set_sibling_rgravs(node, child_endpoint, direction, rgrav)
 	node_util.nodelist_adjust_rgravs(
 		self.nodes,
 		node.absolute_position[#node.absolute_position] + direction,
 		child_endpoint,
 		direction,
 		rgrav,
-		true)
+		true
+	)
 end
 
 -- called only if the "-direction"-endpoint has to be changed, but the
@@ -1335,7 +1348,8 @@ function Snippet:subtree_set_pos_rgrav(pos, direction, rgrav)
 		pos,
 		direction,
 		rgrav,
-		true)
+		true
+	)
 end
 -- changes rgrav of all nodes and all endpoints in this snippetNode to `rgrav`.
 function Snippet:subtree_set_rgrav(rgrav)
@@ -1383,13 +1397,13 @@ function Snippet:node_at(pos, mode)
 		-- all nodes well before it are quickly skipped => should benefit
 		-- all cases where the runtime of this is noticeable, and which are not
 		-- unrealistic (lots of zero-width nodes).
-		if util.pos_cmp(pos, {node_to[1], node_to[2]+1}) > 0 then
+		if util.pos_cmp(pos, { node_to[1], node_to[2] + 1 }) > 0 then
 			return false
 		end
 
 		-- generate gravity-adjusted endpoints.
-		local grav_adjusted_from = {node_from[1], node_from[2]}
-		local grav_adjusted_to = {node_to[1], node_to[2]}
+		local grav_adjusted_from = { node_from[1], node_from[2] }
+		local grav_adjusted_to = { node_to[1], node_to[2] }
 		if node_mark:get_rgrav(-1) then
 			grav_adjusted_from[2] = grav_adjusted_from[2] + 1
 		end
@@ -1453,7 +1467,8 @@ end
 
 function Snippet:extmarks_valid()
 	-- assumption: extmarks are contiguous, and all can be queried via pos_begin_end_raw.
-	local ok, current_from, self_to = pcall(self.mark.pos_begin_end_raw, self.mark)
+	local ok, current_from, self_to =
+		pcall(self.mark.pos_begin_end_raw, self.mark)
 	if not ok then
 		return false
 	end
@@ -1464,12 +1479,17 @@ function Snippet:extmarks_valid()
 	end
 
 	for _, node in ipairs(self.nodes) do
-		local ok_, node_from, node_to = pcall(node.mark.pos_begin_end_raw, node.mark)
+		local ok_, node_from, node_to =
+			pcall(node.mark.pos_begin_end_raw, node.mark)
 		-- this snippet is invalid if:
 		-- - we can't get the position of some node
 		-- - the positions aren't contiguous or don't completely fill the parent, or
 		-- - any child of this node violates these rules.
-		if not ok_ or util.pos_cmp(current_from, node_from) ~= 0 or not node:extmarks_valid() then
+		if
+			not ok_
+			or util.pos_cmp(current_from, node_from) ~= 0
+			or not node:extmarks_valid()
+		then
 			return false
 		end
 		current_from = node_to

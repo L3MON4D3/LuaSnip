@@ -545,7 +545,7 @@ local function focus_node(self, lrgrav, rrgrav)
 			-- dynamicNode, for example, the generated snippets parent is not the
 			-- dynamicNode, but its parent).
 			-- also: don't need to check for nil, because the
-			local node_above = nodes_path[i+1]
+			local node_above = nodes_path[i + 1]
 			if node_above then
 				node_above:set_sibling_rgravs(
 					node,
@@ -603,14 +603,23 @@ end
 
 function Node:linkable()
 	-- linkable if insert or exitNode.
-	return vim.tbl_contains({types.insertNode, types.exitNode}, rawget(self, "type"))
+	return vim.tbl_contains(
+		{ types.insertNode, types.exitNode },
+		rawget(self, "type")
+	)
 end
 function Node:interactive()
 	-- interactive if immediately inside choiceNode.
-	return vim.tbl_contains({types.insertNode, types.exitNode}, rawget(self, "type")) or rawget(self, "choice") ~= nil
+	return vim.tbl_contains(
+		{ types.insertNode, types.exitNode },
+		rawget(self, "type")
+	) or rawget(self, "choice") ~= nil
 end
 function Node:leaf()
-	return vim.tbl_contains({types.textNode, types.functionNode, types.insertNode, types.exitNode}, rawget(self, "type"))
+	return vim.tbl_contains(
+		{ types.textNode, types.functionNode, types.insertNode, types.exitNode },
+		rawget(self, "type")
+	)
 end
 
 return {

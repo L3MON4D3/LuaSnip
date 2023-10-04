@@ -250,24 +250,30 @@ describe("snippets_basic", function()
 		})
 		-- last snippet is not forgotten (yet).
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a[^a{3:[]ab}]ab                                        |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 
 		feed("<Esc>o")
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a[a[]ab]ab                                        |
 			a[^]ab                                             |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(-1) ls.jump(-1)")
 
 		-- first snippet can't be accessed anymore.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a[a[]ab]ab                                        |
 			^a[]ab                                             |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("history=true allows jumping back into exited snippet.", function()
@@ -1212,32 +1218,38 @@ describe("snippets_basic", function()
 		feed("iaa")
 		exec_lua([[ ls.expand() ]])
 		exec_lua([[ ls.jump(1) ]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a:(^)                                              |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		feed("aa")
 		exec_lua([[ ls.expand() ]])
 		exec_lua([[ ls.jump(1) ]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a:(a:(^))                                          |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		feed("aa")
 		exec_lua([[ ls.expand() ]])
 		exec_lua([[ ls.jump(1) ]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			a:(a:(a:(^)))                                      |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		-- jump should not move cursor!
 		-- for some reason need multiple jumps to trigger the mistake.
 		exec_lua([[ ls.jump(1)]])
 		exec_lua([[ ls.jump(1)]])
-		screen:expect{unchanged = true}
+		screen:expect({ unchanged = true })
 	end)
 
 	it("exit_out_of_region activates last node of snippet-root.", function()
@@ -1254,40 +1266,46 @@ describe("snippets_basic", function()
 		feed("<Esc>lllliaa")
 		exec_lua("ls.expand()")
 		exec_lua("ls.jump(-1) ls.jump(-1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			^( 0-( 0-text )text )                              |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		feed("<Esc>o")
 		exec_lua("ls.exit_out_of_region(ls.session.current_nodes[1])")
 
 		-- verify that we are in the $0 of the nested snippet.
 		exec_lua("ls.jump(-1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			( 0-^( 0-text )text )                              |
 			                                                  |
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		exec_lua("ls.jump(1)")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			( 0-( ^0{3:-text} )text )                              |
 			                                                  |
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 
 	it("focus correctly adjusts gravities of parent-snippets.", function()
-		exec_lua[[
+		exec_lua([[
 			ls.setup{
 				link_children = true
 			}
-		]]
+		]])
 		exec_lua([[ls.lsp_expand("a$1$1a")]])
 		exec_lua([[ls.lsp_expand("b$1")]])
 		feed("ccc")
 		exec_lua([[ls.active_update_dependents()]])
 		feed("dddd")
 		-- Here's how this fails if `focus` does not behave correctly (ie. only
-		-- adjusts extmarks in the snippet the current node is inside):  
+		-- adjusts extmarks in the snippet the current node is inside):
 		-- child has a changed $1, triggers update of own snippets, and
 		-- transitively of the parent-$1.
 		-- Since the parent has a functionNode that copies the $1's text, it
@@ -1303,18 +1321,22 @@ describe("snippets_basic", function()
 		-- If, in doing this, the parent-$1-extmark end-gravity is not restored
 		-- to the right, the child-snippet will extend beyond the extmark of
 		-- its parent-node, the parent-$1.
-		exec_lua[[ls.jump(-1) ls.jump(-1)]]
+		exec_lua([[ls.jump(-1) ls.jump(-1)]])
 		-- highlights outer $1.
-		exec_lua[[ls.jump(1)]]
-		screen:expect{grid=[[
+		exec_lua([[ls.jump(1)]])
+		screen:expect({
+			grid = [[
 			a^b{3:cccdddd}bcccdddda                                |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		-- and then inner $1.
-		exec_lua[[ls.jump(1)]]
-		screen:expect{grid=[[
+		exec_lua([[ls.jump(1)]])
+		screen:expect({
+			grid = [[
 			ab^c{3:ccdddd}bcccdddda                                |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 	end)
 end)

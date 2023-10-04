@@ -627,7 +627,7 @@ end
 -- compare two positions, <0 => pos1<pos2,  0 => pos1=pos2,  >0 => pos1 > pos2.
 local function pos_cmp(pos1, pos2)
 	-- if row is different it determines result, otherwise the column does.
-	return 2*cmp(pos1[1], pos2[1]) + cmp(pos1[2], pos2[2])
+	return 2 * cmp(pos1[1], pos2[1]) + cmp(pos1[2], pos2[2])
 end
 
 return {
