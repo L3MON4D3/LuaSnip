@@ -230,12 +230,18 @@ local function snip_expand(snippet, opts)
 	-- position, which is just as bad) if text before the cursor, on the same
 	-- line is cleared.
 	if opts.clear_region then
+		-- Zer based indexing; this prevents negative values
+		local start_row = math.max(0, opts.clear_region.from[1])
+		local start_col = math.max(0, opts.clear_region.from[2])
+		local end_row   = math.max(0, opts.clear_region.to[1])
+		local end_col   = math.max(0, opts.clear_region.to[2]  )
+
 		vim.api.nvim_buf_set_text(
 			0,
-			opts.clear_region.from[1],
-			opts.clear_region.from[2],
-			opts.clear_region.to[1],
-			opts.clear_region.to[2],
+			start_row,
+			start_col,
+			end_row,
+			end_col,
 			{ "" }
 		)
 	end
