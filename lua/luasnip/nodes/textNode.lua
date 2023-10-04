@@ -49,7 +49,13 @@ end
 
 function TextNode:extmarks_valid()
 	local from, to = self.mark:pos_begin_end_raw()
-	if util.pos_cmp(from, to) == 0 and not (#self.static_text == 0 or (#self.static_text == 1 and #self.static_text[1] == 0)) then
+	if
+		util.pos_cmp(from, to) == 0
+		and not (
+			#self.static_text == 0
+			or (#self.static_text == 1 and #self.static_text[1] == 0)
+		)
+	then
 		-- assume the snippet is invalid if a textNode occupies zero space,
 		-- but has text which would occupy some.
 		-- This should allow some modifications, but as soon as a textNode is

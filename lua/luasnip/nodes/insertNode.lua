@@ -187,7 +187,8 @@ function ExitNode:jump_from(dir, no_move, dry_run)
 	self:init_dry_run_inner_active(dry_run)
 
 	local next_node = util.ternary(dir == 1, self.next, self.prev)
-	local next_inner_node = util.ternary(dir == 1, self.inner_first, self.inner_last)
+	local next_inner_node =
+		util.ternary(dir == 1, self.inner_first, self.inner_last)
 
 	if next_inner_node then
 		self:input_enter_children(dry_run)
@@ -199,7 +200,8 @@ function ExitNode:jump_from(dir, no_move, dry_run)
 			-- not have children active if jump_from is called.
 
 			-- true: don't move
-			local target_node = next_node:jump_into(dir, true, next_node_dry_run)
+			local target_node =
+				next_node:jump_into(dir, true, next_node_dry_run)
 			-- if there is no node that can serve as jump-target, just remain
 			-- here.
 			-- Regular insertNodes don't have to handle this, since there is
@@ -220,7 +222,8 @@ function InsertNode:jump_from(dir, no_move, dry_run)
 	self:init_dry_run_inner_active(dry_run)
 
 	local next_node = util.ternary(dir == 1, self.next, self.prev)
-	local next_inner_node = util.ternary(dir == 1, self.inner_first, self.inner_last)
+	local next_inner_node =
+		util.ternary(dir == 1, self.inner_first, self.inner_last)
 
 	if next_inner_node then
 		self:input_enter_children(dry_run)
@@ -308,7 +311,8 @@ function InsertNode:subtree_set_pos_rgrav(pos, direction, rgrav)
 		direction,
 		rgrav,
 		-- don't assume that the child-snippets are all adjacent.
-		false)
+		false
+	)
 end
 
 function InsertNode:subtree_set_rgrav(rgrav)

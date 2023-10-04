@@ -17,11 +17,11 @@ M.current_nodes = {}
 -- snippet_roots[n] => list of snippet-roots in buffer n.
 M.snippet_roots = setmetatable({}, {
 	-- create missing lists automatically.
-	__index = function(t,k)
+	__index = function(t, k)
 		local new_t = {}
 		rawset(t, k, new_t)
 		return new_t
-	end
+	end,
 })
 M.ns_id = vim.api.nvim_create_namespace("Luasnip")
 M.active_choice_nodes = {}
