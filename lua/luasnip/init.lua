@@ -487,7 +487,6 @@ local function active_update_dependents()
 
 		local ok, err = pcall(active.update_dependents, active)
 		if not ok then
-			log.warn()
 			unlink_set_adjacent_as_current(
 				active.parent.snippet,
 				"Error while updating dependents for snippet %s due to error %s",
