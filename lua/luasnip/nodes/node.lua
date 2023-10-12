@@ -521,6 +521,7 @@ local function focus_node(self, lrgrav, rrgrav)
 	for _, direction in ipairs({ -1, 1 }) do
 		local self_direction_endpoint = self.mark:get_endpoint(direction)
 		local direction_rgrav = util.ternary(direction == -1, lrgrav, rrgrav)
+		local effective_direction_rgrav = direction_rgrav
 
 		-- adjust left rgrav of all nodes on path upwards to root/snippet:
 		-- (i st. self and the snippet are both handled)
@@ -539,7 +540,16 @@ local function focus_node(self, lrgrav, rrgrav)
 				break
 			end
 
-			node.mark:set_rgrav(direction, direction_rgrav)
+			node.mark:set_rgrav(direction, effective_direction_rgrav)
+
+			-- Once self's snippet is reached on the root-path, we will only
+			-- adjust nodes self should be completely contained inside.
+			-- Since the rgravs, however, may be set up otherwise (for example
+			-- when focusing on an $0 that is the last node of the snippet), we
+			-- have to adjust them now.
+			if node.snippet == node then
+				effective_direction_rgrav = direction == 1
+			end
 
 			-- can't use node.parent, since that might skip nodes (in the case of
 			-- dynamicNode, for example, the generated snippets parent is not the
@@ -551,9 +561,10 @@ local function focus_node(self, lrgrav, rrgrav)
 					node,
 					self_direction_endpoint,
 					direction,
-					direction_rgrav
+					effective_direction_rgrav
 				)
 			end
+
 		end
 		self:subtree_set_pos_rgrav(
 			self_direction_endpoint,
