@@ -564,7 +564,6 @@ local function focus_node(self, lrgrav, rrgrav)
 					effective_direction_rgrav
 				)
 			end
-
 		end
 		self:subtree_set_pos_rgrav(
 			self_direction_endpoint,

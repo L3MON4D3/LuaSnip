@@ -1350,27 +1350,35 @@ describe("snippets_basic", function()
 		exec_lua([[ls.lsp_expand("\\$$1\\$")]])
 		feed("<Esc>l")
 		exec_lua([[ls.lsp_expand("\\rightarrow")]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			$\rightarrow^$                                     |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("<Space>s")
 		exec_lua([[ls.jump(1)]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			$\rightarrow s$^                                   |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 		-- make sure the entire placeholder is highlighted.
 		exec_lua([[ls.jump(-1)]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			$^\{3:rightarrow s}$                                   |
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
+			{2:-- SELECT --}                                      |]],
+		})
 		exec_lua([[ls.jump(-1)]])
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			$\rightarrow^ s$                                   |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("unlink_current works.", function()
