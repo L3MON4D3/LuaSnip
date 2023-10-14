@@ -55,7 +55,9 @@ end
 local DupAddable = {}
 
 function DupAddable:retrieve_all()
-	return vim.tbl_map(M.duplicate_expandable, self.addable:retrieve_all())
+	-- always return the same set of items, necessary when for invalidate via
+	-- key to work correctly.
+	return self._all
 end
 local DupAddable_mt = {
 	__index = DupAddable,
@@ -64,6 +66,7 @@ local DupAddable_mt = {
 function M.duplicate_addable(addable)
 	return setmetatable({
 		addable = addable,
+		_all = vim.tbl_map(M.duplicate_expandable, addable:retrieve_all())
 	}, DupAddable_mt)
 end
 
