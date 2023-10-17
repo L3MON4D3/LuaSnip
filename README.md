@@ -147,7 +147,7 @@ Here are some suggestions for getting started in either case:
   Of those two, SnipMate is definitely the more comfortable way of writing snippets.
 * **Lua snippets**: we suggest first watching or reading one of the introductory guides in the [Resources for new users](#resources-for-new-users) section below.
   After getting familiar with the basics, you should check out the important LuaSnip features in the following list:
-  * [`config`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#config-reference): Notable: `region_check_events` for jumping to the end of snippets the cursor is no longer inside of,
+  * [`config`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#config-options): Notable: `region_check_events` for jumping to the end of snippets the cursor is no longer inside of,
     `delete_check_events` for cleaning up snippets whose text was deleted,
     and `enable_autosnippets` to enable automatic snippet expansion.
   * [`extras`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#extras): This module contains many functions that make writing snippets
@@ -159,7 +159,7 @@ Here are some suggestions for getting started in either case:
     current buffer](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#edit_snippets).
   * Advanced nodes:
     [`functionNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#functionnode),
-    [`dynamicNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#functionnode),
+    [`dynamicNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#dynamicnode),
     [`choiceNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#choicenode) and [`restoreNode`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#restorenode).  
     Instead of reading about them in the doc, the first three are explained very
     well in [this video](https://www.youtube.com/watch?v=KtQZRAkgLqo) by TJ
@@ -173,7 +173,7 @@ Note: instead of immediately reading the official documentation, you may want to
 - `:help luasnip.txt` is a plain text version of `DOC.md` available with Neovim's `:help` feature.
 - The file [`Examples/snippets.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/Examples/snippets.lua) contains many example snippets written in Lua—we highly recommend looking through (or better yet, `:luafile`ing) these example snippets before using LuaSnip's advanced features.
 - The [Wiki](https://github.com/L3MON4D3/LuaSnip/wiki) contains some useful LuaSnip extensions and some examples of advanced snippets and configs.
-- Configuration is documented [in `DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#config-reference) as well.
+- Configuration is documented [in `DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#config-options) as well.
 
 【中文版】DOC in Chinese is [here](https://zjp-cn.github.io/neovim0.6-blogs/nvim/luasnip/doc1.html). 
 
