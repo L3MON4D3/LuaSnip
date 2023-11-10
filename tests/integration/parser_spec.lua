@@ -1,5 +1,5 @@
 local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed = helpers.exec_lua, helpers.feed
+local exec_lua, feed, exec = helpers.exec_lua, helpers.feed, helpers.exec
 local ls_helpers = require("helpers")
 local Screen = require("test.functional.ui.screen")
 
@@ -725,6 +725,8 @@ describe("Parser", function()
 
 		-- expand snippet with selected multiline-text.
 		feed("iasdf<Cr>asdf<Esc>Vk<Tab>")
+		-- wait a bit..
+		exec('call wait(200, "0")')
 		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
 		screen:expect({

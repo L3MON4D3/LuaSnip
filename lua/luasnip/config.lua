@@ -285,8 +285,9 @@ c = {
 		if session.config.store_selection_keys then
 			vim.cmd(
 				string.format(
-					[[xnoremap <silent>  %s  :lua require('luasnip.util.util').store_selection()<cr>gv"_s]],
-					session.config.store_selection_keys
+					[[xnoremap <silent>  %s  %s]],
+					session.config.store_selection_keys,
+					require("luasnip.util.select").select_keys
 				)
 			)
 		end
