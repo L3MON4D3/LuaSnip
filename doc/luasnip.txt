@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0           Last change: 2023 October 17
+*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 November 10
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -3288,7 +3288,8 @@ These are the settings you can provide to `luasnip.setup()`:
     `'InsertLeave'`, to react to changes done in Insert mode) should work just fine
     (alternatively, this can also be mapped using `<Plug>luasnip-delete-check`).
 - `store_selection_keys`: Mapping for populating `TM_SELECTED_TEXT` and related
-    variables (not set by default).
+    variables (not set by default). If you want to set this mapping yourself, map
+    `ls.select_keys` (not a function, actually a string/key-combination) as a rhs.
 - `enable_autosnippets`: Autosnippets are disabled by default to minimize
     performance penalty if unused. Set to `true` to enable.
 - `ext_opts`: Additional options passed to extmarks. Can be used to add
