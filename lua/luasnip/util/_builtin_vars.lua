@@ -1,4 +1,5 @@
 local util = require("luasnip.util.util")
+local select_util = require("luasnip.util.select")
 local lazy_vars = {}
 
 -- Variables defined in https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variables
@@ -156,7 +157,7 @@ local function eager_vars(info)
 	vars.TM_LINE_INDEX = tostring(pos[1])
 	vars.TM_LINE_NUMBER = tostring(pos[1] + 1)
 	vars.LS_SELECT_RAW, vars.LS_SELECT_DEDENT, vars.TM_SELECTED_TEXT =
-		util.get_selection()
+		select_util.retrieve()
 	-- These are for backward compatibility, for now on all builtins that are not part of TM_ go in LS_
 	vars.SELECT_RAW, vars.SELECT_DEDENT =
 		vars.LS_SELECT_RAW, vars.LS_SELECT_DEDENT

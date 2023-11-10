@@ -846,6 +846,7 @@ local ls_lazy = {
 	config = function() return require("luasnip.config") end,
 	multi_snippet = function() return require("luasnip.nodes.multiSnippet").new_multisnippet end,
 	snippet_source = function() return require("luasnip.session.snippet_collection.source") end,
+	select_keys = function() return require("luasnip.util.select").select_keys end
 }
 
 ls = util.lazy_table({
