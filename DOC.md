@@ -1785,8 +1785,8 @@ as the table in the same position for `s` except:
 Some other match strings, including the default, are available from the postfix
 module. `require("luasnip.extras.postfix).matches`:
 
-- `default`: [%w%.%_%-%"%']+$
-- 'line': `^.+$`
+- `default`: `[%w%.%_%-%"%']+$`
+- `line`: `^.+$`
 
 The second argument is identical to the second argument for `s`, that is, a
 table of nodes.
