@@ -219,7 +219,7 @@ local function generate_simple_parent_lookup_function(lookup_fun)
 	---@param types string|string[]
 	---@return LuaSnip.extra.MatchTSNodeFunc
 	return function(types)
-		local type_checker = tbl.normalize_search_table(types)
+		local type_checker = tbl.list_to_set(types)
 		---@param parser LuaSnip.extra.TSParser
 		---@param pos { [1]: number, [2]: number }
 		return function(parser, pos)
