@@ -697,22 +697,7 @@ local function cleanup()
 end
 
 local function refresh_notify(ft)
-	-- vim.validate({
-	-- 	filetype = { ft, { "string", "nil" } },
-	-- })
-
-	if not ft then
-		-- call refresh_notify for all filetypes that have snippets.
-		for ft_, _ in pairs(ls.snippets) do
-			refresh_notify(ft_)
-		end
-	else
-		session.latest_load_ft = ft
-		vim.api.nvim_exec_autocmds(
-			"User",
-			{ pattern = "LuasnipSnippetsAdded", modeline = false }
-		)
-	end
+	snippet_collection.refresh_notify(ft)
 end
 
 local function setup_snip_env()
@@ -724,7 +709,7 @@ local function setup_snip_env()
 	setfenv(2, combined_table)
 end
 local function get_snip_env()
-	return session.config.snip_env
+	return session.get_snip_env()
 end
 
 local function get_id_snippet(id)
