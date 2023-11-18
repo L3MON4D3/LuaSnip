@@ -1,7 +1,8 @@
-local Cache = require("luasnip.loaders._caches")
 local util = require("luasnip.util.util")
 local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
+local session = require("luasnip.session")
+local loader_data = require("luasnip.loaders.data")
 
 local M = {}
 
@@ -56,13 +57,13 @@ function M.edit_snippet_files(opts)
 			local items = {}
 
 			-- concat files from all loaders for the selected filetype ft.
-			for _, cache_name in ipairs({
-				"vscode_packages",
-				"vscode_standalone",
-				"snipmate",
-				"lua",
+			for cache_name, ft_file_set in pairs({
+				vscode_packages = loader_data.vscode_ft_paths[ft],
+				vscode_standalone = {},
+				snipmate = loader_data.snipmate_ft_paths[ft],
+				lua = loader_data.lua_ft_paths[ft],
 			}) do
-				for _, path in ipairs(Cache[cache_name].ft_paths[ft] or {}) do
+				for path, _ in pairs(ft_file_set or {}) do
 					local fmt_name = format(path, clean_name[cache_name])
 					if fmt_name then
 						table.insert(ft_paths, path)
@@ -124,42 +125,22 @@ function M.edit_snippet_files(opts)
 end
 
 function M.cleanup()
-	Cache.cleanup()
+	require("luasnip.loaders.from_lua").clean()
+	require("luasnip.loaders.from_snipmate").clean()
+	require("luasnip.loaders.from_vscode").clean()
 end
 
---- explicitly load lazy-loaded snippets for some filetypes.
----@param fts string[]: list of filetypes.
-function M.load_lazy_loaded(fts)
-	fts = util.redirect_filetypes(fts)
+function M.load_lazy_loaded(bufnr)
+	local fts = loader_util.get_load_fts(bufnr)
 
 	for _, ft in ipairs(fts) do
-		require("luasnip.loaders.from_lua")._load_lazy_loaded_ft(ft)
-		Cache.lua.lazy_loaded_ft[ft] = true
-
-		require("luasnip.loaders.from_snipmate")._load_lazy_loaded_ft(ft)
-		Cache.snipmate.lazy_loaded_ft[ft] = true
-
-		require("luasnip.loaders.from_vscode")._load_lazy_loaded_ft(ft)
-		Cache.vscode.lazy_loaded_ft[ft] = true
+		if not session.loaded_fts[ft] then
+			require("luasnip.loaders.from_lua")._load_lazy_loaded_ft(ft)
+			require("luasnip.loaders.from_snipmate")._load_lazy_loaded_ft(ft)
+			require("luasnip.loaders.from_vscode")._load_lazy_loaded_ft(ft)
+		end
+		session.loaded_fts[ft] = true
 	end
-end
-
-vim.api.nvim_create_autocmd("BufWritePost", {
-	group = vim.api.nvim_create_augroup("luasnip_watch_reload", {}),
-	callback = function(event)
-		require("luasnip.loaders").reload_file(event.file)
-	end,
-})
-function M.reload_file(filename)
-	filename = Path.normalize(filename)
-	if not filename then
-		-- file does not exist.
-		-- log here, maybe.
-		return
-	end
-	require("luasnip.loaders.from_lua")._reload_file(filename)
-	require("luasnip.loaders.from_vscode")._reload_file(filename)
-	require("luasnip.loaders.from_snipmate")._reload_file(filename)
 end
 
 return M

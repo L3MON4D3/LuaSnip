@@ -1,6 +1,8 @@
 local Path = require("luasnip.util.path")
 local util = require("luasnip.util.util")
 local session = require("luasnip.session")
+local snippet_collection = require("luasnip.session.snippet_collection")
+local log = require("luasnip.util.log").new("loaders")
 
 local function filetypelist_to_set(list)
 	vim.validate({ list = { list, "table", true } })
@@ -37,19 +39,25 @@ local function split_lines(filestring)
 	)
 end
 
-local function _is_present(v)
+local function non_nil(v)
 	return v ~= nil
 end
 
-local function normalize_paths(paths, rtp_dirname)
+local function resolve_root_paths(paths, rtp_dirname)
 	if not paths then
 		paths = vim.api.nvim_get_runtime_file(rtp_dirname, true)
-	elseif type(paths) == "string" then
-		paths = vim.split(paths, ",")
 	end
 
 	paths = vim.tbl_map(Path.expand, paths)
-	paths = vim.tbl_filter(_is_present, paths)
+	paths = vim.tbl_filter(non_nil, paths)
+	paths = util.deduplicate(paths)
+
+	return paths
+end
+
+local function resolve_lazy_root_paths(paths)
+	paths = vim.tbl_map(Path.expand_maybe_nonexisting, paths)
+	paths = vim.tbl_filter(non_nil, paths)
 	paths = util.deduplicate(paths)
 
 	return paths
@@ -105,6 +113,25 @@ local function get_ft_paths(root, extension)
 	return ft_path
 end
 
+-- fname must be in the directory-tree below root.
+-- collection_root may not end with a path-separator.
+-- If both are from "realpath", and fname belongs to the collection, this
+-- should be a given.
+local function collection_file_ft(collection_root, fname)
+	local collection_components = Path.components(collection_root)
+	local fname_components = Path.components(fname)
+
+	if #fname_components == #collection_components + 1 then
+		-- if the file is a direct child of the collection-root, get the text
+		-- before the last dot.
+		return fname_components[#collection_components + 1]:match("(.*)%.[^%.]*")
+	else
+		-- if the file is nested deeper, the name of the directory immediately
+		-- below the root is the filetype.
+		return fname_components[#collection_components + 1]
+	end
+end
+
 -- extend table like {lua = {path1}, c = {path1, path2}, ...}, new_paths has the same layout.
 local function extend_ft_paths(paths, new_paths)
 	for ft, path in pairs(new_paths) do
@@ -134,7 +161,7 @@ end
 local function get_load_paths_snipmate_like(opts, rtp_dirname, extension)
 	local collections_load_paths = {}
 
-	for _, path in ipairs(normalize_paths(opts.paths, rtp_dirname)) do
+	for _, path in ipairs(resolve_root_paths(opts.paths, rtp_dirname)) do
 		local collection_ft_paths = get_ft_paths(path, extension)
 
 		local load_paths = vim.deepcopy(collection_ft_paths)
@@ -184,7 +211,7 @@ local function edit_snippet_files(ft_files)
 	end)
 end
 
-local function add_opts(opts)
+local function make_add_opts(opts)
 	return {
 		override_priority = opts.override_priority,
 		default_priority = opts.default_priority,
@@ -193,19 +220,75 @@ end
 
 local function get_load_fts(bufnr)
 	local fts = session.config.load_ft_func(bufnr)
+	-- also add "all", loaded by all buffers.
+	table.insert(fts, "all")
 
-	return util.redirect_filetypes(fts)
+	return util.deduplicate(util.redirect_filetypes(fts))
+end
+
+local function add_file_snippets(ft, filename, snippets, autosnippets, add_opts)
+	snippet_collection.add_snippets({ [ft] = snippets },
+		vim.tbl_extend("keep", {
+			type = "snippets",
+			key = "__snippets__" .. ft .. "__" .. filename,
+		}, add_opts)
+	)
+	snippet_collection.add_snippets({ [ft] = autosnippets },
+		vim.tbl_extend("keep", {
+			type = "autosnippets",
+			key = "__autosnippets__" .. ft .. "__" .. filename,
+		}, add_opts)
+	)
+	log.info(
+		"Adding %s snippets and %s autosnippets from %s to ft `%s`",
+		#snippets,
+		#autosnippets,
+		filename,
+		ft
+	)
+end
+
+local function normalize_opts(opts)
+	opts = opts or {}
+
+	local paths = opts.paths
+	if type(paths) == "string" then
+		paths = vim.split(paths, ",")
+	end
+
+	local add_opts = make_add_opts(opts)
+	local include = opts.include
+	local exclude = opts.exclude
+	local lazy_paths = opts.lazy_paths or {}
+	if type(lazy_paths) == "string" then
+		lazy_paths = vim.split(lazy_paths, ",")
+	end
+
+	local fs_event_providers = vim.F.if_nil(opts.fs_event_providers, {autocmd = true, libuv = false})
+
+	return {
+		paths = paths,
+		lazy_paths = lazy_paths,
+		include = include,
+		exclude = exclude,
+		add_opts = add_opts,
+		fs_event_providers = fs_event_providers,
+	}
 end
 
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
-	normalize_paths = normalize_paths,
+	resolve_root_paths = resolve_root_paths,
+	resolve_lazy_root_paths = resolve_lazy_root_paths,
 	ft_filter = ft_filter,
 	get_ft_paths = get_ft_paths,
 	get_load_paths_snipmate_like = get_load_paths_snipmate_like,
 	extend_ft_paths = extend_ft_paths,
 	edit_snippet_files = edit_snippet_files,
-	add_opts = add_opts,
+	make_add_opts = make_add_opts,
+	collection_file_ft = collection_file_ft,
 	get_load_fts = get_load_fts,
+	add_file_snippets = add_file_snippets,
+	normalize_opts = normalize_opts,
 }
