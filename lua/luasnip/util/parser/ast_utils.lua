@@ -432,14 +432,14 @@ function M.parse_order(ast)
 		if node.dependents then
 			-- if the node has dependents, it has to be parsed before they are.
 			for _, dep in ipairs(node.dependents) do
-				g:add_edge(to_vert[node], to_vert[dep])
+				g:set_edge(to_vert[node], to_vert[dep])
 			end
 		end
 		if node.children then
 			-- if the node has children, they have to be parsed before it can
 			-- be parsed.
 			for _, child in ipairs(node.children) do
-				g:add_edge(to_vert[child], to_vert[node])
+				g:set_edge(to_vert[child], to_vert[node])
 			end
 		end
 	end)

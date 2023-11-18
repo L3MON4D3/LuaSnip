@@ -20,7 +20,7 @@ describe("luasnip.util.directed_graph:", function()
 					end
 					for _, edge in ipairs(edges) do
 						-- ] ] to not end string.
-						g:add_edge(verts[edge[1] ], verts[edge[2] ])
+						g:set_edge(verts[edge[1] ], verts[edge[2] ])
 					end
 
 					local sorting = g:topological_sort()
