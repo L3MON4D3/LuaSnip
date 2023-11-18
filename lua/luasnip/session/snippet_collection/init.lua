@@ -254,7 +254,6 @@ function M.add_snippets(snippets, opts)
 				-- set source if it was passed, and remove from snippet.
 				if snip._source then
 					source.set(snip, snip._source)
-					snip._source = nil
 				end
 			end
 		end
