@@ -40,4 +40,8 @@ M.jump_active = false
 
 M.config = nil
 
+function M.get_snip_env()
+	return M.config and M.config.snip_env
+end
+
 return M
