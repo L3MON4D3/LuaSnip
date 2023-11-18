@@ -119,7 +119,7 @@ end
 local function captures_iter(captures)
 	-- turn string/string[] into map: string -> bool, for querying whether some
 	-- string is present in captures.
-	local capture_map = tbl.normalize_search_table(captures)
+	local capture_map = tbl.list_to_set(captures)
 
 	-- receives the query and the iterator over all its matches.
 	return function(query, match_iter)

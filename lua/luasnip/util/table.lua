@@ -1,8 +1,23 @@
----Convert string or list of string to a table of booleans for fast lookup.
+---Convert set of values to a list of those values.
+---@generic T
+---@param tbl T|T[]|table<T, boolean>
+---@return table<T, boolean>
+local function set_to_list(tbl)
+	local ls = {}
+
+	for v, _ in pairs(tbl) do
+		table.insert(ls, v)
+	end
+
+	return ls
+end
+
+
+---Convert value or list of values to a table of booleans for fast lookup.
 ---@generic T
 ---@param values T|T[]|table<T, boolean>
 ---@return table<T, boolean>
-local function normalize_search_table(values)
+local function list_to_set(values)
 	if values == nil then
 		return {}
 	end
@@ -11,17 +26,15 @@ local function normalize_search_table(values)
 		return { [values] = true }
 	end
 
-	if vim.tbl_islist(values) then
-		local new_tbl = {}
-		for _, v in ipairs(values) do
-			new_tbl[v] = true
-		end
-		return new_tbl
+	local list = {}
+	for _, v in ipairs(values) do
+		list[v] = true
 	end
 
-	return values
+	return list
 end
 
 return {
-	normalize_search_table = normalize_search_table,
+	list_to_set = list_to_set,
+	set_to_list = set_to_list,
 }
