@@ -23,6 +23,8 @@ describe("loaders:", function()
 		helpers.clear()
 		ls_helpers.session_setup_luasnip({ no_snip_globals = true })
 
+		ls_helpers.scratch_prepare()
+
 		screen = Screen.new(50, 5)
 		screen:attach()
 		screen:set_default_attr_ids({
@@ -34,6 +36,8 @@ describe("loaders:", function()
 	end)
 
 	after_each(function()
+		ls_helpers.scratch_clear()
+
 		screen:detach()
 	end)
 
@@ -62,6 +66,10 @@ describe("loaders:", function()
 			-- edit snippet-file, and check for reload.
 			feed(edit_keys)
 
+			feed("<Esc>:w<Cr>")
+			exec_lua("vim.wait(10, function() end)")
+			feed("<C-O>ccall1")
+
 			exec_lua("ls.expand()")
 
 			-- undo changes to snippet-file before checking results.
@@ -69,7 +77,7 @@ describe("loaders:", function()
 
 			-- re-enter current placeholder
 			exec_lua("ls.jump(-1)")
-			exec_lua("ls.jump(1)")
+			exec_lua("ls.jump( 1)")
 
 			screen:expect({
 				grid = [[
@@ -379,27 +387,27 @@ describe("loaders:", function()
 		"snipmate-reload works",
 		ls_helpers.loaders["snipmate(rtp)"],
 		"/tests/data/snipmate-snippets/snippets/all.snippets",
-		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>2jwcereplaces"
 	)
 
 	reload_test(
 		"vscode-reload works",
 		ls_helpers.loaders["vscode(rtp)"],
 		"/tests/data/vscode-snippets/snippets/all.json",
-		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>4jwlcereplaces"
 	)
 	reload_test(
 		"vscode-standalone-reload works",
 		ls_helpers.loaders["vscode(standalone)"],
 		"/tests/data/vscode-standalone.code-snippets",
-		"<Esc>11jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>11jwlcereplaces"
 	)
 
 	reload_test(
 		"lua-reload works",
 		ls_helpers.loaders["lua(rtp)"],
 		"/tests/data/lua-snippets/luasnippets/all.lua",
-		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>jfecereplaces"
 	)
 
 	reload_test(
@@ -414,7 +422,7 @@ describe("loaders:", function()
 			)
 		end,
 		"/tests/data/snipmate-snippets/snippets/all.snippets",
-		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>2jwcereplaces"
 	)
 
 	reload_test(
@@ -429,7 +437,7 @@ describe("loaders:", function()
 			)
 		end,
 		"/tests/data/vscode-snippets/snippets/all.json",
-		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>4jwlcereplaces"
 	)
 
 	reload_test(
@@ -444,7 +452,7 @@ describe("loaders:", function()
 			)
 		end,
 		"/tests/data/lua-snippets/luasnippets/all.lua",
-		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>jfecereplaces"
 	)
 
 	reload_test(
@@ -459,7 +467,7 @@ describe("loaders:", function()
 			)
 		end,
 		"/tests/symlinked_data/snipmate-snippets/snippets/all.snippets",
-		"<Esc>2jwcereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>2jwcereplaces"
 	)
 
 	reload_test(
@@ -473,7 +481,7 @@ describe("loaders:", function()
 			)
 		end,
 		"/tests/symlinked_data/vscode-snippets/snippets/all.json",
-		"<Esc>4jwlcereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>4jwlcereplaces"
 	)
 
 	reload_test(
@@ -488,8 +496,21 @@ describe("loaders:", function()
 			)
 		end,
 		"/tests/symlinked_data/lua-snippets/luasnippets/all.lua",
-		"<Esc>jfecereplaces<Esc>:w<Cr><C-O>ccall1"
+		"<Esc>jfecereplaces"
 	)
+
+	---
+	--- Many of the following test will do weird things, like write more than
+	--- once, and wait quite often. The delays are added to allow the eventloop
+	--- (I guess) to catch up, and process all the autocommands or callbacks
+	--- dispatched by the writes.
+	--- Multiple writes are sometimes necessary because after the first write,
+	--- for some reason, a function called in BufWritePost does not read the
+	--- new file contents.
+	--- 
+	--- I've never encountered either of these issues in normal usage, so I'm
+	--- guessing that they are somehow caused by the testing-framework.
+	---
 
 	it("Can load files with `code-snippets`-extension.", function()
 		ls_helpers.loaders["vscode(rtp)"]()
@@ -555,5 +576,260 @@ describe("loaders:", function()
 			3^                                                 |
 			{2:-- INSERT --}                                      |]],
 		})
+	end)
+
+	it("lazy registration works for lua.", function()
+		exec_lua( ([[
+			require("luasnip.loaders.from_lua").load({lazy_paths="%s"})
+		]]):format(ls_helpers.scratchdir_path .. "/snippets") )
+
+		ls_helpers.scratch_edit("snippets/all.lua")
+
+		feed([[ireturn { ls.parser.parse_snippet("asdf", "qwer") }]])
+		screen:expect{grid=[[
+			return { ls.parser.parse_snippet("asdf", "qwer") }|
+			{0:^~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		feed("<Esc>:w<Cr>")
+
+		feed("oasdf")
+		screen:expect{grid=[[
+			return { ls.parser.parse_snippet("asdf", "qwer") }|
+			asdf^                                              |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		exec_lua("ls.expand()")
+
+		screen:expect{grid=[[
+			return { ls.parser.parse_snippet("asdf", "qwer") }|
+			qwer^                                              |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("lazy registration works for snipmate.", function()
+		exec_lua( ([[
+			require("luasnip.loaders.from_snipmate").load({lazy_paths="%s"})
+		]]):format(ls_helpers.scratchdir_path .. "/snippets") )
+
+		ls_helpers.scratch_edit("snippets/all.snippets")
+
+		feed([[isnippet asdf<Cr>    qwer]])
+		screen:expect{grid=[[
+			snippet asdf                                      |
+			    qwer^                                          |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		feed("<Esc>:w<Cr>")
+
+		feed("oasdf")
+		screen:expect{grid=[[
+			snippet asdf                                      |
+			    qwer                                          |
+			asdf^                                              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		exec_lua("ls.expand()")
+
+		screen:expect{grid=[[
+			snippet asdf                                      |
+			    qwer                                          |
+			qwer^                                              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("lazy registration works for vscode (packages).", function()
+		exec_lua( ([[
+			require("luasnip.loaders.from_vscode").load({lazy_paths="%s"})
+		]]):format(ls_helpers.scratchdir_path .. "/snippets") )
+
+		-- double as quick test for package.jsonc
+		ls_helpers.scratch_edit("snippets/package.jsonc")
+
+		feed([[i{ "name": "snippets", "contributes": { "snippets": [{"language": ["all"], "path": "./all.json"}] } }]])
+		feed("<Esc>:w<Cr>")
+		feed("<Esc>:w<Cr>")
+		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
+
+		screen:expect{grid=[[
+			{ "name": "snippets", "contributes": { "snippets":|
+			 [{"language": ["all"], "path": "./all.json"}] } ^}|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			<scratch/snippets/package.jsonc" 1L, 101B written |]]}
+
+		ls_helpers.scratch_edit("snippets/all.json")
+
+		feed([[i{"snip": {"prefix": "asdf", "body": ["qwer"]}}]])
+		feed("<Esc>:w<Cr>")
+		feed("<Esc>:w<Cr>")
+		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
+
+		screen:expect{grid=[[
+			{"snip": {"prefix": "asdf", "body": ["qwer"]}^}    |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			<tests/scratch/snippets/all.json" 1L, 47B written |]]}
+
+		feed("oasdf")
+		exec_lua("ls.expand()")
+
+		screen:expect{grid=[[
+			{"snip": {"prefix": "asdf", "body": ["qwer"]}}    |
+			qwer^                                              |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("lazy registration works for vscode (standalone .code-snippets).", function()
+		exec_lua( ([[
+			require("luasnip.loaders.from_vscode").load_standalone({path = "%s", lazy = true})
+		]]):format(ls_helpers.scratchdir_path .. "/vs/snips.code-snippets") )
+
+		ls_helpers.scratch_edit("vs/snips.code-snippets")
+
+		feed([[i{"snip": {"prefix": "asdf", "body": ["qwer"]}}]])
+		feed("<Esc>:w<Cr>")
+		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
+
+		screen:expect{grid=[[
+			{"snip": {"prefix": "asdf", "body": ["qwer"]}^}    |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			</scratch/vs/snips.code-snippets" 1L, 47B written |]]}
+
+		feed("oasdf")
+		exec_lua("ls.expand()")
+
+		screen:expect{grid=[[
+			{"snip": {"prefix": "asdf", "body": ["qwer"]}}    |
+			qwer^                                              |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("lua-loader refreshes snippets when dependency is written.", function()
+		ls_helpers.scratch_mkdir("snippets")
+
+		exec_lua( ([[
+			require("luasnip.loaders.from_lua").lazy_load({paths="%s"})
+		]]):format(ls_helpers.scratchdir_path .. "/snippets") )
+
+		-- this file will provide the body of the snippet.
+		ls_helpers.scratch_edit("util/a_string.lua")
+		feed([[ireturn "qwer"]])
+		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
+
+		ls_helpers.scratch_edit("snippets/all.lua")
+		-- extract into variable, so the path does no show up in screen-tests.
+		exec_lua(([[dependency_file = "%s"]]):format(ls_helpers.scratchdir_path .. "/util/a_string.lua"))
+		feed([[ireturn { ls.parser.parse_snippet("asdf", ls_tracked_dofile(dependency_file)) }]])
+
+		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
+
+		feed("oasdf")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			return { ls.parser.parse_snippet("asdf", ls_tracke|
+			d_dofile(dependency_file)) }                      |
+			qwer^                                              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		ls_helpers.scratch_edit("util/a_string.lua")
+		feed([[<Esc>$bcezxcv]])
+		feed("<Esc>:w<Cr>")
+		feed("oasdf")
+
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			return "zxcv"                                     |
+			zxcv^                                              |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
+	it("snipmate-loader handles transitive extends, and updates it when changed.", function()
+		-- setup filetypes A B C D, where A extends B, and C extends D, but B (initially) does not extend C.
+		-- If we add this extends, snippets from D should be available in A.
+		-- I think if this works, all the "simpler" cases should also work fine. Add more tests if they don't.
+
+		ls_helpers.scratch_mkdir("snippets")
+		exec_lua( ([[
+			require("luasnip.loaders.from_snipmate").lazy_load({paths="%s"})
+		]]):format(ls_helpers.scratchdir_path .. "/snippets") )
+
+		ls_helpers.scratch_edit("snippets/A.snippets")
+		feed([[iextends B<Esc>:w<Cr>]])
+		ls_helpers.scratch_edit("snippets/C.snippets")
+		feed([[iextends D<Esc>:w<Cr>]])
+		ls_helpers.scratch_edit("snippets/D.snippets")
+		feed([[isnippet DDDD<Cr>    dddd<Esc>:w<Cr>]])
+
+		ls_helpers.scratch_edit("snippets/B.snippets")
+		feed([[iextends C<Esc>:w<Cr>]])
+
+		exec_lua("vim.wait(100, function() end)")
+
+		exec("set ft=A")
+		feed("oDDDD")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			extends C                                         |
+			dddd^                                              |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+
+		-- make sure we know that A receives snippets from 4 files,
+		-- A/B/C/D.snippets.
+		-- This data is used in the edit_snippet_files-dialog, and this check is
+		-- to somewhat ensure it behaves consistently (can't test it directly,
+		-- unfortunately, I guess since the test-instance waits for input before
+		-- proceeding, but as soon as we give it, we can't check the options :( )
+		-- Anyway, this works too, for now.
+		assert.are.same(4, exec_lua([[return #require("luasnip.util.table").set_to_list(require("luasnip.loaders.data").snipmate_ft_paths["A"]) ]]))
+	end)
+
+	it("Clearing before a lazy collection is loaded will prevent it from loading.", function()
+		exec_lua( ([[
+			require("luasnip.loaders.from_snipmate").load({lazy_paths="%s"})
+		]]):format(ls_helpers.scratchdir_path .. "/snippets") )
+		exec_lua("ls.cleanup()")
+
+		ls_helpers.scratch_edit("snippets/all.snippets")
+		feed([[isnippet DDDD<Cr>    dddd<Esc>:w<Cr>]])
+		-- make sure snippets are not loaded because of cleanup, and not
+		-- because we don't give the test-instance time to load them :D
+		exec_lua("vim.wait(100, function() end)")
+
+		feed("oDDDD")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			snippet DDDD                                      |
+			    dddd                                          |
+			DDDD^                                              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
 	end)
 end)

@@ -1,0 +1,8 @@
+--- @class LuaSnip.Loaders.LoadOpts
+--- @field paths string[]?|string? Either a list of paths, or ","-delimited paths. If nil, searches rtp for snippet-collections.
+--- @field lazy_paths string[]?|string? Like paths, but these will be watched, and loaded when creation is detected.
+--- @field include string[]? If set, all filetypes not in include will be excluded from loading.
+--- @field exclude string[]? Exclude these filetypes, even if they are set in include.
+--- @field override_priority number? load all snippets with this priority.
+--- @field default_priority number? snippet-priority, unless the snippet sets its own priority.
+--- @field fs_event_providers table<LuaSnip.FSWatcher.FSEventProviders, boolean>? How to monitor the filesystem
