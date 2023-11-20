@@ -264,10 +264,10 @@ c = {
 			end)
 		end
 		-- Remove buffers' nodes on deletion+wipeout.
-		ls_autocmd({ "BufDelete", "BufWipeout" }, function()
+		ls_autocmd({ "BufDelete", "BufWipeout" }, function(event)
 			local current_nodes = require("luasnip").session.current_nodes
 			if current_nodes then
-				current_nodes[tonumber(vim.fn.expand("<abuf>"))] = nil
+				current_nodes[event.buf] = nil
 			end
 		end)
 		if session.config.enable_autosnippets then
