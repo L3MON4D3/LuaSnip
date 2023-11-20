@@ -146,8 +146,8 @@ end
 
 vim.api.nvim_create_autocmd("BufWritePost", {
 	group = vim.api.nvim_create_augroup("luasnip_watch_reload", {}),
-	callback = function()
-		require("luasnip.loaders").reload_file(vim.fn.expand("<afile>"))
+	callback = function(event)
+		require("luasnip.loaders").reload_file(event.file)
 	end,
 })
 function M.reload_file(filename)
