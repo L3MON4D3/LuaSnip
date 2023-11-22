@@ -1701,6 +1701,7 @@ Contains some utility functions that can be passed to the `ft_func` or
 
   ```lua
   ls.setup({
+  	ft_func = require("luasnip.extras.filetype_functions").from_pos_or_filetype,
   	load_ft_func =
   		-- Also load both lua and json when a markdown-file is opened,
   		-- javascript for html.

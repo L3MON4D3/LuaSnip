@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 November 20
+*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 November 22
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1611,6 +1611,7 @@ Contains some utility functions that can be passed to the `ft_func` or
     passed to `load_ft_func` and takes care of extending the filetypes properly.
     >lua
         ls.setup({
+          ft_func = require("luasnip.extras.filetype_functions").from_pos_or_filetype,
           load_ft_func =
               -- Also load both lua and json when a markdown-file is opened,
               -- javascript for html.
