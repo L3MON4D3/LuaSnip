@@ -382,11 +382,10 @@ S.choice = P.map(
 		S.int,
 		S.pipe,
 		P.many(
-			P.map(P.seq(S.text({ ",", "|" }), P.opt(S.comma)), function(values)
-				return values[1].esc
+			P.map(P.seq(P.opt(S.text({ ",", "|" })), P.any(S.comma,S.pipe)), function(values)
+				return values[1] and values[1].esc or ""
 			end)
 		),
-		S.pipe,
 		S.close
 	),
 	function(values)
