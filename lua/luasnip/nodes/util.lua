@@ -456,7 +456,7 @@ local function first_common_snippet_ancestor_path(a, b)
 end
 
 -- removes focus from `from` and upwards up to the first common ancestor
--- (node!) of `from` and `to`, and then focuses nodes between that f.c.a. and
+-- (node!) of `from` and `to`, and then focuses nodes between that ancestor and
 -- `to`.
 -- Requires that `from` is currently entered/focused, and that no snippet
 -- between `to` and its root is invalid.
@@ -486,7 +486,7 @@ local function refocus(from, to)
 	table.insert(to_snip_path, 1, to)
 
 	-- determine how far to leave: if there is a common snippet, only up to the
-	-- first (from from/to) common node, otherwise leave the one snippet, and
+	-- first common node of from and to, otherwise leave the one snippet, and
 	-- enter the other completely.
 	local final_leave_node, first_enter_node, common_node
 	if first_common_snippet then
@@ -596,6 +596,17 @@ local function refocus(from, to)
 			to.parent.snippet:input_leave(true)
 		end
 		enter_nodes_between(to.parent.snippet, to, true)
+	end
+
+	-- it may be that we only leave nodes in this process (happens if to is a
+	-- parent of from).
+	-- If that is the case, we will not explicitly focus on to, and it may be
+	-- that focus is even lost if it was focused previously (leave may trigger
+	-- update, update may change focus)
+	-- To prevent this, just call focus here, which is pretty close to a noop
+	-- if to is already focused.
+	if to then
+		to:focus()
 	end
 end
 

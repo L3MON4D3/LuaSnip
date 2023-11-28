@@ -1899,4 +1899,71 @@ describe("session", function()
 			{2:-- SELECT --}                                      |]],
 		})
 	end)
+
+	it("Refocus works correctly when functionNode moves focus during refocus, and `to` is not `input_enter`ed.", function()
+		exec_lua([[
+			ls.setup({
+				keep_roots = true,
+				link_roots = true,
+				link_children = true
+			})
+		]])
+		screen:detach()
+		screen = Screen.new(50, 4)
+		screen:attach()
+		screen:set_default_attr_ids({
+			[0] = { bold = true, foreground = Screen.colors.Blue },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
+			[3] = { background = Screen.colors.LightGray },
+			[4] = {
+				background = Screen.colors.Red1,
+				foreground = Screen.colors.White,
+			},
+		})
+
+		exec_lua[[
+			ls.add_snippets("all", {
+				s("tricky", {
+					-- add some text before snippet to make sure a snippet
+					-- expanded in i(1) will expand inside the snippet, not
+					-- before it.
+					t"|", i(1, "1234"), f(function()
+						return "asdf"
+					-- depend on first insertNode, so that this fNode is
+					-- updated when i(1) is changed.
+					end, {1})
+				}),
+				s("dummy", { t"qwer" })
+			})
+		]]
+
+		feed("itricky")
+		expand()
+		feed("dummy")
+		expand()
+		feed("<Space>dummy")
+		expand()
+		screen:expect{grid=[[
+			|qwer qwer^asdf                                    |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		jump(1)
+		jump(-1)
+		-- Bad:
+		-- screen:expect{grid=[[
+		--   |^q{3:wer }qwerasdf                                    |
+		--   {0:~                                                 }|
+		--   {0:~                                                 }|
+		--   {2:-- SELECT --}                                      |
+		-- ]]}
+
+		-- Good:
+		screen:expect{grid=[[
+			|^q{3:wer qwer}asdf                                    |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
 end)
