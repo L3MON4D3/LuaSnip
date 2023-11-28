@@ -1900,29 +1900,31 @@ describe("session", function()
 		})
 	end)
 
-	it("Refocus works correctly when functionNode moves focus during refocus, and `to` is not `input_enter`ed.", function()
-		exec_lua([[
+	it(
+		"Refocus works correctly when functionNode moves focus during refocus, and `to` is not `input_enter`ed.",
+		function()
+			exec_lua([[
 			ls.setup({
 				keep_roots = true,
 				link_roots = true,
 				link_children = true
 			})
 		]])
-		screen:detach()
-		screen = Screen.new(50, 4)
-		screen:attach()
-		screen:set_default_attr_ids({
-			[0] = { bold = true, foreground = Screen.colors.Blue },
-			[1] = { bold = true, foreground = Screen.colors.Brown },
-			[2] = { bold = true },
-			[3] = { background = Screen.colors.LightGray },
-			[4] = {
-				background = Screen.colors.Red1,
-				foreground = Screen.colors.White,
-			},
-		})
+			screen:detach()
+			screen = Screen.new(50, 4)
+			screen:attach()
+			screen:set_default_attr_ids({
+				[0] = { bold = true, foreground = Screen.colors.Blue },
+				[1] = { bold = true, foreground = Screen.colors.Brown },
+				[2] = { bold = true },
+				[3] = { background = Screen.colors.LightGray },
+				[4] = {
+					background = Screen.colors.Red1,
+					foreground = Screen.colors.White,
+				},
+			})
 
-		exec_lua[[
+			exec_lua([[
 			ls.add_snippets("all", {
 				s("tricky", {
 					-- add some text before snippet to make sure a snippet
@@ -1936,34 +1938,39 @@ describe("session", function()
 				}),
 				s("dummy", { t"qwer" })
 			})
-		]]
+		]])
 
-		feed("itricky")
-		expand()
-		feed("dummy")
-		expand()
-		feed("<Space>dummy")
-		expand()
-		screen:expect{grid=[[
+			feed("itricky")
+			expand()
+			feed("dummy")
+			expand()
+			feed("<Space>dummy")
+			expand()
+			screen:expect({
+				grid = [[
 			|qwer qwer^asdf                                    |
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-		jump(1)
-		jump(-1)
-		-- Bad:
-		-- screen:expect{grid=[[
-		--   |^q{3:wer }qwerasdf                                    |
-		--   {0:~                                                 }|
-		--   {0:~                                                 }|
-		--   {2:-- SELECT --}                                      |
-		-- ]]}
+			{2:-- INSERT --}                                      |]],
+			})
+			jump(1)
+			jump(-1)
+			-- Bad:
+			-- screen:expect{grid=[[
+			--   |^q{3:wer }qwerasdf                                    |
+			--   {0:~                                                 }|
+			--   {0:~                                                 }|
+			--   {2:-- SELECT --}                                      |
+			-- ]]}
 
-		-- Good:
-		screen:expect{grid=[[
+			-- Good:
+			screen:expect({
+				grid = [[
 			|^q{3:wer qwer}asdf                                    |
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]]}
-	end)
+			{2:-- SELECT --}                                      |]],
+			})
+		end
+	)
 end)
