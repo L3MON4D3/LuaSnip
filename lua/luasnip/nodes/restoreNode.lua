@@ -29,6 +29,11 @@ end
 extend_decorator.register(R, { arg_indx = 4 })
 
 function RestoreNode:exit()
+	if not self.visible then
+		-- already exited.
+		return
+	end
+
 	self.visible = false
 	self.mark:clear()
 	-- snip should exist if exit is called.
