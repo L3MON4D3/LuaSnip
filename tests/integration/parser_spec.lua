@@ -205,8 +205,7 @@ describe("Parser", function()
 		})
 	end)
 
-	it("can parse transformed variables.", function()
-		ls_helpers.setup_jsregexp()
+	ls_helpers.jsregexp_it(it, "can parse transformed variables", function()
 		ls_helpers.session_setup_luasnip()
 		local snip = '"a${TM_LINE_INDEX/(.*)/asdf $1 asdf/g}a"'
 
@@ -244,8 +243,7 @@ describe("Parser", function()
 		})
 	end)
 
-	it("can parse transformed tabstop.", function()
-		ls_helpers.setup_jsregexp()
+	ls_helpers.jsregexp_it(it, "can parse transformed tabstop.", function()
 		ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
 
@@ -297,8 +295,7 @@ describe("Parser", function()
 				error("unexpected key " .. modifier .. " in expected_map")
 			end
 
-			it("applies " .. modifier .. " correctly", function()
-				ls_helpers.setup_jsregexp()
+			ls_helpers.jsregexp_it(it, "applies " .. modifier .. " correctly", function()
 				ls_helpers.session_setup_luasnip()
 				local snip = ('"${1:%s} ${1/(.*)/${1:/%s}/}"'):format(
 					text,
@@ -406,12 +403,7 @@ describe("Parser", function()
 			{2:-- SELECT --}                                      |]],
 		})
 		exec_lua("ls.jump(1)")
-		screen:expect({
-			grid = [[
-			^q{3:wer} asdf                                         |
-			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]],
-		})
+		screen:expect({ unchanged = true })
 	end)
 
 	it("turns the correct nodes into insert/functionNode", function()
@@ -450,8 +442,7 @@ describe("Parser", function()
 		})
 	end)
 
-	it("can modify groups in transform.", function()
-		ls_helpers.setup_jsregexp()
+	ls_helpers.jsregexp_it(it, "can modify groups in transform.", function()
 		ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf ${1:/upcase} asdf/} a"'
 
@@ -474,8 +465,7 @@ describe("Parser", function()
 		})
 	end)
 
-	it("handle multiple captures in transform.", function()
-		ls_helpers.setup_jsregexp()
+	ls_helpers.jsregexp_it(it, "handle multiple captures in transform.", function()
 		ls_helpers.session_setup_luasnip()
 		local snip = '"${1:bbb} a ${1/(.)b(.)/${1:/upcase} $2/g} a"'
 
@@ -703,8 +693,7 @@ describe("Parser", function()
 		})
 	end)
 
-	it("Applies transform to empty variable.", function()
-		ls_helpers.setup_jsregexp()
+	ls_helpers.jsregexp_it(it, "Applies transform to empty variable.", function()
 		ls_helpers.session_setup_luasnip()
 		local snip = "${TM_SELECTED_TEXT/(.*)/ asd /}"
 
@@ -718,8 +707,7 @@ describe("Parser", function()
 		})
 	end)
 
-	it("correctly transforms multiline-values.", function()
-		ls_helpers.setup_jsregexp()
+	ls_helpers.jsregexp_it(it, "correctly transforms multiline-values.", function()
 		ls_helpers.session_setup_luasnip()
 		local snip = "${TM_SELECTED_TEXT/([^]*)/a ${1} a/}"
 
@@ -737,10 +725,9 @@ describe("Parser", function()
 		})
 	end)
 
-	it(
+	ls_helpers.jsregexp_it(it,
 		"correctly transforms if the match does not include the first character.",
 		function()
-			ls_helpers.setup_jsregexp()
 			ls_helpers.session_setup_luasnip()
 			local snip = "${1:asdf.asdf} ${1/[\\.]/-/g}"
 
@@ -872,8 +859,7 @@ describe("Parser", function()
 		})
 	end)
 
-	it("Correctly parses unescaped characters.", function()
-		ls_helpers.setup_jsregexp()
+	ls_helpers.jsregexp_it(it, "Correctly parses unescaped characters.", function()
 		ls_helpers.session_setup_luasnip()
 
 		local snip = "${} asdf"

@@ -5,11 +5,53 @@ local assert = require("luassert")
 
 local M = {}
 
-function M.setup_jsregexp()
-	-- append default-path.
-	exec_lua(
-		('package.cpath = "%s"'):format(os.getenv("JSREGEXP_PATH") .. "/?.so;;")
-	)
+function M.jsregexp_it(it, name, fn)
+	for _, version in ipairs({"005", "006", "luasnip"}) do
+		it(name .. " (jsregexp-" .. version .. ")", function()
+			exec_lua([[
+				local version, jsregexp_005_path, jsregexp_path = ...
+				if version ~= "luasnip" then
+					if version == "005" then
+						package.preload["jsregexp"] = package.loadlib(jsregexp_005_path .. "/jsregexp.so", "luaopen_jsregexp")
+
+						if package.preload["jsregexp"]().compile_safe then
+							error("wrong jsregexp-version loaded")
+						end
+					else
+						package.preload["jsregexp.core"] = package.loadlib(jsregexp_path .. "/jsregexp.so", "luaopen_jsregexp_core")
+						package.path = jsregexp_path .. "/?.lua;;"
+						-- populate package now, before jsregexp-core-preload is overwritten in util/jsregexp.lua.
+						-- also load it to check the version.
+						local jsregexp = require("jsregexp")
+						-- is actually 0.0.6.
+						if not jsregexp.compile_safe then
+							error("wrong jsregexp-version loaded")
+						end
+					end
+
+					-- don't accidentially load luasnip-jsregexp with unknown version.
+					local old_require = require
+					require = function(modulename)
+						if modulename == "luasnip-jsregexp" then
+							error("Disabled by `prevent_jsregexp`")
+						end
+						return old_require(modulename)
+					end
+				else
+					-- don't accidentially load regular jsregexp.
+					local old_require = require
+					require = function(modulename)
+						if modulename == "jsregexp" then
+							error("Disabled by `prevent_jsregexp`")
+						end
+						return old_require(modulename)
+					end
+				end
+			]], version, os.getenv("JSREGEXP005_ABS_PATH"), os.getenv("JSREGEXP_ABS_PATH"))
+
+			fn()
+		end)
+	end
 end
 
 function M.prevent_jsregexp()

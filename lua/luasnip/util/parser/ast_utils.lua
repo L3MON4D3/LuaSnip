@@ -3,7 +3,7 @@ local types = Ast.node_type
 local util = require("luasnip.util.util")
 local Str = require("luasnip.util.str")
 local log = require("luasnip.util.log").new("parser")
-local jsregexp = require("luasnip.util.util").jsregexp
+local jsregexp_compile_safe = require("luasnip.util.jsregexp")
 
 local directed_graph = require("luasnip.util.directed_graph")
 
@@ -303,40 +303,46 @@ local function apply_transform_format(nodes, captures)
 end
 
 function M.apply_transform(transform)
-	if jsregexp then
-		local reg_compiled =
-			jsregexp.compile(transform.pattern, transform.option)
-		-- can be passed to functionNode!
-		return function(lines)
-			-- luasnip expects+passes lines as list, but regex needs one string.
-			lines = table.concat(lines, "\n")
-			local matches = reg_compiled(lines)
+	if jsregexp_compile_safe then
+		local reg_compiled, err =
+			jsregexp_compile_safe(transform.pattern, transform.option)
 
-			local transformed = ""
-			-- index one past the end of previous match.
-			-- This is used to append unmatched characters to `transformed`, so
-			-- it's initialized such that the first append is from 1.
-			local prev_match_end = 0
-			for _, match in ipairs(matches) do
-				-- begin_ind and end_ind are inclusive.
-				transformed = transformed
-					.. lines:sub(prev_match_end + 1, match.begin_ind - 1)
-					.. apply_transform_format(transform.format, match.groups)
+		if reg_compiled then
+			-- can be passed to functionNode!
+			return function(lines)
+				-- luasnip expects+passes lines as list, but regex needs one string.
+				lines = table.concat(lines, "\n")
+				local matches = reg_compiled(lines)
 
-				-- end-inclusive
-				prev_match_end = match.end_ind
+				local transformed = ""
+				-- index one past the end of previous match.
+				-- This is used to append unmatched characters to `transformed`, so
+				-- it's initialized such that the first append is from 1.
+				local prev_match_end = 0
+				for _, match in ipairs(matches) do
+					-- begin_ind and end_ind are inclusive.
+					transformed = transformed
+						.. lines:sub(prev_match_end + 1, match.begin_ind - 1)
+						.. apply_transform_format(transform.format, match.groups)
+
+					-- end-inclusive
+					prev_match_end = match.end_ind
+				end
+				transformed = transformed .. lines:sub(prev_match_end + 1, #lines)
+
+				return vim.split(transformed, "\n")
 			end
-			transformed = transformed .. lines:sub(prev_match_end + 1, #lines)
-
-			return vim.split(transformed, "\n")
+		else
+			log.error("Failed parsing regex `%s` with options `%s`: %s", transform.pattern, transform.option, err)
+			-- fall through to returning identity.
 		end
-	else
-		-- without jsregexp, we cannot properly transform whatever is supposed to
-		-- be transformed here.
-		-- Just return a function that returns the to-be-transformed string
-		-- unmodified.
-		return util.id
 	end
+
+	-- without jsregexp, or without a valid regex, we cannot properly transform
+	-- whatever is supposed to be transformed here.
+	-- Just return a function that returns the to-be-transformed string
+	-- unmodified.
+	return util.id
 end
 
 ---Variables need the text which is in front of them to determine whether they
