@@ -1,4 +1,4 @@
-local jsregexp = require("luasnip.util.util").jsregexp
+local jsregexp_compile_safe = require("luasnip.util.jsregexp")
 
 -- these functions get the line up to the cursor, the trigger, and then
 -- determine whether the trigger matches the current line.
@@ -42,9 +42,9 @@ local function match_pattern(line_to_cursor, trigger)
 end
 
 local ecma_engine
-if jsregexp then
+if jsregexp_compile_safe then
 	ecma_engine = function(trig)
-		local trig_compiled, err_maybe = jsregexp.compile(trig .. "$", "")
+		local trig_compiled, err_maybe = jsregexp_compile_safe(trig .. "$", "")
 		if not trig_compiled then
 			error(("Error while compiling regex: %s"):format(err_maybe))
 		end

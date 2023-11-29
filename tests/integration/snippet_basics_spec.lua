@@ -8,7 +8,6 @@ describe("snippets_basic", function()
 
 	before_each(function()
 		helpers.clear()
-		ls_helpers.setup_jsregexp()
 		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 3)

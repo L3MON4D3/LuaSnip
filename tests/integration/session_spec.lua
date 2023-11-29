@@ -20,7 +20,6 @@ describe("session", function()
 
 	before_each(function()
 		helpers.clear()
-		ls_helpers.setup_jsregexp()
 		ls_helpers.session_setup_luasnip({ hl_choiceNode = true })
 
 		-- add a rather complicated snippet.

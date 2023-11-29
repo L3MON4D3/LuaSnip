@@ -40,32 +40,42 @@ ifeq ($(LUASNIP_DETECTED_OS),Darwin)
 	# remove -bundle, should be equivalent to the -shared hardcoded by jsregexp.
 	LUA_LDLIBS=-undefined dynamic_lookup -all_load
 endif
+
 JSREGEXP_PATH=deps/jsregexp
+JSREGEXP005_PATH=deps/jsregexp005
 jsregexp:
 	git submodule init
 	git submodule update
 	make "INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/" LDLIBS="${LUA_LDLIBS}" -C ${JSREGEXP_PATH}
+	make "INCLUDE_DIR=-I$(shell pwd)/deps/lua51_include/" LDLIBS="${LUA_LDLIBS}" -C ${JSREGEXP005_PATH}
 
 install_jsregexp: jsregexp
-	# access via require("luasnip-jsregexp")
-	# The hyphen must be used here, otherwise the luaopen_*-call will fail.
-	# See the package.loaders-section [here](https://www.lua.org/manual/5.1/manual.html#pdf-require)
-	cp "$(shell pwd)/${JSREGEXP_PATH}/jsregexp.so" "$(shell pwd)/lua/luasnip-jsregexp.so"
+	# remove old binary.
+	rm "$(shell pwd)/lua/luasnip-jsregexp.so" || true
+	# there is some additional trickery to make this work with jsregexp-0.0.6 in
+	# util/jsregexp.lua.
+	cp "$(shell pwd)/${JSREGEXP_PATH}/jsregexp.lua" "$(shell pwd)/lua/luasnip-jsregexp.lua"
+	# just move out of jsregexp-directory, so it is not accidentially deleted.
+	cp "$(shell pwd)/${JSREGEXP_PATH}/jsregexp.so" "$(shell pwd)/deps/luasnip-jsregexp.so"
 
 uninstall_jsregexp:
+	# also remove binaries of older version.
 	rm "$(shell pwd)/lua/luasnip-jsregexp.so"
+	rm "$(shell pwd)/lua/deps/luasnip-jsregexp.so"
+	rm "$(shell pwd)/lua/luasnip-jsregexp.lua"
 
 TEST_07?=true
 TEST_09?=true
 TEST_MASTER?=true
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
-test: nvim jsregexp
+test: nvim install_jsregexp
 	# unset PATH and CPATH to prevent system-env leaking into the neovim-build,
 	# add our helper-functions to lpath.
 	# exit as soon as an error occurs.
 	unset LUA_PATH LUA_CPATH; \
 	export LUASNIP_SOURCE=$(shell pwd); \
-	export JSREGEXP_PATH=$(shell pwd)/${JSREGEXP_PATH}; \
+	export JSREGEXP_ABS_PATH=$(shell pwd)/${JSREGEXP_PATH}; \
+	export JSREGEXP005_ABS_PATH=$(shell pwd)/${JSREGEXP005_PATH}; \
 	export TEST_FILE=$(realpath ${TEST_FILE}); \
 	export BUSTED_ARGS=--lpath=$(shell pwd)/tests/?.lua; \
 	set -e; \
