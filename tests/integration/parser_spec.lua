@@ -295,19 +295,23 @@ describe("Parser", function()
 				error("unexpected key " .. modifier .. " in expected_map")
 			end
 
-			ls_helpers.jsregexp_it(it, "applies " .. modifier .. " correctly", function()
-				ls_helpers.session_setup_luasnip()
-				local snip = ('"${1:%s} ${1/(.*)/${1:/%s}/}"'):format(
-					text,
-					modifier
-				)
+			ls_helpers.jsregexp_it(
+				it,
+				"applies " .. modifier .. " correctly",
+				function()
+					ls_helpers.session_setup_luasnip()
+					local snip = ('"${1:%s} ${1/(.*)/${1:/%s}/}"'):format(
+						text,
+						modifier
+					)
 
-				-- should be sufficient to test this.
-				ls_helpers.lsp_static_test(
-					snip,
-					{ "test text Text " .. modified_expected }
-				)
-			end)
+					-- should be sufficient to test this.
+					ls_helpers.lsp_static_test(
+						snip,
+						{ "test text Text " .. modified_expected }
+					)
+				end
+			)
 		end
 	end
 
@@ -465,28 +469,32 @@ describe("Parser", function()
 		})
 	end)
 
-	ls_helpers.jsregexp_it(it, "handle multiple captures in transform.", function()
-		ls_helpers.session_setup_luasnip()
-		local snip = '"${1:bbb} a ${1/(.)b(.)/${1:/upcase} $2/g} a"'
+	ls_helpers.jsregexp_it(
+		it,
+		"handle multiple captures in transform.",
+		function()
+			ls_helpers.session_setup_luasnip()
+			local snip = '"${1:bbb} a ${1/(.)b(.)/${1:/upcase} $2/g} a"'
 
-		ls_helpers.lsp_static_test(snip, { "bbb a B b a" })
+			ls_helpers.lsp_static_test(snip, { "bbb a B b a" })
 
-		exec_lua("ls.lsp_expand(" .. snip .. ")")
-		screen:expect({
-			grid = [[
+			exec_lua("ls.lsp_expand(" .. snip .. ")")
+			screen:expect({
+				grid = [[
 			^b{3:bb} a B b a                                       |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
-		})
-		feed("bbbbbb")
-		exec_lua("ls.jump(1)")
-		screen:expect({
-			grid = [[
+			})
+			feed("bbbbbb")
+			exec_lua("ls.jump(1)")
+			screen:expect({
+				grid = [[
 			bbbbbb a B bB b a^                                 |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-	end)
+			})
+		end
+	)
 
 	it("can parse lazy variables.", function()
 		ls_helpers.session_setup_luasnip()
@@ -693,39 +701,48 @@ describe("Parser", function()
 		})
 	end)
 
-	ls_helpers.jsregexp_it(it, "Applies transform to empty variable.", function()
-		ls_helpers.session_setup_luasnip()
-		local snip = "${TM_SELECTED_TEXT/(.*)/ asd /}"
+	ls_helpers.jsregexp_it(
+		it,
+		"Applies transform to empty variable.",
+		function()
+			ls_helpers.session_setup_luasnip()
+			local snip = "${TM_SELECTED_TEXT/(.*)/ asd /}"
 
-		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+			exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
-		screen:expect({
-			grid = [[
+			screen:expect({
+				grid = [[
 			 asd ^                                             |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-	end)
+			})
+		end
+	)
 
-	ls_helpers.jsregexp_it(it, "correctly transforms multiline-values.", function()
-		ls_helpers.session_setup_luasnip()
-		local snip = "${TM_SELECTED_TEXT/([^]*)/a ${1} a/}"
+	ls_helpers.jsregexp_it(
+		it,
+		"correctly transforms multiline-values.",
+		function()
+			ls_helpers.session_setup_luasnip()
+			local snip = "${TM_SELECTED_TEXT/([^]*)/a ${1} a/}"
 
-		-- expand snippet with selected multiline-text.
-		feed("iasdf<Cr>asdf<Esc>Vk<Tab>")
-		-- wait a bit..
-		exec('call wait(200, "0")')
-		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+			-- expand snippet with selected multiline-text.
+			feed("iasdf<Cr>asdf<Esc>Vk<Tab>")
+			-- wait a bit..
+			exec('call wait(200, "0")')
+			exec_lua("ls.lsp_expand([[" .. snip .. "]])")
 
-		screen:expect({
-			grid = [[
+			screen:expect({
+				grid = [[
 			a asdf                                            |
 			asdf a^                                            |
 			{2:-- INSERT --}                                      |]],
-		})
-	end)
+			})
+		end
+	)
 
-	ls_helpers.jsregexp_it(it,
+	ls_helpers.jsregexp_it(
+		it,
 		"correctly transforms if the match does not include the first character.",
 		function()
 			ls_helpers.session_setup_luasnip()
@@ -859,40 +876,44 @@ describe("Parser", function()
 		})
 	end)
 
-	ls_helpers.jsregexp_it(it, "Correctly parses unescaped characters.", function()
-		ls_helpers.session_setup_luasnip()
+	ls_helpers.jsregexp_it(
+		it,
+		"Correctly parses unescaped characters.",
+		function()
+			ls_helpers.session_setup_luasnip()
 
-		local snip = "${} asdf"
+			local snip = "${} asdf"
 
-		-- indent, insert text, SELECT.
-		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect({
-			grid = [[
+			-- indent, insert text, SELECT.
+			exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+			screen:expect({
+				grid = [[
 			${} asdf^                                          |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
+			})
 
-		feed("<Esc>cc")
-		snip = "${1: asdf ${\\}}"
-		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect({
-			grid = [[
+			feed("<Esc>cc")
+			snip = "${1: asdf ${\\}}"
+			exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+			screen:expect({
+				grid = [[
 			^ {3:asdf ${}}                                         |
 			{0:~                                                 }|
 			{2:-- SELECT --}                                      |]],
-		})
+			})
 
-		feed("<Esc>cc")
-		snip = "${TM_LINE_NUMBER/(.*)/ ${} aaaa/}"
-		exec_lua("ls.lsp_expand([[" .. snip .. "]])")
-		screen:expect({
-			grid = [[
+			feed("<Esc>cc")
+			snip = "${TM_LINE_NUMBER/(.*)/ ${} aaaa/}"
+			exec_lua("ls.lsp_expand([[" .. snip .. "]])")
+			screen:expect({
+				grid = [[
 			 ${} aaaa^                                         |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-	end)
+			})
+		end
+	)
 
 	it("correctly parses escaped characters.", function()
 		ls_helpers.session_setup_luasnip()

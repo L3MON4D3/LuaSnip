@@ -323,17 +323,26 @@ function M.apply_transform(transform)
 					-- begin_ind and end_ind are inclusive.
 					transformed = transformed
 						.. lines:sub(prev_match_end + 1, match.begin_ind - 1)
-						.. apply_transform_format(transform.format, match.groups)
+						.. apply_transform_format(
+							transform.format,
+							match.groups
+						)
 
 					-- end-inclusive
 					prev_match_end = match.end_ind
 				end
-				transformed = transformed .. lines:sub(prev_match_end + 1, #lines)
+				transformed = transformed
+					.. lines:sub(prev_match_end + 1, #lines)
 
 				return vim.split(transformed, "\n")
 			end
 		else
-			log.error("Failed parsing regex `%s` with options `%s`: %s", transform.pattern, transform.option, err)
+			log.error(
+				"Failed parsing regex `%s` with options `%s`: %s",
+				transform.pattern,
+				transform.option,
+				err
+			)
 			-- fall through to returning identity.
 		end
 	end

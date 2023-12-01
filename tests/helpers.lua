@@ -6,9 +6,10 @@ local assert = require("luassert")
 local M = {}
 
 function M.jsregexp_it(it, name, fn)
-	for _, version in ipairs({"005", "006", "luasnip"}) do
+	for _, version in ipairs({ "005", "006", "luasnip" }) do
 		it(name .. " (jsregexp-" .. version .. ")", function()
-			exec_lua([[
+			exec_lua(
+				[[
 				local version, jsregexp_005_path, jsregexp_path = ...
 				if version ~= "luasnip" then
 					if version == "005" then
@@ -47,7 +48,11 @@ function M.jsregexp_it(it, name, fn)
 						return old_require(modulename)
 					end
 				end
-			]], version, os.getenv("JSREGEXP005_ABS_PATH"), os.getenv("JSREGEXP_ABS_PATH"))
+			]],
+				version,
+				os.getenv("JSREGEXP005_ABS_PATH"),
+				os.getenv("JSREGEXP_ABS_PATH")
+			)
 
 			fn()
 		end)

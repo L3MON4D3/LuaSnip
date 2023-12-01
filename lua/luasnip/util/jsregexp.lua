@@ -16,7 +16,8 @@ local jsregexp_core_path = Path.join(repo_dir, "deps", "luasnip-jsregexp.so")
 --
 -- This means we don't hinder a regularly installed 0.0.6-jsregexp-library,
 -- since its `require("jsregexp.core")` will be unaffected.
-package.preload["jsregexp.core"] = package.loadlib(jsregexp_core_path, "luaopen_jsregexp_core")
+package.preload["jsregexp.core"] =
+	package.loadlib(jsregexp_core_path, "luaopen_jsregexp_core")
 
 -- jsregexp: first try loading the version installed by luasnip, then global ones.
 local jsregexp_ok, jsregexp = pcall(require, "luasnip-jsregexp")
