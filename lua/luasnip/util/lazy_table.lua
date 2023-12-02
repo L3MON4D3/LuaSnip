@@ -11,4 +11,3 @@ return function(lazy_t, lazy_defs)
 		end,
 	})
 end
-
