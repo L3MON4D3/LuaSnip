@@ -12,7 +12,6 @@ local duplicate = require("luasnip.nodes.duplicate")
 --- mtime is nil if the file does not currently exist. Since `get_fn` may still
 --- return data, there's no need to treat this differently.
 
-
 --- @class LuaSnip.Loaders.SnippetCache
 --- SnippetCache stores snippets and other data loaded by files.
 --- @field private get_fn fun(file: string): LuaSnip.Loaders.SnippetFileData
@@ -33,7 +32,7 @@ local M = {}
 function M.new(get_fn)
 	return setmetatable({
 		get_fn = get_fn,
-		cache = {}
+		cache = {},
 	}, SnippetCache)
 end
 
@@ -44,8 +43,11 @@ local function copy_filedata(data)
 	--- @as LuaSnip.Loaders.SnippetFileData
 	return {
 		snippets = vim.tbl_map(duplicate.duplicate_addable, data.snippets),
-		autosnippets = vim.tbl_map(duplicate.duplicate_addable, data.autosnippets),
-		misc = vim.deepcopy(data.misc)
+		autosnippets = vim.tbl_map(
+			duplicate.duplicate_addable,
+			data.autosnippets
+		),
+		misc = vim.deepcopy(data.misc),
 	}
 end
 
@@ -62,7 +64,12 @@ function SnippetCache:fetch(fname)
 	--- @as LuaSnip.Loaders.SnippetCache.Mtime
 	local mtime = current_stat and current_stat.mtime
 
-	if cached and mtime and mtime.sec == cached.mtime.sec and mtime.nsec == cached.mtime.nsec then
+	if
+		cached
+		and mtime
+		and mtime.sec == cached.mtime.sec
+		and mtime.nsec == cached.mtime.nsec
+	then
 		-- happy path: data is cached, and valid => just return cached data.
 		return copy_filedata(cached.data)
 	end
@@ -75,7 +82,7 @@ function SnippetCache:fetch(fname)
 	-- store it.
 	self.cache[fname] = {
 		data = res,
-		mtime = mtime
+		mtime = mtime,
 	}
 
 	-- return it.

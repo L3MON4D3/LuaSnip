@@ -29,8 +29,10 @@ local autotable = require("luasnip.util.auto_table").autotable
 local tree_watcher = require("luasnip.loaders.fs_watchers").tree
 local path_watcher = require("luasnip.loaders.fs_watchers").path
 local digraph = require("luasnip.util.directed_graph")
-local refresh_notify = require("luasnip.session.enqueueable_operations").refresh_notify
-local clean_invalidated = require("luasnip.session.enqueueable_operations").clean_invalidated
+local refresh_notify =
+	require("luasnip.session.enqueueable_operations").refresh_notify
+local clean_invalidated =
+	require("luasnip.session.enqueueable_operations").clean_invalidated
 
 local Data = require("luasnip.loaders.data")
 
@@ -74,17 +76,18 @@ local function search_lua_rtp(modulename)
 	-- essentially stolen from vim.loader.
 	local rtp_lua_path = package.path
 	for _, path in ipairs(vim.api.nvim_get_runtime_file("", true)) do
-		rtp_lua_path = rtp_lua_path .. (";%s/lua/?.lua;%s/lua/?/init.lua"):format(path, path)
+		rtp_lua_path = rtp_lua_path
+			.. (";%s/lua/?.lua;%s/lua/?/init.lua"):format(path, path)
 	end
 
 	return package.searchpath(modulename, rtp_lua_path)
 end
 
 local function _luasnip_load_file(file)
-		-- vim.loader.enabled does not seem to be official api, so always reset
-		-- if the loader is available.
-		-- To be sure, even pcall it, in case there are conditions under which
-		-- it might error.
+	-- vim.loader.enabled does not seem to be official api, so always reset
+	-- if the loader is available.
+	-- To be sure, even pcall it, in case there are conditions under which
+	-- it might error.
 	if vim.loader then
 		-- pcall, not sure if this can fail in some way..
 		-- Does not seem like it though
@@ -133,10 +136,14 @@ local function _luasnip_load_file(file)
 			ls_tracked_dopackage = function(package_name)
 				local package_file = search_lua_rtp(package_name)
 				if not package_file then
-					error(("Could not find package %s in rtp and package.path"):format(package_name))
+					error(
+						("Could not find package %s in rtp and package.path"):format(
+							package_name
+						)
+					)
 				end
 				return ls_tracked_dofile(package_file)
-			end
+			end,
 		}
 	)
 	-- defaults snip-env requires metatable for resolving
@@ -180,16 +187,28 @@ end
 --- some root, and registers new files.
 local Collection = {}
 local Collection_mt = {
-	__index = Collection
+	__index = Collection,
 }
 
-function Collection.new(root, lazy, include_ft, exclude_ft, add_opts, lazy_watcher, fs_event_providers)
+function Collection.new(
+	root,
+	lazy,
+	include_ft,
+	exclude_ft,
+	add_opts,
+	lazy_watcher,
+	fs_event_providers
+)
 	local ft_filter = loader_util.ft_filter(include_ft, exclude_ft)
 	local o = setmetatable({
 		root = root,
 		file_filter = function(path)
 			if not path:sub(1, #root) == root then
-				log.warn("Tried to filter file `%s`, which is not inside the root `%s`.", path, root)
+				log.warn(
+					"Tried to filter file `%s`, which is not inside the root `%s`.",
+					path,
+					root
+				)
 				return false
 			end
 			return lua_package_file_filter(path) and ft_filter(path)
@@ -197,7 +216,7 @@ function Collection.new(root, lazy, include_ft, exclude_ft, add_opts, lazy_watch
 		add_opts = add_opts,
 		lazy = lazy,
 		-- store ft -> set of files that should be lazy-loaded.
-		lazy_files = autotable(2, {warn = false}),
+		lazy_files = autotable(2, { warn = false }),
 		-- store, for all files in this collection, their filetype.
 		-- No need to always recompute it, and we can use this to store which
 		-- files belong to the collection.
@@ -205,7 +224,7 @@ function Collection.new(root, lazy, include_ft, exclude_ft, add_opts, lazy_watch
 		file_dependencies = digraph.new_labeled(),
 		-- store fs_watchers for files the snippets-files depend on.
 		dependency_watchers = {},
-		fs_event_providers = fs_event_providers
+		fs_event_providers = fs_event_providers,
 	}, Collection_mt)
 
 	-- only register files up to a depth of 2.
@@ -219,8 +238,8 @@ function Collection.new(root, lazy, include_ft, exclude_ft, add_opts, lazy_watch
 		end,
 		change_file = function(path)
 			o:reload(path)
-		end
-	}, {lazy = lazy_watcher, fs_event_providers = fs_event_providers})
+		end,
+	}, { lazy = lazy_watcher, fs_event_providers = fs_event_providers })
 
 	if not ok then
 		error(("Could not create watcher: %s"):format(err_or_watcher))
@@ -239,7 +258,11 @@ function Collection:add_file(path, ft)
 
 	if self.lazy then
 		if not session.loaded_fts[ft] then
-			log.info("Registering lazy-load-snippets for ft `%s` from file `%s`", ft, path)
+			log.info(
+				"Registering lazy-load-snippets for ft `%s` from file `%s`",
+				ft,
+				path
+			)
 
 			-- only register to load later.
 			self.lazy_files[ft][path] = true
@@ -255,11 +278,7 @@ function Collection:add_file(path, ft)
 	self:load_file(path, ft)
 end
 function Collection:load_file(path, ft)
-	log.info(
-		"Adding snippets for filetype `%s` from file `%s`",
-		ft,
-		path
-	)
+	log.info("Adding snippets for filetype `%s` from file `%s`", ft, path)
 	self.loaded_path_ft[path] = ft
 
 	local snippets, autosnippets, dependent_files = _luasnip_load_file(path)
@@ -277,26 +296,40 @@ function Collection:load_file(path, ft)
 		self.file_dependencies:set_edge(file_dependency, path, path)
 
 		if not self.dependency_watchers[file_dependency] then
-			self.dependency_watchers[file_dependency] = path_watcher(file_dependency, {
-				change = function(_)
-					local depending_files = self.file_dependencies:connected_component(file_dependency, "Forward")
-					for _, file in ipairs(depending_files) do
-						-- Prevent loading one of the utility-files as a snippet-file.
-						-- This will not reject any snippet-file in
-						-- depending_files. This is because since they are in
-						-- depending_files, we have their dependency-information,
-						-- which can only be obtained by loading them, and so there
-						-- can't be any unloaded files in there.
-						if self.loaded_path_ft[file] then
-							self:load_file(file, self.loaded_path_ft[file])
+			self.dependency_watchers[file_dependency] = path_watcher(
+				file_dependency,
+				{
+					change = function(_)
+						local depending_files =
+							self.file_dependencies:connected_component(
+								file_dependency,
+								"Forward"
+							)
+						for _, file in ipairs(depending_files) do
+							-- Prevent loading one of the utility-files as a snippet-file.
+							-- This will not reject any snippet-file in
+							-- depending_files. This is because since they are in
+							-- depending_files, we have their dependency-information,
+							-- which can only be obtained by loading them, and so there
+							-- can't be any unloaded files in there.
+							if self.loaded_path_ft[file] then
+								self:load_file(file, self.loaded_path_ft[file])
+							end
 						end
-					end
-				end
-			}, {lazy = false, fs_event_providers = self.fs_event_providers})
+					end,
+				},
+				{ lazy = false, fs_event_providers = self.fs_event_providers }
+			)
 		end
 	end
 
-	loader_util.add_file_snippets(ft, path, snippets, autosnippets, self.add_opts)
+	loader_util.add_file_snippets(
+		ft,
+		path,
+		snippets,
+		autosnippets,
+		self.add_opts
+	)
 
 	refresh_notify(ft)
 end
@@ -341,25 +374,58 @@ end
 local function _load(lazy, opts)
 	local o = loader_util.normalize_opts(opts)
 
-	local collection_roots = loader_util.resolve_root_paths(o.paths, "luasnippets")
+	local collection_roots =
+		loader_util.resolve_root_paths(o.paths, "luasnippets")
 	local lazy_roots = loader_util.resolve_lazy_root_paths(o.lazy_paths)
 
-	log.info("Found roots `%s` for paths `%s`.", vim.inspect(collection_roots), vim.inspect(o.paths))
+	log.info(
+		"Found roots `%s` for paths `%s`.",
+		vim.inspect(collection_roots),
+		vim.inspect(o.paths)
+	)
 	if o.paths and #o.paths ~= #collection_roots then
-		log.warn("Could not resolve all collection-roots for paths `%s`: only found `%s`", vim.inspect(o.paths), vim.inspect(collection_roots))
+		log.warn(
+			"Could not resolve all collection-roots for paths `%s`: only found `%s`",
+			vim.inspect(o.paths),
+			vim.inspect(collection_roots)
+		)
 	end
 
-	log.info("Determined roots `%s` for lazy_paths `%s`.", vim.inspect(lazy_roots), vim.inspect(o.lazy_paths))
+	log.info(
+		"Determined roots `%s` for lazy_paths `%s`.",
+		vim.inspect(lazy_roots),
+		vim.inspect(o.lazy_paths)
+	)
 	if o.lazy_paths and #o.lazy_paths ~= #lazy_roots then
-		log.warn("Could not resolve all collection-roots for lazy_paths `%s`: only found `%s`", vim.inspect(o.lazy_paths), vim.inspect(lazy_roots))
+		log.warn(
+			"Could not resolve all collection-roots for lazy_paths `%s`: only found `%s`",
+			vim.inspect(o.lazy_paths),
+			vim.inspect(lazy_roots)
+		)
 	end
 
-	for paths_lazy, roots in pairs({[true] = lazy_roots, [false] = collection_roots}) do
+	for paths_lazy, roots in pairs({
+		[true] = lazy_roots,
+		[false] = collection_roots,
+	}) do
 		for _, collection_root in ipairs(roots) do
-			local ok, coll_or_err = pcall(Collection.new, collection_root, lazy, o.include, o.exclude, o.add_opts, paths_lazy, o.fs_event_providers)
+			local ok, coll_or_err = pcall(
+				Collection.new,
+				collection_root,
+				lazy,
+				o.include,
+				o.exclude,
+				o.add_opts,
+				paths_lazy,
+				o.fs_event_providers
+			)
 
 			if not ok then
-				log.error("Could not create collection at %s: %s", collection_root, coll_or_err)
+				log.error(
+					"Could not create collection at %s: %s",
+					collection_root,
+					coll_or_err
+				)
 			else
 				table.insert(Data.lua_collections, coll_or_err)
 			end
@@ -379,7 +445,9 @@ function M.lazy_load(opts)
 	_load(true, opts)
 
 	-- load for current buffer on startup.
-	for _, ft in ipairs(loader_util.get_load_fts(vim.api.nvim_get_current_buf())) do
+	for _, ft in
+		ipairs(loader_util.get_load_fts(vim.api.nvim_get_current_buf()))
+	do
 		M._load_lazy_loaded_ft(ft)
 	end
 end

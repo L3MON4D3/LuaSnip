@@ -12,7 +12,6 @@ local function set_to_list(tbl)
 	return ls
 end
 
-
 ---Convert value or list of values to a table of booleans for fast lookup.
 ---@generic T
 ---@param values T|T[]|table<T, boolean>

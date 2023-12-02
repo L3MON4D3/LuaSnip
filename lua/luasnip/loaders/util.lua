@@ -124,7 +124,9 @@ local function collection_file_ft(collection_root, fname)
 	if #fname_components == #collection_components + 1 then
 		-- if the file is a direct child of the collection-root, get the text
 		-- before the last dot.
-		return fname_components[#collection_components + 1]:match("(.*)%.[^%.]*")
+		return fname_components[#collection_components + 1]:match(
+			"(.*)%.[^%.]*"
+		)
 	else
 		-- if the file is nested deeper, the name of the directory immediately
 		-- below the root is the filetype.
@@ -227,13 +229,15 @@ local function get_load_fts(bufnr)
 end
 
 local function add_file_snippets(ft, filename, snippets, autosnippets, add_opts)
-	snippet_collection.add_snippets({ [ft] = snippets },
+	snippet_collection.add_snippets(
+		{ [ft] = snippets },
 		vim.tbl_extend("keep", {
 			type = "snippets",
 			key = "__snippets__" .. ft .. "__" .. filename,
 		}, add_opts)
 	)
-	snippet_collection.add_snippets({ [ft] = autosnippets },
+	snippet_collection.add_snippets(
+		{ [ft] = autosnippets },
 		vim.tbl_extend("keep", {
 			type = "autosnippets",
 			key = "__autosnippets__" .. ft .. "__" .. filename,
@@ -264,7 +268,8 @@ local function normalize_opts(opts)
 		lazy_paths = vim.split(lazy_paths, ",")
 	end
 
-	local fs_event_providers = vim.F.if_nil(opts.fs_event_providers, {autocmd = true, libuv = false})
+	local fs_event_providers =
+		vim.F.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
 
 	return {
 		paths = paths,

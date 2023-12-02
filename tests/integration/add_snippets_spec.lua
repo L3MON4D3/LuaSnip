@@ -338,27 +338,31 @@ describe("add_snippets", function()
 
 	-- maybe a bit out of place here, but this issue would mainly manifest when invalidating snippets for some key.
 	it("replacing snippets via key works for duplicated snippets.", function()
-		exec_lua[[
+		exec_lua([[
 			ls.add_snippets("all", {
 				require("luasnip.nodes.duplicate").duplicate_addable(s("asdf", {t"fasd"}))
 			}, {key = "asdf"})
-		]]
+		]])
 		feed("iasdf")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			fasd^                                              |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
-		exec_lua[[
+			{2:-- INSERT --}                                      |]],
+		})
+		exec_lua([[
 			ls.add_snippets("all", {
 				require("luasnip.nodes.duplicate").duplicate_addable(s("asdf", {t"asdf"}))
 			}, {key = "asdf"})
-		]]
+		]])
 		feed("<esc>ccasdf")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			asdf^                                              |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)

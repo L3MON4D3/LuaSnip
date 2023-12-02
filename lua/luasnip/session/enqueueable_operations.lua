@@ -26,7 +26,7 @@ local clean_enqueued = false
 function M.clean_invalidated()
 	if not clean_enqueued then
 		vim.schedule(function()
-			snippet_collection.clean_invalidated({inv_limit = 100})
+			snippet_collection.clean_invalidated({ inv_limit = 100 })
 		end)
 	end
 	clean_enqueued = true

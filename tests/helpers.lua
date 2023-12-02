@@ -312,8 +312,8 @@ M.scratchdir_path = scratchdir_path
 function M.scratch_prepare()
 	-- clean (maybe a test was not able to clean up after itself) and re-create
 	-- scratch-directory.
-	os.execute(("rm -rf \"%s\""):format(scratchdir_path))
-	os.execute(("mkdir \"%s\""):format(scratchdir_path))
+	os.execute(('rm -rf "%s"'):format(scratchdir_path))
+	os.execute(('mkdir "%s"'):format(scratchdir_path))
 
 	exec_lua(([[
 		local function translate_callbacks(cbs)
@@ -341,14 +341,14 @@ function M.scratch_prepare()
 end
 
 function M.scratch_mkdir(scratch_rel)
-	os.execute(("mkdir -p \"%s/%s\""):format(scratchdir_path, scratch_rel))
+	os.execute(('mkdir -p "%s/%s"'):format(scratchdir_path, scratch_rel))
 end
 function M.scratch_touch(scratch_rel)
-	os.execute(("touch \"%s/%s\""):format(scratchdir_path, scratch_rel))
+	os.execute(('touch "%s/%s"'):format(scratchdir_path, scratch_rel))
 end
 
 function M.scratch_clear()
-	os.execute(("rm -rf \"%s\""):format(scratchdir_path))
+	os.execute(('rm -rf "%s"'):format(scratchdir_path))
 end
 
 function M.scratch_edit(scratch_rel)
