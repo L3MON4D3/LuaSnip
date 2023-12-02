@@ -438,20 +438,6 @@ local function indx_of(t, v)
 	return nil
 end
 
-local function lazy_table(lazy_t, lazy_defs)
-	return setmetatable(lazy_t, {
-		__index = function(t, k)
-			local v = lazy_defs[k]
-			if v then
-				local v_resolved = v()
-				rawset(t, k, v_resolved)
-				return v_resolved
-			end
-			return nil
-		end,
-	})
-end
-
 local function ternary(cond, if_val, else_val)
 	if cond == true then
 		return if_val
@@ -520,7 +506,6 @@ return {
 	reverse_lookup = reverse_lookup,
 	nop = nop,
 	indx_of = indx_of,
-	lazy_table = lazy_table,
 	ternary = ternary,
 	pos_cmp = pos_cmp,
 }

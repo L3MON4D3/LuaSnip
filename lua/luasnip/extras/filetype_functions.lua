@@ -1,11 +1,9 @@
-local util = require("luasnip.util.util")
-
 local function from_cursor_pos()
 	-- get_parser errors if parser not present (no grammar for language).
 	local has_parser, parser = pcall(vim.treesitter.get_parser)
 
 	if has_parser then
-		local cursor = util.get_cursor_0ind()
+		local cursor = require("luasnip.util.util").get_cursor_0ind()
 		-- assumption: languagetree uses 0-indexed byte-ranges.
 		return {
 			parser

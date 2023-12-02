@@ -1,4 +1,5 @@
 local util = require("luasnip.util.util")
+local lazy_table = require("luasnip.util.lazy_table")
 local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
 
@@ -834,7 +835,7 @@ local ls_lazy = {
 	select_keys = function() return require("luasnip.util.select").select_keys end
 }
 
-ls = util.lazy_table({
+ls = lazy_table({
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
 	locally_jumpable = locally_jumpable,

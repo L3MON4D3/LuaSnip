@@ -38,12 +38,15 @@ M.last_expand_opts = nil
 -- init with false, it will be set by (eg.) ls.jump().
 M.jump_active = false
 
-M.config = nil
+-- initial value, might be overwritten immediately.
+-- No danger of overwriting user-config, since this has to be loaded to allow
+-- overwriting.
+M.config = require("luasnip.default_config")
 
 M.loaded_fts = {}
 
 function M.get_snip_env()
-	return M.config and M.config.snip_env
+	return M.config.snip_env
 end
 
 return M
