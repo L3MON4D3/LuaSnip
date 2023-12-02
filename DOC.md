@@ -3694,6 +3694,7 @@ These are the settings you can provide to `luasnip.setup()`:
       option is useful when some LSP server already take indents into
       consideration. In such cases, LuaSnip should not try to add additional
       indents. If you are using `nvim-cmp`, sample config:
+
       ```lua
       require("cmp").setup {
         snippet = {
