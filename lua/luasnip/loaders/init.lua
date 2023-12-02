@@ -1,8 +1,10 @@
 local util = require("luasnip.util.util")
-local loader_util = require("luasnip.loaders.util")
 local Path = require("luasnip.util.path")
+local loader_util = require("luasnip.loaders.util")
 local session = require("luasnip.session")
 local loader_data = require("luasnip.loaders.data")
+local fs_watchers = require("luasnip.loaders.fs_watchers")
+local log = require("luasnip.util.log").new("loader")
 
 local M = {}
 
@@ -140,6 +142,16 @@ function M.load_lazy_loaded(bufnr)
 			require("luasnip.loaders.from_vscode")._load_lazy_loaded_ft(ft)
 		end
 		session.loaded_fts[ft] = true
+	end
+end
+
+function M.reload_file(path)
+	local realpath = Path.normalize(path)
+	if not realpath then
+		return nil, ("Could not reload file %s: does not exist."):format(path)
+	else
+		fs_watchers.write_notify(realpath)
+		return true
 	end
 end
 

@@ -59,7 +59,7 @@ end
 -- plain list, don't use map-style table since we'll only need direct access to
 -- a watcher when it is stopped, which seldomly happens (at least, compared to
 -- how often it is iterated in the autocmd-callback).
-M.active_watchers = {}
+M.autocmd_watchers = {}
 
 vim.api.nvim_create_augroup("_luasnip_fs_watcher", {})
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
@@ -87,18 +87,33 @@ vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 		-- Doing this during the callback-invocations, however, would incur
 		-- some more complexity since ipairs does not support removal of
 		-- elements during the iteration.
-		M.active_watchers = vim.tbl_filter(function(watcher)
+		M.autocmd_watchers = vim.tbl_filter(function(watcher)
 			-- this won't catch unstarted watchers, since they can't be in this
 			-- list in the first place.
 			return not watcher.stopped
-		end, M.active_watchers)
+		end, M.autocmd_watchers)
 
-		for _, watcher in ipairs(M.active_watchers) do
+		for _, watcher in ipairs(M.autocmd_watchers) do
 			watcher:BufWritePost_callback(realpath)
 		end
 	end,
 	group = "_luasnip_fs_watcher",
 })
+
+-- similar autocmd_watchers, only this list contains watchers that should be
+-- notified on a manual update (which right now is every watcher).
+M.active_watchers = {}
+function M.write_notify(realpath)
+	M.active_watchers = vim.tbl_filter(function(watcher)
+		-- this won't catch unstarted watchers, since they can't be in this
+		-- list in the first place.
+		return not watcher.stopped
+	end, M.active_watchers)
+
+	for _, watcher in ipairs(M.active_watchers) do
+		watcher:BufWritePost_callback(realpath)
+	end
+end
 
 --- @class LuaSnip.FSWatcher.Tree
 --- @field root string
@@ -130,7 +145,7 @@ function TreeWatcher:stop_self()
 	self.send_notifications = false
 
 	self.fs_event:stop()
-	-- will be removed from active_watchers after the next event, but already won't receive it.
+	-- will be removed from active_watchers/autocmd_watchers after the next event, but already won't receive it.
 end
 
 function TreeWatcher:fs_event_callback(err, relpath, events)
@@ -269,7 +284,7 @@ function TreeWatcher:start()
 	if self.fs_event_providers.autocmd then
 		if self.realpath_root then
 			-- receive notifications on BufWritePost.
-			table.insert(M.active_watchers, self)
+			table.insert(M.autocmd_watchers, self)
 			log_tree.info(
 				"Monitoring root-directory %s with autocmd-monitor.",
 				self.root
@@ -280,6 +295,10 @@ function TreeWatcher:start()
 				self.root
 			)
 		end
+	end
+
+	if self.realpath_root then
+		table.insert(M.active_watchers, self)
 	end
 
 	-- do initial scan after starting the watcher.
@@ -597,7 +616,7 @@ function PathWatcher:start()
 			self.realpath = realpath
 
 			-- path exists, add file-monitor.
-			table.insert(M.active_watchers, self)
+			table.insert(M.autocmd_watchers, self)
 			log_path.info("Monitoring file %s with autocmd-monitor.", self.path)
 		else
 			log_path.error(
@@ -605,6 +624,10 @@ function PathWatcher:start()
 				self.path
 			)
 		end
+	end
+
+	if realpath then
+		table.insert(M.active_watchers, self)
 	end
 
 	if realpath then

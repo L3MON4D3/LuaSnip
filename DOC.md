@@ -2576,8 +2576,15 @@ a `bufnr`, returns the filetypes that should be loaded (`fn(bufnr) -> filetypes
 (string[])`)).  
 
 All of the loaders support reloading, so simply editing any file contributing
-snippets will reload its snippets (only in the session the file was edited in;
-we use `BufWritePost` for reloading, not some lower-level mechanism).
+snippets will reload its snippets (according to `fs_event_providers` in the
+instance where the file was edited, or in other instances as well).
+
+As an alternative (or addition) to automatic reloading, luasnip can also process
+manual updates to files: Call `require("luasnip.loaders").reload_file(path)` to
+reload the file at `path`.  
+This may be useful when the collection is controlled by some other plugin, or
+when enabling the other reload-mechanisms is for some reason undesirable
+(performance? minimalism?).
 
 For easy editing of these files, LuaSnip provides a `vim.ui.select`-based dialog
 ([Loaders-edit_snippets](#edit_snippets)) where first the filetype, and then the
