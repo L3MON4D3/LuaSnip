@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 December 01
+*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 December 02
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2367,12 +2367,28 @@ where `opts` can contain the following keys:
     - `snipmate`: similar to lua, but the directory has to be `"snippets"`.
     - `vscode`: any directory in `runtimepath` that contains a
         `package.json` contributing snippets.
+- `lazy_paths`: behaves essentially like `paths`, with two exceptions: if it is
+    `nil`, it does not default to `runtimepath`, and the paths listed here do not
+    need to exist, and will be loaded on creation.
+    LuaSnip will do its best to determine the path that this should resolve to,
+    but since the resolving we do is not very sophisticated it may produce
+    incorrect paths. Definitely check the log if snippets are not loaded as
+    expected.
 - `exclude`: List of languages to exclude, empty by default.
 - `include`: List of languages to include, includes everything by default.
 - `{override,default}_priority`: These keys are passed straight to the
     `add_snippets`-calls (documented in |luasnip-api|) and can therefore change the
     priority of snippets loaded from some colletion (or, in combination with
     `{in,ex}clude`, only some of its snippets).
+- `fs_event_providers`: `table<string, boolean>?`, specifies which mechanisms
+    should be used to watch files for updates/creation.
+    If `autocmd` is set to `true`, a `BufWritePost`-hook watches files of this
+    collection, if `libuv` is set, the file-watcher-api exposed by libuv is used
+    to watch for updates.
+    Use `libuv` if you want snippets to update from other neovim-instances, and
+    `autocmd` if the collection resides on a filesystem where the libuv-watchers
+    may not work correctly. Or, of course, just enable both :D
+    By default, only `autocmd` is enabled.
 
 While `load` will immediately load the snippets, `lazy_load` will defer loading
 until the snippets are actually needed (whenever a new buffer is created, or
@@ -2560,6 +2576,9 @@ set. If `scope` is not set, the snippet will be added to the global filetype
     - `{override,default}_priority`: These keys are passed straight to the
         `add_snippets`-calls (documented in |luasnip-api|) and can be used to change
         the priority of the loaded snippets.
+    - `lazy`: `boolean`, if it is set, the file does not have to exist when
+        `load_standalone` is called, and it will be loaded on creation.
+        `false` by default.
 
 **Example**: `a.code-snippets`:
 
