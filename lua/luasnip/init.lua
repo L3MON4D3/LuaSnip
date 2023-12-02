@@ -270,7 +270,8 @@ local function snip_expand(snippet, opts)
 	local snip_parent_node = snip:trigger_expand(
 		session.current_nodes[vim.api.nvim_get_current_buf()],
 		pos_id,
-		env
+		env,
+		opts.skip_indent_nodes
 	)
 
 	-- jump_into-callback returns new active node.
