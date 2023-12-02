@@ -233,6 +233,7 @@ local function snip_expand(snippet, opts)
 	-- override with current position if none given.
 	opts.pos = opts.pos or util.get_cursor_0ind()
 	opts.jump_into_func = opts.jump_into_func or _jump_into_default
+	opts.indent = vim.F.if_nil(opts.indent, true)
 
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}
@@ -271,7 +272,7 @@ local function snip_expand(snippet, opts)
 		session.current_nodes[vim.api.nvim_get_current_buf()],
 		pos_id,
 		env,
-		opts.skip_indent_nodes
+		opts.indent
 	)
 
 	-- jump_into-callback returns new active node.

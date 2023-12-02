@@ -3689,6 +3689,8 @@ These are the settings you can provide to `luasnip.setup()`:
       	return snip.insert_nodes[0]
       end
       ```
+    - `indent`: bool?, defaults to `true`. Whether LuaSnip will try to add
+      additional indents to fit current indent level in snippet expanding.
 
   `opts` and any of its parameters may be nil.
 

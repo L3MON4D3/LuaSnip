@@ -625,7 +625,7 @@ local function insert_into_jumplist(
 	table.insert(sibling_snippets, own_indx, snippet)
 end
 
-function Snippet:trigger_expand(current_node, pos_id, env, skip_indent_nodes)
+function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 
 	-- find tree-node the snippet should be inserted at (could be before another node).
@@ -661,7 +661,7 @@ function Snippet:trigger_expand(current_node, pos_id, env, skip_indent_nodes)
 
 	Environ:override(env, pre_expand_res.env_override or {})
 
-	if skip_indent_nodes ~= true then
+	if indent_nodes then
 		local indentstring = util.line_chars_before(pos):match("^%s*")
 		-- expand tabs before indenting to keep indentstring unmodified
 		if vim.bo.expandtab then
