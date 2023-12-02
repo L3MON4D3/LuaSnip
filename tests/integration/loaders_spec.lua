@@ -635,28 +635,36 @@ describe("loaders:", function()
 		feed("oasdf")
 		exec_lua("ls.expand()")
 		-- not loaded automatically.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			return { ls.parser.parse_snippet("asdf", "qwer") }|
 			asdf^                                              |
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 
 		feed("<Esc>dd:w<Cr>")
 		feed(":w<Cr>")
 
-		exec_lua(([[require("luasnip.loaders").reload_file("%s")]]):format(ls_helpers.scratchdir_path .. "/snippets/all.lua"))
+		exec_lua(
+			([[require("luasnip.loaders").reload_file("%s")]]):format(
+				ls_helpers.scratchdir_path .. "/snippets/all.lua"
+			)
+		)
 
 		feed("oasdf")
 		exec_lua("ls.expand()")
 
 		-- expands after reload_file.
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			return { ls.parser.parse_snippet("asdf", "qwer") }|
 			qwer^                                              |
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("lazy registration works for snipmate.", function()
