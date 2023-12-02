@@ -3690,7 +3690,25 @@ These are the settings you can provide to `luasnip.setup()`:
       end
       ```
     - `indent`: bool?, defaults to `true`. Whether LuaSnip will try to add
-      additional indents to fit current indent level in snippet expanding.
+      additional indents to fit current indent level in snippet expanding. This
+      option is useful when some LSP server already take indents into
+      consideration. In such cases, LuaSnip should not try to add additional
+      indents. If you are using `nvim-cmp`, sample config:
+      ```lua
+      require("cmp").setup {
+        snippet = {
+          expand = function(args)
+            local indent_nodes = true
+            if vim.api.nvim_get_option_value("filetype", { buf = 0 }) == "dart" then
+              indent_nodes = false
+            end
+            require("luasnip").lsp_expand(args.body, {
+              indent = indent_nodes,
+            })
+          end,
+        },
+      }
+      ```
 
   `opts` and any of its parameters may be nil.
 
