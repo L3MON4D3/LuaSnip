@@ -1,6 +1,7 @@
 local source = require("luasnip.session.snippet_collection.source")
 local u_table = require("luasnip.util.table")
-local auto_creating_tables = require("luasnip.util.auto_table").warn_depth_autotable
+local auto_creating_tables =
+	require("luasnip.util.auto_table").warn_depth_autotable
 local session = require("luasnip.session")
 
 -- store snippets by some key.
@@ -238,7 +239,8 @@ function M.add_snippets(snippets, opts)
 					or opts.type
 				assert(
 					snip_type == "autosnippets" or snip_type == "snippets",
-					"snippetType must be either 'autosnippets' or 'snippets', was " .. vim.inspect(snip_type)
+					"snippetType must be either 'autosnippets' or 'snippets', was "
+						.. vim.inspect(snip_type)
 				)
 
 				local snip_ft = snip.filetype or ft
@@ -312,7 +314,7 @@ end
 -- modules that want to call refresh_notify probably also want to notify others
 -- of adding those snippets => put those functions into the same module.
 function M.refresh_notify(ft_or_nil)
-	local fts = ft_or_nil and {ft_or_nil} or get_all_snippet_fts()
+	local fts = ft_or_nil and { ft_or_nil } or get_all_snippet_fts()
 
 	for _, ft in ipairs(fts) do
 		session.latest_load_ft = ft

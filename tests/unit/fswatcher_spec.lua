@@ -91,8 +91,9 @@ describe("fs_events", function()
 				["a/1/b"] = 1,
 				["a/3/b/d"] = 1,
 				["a/4/a/a"] = 1,
-				["a/4/a/b/a"] = 0
-			}, {
+				["a/4/a/b/a"] = 0,
+			},
+			{
 				-- directories
 				["a/1"] = 1,
 				["a/2"] = 1,
@@ -101,16 +102,17 @@ describe("fs_events", function()
 				["a/3/b/c"] = 1,
 				["a/4"] = 1,
 				["a/4/a"] = 1,
-				["a/4/a/b"] = 1
-			}, {
+				["a/4/a/b"] = 1,
+			},
+			{
 				-- changed files
 
 				-- this is reported twice, once on create, once on the actual change.
 				-- Maybe a small peculiarity to watch out for, but does not seem bad.
 				["a/1/a"] = 2,
-				["a/1/b"] = 1
-			}},
-			exec_lua([[return {seen_files, seen_dirs, changed}]]) )
+				["a/1/b"] = 1,
+			},
+		}, exec_lua([[return {seen_files, seen_dirs, changed}]]))
 	end)
 
 	it("works with autocmd-event-provider.", function()
@@ -185,21 +187,23 @@ describe("fs_events", function()
 				["a/3/b/d"] = 1,
 				["a/4/a/a"] = 1,
 				["a/4/a/b/a"] = 0,
-			}, {
+			},
+			{
 				["a/1"] = 1,
 				["a/3"] = 1,
 				["a/3/b"] = 1,
 				["a/4"] = 1,
 				["a/4/a"] = 1,
 				["a/4/a/b"] = 1,
-			}, {
+			},
+			{
 				["a/1/b"] = 1,
 				["a/1/a"] = 1,
 				["a/4/a/a"] = 1,
 				-- to deep.
-				["a/4/a/b/a"] = 0
-			} },
-			exec_lua([[return {seen_files, seen_dirs, changed}]]) )
+				["a/4/a/b/a"] = 0,
+			},
+		}, exec_lua([[return {seen_files, seen_dirs, changed}]]))
 	end)
 
 	it("lazy registration works with libuv.", function()
@@ -233,10 +237,11 @@ describe("fs_events", function()
 		assert.are.same({
 			{
 				["a/a/a"] = 1,
-			}, {
+			},
+			{
 				["a/a/a"] = 1,
-			} },
-			exec_lua([[return {seen_files, changed}]]) )
+			},
+		}, exec_lua([[return {seen_files, changed}]]))
 	end)
 
 	it("lazy registration works with autocmd.", function()
@@ -269,9 +274,10 @@ describe("fs_events", function()
 		assert.are.same({
 			{
 				["a/a/a"] = 1,
-			}, {
+			},
+			{
 				["a/a/a"] = 1,
-			} },
-			exec_lua([[return {seen_files, changed}]]) )
+			},
+		}, exec_lua([[return {seen_files, changed}]]))
 	end)
 end)

@@ -150,13 +150,12 @@ end
 
 -- return all vertices reachable from this one.
 function DirectedGraph:connected_component(vert, edge_direction)
-	local outgoing_vertices_field =
-		edge_direction == "Backward"
+	local outgoing_vertices_field = edge_direction == "Backward"
 			and "incoming_edge_verts"
-			 or "outgoing_edge_verts"
+		or "outgoing_edge_verts"
 
 	local visited = {}
-	local to_visit = {[vert] = true}
+	local to_visit = { [vert] = true }
 
 	-- get any value in table.
 	local next_vert, _ = next(to_visit, nil)
@@ -188,9 +187,9 @@ local function new_labeled_graph()
 		label_to_vert = {},
 		vert_to_label = {},
 		-- map label -> origin-vert -> dest-vert
-		label_to_verts = autotable(3, {warn = false}),
+		label_to_verts = autotable(3, { warn = false }),
 		-- map edge (origin,dest) to set of labels.
-		verts_to_label = autotable(3, {warn = false})
+		verts_to_label = autotable(3, { warn = false }),
 	}, LabeledDigraph)
 end
 
@@ -218,7 +217,7 @@ function LabeledDigraph:set_edge(lv1, lv2, edge_label)
 	-- determine before setting the lv1-lv2-edge.
 	local other_edge_exists = next(self.verts_to_label[lv1][lv2], nil) ~= nil
 
-	-- store both associations; 
+	-- store both associations;
 	self.verts_to_label[lv1][lv2][edge_label] = true
 	self.label_to_verts[edge_label][lv1][lv2] = true
 
@@ -260,5 +259,5 @@ end
 
 return {
 	new = new_graph,
-	new_labeled = new_labeled_graph
+	new_labeled = new_labeled_graph,
 }

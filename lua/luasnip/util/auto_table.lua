@@ -25,8 +25,8 @@ local function auto_creating_tables(self, key, depth)
 	if depth ~= 1 then
 		setmetatable(t, {
 			__index = function(s, k)
-				return auto_creating_tables(s, k, depth-1)
-			end
+				return auto_creating_tables(s, k, depth - 1)
+			end,
 		})
 	end
 	self[key] = t
@@ -39,12 +39,13 @@ function M.autotable(max_depth, opts)
 	opts = opts or {}
 	local warn = vim.F.if_nil(opts.warn, false)
 
-	local auto_table_func = warn and auto_creating_tables_warn_depth or auto_creating_tables
+	local auto_table_func = warn and auto_creating_tables_warn_depth
+		or auto_creating_tables
 
 	return setmetatable({}, {
 		__index = function(s, k)
-			return auto_table_func(s, k, max_depth-1)
-		end
+			return auto_table_func(s, k, max_depth - 1)
+		end,
 	})
 end
 

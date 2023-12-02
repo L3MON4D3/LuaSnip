@@ -66,7 +66,7 @@ local DupAddable_mt = {
 function M.duplicate_addable(addable)
 	return setmetatable({
 		addable = addable,
-		_all = vim.tbl_map(M.duplicate_expandable, addable:retrieve_all())
+		_all = vim.tbl_map(M.duplicate_expandable, addable:retrieve_all()),
 	}, DupAddable_mt)
 end
 

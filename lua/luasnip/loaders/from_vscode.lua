@@ -6,8 +6,10 @@ local autotable = require("luasnip.util.auto_table").autotable
 local path_watcher = require("luasnip.loaders.fs_watchers").path
 local Data = require("luasnip.loaders.data")
 local session = require("luasnip.session")
-local refresh_notify = require("luasnip.session.enqueueable_operations").refresh_notify
-local clean_invalidated = require("luasnip.session.enqueueable_operations").clean_invalidated
+local refresh_notify =
+	require("luasnip.session.enqueueable_operations").refresh_notify
+local clean_invalidated =
+	require("luasnip.session.enqueueable_operations").clean_invalidated
 
 local json_decoders = {
 	json = util.json_decode,
@@ -60,7 +62,7 @@ local function get_file_snippets(file)
 		return {
 			snippets = {},
 			autosnippets = {},
-			misc = {}
+			misc = {},
 		}
 	end
 
@@ -124,26 +126,24 @@ local function get_file_snippets(file)
 	return {
 		snippets = snippets,
 		autosnippets = {},
-		misc = {}
+		misc = {},
 	}
 end
 
 -- has to be set in separate module to allow different module-path-separators
 -- in `require`.
-Data.vscode_cache = require("luasnip.loaders.snippet_cache").new(get_file_snippets)
+Data.vscode_cache =
+	require("luasnip.loaders.snippet_cache").new(get_file_snippets)
 
 --- Parse package.json(c), determine all files that contribute snippets, and
 --- which filetype is associated with them.
 --- @param manifest string
---- @return table<string, table<string, true|nil>> 
+--- @return table<string, table<string, true|nil>>
 local function get_snippet_files(manifest)
 	-- if root doesn't contain a package.json, or it contributes no snippets,
 	-- return no snippets.
 	if not Path.exists(manifest) then
-		log.warn(
-			"Manifest %s does not exist",
-			manifest
-		)
+		log.warn("Manifest %s does not exist", manifest)
 		return {}
 	end
 
@@ -157,16 +157,13 @@ local function get_snippet_files(manifest)
 	if
 		not package_data.contributes or not package_data.contributes.snippets
 	then
-		log.warn(
-			"Manifest %s does not contribute any snippets.",
-			manifest
-		)
+		log.warn("Manifest %s does not contribute any snippets.", manifest)
 		return {}
 	end
 
 	-- stores ft -> files -> true|nil, allow iterating files and their
 	-- filetypes while preventing duplicates.
-	local ft_file_set = autotable(2, {warn = false})
+	local ft_file_set = autotable(2, { warn = false })
 
 	-- parent-directory of package.json(c), all files in the package.json(c)
 	-- are relative to it.
@@ -175,8 +172,7 @@ local function get_snippet_files(manifest)
 	for _, snippet_entry in pairs(package_data.contributes.snippets) do
 		local absolute_path = Path.join(package_parent, snippet_entry.path)
 
-		local normalized_snippet_file =
-			Path.normalize(absolute_path)
+		local normalized_snippet_file = Path.normalize(absolute_path)
 
 		if not normalized_snippet_file then
 			-- path does not exist (yet), try and guess the correct path anyway.
@@ -203,15 +199,21 @@ end
 
 -- Responsible for watching a single json-snippet-file.
 local SnippetfileWatcher = {}
-local SnippetfileWatcher_mt = {__index = SnippetfileWatcher}
+local SnippetfileWatcher_mt = { __index = SnippetfileWatcher }
 
-function SnippetfileWatcher.new(path, initial_ft, fs_event_providers, lazy, load_cb)
+function SnippetfileWatcher.new(
+	path,
+	initial_ft,
+	fs_event_providers,
+	lazy,
+	load_cb
+)
 	local o = setmetatable({
 		path = path,
 		load_cb = load_cb,
 		-- track which filetypes this file has been loaded for, so we can
 		-- reload for all of them.
-		loaded_fts = {[initial_ft] = true}
+		loaded_fts = { [initial_ft] = true },
 	}, SnippetfileWatcher_mt)
 
 	local load_all_fts = function()
@@ -220,21 +222,25 @@ function SnippetfileWatcher.new(path, initial_ft, fs_event_providers, lazy, load
 			refresh_notify(ft)
 		end
 	end
-	local ok, err_or_watcher = pcall(path_watcher,  path, {
+	local ok, err_or_watcher = pcall(path_watcher, path, {
 		add = load_all_fts,
 		change = function()
 			load_all_fts()
 
 			-- clean snippets if enough were removed.
 			clean_invalidated()
-		end
-	},
-	{ lazy = lazy, fs_event_providers = fs_event_providers})
+		end,
+	}, { lazy = lazy, fs_event_providers = fs_event_providers })
 
 	if not ok then
 		-- has to be handled by caller, we can't really proceed if the creation
 		-- failed.
-		error(("Could not create path_watcher for path %s: %s"):format(path, err_or_watcher))
+		error(
+			("Could not create path_watcher for path %s: %s"):format(
+				path,
+				err_or_watcher
+			)
+		)
 	end
 
 	o.watcher = err_or_watcher
@@ -260,15 +266,23 @@ end
 --- some root, and registers new files.
 local Collection = {}
 local Collection_mt = {
-	__index = Collection
+	__index = Collection,
 }
 
-function Collection.new(manifest_path, lazy, include_ft, exclude_ft, add_opts, lazy_watcher, fs_event_providers)
+function Collection.new(
+	manifest_path,
+	lazy,
+	include_ft,
+	exclude_ft,
+	add_opts,
+	lazy_watcher,
+	fs_event_providers
+)
 	local ft_filter = loader_util.ft_filter(include_ft, exclude_ft)
 	local o = setmetatable({
 		lazy = lazy,
 		-- store ft -> set of files that should be lazy-loaded.
-		lazy_files = autotable(2, {warn = false}),
+		lazy_files = autotable(2, { warn = false }),
 		fs_event_providers = fs_event_providers,
 
 		-- store path-watchers (so we don't register more than one for one
@@ -284,7 +298,7 @@ function Collection.new(manifest_path, lazy, include_ft, exclude_ft, add_opts, l
 			loader_util.add_file_snippets(ft, path, snippets, {}, add_opts)
 		end,
 		-- initialized in a bit, we have to store+reset a watcher for the manifest-file.
-		manifest_watcher = nil
+		manifest_watcher = nil,
 	}, Collection_mt)
 
 	-- callback for updating the file-filetype-associations from the manifest.
@@ -302,8 +316,8 @@ function Collection.new(manifest_path, lazy, include_ft, exclude_ft, add_opts, l
 	local watcher_ok, err = pcall(path_watcher, manifest_path, {
 		-- don't handle removals for now.
 		add = update_manifest,
-		change = update_manifest
-	}, {lazy = lazy_watcher, fs_event_providers = fs_event_providers})
+		change = update_manifest,
+	}, { lazy = lazy_watcher, fs_event_providers = fs_event_providers })
 
 	if not watcher_ok then
 		error(("Could not create watcher: %s"):format(err))
@@ -321,7 +335,11 @@ function Collection:add_file(path, ft)
 
 	if self.lazy then
 		if not session.loaded_fts[ft] then
-			log.info("Registering lazy-load-snippets for ft `%s` from file `%s`", ft, path)
+			log.info(
+				"Registering lazy-load-snippets for ft `%s` from file `%s`",
+				ft,
+				path
+			)
 
 			-- only register to load later.
 			self.lazy_files[ft][path] = true
@@ -338,18 +356,25 @@ function Collection:add_file(path, ft)
 end
 
 function Collection:load_file(path, ft)
-	log.info(
-		"Registering file %s with filetype %s for loading.",
-		path,
-		ft
-	)
+	log.info("Registering file %s with filetype %s for loading.", path, ft)
 	if not self.path_watchers[path] then
 		-- always register these lazily, that way an upate to the package.json
 		-- without the snippet-file existing will work!
 		-- Also make sure we use the same fs_event_providers.
-		local ok, watcher_or_err = pcall(SnippetfileWatcher.new, path, ft, self.fs_event_providers, true, self.load_callback)
+		local ok, watcher_or_err = pcall(
+			SnippetfileWatcher.new,
+			path,
+			ft,
+			self.fs_event_providers,
+			true,
+			self.load_callback
+		)
 		if not ok then
-			log.error("Could not create SnippetFileWatcher for path %s: %s", path, watcher_or_err)
+			log.error(
+				"Could not create SnippetFileWatcher for path %s: %s",
+				path,
+				watcher_or_err
+			)
 			return
 		end
 		self.path_watchers[path] = watcher_or_err
@@ -380,7 +405,8 @@ local function get_rtp_paths()
 	return vim.list_extend(
 		-- would be very surprised if this yields duplicates :D
 		vim.api.nvim_get_runtime_file("package.json", true),
-		vim.api.nvim_get_runtime_file("package.jsonc", true) )
+		vim.api.nvim_get_runtime_file("package.jsonc", true)
+	)
 end
 
 --- Generate list of manifest-paths from list of directory-paths.
@@ -395,16 +421,22 @@ local function get_manifests(paths)
 	if paths then
 		-- Get path to package.json/package.jsonc, or continue if it does not exist.
 		for _, dir in ipairs(paths) do
-			local tentative_manifest_path = Path.expand(Path.join(dir, "package.json"))
+			local tentative_manifest_path =
+				Path.expand(Path.join(dir, "package.json"))
 			-- expand returns nil for paths that don't exist.
 			if tentative_manifest_path then
 				table.insert(manifest_paths, tentative_manifest_path)
 			else
-				tentative_manifest_path = Path.expand(Path.join(dir, "package.jsonc"))
+				tentative_manifest_path =
+					Path.expand(Path.join(dir, "package.jsonc"))
 				if tentative_manifest_path then
 					table.insert(manifest_paths, tentative_manifest_path)
 				else
-					log.warn("Could not find package.json(c) in path %s (expanded to %s).", dir, Path.expand(dir))
+					log.warn(
+						"Could not find package.json(c) in path %s (expanded to %s).",
+						dir,
+						Path.expand(dir)
+					)
 				end
 			end
 		end
@@ -434,8 +466,14 @@ local function get_lazy_manifests(paths)
 		for _, dir in ipairs(paths) do
 			local absolute_dir = Path.expand_maybe_nonexisting(dir)
 
-			table.insert(lazy_manifest_paths, Path.join(absolute_dir, "package.json"))
-			table.insert(lazy_manifest_paths, Path.join(absolute_dir, "package.jsonc"))
+			table.insert(
+				lazy_manifest_paths,
+				Path.join(absolute_dir, "package.json")
+			)
+			table.insert(
+				lazy_manifest_paths,
+				Path.join(absolute_dir, "package.jsonc")
+			)
 		end
 	end
 
@@ -448,23 +486,55 @@ local function _load(lazy, opts)
 	local manifests = get_manifests(o.paths)
 	local lazy_manifests = get_lazy_manifests(o.lazy_paths)
 
-	log.info("Found manifests `%s` for paths `%s`.", vim.inspect(manifests), vim.inspect(o.paths))
+	log.info(
+		"Found manifests `%s` for paths `%s`.",
+		vim.inspect(manifests),
+		vim.inspect(o.paths)
+	)
 	if o.paths and #o.paths ~= #manifests then
-		log.warn("Could not resolve all manifests for paths `%s`: only found `%s`", vim.inspect(o.paths), vim.inspect(manifests))
+		log.warn(
+			"Could not resolve all manifests for paths `%s`: only found `%s`",
+			vim.inspect(o.paths),
+			vim.inspect(manifests)
+		)
 	end
 
-	log.info("Determined roots `%s` for lazy_paths `%s`.", vim.inspect(lazy_manifests), vim.inspect(o.lazy_paths))
+	log.info(
+		"Determined roots `%s` for lazy_paths `%s`.",
+		vim.inspect(lazy_manifests),
+		vim.inspect(o.lazy_paths)
+	)
 	-- two lazy manifests from each lazy directory.
-	if o.lazy_paths and #o.lazy_paths ~= 2*#lazy_manifests then
-		log.warn("Could not resolve all manifests for lazy_paths `%s`: only found `%s`", vim.inspect(o.lazy_paths), vim.inspect(lazy_manifests))
+	if o.lazy_paths and #o.lazy_paths ~= 2 * #lazy_manifests then
+		log.warn(
+			"Could not resolve all manifests for lazy_paths `%s`: only found `%s`",
+			vim.inspect(o.lazy_paths),
+			vim.inspect(lazy_manifests)
+		)
 	end
 
-	for is_lazy, manifest_paths in pairs({[true] = lazy_manifests, [false] = manifests}) do
+	for is_lazy, manifest_paths in pairs({
+		[true] = lazy_manifests,
+		[false] = manifests,
+	}) do
 		for _, manifest_path in ipairs(manifest_paths) do
-			local ok, coll_or_err = pcall(Collection.new, manifest_path, lazy, o.include, o.exclude, o.add_opts, is_lazy, o.fs_event_providers)
+			local ok, coll_or_err = pcall(
+				Collection.new,
+				manifest_path,
+				lazy,
+				o.include,
+				o.exclude,
+				o.add_opts,
+				is_lazy,
+				o.fs_event_providers
+			)
 
 			if not ok then
-				log.error("Could not create collection for manifest %s: %s", manifest_path, coll_or_err)
+				log.error(
+					"Could not create collection for manifest %s: %s",
+					manifest_path,
+					coll_or_err
+				)
 			else
 				table.insert(Data.vscode_package_collections, coll_or_err)
 			end
@@ -489,7 +559,9 @@ function M.lazy_load(opts)
 	_load(true, opts)
 
 	-- load for current buffer on startup.
-	for _, ft in ipairs(loader_util.get_load_fts(vim.api.nvim_get_current_buf())) do
+	for _, ft in
+		ipairs(loader_util.get_load_fts(vim.api.nvim_get_current_buf()))
+	do
 		M._load_lazy_loaded_ft(ft)
 	end
 end
@@ -499,13 +571,17 @@ function M.load_standalone(opts)
 
 	local lazy = vim.F.if_nil(opts.lazy, false)
 	local add_opts = loader_util.make_add_opts(opts)
-	local fs_event_providers = vim.F.if_nil(opts.fs_event_providers, {autocmd = true, libuv = false})
+	local fs_event_providers =
+		vim.F.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
 
 	local path
 	if not lazy then
 		path = Path.expand(opts.path)
 		if not path then
-			log.error("Expanding path %s does not produce an existing path.", opts.path)
+			log.error(
+				"Expanding path %s does not produce an existing path.",
+				opts.path
+			)
 			return
 		end
 	else
@@ -514,15 +590,26 @@ function M.load_standalone(opts)
 
 	Data.vscode_ft_paths["all"][path] = true
 
-	local ok, watcher_or_err = pcall(SnippetfileWatcher.new, path, "all", fs_event_providers, lazy, function()
-		local data = Data.vscode_cache:fetch(path)
-		-- autosnippets are included in snippets for this loader.
-		local snippets = data.snippets
-		loader_util.add_file_snippets("all", path, snippets, {}, add_opts)
-	end)
+	local ok, watcher_or_err = pcall(
+		SnippetfileWatcher.new,
+		path,
+		"all",
+		fs_event_providers,
+		lazy,
+		function()
+			local data = Data.vscode_cache:fetch(path)
+			-- autosnippets are included in snippets for this loader.
+			local snippets = data.snippets
+			loader_util.add_file_snippets("all", path, snippets, {}, add_opts)
+		end
+	)
 
 	if not ok then
-		log.error("Could not create SnippetFileWatcher for path %s: %s", path, watcher_or_err)
+		log.error(
+			"Could not create SnippetFileWatcher for path %s: %s",
+			path,
+			watcher_or_err
+		)
 		return
 	end
 

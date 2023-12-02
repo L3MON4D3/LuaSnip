@@ -95,7 +95,10 @@ function Path.expand_nonexisting(filepath, cwd)
 		-- replace ~ with home-directory.
 		:gsub("^~", vim.env.HOME)
 		-- replace ./ or .\ with config-directory (likely ~/.config/nvim)
-		:gsub("^[.][/\\]", MYCONFIG_ROOT .. sep)
+		:gsub(
+			"^[.][/\\]",
+			MYCONFIG_ROOT .. sep
+		)
 
 	return Path.normalize_nonexisting(filepath, cwd)
 end
@@ -182,11 +185,11 @@ function Path.extension(fname)
 end
 
 function Path.components(path)
-	return vim.split(path, sep, {plain=true, trimempty=true})
+	return vim.split(path, sep, { plain = true, trimempty = true })
 end
 
 function Path.parent(path)
-	local last_component = path:match("%" .. sep .."[^" .. sep .. "]+$")
+	local last_component = path:match("%" .. sep .. "[^" .. sep .. "]+$")
 	if not last_component then
 		return nil
 	end
