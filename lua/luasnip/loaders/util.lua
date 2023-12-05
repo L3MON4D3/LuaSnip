@@ -63,7 +63,7 @@ local function resolve_lazy_root_paths(paths)
 	return paths
 end
 
-local function ft_filter(exclude, include)
+local function ft_filter(include, exclude)
 	exclude = filetypelist_to_set(exclude)
 	include = filetypelist_to_set(include)
 
