@@ -217,6 +217,16 @@ S.patterntext = function(pattern)
 		return ast.text(value, value)
 	end)
 end
+S.text_or_empty = function(targets, specials)
+	return P.map(P.any(P.take_until(targets, specials), P.token("")), function(value)
+		-- if it is empty, we have to return a valid S.text-object.
+		if value == "" then
+			return ast.text("", "")
+		else
+			return ast.text(value.esc, value.raw)
+		end
+	end)
+end
 
 S.toplevel = P.lazy(function()
 	return P.any(S.placeholder, S.tabstop, S.variable, S.choice)
@@ -381,18 +391,29 @@ S.choice = P.map(
 		S.open,
 		S.int,
 		S.pipe,
-		P.many(
-			P.map(
-				P.seq(P.opt(S.text({ ",", "|" })), P.any(S.comma, S.pipe)),
-				function(values)
-					return values[1] and values[1].esc or ""
-				end
+		P.opt(
+			P.many(
+				P.map(
+					P.seq(S.text_or_empty({ ",", "|" }), S.comma),
+					function(values)
+						return values[1].esc
+					end
+				)
 			)
 		),
+		P.map(
+			P.any(S.text_or_empty({ ",", "|" }), S.empty),
+			function(values)
+				return values.esc
+			end
+		),
+		S.pipe,
 		S.close
 	),
 	function(values)
-		return ast.choice(values[3], values[5])
+		local choices = values[5] or {}
+		table.insert(choices, values[6])
+		return ast.choice(values[3], choices)
 	end
 )
 
