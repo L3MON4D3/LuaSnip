@@ -292,17 +292,17 @@ local function binarysearch_pos(
 		return nil, 1
 	end
 	while true do
-        -- Adding +1 so we avoid another indexing error
-        -- that occurs in init.lua at line 293
-        -- buf_snippet_roots[buf_snippet_roots[1] == snip and 2 or 1]:remove_from_jumplist()
-        local mid = left + math.floor((right - left) / 2) + 1
-        -- If the node[mid] is null it should return
-        -- otherwise some indexing error appears when doing .mark,
-        -- resulting in total crashing of luasnip
-        if nodes[mid] == nil then
-            return nil, 1
-        end
-        local mid_mark = nodes[mid].mark
+		-- Adding +1 so we avoid another indexing error
+		-- that occurs in init.lua at line 293
+		-- buf_snippet_roots[buf_snippet_roots[1] == snip and 2 or 1]:remove_from_jumplist()
+		local mid = left + math.floor((right - left) / 2) + 1
+		-- If the node[mid] is null it should return
+		-- otherwise some indexing error appears when doing .mark,
+		-- resulting in total crashing of luasnip
+		if nodes[mid] == nil then
+			return nil, 1
+		end
+		local mid_mark = nodes[mid].mark
 		local ok, mid_from, mid_to = pcall(mid_mark.pos_begin_end_raw, mid_mark)
 
 		if not ok then
