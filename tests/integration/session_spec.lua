@@ -1991,15 +1991,35 @@ describe("session", function()
 		jump(1)
 		feed("int a")
 		screen:expect{grid=[[
-			                                                  |*2
+			                                                  |
+			                                                  |
 			/**                                               |
 			 * A short Description                            |
 			 */                                               |
 			public void myFunc(int a^) {                       |
 			                                                  |
 			}                                                 |
-			                                                  |*2
-			{0:~                                                 }|*19
+			                                                  |
+			                                                  |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]]}
 
 		-- delete snippet-text while an update for the dynamicNode is pending
