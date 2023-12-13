@@ -635,6 +635,7 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 			tree_preference = node_util.binarysearch_preference.outside,
 			snippet_mode = "linkable",
 		})
+	local n_siblings_pre = #sibling_snippets
 
 	if current_node then
 		if parent_node then
@@ -651,6 +652,23 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 		else
 			-- if no parent_node, completely leave.
 			node_util.refocus(current_node, nil)
+
+			-- in this branch, it may happen that the snippet we leave is
+			-- invalid and removed from the snippet-list during `refocus`.
+			-- This is not catastrophic, but we have to recognize it here, and
+			-- update the `own_indx` among the snippet-roots (one was deleted,
+			-- the computed index is no longer valid since there may have been
+			-- a shift down over `own_indx`)
+			if n_siblings_pre ~= #sibling_snippets then
+				-- only own_indx can change, since the text in the buffer is
+				-- unchanged, while the number of roots is.
+				_, _, own_indx, _ =
+					node_util.snippettree_find_undamaged_node(pos, {
+						tree_respect_rgravs = false,
+						tree_preference = node_util.binarysearch_preference.outside,
+						snippet_mode = "linkable",
+					})
+			end
 		end
 	end
 

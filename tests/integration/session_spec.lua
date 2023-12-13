@@ -1972,4 +1972,47 @@ describe("session", function()
 			})
 		end
 	)
+
+	it("snippet_roots stays an array if a snippet-root is removed during refocus, during trigger_expand.", function()
+		exec_lua([[
+			ls.setup({
+				keep_roots = true,
+				-- don't update immediately; we want to ensure removal of the
+				-- snippet due to update of deleted nodes, and we have to
+				-- delete them before the update is triggered via autocmd
+				update_events = "BufWritePost"
+			})
+		]])
+
+		feed("o<Cr><Cr><Cr><Esc>kkifn")
+		expand()
+		jump(1)
+		jump(1)
+		jump(1)
+		feed("int a")
+		screen:expect{grid=[[
+			                                                  |*2
+			/**                                               |
+			 * A short Description                            |
+			 */                                               |
+			public void myFunc(int a^) {                       |
+			                                                  |
+			}                                                 |
+			                                                  |*2
+			{0:~                                                 }|*19
+			{2:-- INSERT --}                                      |]]}
+
+		-- delete snippet-text while an update for the dynamicNode is pending
+		-- => when the dynamicNode is left during `refocus`, the deletion will
+		-- be detected, and snippet removed from the jumplist.
+		feed("<Esc>kkkVjjjjjd")
+
+		feed("jifn")
+		expand()
+
+		-- make sure the snippet-roots-list is still an array, and we did not
+		-- insert at 2 after the deletion of the first snippet.
+		assert(exec_lua("return ls.session.snippet_roots[1][1] ~= nil"))
+		assert(exec_lua("return ls.session.snippet_roots[1][2] == nil"))
+	end)
 end)
