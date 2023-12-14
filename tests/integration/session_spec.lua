@@ -1973,8 +1973,10 @@ describe("session", function()
 		end
 	)
 
-	it("snippet_roots stays an array if a snippet-root is removed during refocus, during trigger_expand.", function()
-		exec_lua([[
+	it(
+		"snippet_roots stays an array if a snippet-root is removed during refocus, during trigger_expand.",
+		function()
+			exec_lua([[
 			ls.setup({
 				keep_roots = true,
 				-- don't update immediately; we want to ensure removal of the
@@ -1984,13 +1986,14 @@ describe("session", function()
 			})
 		]])
 
-		feed("o<Cr><Cr><Cr><Esc>kkifn")
-		expand()
-		jump(1)
-		jump(1)
-		jump(1)
-		feed("int a")
-		screen:expect{grid=[[
+			feed("o<Cr><Cr><Cr><Esc>kkifn")
+			expand()
+			jump(1)
+			jump(1)
+			jump(1)
+			feed("int a")
+			screen:expect({
+				grid = [[
 			                                                  |
 			                                                  |
 			/**                                               |
@@ -2020,19 +2023,21 @@ describe("session", function()
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+			})
 
-		-- delete snippet-text while an update for the dynamicNode is pending
-		-- => when the dynamicNode is left during `refocus`, the deletion will
-		-- be detected, and snippet removed from the jumplist.
-		feed("<Esc>kkkVjjjjjd")
+			-- delete snippet-text while an update for the dynamicNode is pending
+			-- => when the dynamicNode is left during `refocus`, the deletion will
+			-- be detected, and snippet removed from the jumplist.
+			feed("<Esc>kkkVjjjjjd")
 
-		feed("jifn")
-		expand()
+			feed("jifn")
+			expand()
 
-		-- make sure the snippet-roots-list is still an array, and we did not
-		-- insert at 2 after the deletion of the first snippet.
-		assert(exec_lua("return ls.session.snippet_roots[1][1] ~= nil"))
-		assert(exec_lua("return ls.session.snippet_roots[1][2] == nil"))
-	end)
+			-- make sure the snippet-roots-list is still an array, and we did not
+			-- insert at 2 after the deletion of the first snippet.
+			assert(exec_lua("return ls.session.snippet_roots[1][1] ~= nil"))
+			assert(exec_lua("return ls.session.snippet_roots[1][2] == nil"))
+		end
+	)
 end)
