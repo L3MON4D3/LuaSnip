@@ -1,5 +1,6 @@
 local util = require("luasnip.util.util")
 local select_util = require("luasnip.util.select")
+local time_util = require("luasnip.util.time")
 local lazy_vars = {}
 
 -- Variables defined in https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variables
@@ -108,6 +109,12 @@ end
 
 function lazy_vars.CURRENT_SECONDS_UNIX()
 	return tostring(os.time())
+end
+
+function lazy_vars.CURRENT_TIMEZONE_OFFSET()
+	return time_util
+			.get_timezone_offset(os.time())
+		:gsub("([+-])(%d%d)(%d%d)$", "%1%2:%3")
 end
 
 -- For inserting random values
