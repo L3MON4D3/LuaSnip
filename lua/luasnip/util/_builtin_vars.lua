@@ -113,7 +113,7 @@ end
 
 function lazy_vars.CURRENT_TIMEZONE_OFFSET()
 	return time_util
-			.get_timezone_offset(os.time())
+		.get_timezone_offset(os.time())
 		:gsub("([+-])(%d%d)(%d%d)$", "%1%2:%3")
 end
 
