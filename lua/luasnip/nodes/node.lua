@@ -1,6 +1,5 @@
 local session = require("luasnip.session")
 local util = require("luasnip.util.util")
-local node_util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local ext_util = require("luasnip.util.ext_opts")
 local events = require("luasnip.util.events")
@@ -276,15 +275,21 @@ function Node:init_insert_positions(position_so_far)
 end
 
 function Node:event(event)
+	local node_callback = self.node_callbacks[event]
+	if node_callback then
+		node_callback(self)
+	end
+
+	-- try to get the callback from the parent.
 	if self.pos then
 		-- node needs position to get callback (nodes may not have position if
 		-- defined in a choiceNode, ie. c(1, {
 		--	i(nil, {"works!"})
 		-- }))
 		-- works just fine.
-		local callback = self.parent.callbacks[self.pos][event]
-		if callback then
-			callback(self)
+		local parent_callback = self.parent.callbacks[self.pos][event]
+		if parent_callback then
+			parent_callback(self)
 		end
 	end
 

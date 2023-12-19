@@ -1446,4 +1446,50 @@ describe("snippets_basic", function()
 		exec_lua([[ls.snip_expand(snip)]])
 		assert.are.same(2, exec_lua("return counter"))
 	end)
+
+	it("node-callbacks are executed correctly.", function()
+		exec_lua[[
+			enter_qwer = false
+			enter_qwer_via_parent = false
+
+			snip = s("foo", {
+				t"asdf", i(1, "qwer", {node_callbacks = {[events.enter] = function()
+					enter_qwer = true
+				end}})
+			}, {callbacks = {[1] = { [events.enter] = function()
+				enter_qwer_via_parent = true
+			end}} } )
+
+			ls.snip_expand(snip)
+		]]
+
+		assert.are.same(true, exec_lua("return enter_qwer"))
+		assert.are.same(true, exec_lua("return enter_qwer_via_parent"))
+
+		exec_lua[[
+			enter_snode = false
+			enter_snode_m1 = false
+			enter_snode_via_parent = false
+
+			snip = s("foo", {
+				sn(1, {t"qwer"}, {
+					node_callbacks = {[events.enter] = function()
+						enter_snode = true
+					end},
+					callbacks = { [-1] = {
+						[events.enter] = function()
+							enter_snode_m1 = true
+						end }}
+				} )
+			}, {callbacks = {[1] = { [events.enter] = function()
+				enter_snode_via_parent = true
+			end}}, } )
+
+			ls.snip_expand(snip)
+		]]
+
+		assert.are.same(true, exec_lua("return enter_snode"))
+		assert.are.same(true, exec_lua("return enter_snode_m1"))
+		assert.are.same(true, exec_lua("return enter_snode_via_parent"))
+	end)
 end)

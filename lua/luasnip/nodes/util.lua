@@ -158,6 +158,8 @@ local function init_node_opts(opts)
 
 	in_node.key = opts.key
 
+	in_node.node_callbacks = opts.node_callbacks or {}
+
 	return in_node
 end
 
