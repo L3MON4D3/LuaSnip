@@ -1176,16 +1176,29 @@ function Snippet:text_only()
 end
 
 function Snippet:event(event, event_args)
-	local callback = self.callbacks[-1][event]
-	local cb_res
-	if callback then
-		cb_res = callback(self, event_args)
+	-- there are 3 sources of a callback, for a snippetNode:
+	-- self.callbacks[-1], self.node_callbacks, and parent.callbacks[self.pos].
+	local m1_cb, cb, parent_cb
+	-- since we handle pre-expand callbacks here, we need to handle the
+	-- event_res, which may be returned by more than one callback.
+	-- In order to keep it simple, we just return any non-nil result.
+	local m1_cb_res, cb_res, parent_cb_res
+
+	m1_cb = self.callbacks[-1][event]
+	if m1_cb then
+		m1_cb_res = m1_cb(self, event_args)
 	end
+
+	cb = self.node_callbacks[event]
+	if cb then
+		cb_res = cb(self, event_args)
+	end
+
 	if self.type == types.snippetNode and self.pos then
 		-- if snippetNode, also do callback for position in parent.
-		callback = self.parent.callbacks[self.pos][event]
-		if callback then
-			callback(self)
+		parent_cb = self.parent.callbacks[self.pos][event]
+		if parent_cb then
+			parent_cb_res = parent_cb(self)
 		end
 	end
 
@@ -1196,7 +1209,7 @@ function Snippet:event(event, event_args)
 		modeline = false,
 	})
 
-	return cb_res
+	return vim.F.if_nil(cb_res, m1_cb_res, parent_cb_res)
 end
 
 local function nodes_from_pattern(pattern)

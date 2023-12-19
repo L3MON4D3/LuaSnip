@@ -172,6 +172,11 @@ Common opts:
   point in time, the snippet may contain each key only once. This means it is
   fine to return a keyed node from a `dynamicNode`, because even if it will be
   generated multiple times, those will not be valid at the same time.
+* `node_callbacks`: Define event-callbacks for this node (see
+  [events](#events)).  
+  Accepts a table that maps an event, e.g. `events.enter` to the callback
+  (essentially the same as `callbacks` passed to `s`, only that there is no
+  first mapping from jump-index to the table of callbacks).
 
 ## Api
 
@@ -3350,14 +3355,15 @@ The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 # Events
 
 Events can be used to react to some action inside snippets. These callbacks can
-be defined per snippet (`callbacks`-key in snippet constructor) or globally
-(autocommand).
+be defined per snippet (`callbacks`-key in snippet constructor), per-node by
+passing them as `node_callbacks` in `node_opts`, or globally (autocommand).
 
 `callbacks`: `fn(node[, event_args]) -> event_res`  
-All callbacks get the `node` associated with the event and event-specific
+All callbacks receive the `node` associated with the event and event-specific
 optional arguments, `event_args`.
 `event_res` is only used in one event, `pre_expand`, where some properties of
-the snippet can be changed.
+the snippet can be changed. If multiple callbacks return `event_res`, we only
+guarantee that one of them will be effective, not all of them.
 
 `autocommand`:
 Luasnip uses `User`-events. Autocommands for these can be registered using
