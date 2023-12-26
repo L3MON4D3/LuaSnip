@@ -130,6 +130,7 @@ When expanding a new snippet, it becomes a child of the snippet whose region it
 is expanded inside, and a root if it is not inside any snippet's region.  
 If it is inside another snippet, the specific node it is inside is determined,
 and the snippet then nested inside that node.
+
 * If that node is interactive (for example, an `insertNode`), the new snippet
   will be traversed when the node is visited, as long as the
   configuration-option `link_children` is enabled. If it is not enabled, it is
@@ -161,6 +162,7 @@ some nodes (`user_args` for function/dynamicNode). These `opts` are
 only mentioned if they accept options that are not common to all nodes.
 
 Common opts:
+
 * `node_ext_opts` and `merge_node_ext_opts`: Control `ext_opts` (most likely
   highlighting) of the node. Described in detail in [ext_opts](#ext_opts)
 * `key`: The node can be reffered to by this key. Useful for either [Key
@@ -691,6 +693,7 @@ API.
 For example, argnodes in functionNode, dynamicNode or lambda are
 node references.  
 These references can be either of:
+
   - `number`: the jump-index of the node.
     This will be resolved relative to the parent of the node this is passed to.
     (So, only nodes with the same parent can be referenced. This is very easy to
@@ -1206,9 +1209,11 @@ snippetNode, so even if the restoreNode only contains one node, that node has
 to be accessed as `ai[restoreNodeIndx][0][1]`.
 
 `absolute_indexer`s' can be constructed in different ways:
+
 * `ai[1][2][3]`
 * `ai(1, 2, 3)`
 * `ai{1, 2, 3}`
+
 are all the same node.
 
 # MultiSnippet
@@ -1554,9 +1559,11 @@ a snippet's `condition` or `show_condition`. These are grouped accordingly into
 `luasnip.extras.conditions.expand` and `luasnip.extras.conditions.show`:
 
 **`expand`**:
+
 - `line_begin`: only expand if the cursor is at the beginning of the line.
 
 **`show`**:
+
 - `line_end`: only expand at the end of the line.
 - `has_selected_text`: only expand if there's selected text stored after pressing
   `store_selection_keys`. 
@@ -1820,6 +1827,7 @@ While this functionality can also be implemented by a cusutom
 `resolveExpandParams`, this helper simplifies the common cases.  
 
 This matching of treesitter-nodes can be done either
+
 * by providing a query and the name of the capture that should be in front of
   the trigger (in most cases, the complete match, but requiring specific nodes
   before/after the matched node may be useful as well), or
@@ -1943,6 +1951,7 @@ end
 ```
 
 `snip.env` would contain:
+
 * `LS_TSMATCH`: `{ "function add(a, b)", "\treturn a + b", "end" }`
 * `LS_TSDATA`:
   ```lua
@@ -2018,6 +2027,7 @@ ts_post({
 The module `luasnip.extras.treesitter_postfix` contains a few functions that may
 be useful for creating more efficient ts-postfix-snippets.  
 Nested in `builtin.tsnode_matcher` are:
+
 * `fun find_topmost_types(types: string[]): MatchTSNodeFunc`: Generates
   a `LuaSnip.extra.MatchTSNodeFunc` which returns the last parent whose type
   is in `types`.
@@ -2216,6 +2226,7 @@ This is primarily implemented for snippet which got their source from one of the
 loaders, but might also work for snippets where the source was set manually.  
 
 `require("luasnip.extras.snip_location")`:
+
 * `snip_location.jump_to_snippet(snip, opts)`
   Jump to the definition of `snip`.
   * `snip`: a snippet with attached source-data.
@@ -2344,6 +2355,7 @@ This behaviour can be modified by changing `parser_nested_assembler` in
 
 LuaSnip will also modify some snippets that it is incapable of representing
 accurately:
+
   - if the `$0` is a placeholder with something other than just text inside
   - if the `$0` is a choice
   - if the `$0` is not an immediate child of the snippet (it could be inside a
