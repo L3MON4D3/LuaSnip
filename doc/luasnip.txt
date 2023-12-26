@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 December 17
+*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 December 26
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -203,17 +203,19 @@ contains more nodes of the parent. Root-snippets are of course characterised by
 not being child-snippets. When expanding a new snippet, it becomes a child of
 the snippet whose region it is expanded inside, and a root if it is not inside
 any snippet’s region. If it is inside another snippet, the specific node it
-is inside is determined, and the snippet then nested inside that node. * If
-that node is interactive (for example, an `insertNode`), the new snippet will
-be traversed when the node is visited, as long as the configuration-option
-`link_children` is enabled. If it is not enabled, it is possible to jump from
-the snippet to the node, but not the other way around. * If that node is not
-interactive, the snippet will be linked to the currently active node, also such
-that it will not be jumped to again once it is left. This is to prevent jumping
-large distances across the buffer as much as possible. There may still be one
-large jump from the snippet back to the current node it is nested inside, but
-that seems hard to avoid. Thus, one should design snippets such that the
-regions where other snippets may be expanded are inside `insertNodes`.
+is inside is determined, and the snippet then nested inside that node.
+
+- If that node is interactive (for example, an `insertNode`), the new snippet
+    will be traversed when the node is visited, as long as the
+    configuration-option `link_children` is enabled. If it is not enabled, it is
+    possible to jump from the snippet to the node, but not the other way around.
+- If that node is not interactive, the snippet will be linked to the currently
+    active node, also such that it will not be jumped to again once it is left.
+    This is to prevent jumping large distances across the buffer as much as
+    possible. There may still be one large jump from the snippet back to the
+    current node it is nested inside, but that seems hard to avoid.
+    Thus, one should design snippets such that the regions where other snippets
+    may be expanded are inside `insertNodes`.
 
 If the snippet is not a child, but a root, it can be linked up with the roots
 immediately adjacent to it by enabling `link_roots` in `setup`. Since by
@@ -235,15 +237,16 @@ There are some common ones (which are listed here), and some that only apply to
 some nodes (`user_args` for function/dynamicNode). These `opts` are only
 mentioned if they accept options that are not common to all nodes.
 
-Common opts: * `node_ext_opts` and `merge_node_ext_opts`: Control `ext_opts`
-(most likely highlighting) of the node. Described in detail in
-|luasnip-ext_opts| * `key`: The node can be reffered to by this key. Useful for
-either |luasnip-key-indexer| or for finding the node at runtime (See
-|luasnip-snippets-api|), for example inside a `dynamicNode`. The keys do not
-have to be unique across the entire lifetime of the snippet, but at any point
-in time, the snippet may contain each key only once. This means it is fine to
-return a keyed node from a `dynamicNode`, because even if it will be generated
-multiple times, those will not be valid at the same time.
+Common opts:
+
+- `node_ext_opts` and `merge_node_ext_opts`: Control `ext_opts` (most likely
+    highlighting) of the node. Described in detail in |luasnip-ext_opts|
+- `key`: The node can be reffered to by this key. Useful for either |luasnip-key-indexer| or for finding the node at runtime (See
+    |luasnip-snippets-api|), for example inside a `dynamicNode`. The keys
+    do not have to be unique across the entire lifetime of the snippet, but at any
+    point in time, the snippet may contain each key only once. This means it is
+    fine to return a keyed node from a `dynamicNode`, because even if it will be
+    generated multiple times, those will not be valid at the same time.
 
 
 API                                                         *luasnip-node-api*
@@ -701,23 +704,27 @@ If the function only performs simple operations on text, consider using the
 
 Node references are used to refer to other nodes in various parts of
 luasnip’s API. For example, argnodes in functionNode, dynamicNode or lambda
-are node references. These references can be either of: - `number`: the
-jump-index of the node. This will be resolved relative to the parent of the
-node this is passed to. (So, only nodes with the same parent can be referenced.
-This is very easy to grasp, but also limiting) - `key_indexer`: the key of the
-node, if it is present. This will come in handy if the node that is being
-referred to is not in the same snippet/snippetNode as the one the node
-reference is passed to. Also, it is the proper way to refer to a
-non-interactive node (a functionNode, for example) - `absolute_indexer`: the
-absolute position of the node. Just like `key_indexer`, it allows addressing
-non-sibling nodes, but is a bit more awkward to handle since a path from root
-to node has to be determined, whereas `key_indexer` just needs the key to
-match. Due to this, `key_indexer` should be generally preferred. (More
-information in |luasnip-absolute-indexer|). - `node`: just the node. Usage of
-this is discouraged since it can lead to subtle errors (for example, if the
-node passed here is captured in a closure and therefore not copied with the
-remaining tables in the snippet; there’s a big comment about just this in
-commit 8bfbd61).
+are node references. These references can be either of:
+
+- `number`: the jump-index of the node.
+    This will be resolved relative to the parent of the node this is passed to.
+    (So, only nodes with the same parent can be referenced. This is very easy to
+    grasp, but also limiting)
+- `key_indexer`: the key of the node, if it is present. This will come in
+    handy if the node that is being referred to is not in the same
+    snippet/snippetNode as the one the node reference is passed to.
+    Also, it is the proper way to refer to a non-interactive node (a
+    functionNode, for example)
+- `absolute_indexer`: the absolute position of the node. Just like
+    `key_indexer`, it allows addressing non-sibling nodes, but is a bit more
+    awkward to handle since a path from root to node has to be determined,
+    whereas `key_indexer` just needs the key to match.
+    Due to this, `key_indexer` should be generally preferred.
+    (More information in |luasnip-absolute-indexer|).
+- `node`: just the node. Usage of this is discouraged since it can lead to
+    subtle errors (for example, if the node passed here is captured in a closure
+    and therefore not copied with the remaining tables in the snippet; there’s a
+    big comment about just this in commit 8bfbd61).
 
 
 ==============================================================================
@@ -1168,8 +1175,13 @@ generated snippetNode, and that restoreNodes (internally) always store a
 snippetNode, so even if the restoreNode only contains one node, that node has
 to be accessed as `ai[restoreNodeIndx][0][1]`.
 
-`absolute_indexer`s’ can be constructed in different ways: * `ai[1][2][3]` *
-`ai(1, 2, 3)` * `ai{1, 2, 3}` are all the same node.
+`absolute_indexer`s’ can be constructed in different ways:
+
+- `ai[1][2][3]`
+- `ai(1, 2, 3)`
+- `ai{1, 2, 3}`
+
+are all the same node.
 
 
 ==============================================================================
@@ -1473,12 +1485,15 @@ This module (`luasnip.extras.condition`) contains functions that can be passed
 to a snippet’s `condition` or `show_condition`. These are grouped accordingly
 into `luasnip.extras.conditions.expand` and `luasnip.extras.conditions.show`:
 
-**expand**: - `line_begin`: only expand if the cursor is at the beginning of
-the line.
+**expand**:
 
-**show**: - `line_end`: only expand at the end of the line. -
-`has_selected_text`: only expand if there’s selected text stored after
-pressing `store_selection_keys`.
+- `line_begin`: only expand if the cursor is at the beginning of the line.
+
+**show**:
+
+- `line_end`: only expand at the end of the line.
+- `has_selected_text`: only expand if there’s selected text stored after pressing
+    `store_selection_keys`.
 
 Additionally, `expand` contains all conditions provided by `show`.
 
@@ -1719,12 +1734,13 @@ surround/are in front of the trigger. While this functionality can also be
 implemented by a cusutom `resolveExpandParams`, this helper simplifies the
 common cases.
 
-This matching of treesitter-nodes can be done either * by providing a query and
-the name of the capture that should be in front of the trigger (in most cases,
-the complete match, but requiring specific nodes before/after the matched node
-may be useful as well), or * by providing a function that manually walks the
-node-tree, and returns the node in front of the trigger on success (for
-increased flexibility).
+This matching of treesitter-nodes can be done either
+
+- by providing a query and the name of the capture that should be in front of
+    the trigger (in most cases, the complete match, but requiring specific nodes
+    before/after the matched node may be useful as well), or
+- by providing a function that manually walks the node-tree, and returns the
+    node in front of the trigger on success (for increased flexibility).
 
 A simple example, which surrounds the previous node’s text preceeding the
 `.mv` with `std::move()` in cpp files, looks like:
@@ -1832,14 +1848,34 @@ matched against
     end
 <
 
-`snip.env` would contain: * `LS_TSMATCH`: `{ "function add(a, b)", "\treturn a
-+ b", "end" }` * `LS_TSDATA`: `lua { body = { range = { { 1, 1 }, { 1, 13 } },
-type = "block" }, fname = { range = { { 0, 9 }, { 0, 12 } }, type =
-"identifier" }, params = { range = { { 0, 12 }, { 0, 18 } }, type =
-"parameters" }, prefix = { range = { { 0, 0 }, { 2, 3 } }, type =
-"function_declaration" } }` * `LS_TSCAPTURE_FNAME`: `{ "add" }` *
-`LS_TSCAPTURE_PARAMS`: `{ "(a, b)" }` * `LS_TSCAPTURE_BODY`: `{ "return a + b"
-}` * `LS_TSCAPTURE_PREFIX`: `{ "function add(a, b)", "\treturn a + b", "end" }`
+`snip.env` would contain:
+
+- `LS_TSMATCH`: `{ "function add(a, b)", "\treturn a + b", "end" }`
+- `LS_TSDATA`:
+    >lua
+        {
+          body = {
+            range = { { 1, 1 }, { 1, 13 } },
+            type = "block"
+          },
+          fname = {
+            range = { { 0, 9 }, { 0, 12 } },
+            type = "identifier"
+          },
+          params = {
+            range = { { 0, 12 }, { 0, 18 } },
+            type = "parameters"
+          },
+          prefix = {
+            range = { { 0, 0 }, { 2, 3 } },
+            type = "function_declaration"
+          }
+        }
+    <
+- `LS_TSCAPTURE_FNAME`: `{ "add" }`
+- `LS_TSCAPTURE_PARAMS`: `{ "(a, b)" }`
+- `LS_TSCAPTURE_BODY`: `{ "return a + b" }`
+- `LS_TSCAPTURE_PREFIX`: `{ "function add(a, b)", "\treturn a + b", "end" }`
 
 (note that all variables containing text of nodes are string-arrays, one entry
 for each line)
@@ -1883,13 +1919,16 @@ One more example, which actually uses a few captures:
 
 The module `luasnip.extras.treesitter_postfix` contains a few functions that
 may be useful for creating more efficient ts-postfix-snippets. Nested in
-`builtin.tsnode_matcher` are: * `fun find_topmost_types(types: string[]):
-MatchTSNodeFunc`: Generates a `LuaSnip.extra.MatchTSNodeFunc` which returns the
-last parent whose type is in `types`. * `fun find_first_types(types: string[]):
-MatchTSNodeFunc`: Similar to `find_topmost_types`, only this one matches the
-first parent whose type is in types. * `find_nth_parent(n: number):
-MatchTSNodeFunc`: Simply matches the `n`-th parent of the innermost node
-infront of the trigger.
+`builtin.tsnode_matcher` are:
+
+- `fun find_topmost_types(types: string[]): MatchTSNodeFunc`: Generates
+    a `LuaSnip.extra.MatchTSNodeFunc` which returns the last parent whose type
+    is in `types`.
+- `fun find_first_types(types: string[]): MatchTSNodeFunc`: Similar to
+    `find_topmost_types`, only this one matches the first parent whose type is in
+    types.
+- `find_nth_parent(n: number): MatchTSNodeFunc`: Simply matches the `n`-th
+    parent of the innermost node infront of the trigger.
 
 With `find_topmost_types`, the first example can be implemented more
 efficiently (without needing a whole query):
@@ -2055,17 +2094,21 @@ the location referred by it. This is primarily implemented for snippet which
 got their source from one of the loaders, but might also work for snippets
 where the source was set manually.
 
-`require("luasnip.extras.snip_location")`: *
-`snip_location.jump_to_snippet(snip, opts)` Jump to the definition of `snip`. *
-`snip`: a snippet with attached source-data. * `opts`: `nil|table`, optional
-arguments, valid keys are: * `hl_duration_ms`: `number`, duration for which the
-definition should be highlighted, in milliseconds. 0 disables the highlight. *
-`edit_fn`: `function(file)`, this function will be called with the file the
-snippet is located in, and is responsible for jumping to it. We assume that
-after it has returned, the current buffer contains `file`. *
-`snip_location.jump_to_active_snippet(opts)` Jump to definition of active
-snippet. * `opts`: `nil|table`, accepts the same keys as the `opts`-parameter
-of `jump_to_snippet`.
+`require("luasnip.extras.snip_location")`:
+
+- `snip_location.jump_to_snippet(snip, opts)`
+    Jump to the definition of `snip`.
+    - `snip`: a snippet with attached source-data.
+    - `opts`: `nil|table`, optional arguments, valid keys are:
+        - `hl_duration_ms`: `number`, duration for which the definition should be highlighted,
+            in milliseconds. 0 disables the highlight.
+        - `edit_fn`: `function(file)`, this function will be called with the file
+            the snippet is located in, and is responsible for jumping to it.
+            We assume that after it has returned, the current buffer contains `file`.
+- `snip_location.jump_to_active_snippet(opts)`
+    Jump to definition of active snippet.
+    - `opts`: `nil|table`, accepts the same keys as the `opts`-parameter of
+        `jump_to_snippet`.
 
 
 ==============================================================================
@@ -2168,9 +2211,12 @@ This behaviour can be modified by changing `parser_nested_assembler` in
 `ls.setup()`.
 
 LuaSnip will also modify some snippets that it is incapable of representing
-accurately: - if the `$0` is a placeholder with something other than just text
-inside - if the `$0` is a choice - if the `$0` is not an immediate child of the
-snippet (it could be inside a placeholder: `"${1: $0 }"`)
+accurately:
+
+- if the `$0` is a placeholder with something other than just text inside
+- if the `$0` is a choice
+- if the `$0` is not an immediate child of the snippet (it could be inside a
+    placeholder: `"${1: $0 }"`)
 
 To remedy those incompatibilities, the invalid `$0` will be replaced with a
 tabstop/placeholder/choice which will be visited just before the new `$0`. This
