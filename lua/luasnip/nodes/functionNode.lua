@@ -6,6 +6,7 @@ local types = require("luasnip.util.types")
 local tNode = require("luasnip.nodes.textNode").textNode
 local extend_decorator = require("luasnip.util.extend_decorator")
 local key_indexer = require("luasnip.nodes.key_indexer")
+local opt_args = require("luasnip.nodes.optional_arg")
 
 local function F(fn, args, opts)
 	opts = opts or {}
@@ -56,6 +57,9 @@ function FunctionNode:update()
 
 	-- don't expand tabs in parent.indentstr, use it as-is.
 	self:set_text(util.indent(text, self.parent.indentstr))
+
+	-- assume that functionNode can't have a parent as its dependent, there is
+	-- no use for that I think.
 	self:update_dependents()
 end
 
@@ -122,6 +126,9 @@ function FunctionNode:set_dependents()
 	append_list[#append_list + 1] = "dependent"
 
 	for _, arg in ipairs(self.args_absolute) do
+		if opt_args.is_opt(arg) then
+			arg = arg.ref
+		end
 		-- if arg is a luasnip-node, just insert it as the key.
 		-- important!! rawget, because indexing absolute_indexer with some key
 		-- appends the key.

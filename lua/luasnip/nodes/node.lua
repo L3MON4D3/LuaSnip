@@ -5,6 +5,7 @@ local ext_util = require("luasnip.util.ext_opts")
 local events = require("luasnip.util.events")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local types = require("luasnip.util.types")
+local opt_args = require("luasnip.nodes.optional_arg")
 
 local Node = {}
 
@@ -302,7 +303,12 @@ end
 
 local function get_args(node, get_text_func_name)
 	local argnodes_text = {}
-	for _, arg in ipairs(node.args_absolute) do
+	for key, arg in ipairs(node.args_absolute) do
+		local is_optional = opt_args.is_opt(arg)
+		if is_optional then
+			arg = arg.ref
+		end
+
 		local argnode
 		if key_indexer.is_key(arg) then
 			argnode = node.parent.snippet.dependents_dict:get({
@@ -327,18 +333,22 @@ local function get_args(node, get_text_func_name)
 			dict_key[#dict_key] = nil
 		end
 		-- maybe the node is part of a dynamicNode and not yet generated.
-		if not argnode then
-			return nil
+		if argnode then
+			local argnode_text = argnode[get_text_func_name](argnode)
+			-- can only occur with `get_text`. If one returns nil, the argnode
+			-- isn't visible or some other error occured. Either way, return nil
+			-- to signify that not all argnodes are available.
+			if not argnode_text then
+				return nil
+			end
+			argnodes_text[key] = argnode_text
+		else
+			if is_optional then
+				argnodes_text[key] = nil
+			else
+				return nil
+			end
 		end
-
-		local argnode_text = argnode[get_text_func_name](argnode)
-		-- can only occur with `get_text`. If one returns nil, the argnode
-		-- isn't visible or some other error occured. Either way, return nil
-		-- to signify that not all argnodes are available.
-		if not argnode_text then
-			return nil
-		end
-		table.insert(argnodes_text, argnode_text)
 	end
 
 	return argnodes_text
