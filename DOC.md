@@ -2923,6 +2923,23 @@ Load via
 require("luasnip.loaders.from_lua").load({paths = "~/snippets"})
 ```
 
+### Reloading when editing `require`'d files
+While the lua-snippet-files will be reloaded on edit, this does not
+automatically happen if a file the snippet-file depends on (eg. via `require`)
+is changed.  
+Since this still may still be desirable, there are two functions exposed when a
+file is loaded by the lua-loader: `ls_tracked_dofile` and
+`ls_tracked_dopackage`. They perform like `dofile` and (almost like) `require`,
+but both register the loaded file internally as a dependency of the
+snippet-file, so it can be reloaded when the loaded file is edited.  As stated,
+`ls_tracked_dofile` behaves exactly like `dofile`, but does the dependency-work
+as well.  
+`ls_tracked_dopackage` mimics `require` in that it does not take a path, but a
+module-name like `"luasnip.loaders.from_lua"`, and then searches the
+`runtimepath/lua`-directories, and path and cpath for the module.  
+Unlike `require`, the file will not be cached, since that would complicate the
+reload-on-edit-behaviour.
+
 ## edit_snippets
 
 To easily edit snippets for the current session, the files loaded by any loader
