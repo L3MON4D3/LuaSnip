@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 December 27
+*luasnip.txt*           For NVIM v0.8.0          Last change: 2023 December 31
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -2803,6 +2803,23 @@ Load via
 >lua
     require("luasnip.loaders.from_lua").load({paths = "~/snippets"})
 <
+
+
+RELOADING WHEN EDITING REQUIRE’D FILES ~
+
+While the lua-snippet-files will be reloaded on edit, this does not
+automatically happen if a file the snippet-file depends on (eg. via `require`)
+is changed. Since this still may still be desirable, there are two functions
+exposed when a file is loaded by the lua-loader: `ls_tracked_dofile` and
+`ls_tracked_dopackage`. They perform like `dofile` and (almost like) `require`,
+but both register the loaded file internally as a dependency of the
+snippet-file, so it can be reloaded when the loaded file is edited. As stated,
+`ls_tracked_dofile` behaves exactly like `dofile`, but does the dependency-work
+as well. `ls_tracked_dopackage` mimics `require` in that it does not take a
+path, but a module-name like `"luasnip.loaders.from_lua"`, and then searches
+the `runtimepath/lua`-directories, and path and cpath for the module. Unlike
+`require`, the file will not be cached, since that would complicate the
+reload-on-edit-behaviour.
 
 
 EDIT_SNIPPETS                                  *luasnip-loaders-edit_snippets*
