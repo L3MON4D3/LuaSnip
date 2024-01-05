@@ -670,6 +670,27 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 					})
 			end
 		end
+
+		-- There may be other snippets inside of this parent_node/on this level
+		-- of the snippet-tree whose extmarks have to be adjusted s.t. they
+		-- don't contain the text that will be inserted during put_initial.
+		-- Node's/snippet's extmarks that are outside of this parent_node/not
+		-- siblings of this node will be adjusted during the refocus above, if
+		-- applicable.
+		--
+		-- The following adjustments may do too much, but there's no issue
+		-- with that, and we're on the safe side.
+
+		-- set rgrav false for snippets/nodes where the right boundary
+		-- coincides with the position we insert at now...
+		for i = 1, own_indx-1 do
+			sibling_snippets[i]:subtree_set_pos_rgrav(pos, -1, false)
+		end
+		-- set rgrav true for snippets/nodes where the left boundary
+		-- coincides with the position we insert at now...
+		for i = own_indx, #sibling_snippets do
+			sibling_snippets[i]:subtree_set_pos_rgrav(pos, 1, true)
+		end
 	end
 
 	local pre_expand_res = self:event(events.pre_expand, { expand_pos = pos })

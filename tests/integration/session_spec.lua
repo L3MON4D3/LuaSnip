@@ -2040,4 +2040,62 @@ describe("session", function()
 			assert(exec_lua("return ls.session.snippet_roots[1][2] == nil"))
 		end
 	)
+
+	it("sibling-snippet's extmarks are shifted away before insertion.", function()
+		screen:detach()
+		-- make screen smaller :)
+		screen = Screen.new(50, 3)
+		screen:attach()
+		screen:set_default_attr_ids({
+			[0] = { bold = true, foreground = Screen.colors.Blue },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
+			[3] = { background = Screen.colors.LightGray },
+			[4] = {
+				background = Screen.colors.Red1,
+				foreground = Screen.colors.White,
+			},
+		})
+
+		exec_lua[[
+			ls.setup{
+				link_children = true
+			}
+			ls.add_snippets("all", {
+				s({
+					trig = '_',
+					wordTrig = false,
+				}, {
+					t('_'),
+					i(1),
+				}),
+				ls.parser.parse_snippet({trig="(", wordTrig=false}, "($1)"),
+			})
+		]]
+
+		feed("i(")
+		expand()
+		feed("n_")
+		expand()
+		feed("h")
+		screen:expect{grid=[[
+			(n_h^)                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+		-- jumped behind the insertNode, into $0.
+		jump(1)
+
+		feed("(")
+		expand()
+		feed("asdf")
+		jump(-1)
+		jump(-1)
+		jump(-1)
+		-- make sure that we only select h, ie. that the insertNode only
+		-- contains h, and not the ()-snippet.
+		screen:expect{grid=[[
+			(n_^h(asdf))                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]}
+	end)
 end)
