@@ -683,7 +683,7 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 
 		-- set rgrav false for snippets/nodes where the right boundary
 		-- coincides with the position we insert at now...
-		for i = 1, own_indx-1 do
+		for i = 1, own_indx - 1 do
 			sibling_snippets[i]:subtree_set_pos_rgrav(pos, -1, false)
 		end
 		-- set rgrav true for snippets/nodes where the left boundary
