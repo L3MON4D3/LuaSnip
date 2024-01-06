@@ -256,7 +256,10 @@ local function init_snippet_context(context, opts)
 		)
 		engine = trig_engines[engine_name]
 	end
-	effective_context.trig_matcher = engine(effective_context.trigger)
+	-- make sure to pass through nil-trigEngineOpts, they will be recognized and
+	-- we will get a default-version of that function instead of generating a
+	-- curried (?) version of it (which would waste space I think).
+	effective_context.trig_matcher = engine(effective_context.trigger, context.trigEngineOpts)
 
 	effective_context.resolveExpandParams = generate_resolve_expand_params_func(
 		context.condition or opts.condition,

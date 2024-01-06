@@ -248,15 +248,15 @@ s({trig="trigger"}, {})
 
     Besides these predefined engines, it is also possible to create new ones:
     Instead of a string, pass a function which satisfies
-    `trigEngine(trigger) -> (matcher(line_to_cursor, trigger) -> whole_match,
-    captures)`
-    (ie. the function receives `trig`, can, for example, precompile a regex, and
-    then returns a function responsible for determining whether the current
-    cursor-position (represented by the line up to the cursor) matches the
-    trigger (it is passed again here so engines which don't do any
-    trigger-specific work (like compilation) can just return a static
-    `matcher`), and what the capture-groups are).
-    The `lua`-engine, for example, can be (and is!) implemented like this:
+    `trigEngine(trigger, opts) -> (matcher(line_to_cursor, trigger) ->
+    whole_match, captures)`
+    (ie. the function receives `trig` and `trigEngineOpts` can, for example,
+    precompile a regex, and then returns a function responsible for determining
+    whether the current cursor-position (represented by the line up to the
+    cursor) matches the trigger (it is passed again here so engines which don't
+    do any trigger-specific work (like compilation) can just return a static
+    `matcher`), and what the capture-groups are).  
+    The `lua`-engine, for example, can be implemented like this:
     ```lua
     local function matcher(line_to_cursor, trigger)
         -- look for match which ends at the cursor.
@@ -289,6 +289,16 @@ s({trig="trigger"}, {})
     The predefined engines are defined in
     [`trig_engines.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/nodes/util/trig_engines.lua),
     read it for more examples.
+
+  - `trigEngineOpts`: `table<string, any>`, options for the used trigEngine.  
+    The valid options are:
+    * `max_len`: number, upper bound on the length of the trigger.  
+      If this is set, the `line_to_cursor` will be truncated (from the cursor of
+      course) to `max_len` characters before performing the match.  
+      This is implemented because feeding long `line_to_cursor` into eg. the
+      pattern-trigEngine will hurt performance quite a bit (see issue
+      Luasnip#1103).  
+      This option is implemented for all `trigEngines`. 
 
   - `docstring`: string, textual representation of the snippet, specified like
     `desc`. Overrides docstrings loaded from json.
