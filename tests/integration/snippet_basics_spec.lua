@@ -1150,17 +1150,21 @@ describe("snippets_basic", function()
 			)
 			feed("i<Space>33")
 			exec_lua("ls.expand()")
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				 c1: 33^                                           |
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 
 			feed("<Cr>333")
 			exec_lua("ls.expand()")
-			screen:expect{grid=[[
+			screen:expect({
+				grid = [[
 				 c1: 33                                           |
 				3c1: 33^                                           |
-				{2:-- INSERT --}                                      |]]}
+				{2:-- INSERT --}                                      |]],
+			})
 		end)
 	end
 
