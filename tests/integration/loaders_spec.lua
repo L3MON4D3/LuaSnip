@@ -161,6 +161,121 @@ describe("loaders:", function()
 		assert.are.same(3, exec_lua('return #ls.get_snippets("vim")'))
 	end)
 
+	it("lua-loader respects include.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_lua").load({ paths={"%s"}, include = {"all"} }) ]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets"
+			)
+		)
+
+		exec("set ft=lua")
+		feed("itrig2")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			trig2^                                             |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+	it("lua-loader respects exclude.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_lua").load({ paths={"%s"}, exclude = {"lua"} }) ]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/luasnippets"
+			)
+		)
+
+		exec("set ft=lua")
+		feed("itrig2")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			trig2^                                             |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+	it("snipmate-loader respects include.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_snipmate").load({ paths={"%s"}, include = {"all"} }) ]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets"
+			)
+		)
+
+		exec("set ft=lua")
+		feed("isnipmate_lua1")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			snipmate_lua1^                                     |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+	it("snipmate-loader respects exclude.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_snipmate").load({ paths={"%s"}, exclude = {"lua"} }) ]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/snipmate-snippets/snippets"
+			)
+		)
+
+		exec("set ft=lua")
+		feed("isnipmate_lua1")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			snipmate_lua1^                                     |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+	it("vscode-loader respects include.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_vscode").load({ paths={"%s"}, include = {"all"} }) ]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/vscode-snippets"
+			)
+		)
+
+		exec("set ft=lua")
+		feed("ivscode_lua1")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			vscode_lua1^                                       |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+	it("vscode-loader respects exclude.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_vscode").load({ paths={"%s"}, exclude = {"lua"} }) ]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/vscode-snippets"
+			)
+		)
+
+		exec("set ft=lua")
+		feed("ivscode_lua1")
+		exec_lua("ls.expand()")
+		screen:expect{grid=[[
+			vscode_lua1^                                       |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]}
+	end)
+
 	it("loads paths with invalid paths ditched (vscode)", function()
 		exec_lua(string.format(
 			[[require("luasnip.loaders.from_vscode").load({paths={"%s", "%s"}})]],
@@ -936,4 +1051,8 @@ describe("loaders:", function()
 			})
 		end
 	)
+
+	it("include/exclude are respected", function()
+		
+	end)
 end)

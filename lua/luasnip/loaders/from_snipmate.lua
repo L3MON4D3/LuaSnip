@@ -177,13 +177,17 @@ function Collection.new(
 				return nil
 			end
 			if snipmate_package_file_filter(path) then
-				if ft_filter(path) then
+				local path_ft = loader_util.collection_file_ft(root, path)
+				if ft_filter(path_ft) then
 					return "load"
 				end
 				return "collection"
 			end
 			return nil
 		end,
+		-- sometimes we don't want the full categorize-file-data, only which
+		-- filetypes should be loaded.
+		ft_filter = ft_filter,
 
 		add_opts = add_opts,
 		lazy = lazy,
@@ -299,6 +303,10 @@ function Collection:load_file(path, ft, skip_load_mode)
 	if skip_load_mode == "SkipIfLoaded" and self.loaded_path_fts[path][ft] then
 		return
 	end
+	-- ignore load_file if ft is excluded/not included.
+	if not self.ft_filter(ft) then
+		return
+	end
 
 	log.info("Adding snippets for filetype `%s` from file `%s`", ft, path)
 
@@ -342,10 +350,17 @@ function Collection:load_file(path, ft, skip_load_mode)
 	)
 
 	-- get all filetypes this one extends (directly or transitively), and load
-	-- their files.
+	-- their files for ft.
 	local load_fts = self.ft_extensions:connected_component(ft, "Backward")
 	for _, extended_ft in ipairs(load_fts) do
 		for file, _ in pairs(self.collection_files_by_ft[extended_ft]) do
+			-- check which filetypes a file with filetype extended_ft has to be
+			-- loaded for currently!! (ie. which filetypes directly or
+			-- transitively extend extended_ft.  
+			-- The reason we can't just check that statically once, or just load
+			-- a file for the filetypes its filetype is initially extended by is
+			-- that the extends-graph may change on each `load_file`, and we
+			-- want to respect these changes.
 			for _, file_ft in
 				ipairs(
 					self.ft_extensions:connected_component(

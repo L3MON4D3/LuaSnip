@@ -202,7 +202,7 @@ function Collection.new(
 	local ft_filter = loader_util.ft_filter(include_ft, exclude_ft)
 	local o = setmetatable({
 		root = root,
-		file_filter = function(path)
+		file_filter = function(path, ft)
 			if not path:sub(1, #root) == root then
 				log.warn(
 					"Tried to filter file `%s`, which is not inside the root `%s`.",
@@ -211,7 +211,7 @@ function Collection.new(
 				)
 				return false
 			end
-			return lua_package_file_filter(path) and ft_filter(path)
+			return lua_package_file_filter(path) and ft_filter(ft)
 		end,
 		add_opts = add_opts,
 		lazy = lazy,
@@ -231,9 +231,10 @@ function Collection.new(
 	local ok, err_or_watcher = pcall(tree_watcher, root, 2, {
 		-- don't handle removals for now.
 		new_file = function(path)
+			local path_ft = loader_util.collection_file_ft(o.root, path)
 			-- detected new file, make sure it is allowed by our filters.
-			if o.file_filter(path) then
-				o:add_file(path, loader_util.collection_file_ft(o.root, path))
+			if o.file_filter(path, path_ft) then
+				o:add_file(path, path_ft)
 			end
 		end,
 		change_file = function(path)
