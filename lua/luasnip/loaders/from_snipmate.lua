@@ -356,7 +356,7 @@ function Collection:load_file(path, ft, skip_load_mode)
 		for file, _ in pairs(self.collection_files_by_ft[extended_ft]) do
 			-- check which filetypes a file with filetype extended_ft has to be
 			-- loaded for currently!! (ie. which filetypes directly or
-			-- transitively extend extended_ft.  
+			-- transitively extend extended_ft.
 			-- The reason we can't just check that statically once, or just load
 			-- a file for the filetypes its filetype is initially extended by is
 			-- that the extends-graph may change on each `load_file`, and we

@@ -173,12 +173,14 @@ describe("loaders:", function()
 		exec("set ft=lua")
 		feed("itrig2")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			trig2^                                             |
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 	it("lua-loader respects exclude.", function()
 		exec_lua(
@@ -192,12 +194,14 @@ describe("loaders:", function()
 		exec("set ft=lua")
 		feed("itrig2")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			trig2^                                             |
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 	it("snipmate-loader respects include.", function()
 		exec_lua(
@@ -211,12 +215,14 @@ describe("loaders:", function()
 		exec("set ft=lua")
 		feed("isnipmate_lua1")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			snipmate_lua1^                                     |
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 	it("snipmate-loader respects exclude.", function()
 		exec_lua(
@@ -230,50 +236,54 @@ describe("loaders:", function()
 		exec("set ft=lua")
 		feed("isnipmate_lua1")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			snipmate_lua1^                                     |
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 	it("vscode-loader respects include.", function()
 		exec_lua(
 			string.format(
 				[[ require("luasnip.loaders.from_vscode").load({ paths={"%s"}, include = {"all"} }) ]],
-				os.getenv("LUASNIP_SOURCE")
-					.. "/tests/data/vscode-snippets"
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
 			)
 		)
 
 		exec("set ft=lua")
 		feed("ivscode_lua1")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			vscode_lua1^                                       |
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 	it("vscode-loader respects exclude.", function()
 		exec_lua(
 			string.format(
 				[[ require("luasnip.loaders.from_vscode").load({ paths={"%s"}, exclude = {"lua"} }) ]],
-				os.getenv("LUASNIP_SOURCE")
-					.. "/tests/data/vscode-snippets"
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
 			)
 		)
 
 		exec("set ft=lua")
 		feed("ivscode_lua1")
 		exec_lua("ls.expand()")
-		screen:expect{grid=[[
+		screen:expect({
+			grid = [[
 			vscode_lua1^                                       |
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]}
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("loads paths with invalid paths ditched (vscode)", function()
@@ -1052,7 +1062,5 @@ describe("loaders:", function()
 		end
 	)
 
-	it("include/exclude are respected", function()
-		
-	end)
+	it("include/exclude are respected", function() end)
 end)
