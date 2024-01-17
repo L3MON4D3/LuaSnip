@@ -508,24 +508,38 @@ local function refocus(from, to)
 
 	-- leave_children on all from-nodes except the original from.
 	if #from_snip_path > 0 then
-		-- we know that the first node is from.
-		local ok1 = pcall(leave_nodes_between, from.parent.snippet, from, true)
-		-- leave_nodes_between does not affect snippet, so that has to be left
-		-- here.
-		-- snippet does not have input_leave_children, so only input_leave
-		-- needs to be called.
-		local ok2 =
-			pcall(from.parent.snippet.input_leave, from.parent.snippet, true)
+		local ok1, ok2
+		if from.type == types.exitNode then
+			ok1 = pcall(from.input_leave, from, true)
+			ok2 = true
+		else
+			-- we know that the first node is from.
+			ok1 = pcall(leave_nodes_between, from.parent.snippet, from, true)
+			-- leave_nodes_between does not affect snippet, so that has to be left
+			-- here.
+			-- snippet does not have input_leave_children, so only input_leave
+			-- needs to be called.
+			ok2 =
+				pcall(from.parent.snippet.input_leave, from.parent.snippet, true)
+		end
 		if not ok1 or not ok2 then
 			from.parent.snippet:remove_from_jumplist()
 		end
 	end
 	for i = 2, #from_snip_path do
 		local node = from_snip_path[i]
-		local ok1 = pcall(node.input_leave_children, node)
-		local ok2 = pcall(leave_nodes_between, node.parent.snippet, node, true)
-		local ok3 =
-			pcall(node.parent.snippet.input_leave, node.parent.snippet, true)
+		local ok1, ok2, ok3
+		ok1 = pcall(node.input_leave_children, node)
+
+		if node.type == types.exitNode then
+			ok2 = pcall(node.input_leave, node, true)
+			ok3 = true
+		else
+			ok2 = pcall(leave_nodes_between, node.parent.snippet, node, true)
+			ok3 =
+				pcall(node.parent.snippet.input_leave, node.parent.snippet, true)
+		end
+
 		if not ok1 or not ok2 or not ok3 then
 			from.parent.snippet:remove_from_jumplist()
 		end
@@ -583,10 +597,10 @@ local function refocus(from, to)
 		local node = to_snip_path[i]
 		if node.type ~= types.exitNode then
 			node.parent.snippet:input_enter(true)
+			enter_nodes_between(node.parent.snippet, node, true)
 		else
-			to.parent.snippet:input_leave(true)
+			node:input_enter(true)
 		end
-		enter_nodes_between(node.parent.snippet, node, true)
 		node:input_enter_children()
 	end
 	if #to_snip_path > 0 then
