@@ -1431,4 +1431,25 @@ describe("snippets_basic", function()
 		exec_lua([[ls.jump( 1)]])
 		screen:expect({ unchanged = true })
 	end)
+
+	it("node-event is not triggered twice for exitNode.", function()
+		exec_lua[[
+			counter = 0
+			snip = s("mk", t"asdf", {callbacks = {[-1] = {[events.leave] = function()
+				counter = counter + 1
+			end}}})
+		]]
+		exec_lua([[ls.snip_expand(snip)]])
+		assert.are.same(
+			1,
+			exec_lua("return counter")
+		)
+
+		-- +1 for entering the exit-node of the second expansion.
+		exec_lua([[ls.snip_expand(snip)]])
+		assert.are.same(
+			2,
+			exec_lua("return counter")
+		)
+	end)
 end)
