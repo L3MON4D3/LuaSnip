@@ -52,6 +52,13 @@ else
 	end
 end
 
+---@alias LogLevel "error" | "warn" | "info" | "debug" | "none"
+
+---@class LuasnipLog
+---@field new fun(module_name: string): table<string, function>
+---@field open fun(): nil
+---@field ping fun(): nil
+---@field set_loglevel fun(target_level: LogLevel): nil
 local M = {}
 
 local log = {
@@ -73,7 +80,8 @@ local log = {
 -- will be initialized later on, by set_loglevel.
 local effective_log
 
--- levels sorted by importance, descending.
+---@type table<integer, LogLevel>
+---levels sorted by importance, descending.
 local loglevels = { "error", "warn", "info", "debug" }
 
 -- special key none disable all logging.

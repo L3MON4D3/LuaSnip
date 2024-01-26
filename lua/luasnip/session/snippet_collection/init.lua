@@ -105,6 +105,7 @@ local by_ft_snippets_mt = {
 setmetatable(by_ft.snippets, by_ft_snippets_mt)
 setmetatable(by_ft.autosnippets, by_ft_snippets_mt)
 
+---@type table<integer, table>
 local by_id = setmetatable({}, {
 	-- make by_id-table weak (v).
 	-- this means it won't be necessary to explicitly nil values (snippets) in
@@ -295,6 +296,9 @@ function M.get_snippets(ft, type)
 	end
 end
 
+---@alias GetIdSnippet fun(id: integer): table
+
+---@type GetIdSnippet
 function M.get_id_snippet(id)
 	return by_id[id]
 end

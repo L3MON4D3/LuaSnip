@@ -11,7 +11,7 @@ local function set_snip_env(target_conf_defaults, user_config)
 	-- either "set" or "extend", make sure it does not appear in the final snip_env.
 	local snip_env_behaviour = user_config.snip_env.__snip_env_behaviour ~= nil
 			and user_config.snip_env.__snip_env_behaviour
-		or "extend"
+			or "extend"
 	assert(
 		snip_env_behaviour == "set" or snip_env_behaviour == "extend",
 		"Unknown __snip_env_behaviour, `" .. snip_env_behaviour .. "`"
@@ -34,7 +34,16 @@ end
 -- declare here to use in set_config.
 local c
 
+---@class UserConfig
+---@field ext_opts table<string, table>
+---@field history boolean
+---@field update_events string[]
+---@field updateevents string[]
+
+---@alias SetConfig fun(user_config: UserConfig)
+
 c = {
+	---@type SetConfig
 	set_config = function(user_config)
 		user_config = user_config or {}
 		local conf = vim.deepcopy(conf_defaults)
@@ -43,13 +52,13 @@ c = {
 		ext_util.clear_invalid(conf.ext_opts)
 		conf.ext_opts = ext_util.child_complete(conf.ext_opts)
 		user_config.ext_opts =
-			ext_util.child_complete(user_config.ext_opts or {})
+				ext_util.child_complete(user_config.ext_opts or {})
 		ext_util.child_extend(user_config.ext_opts, conf.ext_opts)
 
 		-- use value from update_events, then updateevents.
 		-- also nil updateevents, don't spill it into the main config.
 		user_config.update_events = user_config.update_events
-			or user_config.updateevents
+				or user_config.updateevents
 		user_config.updateevents = nil
 
 		set_snip_env(conf, user_config)

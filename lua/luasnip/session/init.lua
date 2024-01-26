@@ -1,3 +1,16 @@
+---@class LuasnipSession
+---@field active_choice_nodes table
+---@field config table
+---@field current_nodes table<integer, table>
+---@field ft_redirect table
+---@field get_snip_env fun(): table
+---@field jump_active boolean
+---@field last_expand_opts any
+---@field last_expand_snip any
+---@field latest_load_ft unknown
+---@field loaded_fts table
+---@field ns_id number
+---@field snippet_roots table
 -- used to store values like current nodes or the active node for autocommands.
 local M = {}
 
@@ -45,6 +58,7 @@ M.config = require("luasnip.default_config")
 
 M.loaded_fts = {}
 
+---@return table
 function M.get_snip_env()
 	return M.config.snip_env
 end
