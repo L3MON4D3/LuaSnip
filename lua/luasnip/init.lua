@@ -109,15 +109,15 @@ local unlink_set_adjacent_as_current
 local function unlink_set_adjacent_as_current_no_log(snippet)
 	-- prefer setting previous/outer insertNode as current node.
 	local next_current =
-	-- either pick i0 of snippet before, or i(-1) of next snippet.
-			snippet.prev.prev or snippet:next_node()
+		-- either pick i0 of snippet before, or i(-1) of next snippet.
+		snippet.prev.prev or snippet:next_node()
 	snippet:remove_from_jumplist()
 
 	if next_current then
 		-- if snippet was active before, we need to now set its parent to be no
 		-- longer inner_active.
 		if
-				snippet.parent_node == next_current and next_current.inner_active
+			snippet.parent_node == next_current and next_current.inner_active
 		then
 			snippet.parent_node:input_leave_children()
 		else
@@ -178,7 +178,7 @@ local function jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
 		session.current_nodes[vim.api.nvim_get_current_buf()] =
-				util.no_region_check_wrap(safe_jump_current, dir)
+			util.no_region_check_wrap(safe_jump_current, dir)
 		return true
 	else
 		return false
@@ -193,12 +193,12 @@ end
 local function jumpable(dir)
 	-- node is jumpable if there is a destination.
 	return jump_destination(dir)
-			~= session.current_nodes[vim.api.nvim_get_current_buf()]
+		~= session.current_nodes[vim.api.nvim_get_current_buf()]
 end
 
 local function expandable()
 	next_expand, next_expand_params =
-			match_snippet(util.get_current_line_to_cursor(), "snippets")
+		match_snippet(util.get_current_line_to_cursor(), "snippets")
 	return next_expand ~= nil
 end
 
@@ -214,7 +214,7 @@ local function in_snippet()
 	end
 	local snippet = node.parent.snippet
 	local ok, snip_begin_pos, snip_end_pos =
-			pcall(snippet.mark.pos_begin_end, snippet.mark)
+		pcall(snippet.mark.pos_begin_end, snippet.mark)
 	if not ok then
 		-- if there was an error getting the position, the snippets text was
 		-- most likely removed, resulting in messed up extmarks -> error.
@@ -270,7 +270,7 @@ local function snip_expand(snippet, opts)
 	snip.captures = opts.expand_params.captures or {}
 
 	local info =
-	{ trigger = snip.trigger, captures = snip.captures, pos = opts.pos }
+		{ trigger = snip.trigger, captures = snip.captures, pos = opts.pos }
 	local env = Environ:new(info)
 	Environ:override(env, opts.expand_params.env_override or {})
 
@@ -308,10 +308,10 @@ local function snip_expand(snippet, opts)
 
 	-- jump_into-callback returns new active node.
 	session.current_nodes[vim.api.nvim_get_current_buf()] =
-			opts.jump_into_func(snip)
+		opts.jump_into_func(snip)
 
 	local buf_snippet_roots =
-			session.snippet_roots[vim.api.nvim_get_current_buf()]
+		session.snippet_roots[vim.api.nvim_get_current_buf()]
 	if not session.config.keep_roots and #buf_snippet_roots > 1 then
 		-- if history is not set, and there is more than one snippet-root,
 		-- remove the other one.
@@ -354,7 +354,7 @@ local function expand(opts)
 		next_expand_params = nil
 	else
 		snip, expand_params =
-				match_snippet(util.get_current_line_to_cursor(), "snippets")
+			match_snippet(util.get_current_line_to_cursor(), "snippets")
 	end
 	if snip then
 		local jump_into_func = opts and opts.jump_into_func
@@ -362,13 +362,13 @@ local function expand(opts)
 		local cursor = util.get_cursor_0ind()
 
 		local clear_region = expand_params.clear_region
-				or {
-					from = {
-						cursor[1],
-						cursor[2] - #expand_params.trigger,
-					},
-					to = cursor,
-				}
+			or {
+				from = {
+					cursor[1],
+					cursor[2] - #expand_params.trigger,
+				},
+				to = cursor,
+			}
 
 		-- override snip with expanded copy.
 		snip = snip_expand(snip, {
@@ -385,17 +385,17 @@ end
 
 local function expand_auto()
 	local snip, expand_params =
-			match_snippet(util.get_current_line_to_cursor(), "autosnippets")
+		match_snippet(util.get_current_line_to_cursor(), "autosnippets")
 	if snip then
 		local cursor = util.get_cursor_0ind()
 		local clear_region = expand_params.clear_region
-				or {
-					from = {
-						cursor[1],
-						cursor[2] - #expand_params.trigger,
-					},
-					to = cursor,
-				}
+			or {
+				from = {
+					cursor[1],
+					cursor[2] - #expand_params.trigger,
+				},
+				to = cursor,
+			}
 		snip = snip_expand(snip, {
 			expand_params = expand_params,
 			-- clear trigger-text.
@@ -463,7 +463,7 @@ local function safe_choice_action(snip, ...)
 end
 local function change_choice(val)
 	local active_choice =
-			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
 	local new_active = util.no_region_check_wrap(
 		safe_choice_action,
@@ -481,7 +481,7 @@ end
 ---@type SetChoice
 local function set_choice(choice_indx)
 	local active_choice =
-			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
 	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
@@ -501,7 +501,7 @@ end
 ---@type GetCurrentChoices
 local function get_current_choices()
 	local active_choice =
-			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
 
 	---@type string[]
@@ -626,7 +626,7 @@ local function load_snippet_docstrings(snippet_table)
 	-- get size for fs_read()
 	local cache_size = vim.loop.fs_fstat(docstring_cache_fd).size
 	local docstrings = util.json_decode(
-	-- offset 0.
+		-- offset 0.
 		vim.loop.fs_read(docstring_cache_fd, cache_size, 0)
 	)
 
@@ -685,7 +685,7 @@ local function exit_out_of_region(node)
 	end
 
 	local ok, snip_begin_pos, snip_end_pos =
-			pcall(snippet.mark.pos_begin_end, snippet.mark)
+		pcall(snippet.mark.pos_begin_end, snippet.mark)
 
 	if not ok then
 		unlink_set_adjacent_as_current(
