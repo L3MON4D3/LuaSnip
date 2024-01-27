@@ -245,6 +245,7 @@ local function _jump_into_default(snippet)
 end
 
 ---@class Snippet
+---@field id integer
 ---@field name string
 ---@field trigger string
 ---@field trigger_expand unknown
@@ -880,19 +881,40 @@ end
 
 
 ---@alias SnippetFunction fun(context: any, nodes: any, opts: any): unknown
----@alias TextNode fun(static_text: string, opts: any): unknown
+---@alias TextNodeFunction fun(static_text: string, opts: any): unknown
 ---@alias FunctionNode fun(func: function, args: any, opts: any): unknown
----@alias InsertNode fun(pos: string, static_text: any, opts: any): unknown
----@alias ChoiceNode fun(pos: any, choices: any, opts: any): unknown
----@alias DynamicNode fun(pos: any, func: function, args: any, opts: any): unknown
+---@alias InsertNodeFunction fun(pos: string, static_text: any, opts: any): unknown
+---@alias ChoiceNodeFunction fun(pos: any, choices: any, opts: any): unknown
+---@alias DynamicNodeFunction fun(func: function, args: any, opts: any): unknown
+---@alias RestoreNodeFunction fun(opts: any): unknown
+---@alias ParentIndexer fun(indx: any): unknown
+---@alias IndentSnippetNode fun(pos: any, nodes: any, indent_text: string, opts: any): unknown
+---@alias MultiSnippet fun(contexts: any, nodes: any, opts: any): unknown
 
 ---@class LazyDefs
 ---@field s SnippetFunction
 ---@field sn SnippetFunction
----@field t TextNode
+---@field t TextNodeFunction
 ---@field f FunctionNode
----@field i InsertNode
----@field c ChoiceNode
+---@field i InsertNodeFunction
+---@field c ChoiceNodeFunction
+---@field d DynamicNodeFunction
+---@field r RestoreNodeFunction
+---@field snippet SnippetFunction
+---@field snippet_node SnippetFunction
+---@field parent_indexer ParentIndexer
+---@field indent_snippet_node IndentSnippetNode
+---@field text_node TextNodeFunction
+---@field function_node FunctionNode
+---@field insert_node InsertNodeFunction
+---@field choice_node ChoiceNodeFunction
+---@field dynamic_node DynamicNodeFunction
+---@field restore_node RestoreNodeFunction
+---@field parser Parser
+---@field config UserConfig
+---@field multi_snippet MultiSnippet
+---@field snippet_source SnippetSource
+---@field select_keys string
 -- make these lazy, such that we don't have to load them before it's really
 -- necessary (drives up cost of initial load, otherwise).
 -- stylua: ignore
@@ -915,12 +937,13 @@ local lazy_defs = {
 	choice_node = function() return require("luasnip.nodes.choiceNode").C end,
 	dynamic_node = function() return require("luasnip.nodes.dynamicNode").D end,
 	restore_node = function() return require("luasnip.nodes.restoreNode").R end,
-	parser = function() return require("luasnip.util.parser") end,
-	config = function() return require("luasnip.config") end,
-	multi_snippet = function() return require("luasnip.nodes.multiSnippet").new_multisnippet end,
-	snippet_source = function() return require("luasnip.session.snippet_collection.source") end,
-	select_keys = function() return require("luasnip.util.select").select_keys end
+	parser = function() return require("luasnip.util.parser") end, ---@diagnostic disable-line: assign-type-mismatch
+	config = function() return require("luasnip.config") end,---@diagnostic disable-line: assign-type-mismatch
+	multi_snippet = function() return require("luasnip.nodes.multiSnippet").new_multisnippet end,---@diagnostic disable-line: assign-type-mismatch
+	snippet_source = function() return require("luasnip.session.snippet_collection.source") end,---@diagnostic disable-line: assign-type-mismatch
+	select_keys = function() return require("luasnip.util.select").select_keys end---@diagnostic disable-line: assign-type-mismatch
 }
+
 
 ---@class LazyT
 ---@field expand_or_jumpable fun(): boolean
@@ -1013,5 +1036,18 @@ local lazy_t = {
 
 ---@type LazyT|LazyDefs
 ls = lazy_table(lazy_t, lazy_defs)
+
+
+
+
+
+ls.d()
+
+ls.session.hello
+
+ls.parser.parse_snippet(2)
+
+ls.snip_expand("mama")
+
 
 return ls

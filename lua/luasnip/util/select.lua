@@ -57,10 +57,11 @@ local function restore_registers(restore_data)
 	end
 end
 
+---@type string
 -- subtle: `:lua` exits VISUAL, which means that the '< '>-marks will be set correctly!
 -- Afterwards, we can just use <cmd>lua, which does not change the mode.
 M.select_keys =
-	[[:lua require("luasnip.util.select").pre_cut()<Cr>gv"zs<cmd>lua require('luasnip.util.select').post_cut("z")<Cr>]]
+[[:lua require("luasnip.util.select").pre_cut()<Cr>gv"zs<cmd>lua require('luasnip.util.select').post_cut("z")<Cr>]]
 
 local saved_registers
 local lines
@@ -71,7 +72,7 @@ function M.pre_cut()
 	-- "" is affected since we perform a cut (s), 1-9 also (although :h
 	-- quote_number seems to state otherwise for cuts to specific registers..?).
 	saved_registers =
-		store_registers("", "1", "2", "3", "4", "5", "6", "7", "8", "9", "z")
+			store_registers("", "1", "2", "3", "4", "5", "6", "7", "8", "9", "z")
 
 	-- store data needed for de-indenting lines.
 	start_line = vim.fn.line("'<") - 1
@@ -116,7 +117,7 @@ function M.post_cut(register_name)
 			select_dedent[#select_dedent] = ""
 		else
 			select_dedent[#select_dedent] =
-				select_dedent[#select_dedent]:gsub("^" .. min_indent, "")
+					select_dedent[#select_dedent]:gsub("^" .. min_indent, "")
 		end
 	else
 		-- in block: if indent is in block, remove the part of it that is inside

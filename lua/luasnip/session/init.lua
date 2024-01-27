@@ -11,6 +11,7 @@
 ---@field loaded_fts table
 ---@field ns_id number
 ---@field snippet_roots table
+---@field event_node any
 -- used to store values like current nodes or the active node for autocommands.
 local M = {}
 

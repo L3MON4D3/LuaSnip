@@ -1,5 +1,10 @@
 local id_to_source = {}
 
+---@class SnippetSource
+---@field from_debuginfo fun(debuginfo: table): table
+---@field from_location fun(file: string, opts: table|nil): table
+---@field get fun(snippet: Snippet): Snippet
+---@field set fun(snippet: Snippet, source: table): nil
 local M = {}
 
 function M.from_debuginfo(debuginfo)
