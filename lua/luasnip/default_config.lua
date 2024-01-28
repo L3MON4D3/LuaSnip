@@ -48,6 +48,9 @@ local lazy_snip_env = {
 	events = function()
 		return require("luasnip.util.events")
 	end,
+	k = function()
+		return require("luasnip.nodes.key_indexer").new_key
+	end,
 	ai = function()
 		return require("luasnip.nodes.absolute_indexer")
 	end,
