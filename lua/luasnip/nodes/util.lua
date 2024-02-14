@@ -519,8 +519,11 @@ local function refocus(from, to)
 			-- here.
 			-- snippet does not have input_leave_children, so only input_leave
 			-- needs to be called.
-			ok2 =
-				pcall(from.parent.snippet.input_leave, from.parent.snippet, true)
+			ok2 = pcall(
+				from.parent.snippet.input_leave,
+				from.parent.snippet,
+				true
+			)
 		end
 		if not ok1 or not ok2 then
 			from.parent.snippet:remove_from_jumplist()
@@ -536,8 +539,11 @@ local function refocus(from, to)
 			ok3 = true
 		else
 			ok2 = pcall(leave_nodes_between, node.parent.snippet, node, true)
-			ok3 =
-				pcall(node.parent.snippet.input_leave, node.parent.snippet, true)
+			ok3 = pcall(
+				node.parent.snippet.input_leave,
+				node.parent.snippet,
+				true
+			)
 		end
 
 		if not ok1 or not ok2 or not ok3 then
