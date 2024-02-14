@@ -42,7 +42,7 @@ local function match_snippet(line, type)
 	)
 end
 
----@alias GetSnippets fun(ft: string|nil, opts: table|nil): table
+---@alias GetSnippets fun(ft: string|nil, opts: table|nil): table<string, Snippet[]>
 
 ---@type GetSnippets
 -- ft:
