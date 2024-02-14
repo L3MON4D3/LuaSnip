@@ -111,12 +111,15 @@ function M.session_setup_luasnip(opts)
 		]])
 
 		local version = exec_lua([[ return vim.version() ]])
-		local nvim_07_or_09 = (version.minor == 7 or version.minor == 9) and version.major == 0
+		local nvim_07_or_09 = (version.minor == 7 or version.minor == 9)
+			and version.major == 0
 		if nvim_07_or_09 then
 			-- 0.7 and 0.9 need a different parser than master :/
 			-- (actually, master has a lua-parser built-in, so we don't need to
 			-- load one at all in that case :) )
-			exec_lua([[ts_lang_add("lua", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/lua_07_09.so")]])
+			exec_lua(
+				[[ts_lang_add("lua", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/lua_07_09.so")]]
+			)
 		end
 	end
 
