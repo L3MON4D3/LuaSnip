@@ -70,6 +70,14 @@ end
 
 local builtin_ns_names = vim.inspect(vim.tbl_keys(builtin_namespace.builtin_ns))
 
+---@class EnvNamespaceOpts
+---@field eager unknown
+---@field init unknown
+---@field is_table fun(key: string): boolean
+---@field multiline_vars unknown
+---@field vars unknown
+
+---@type fun(name: string, opts: EnvNamespaceOpts): nil
 local function _env_namespace(name, opts)
 	assert(
 		opts and type(opts) == "table",
@@ -131,6 +139,9 @@ end
 
 _env_namespace("", builtin_namespace)
 
+---@alias EnvNamespace fun(name: string, opts: table): nil
+
+---@type EnvNamespace
 -- The exposed api checks for the names to avoid accidental overrides
 function Environ.env_namespace(name, opts)
 	assert(

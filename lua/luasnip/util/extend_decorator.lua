@@ -1,3 +1,6 @@
+---@class ExtendDecorator
+---@field apply fun(arg: table|nil, extend: table|nil): table
+---@field register fun(fn: function, ...: table[]): nil
 local M = {}
 
 -- map fn -> {arg_indx = int, extend = fn}[]
@@ -8,8 +11,8 @@ local function default_extend(arg, extend)
 end
 
 ---Create a new decorated version of `fn`.
----@param fn The function to create a decorator for.
----@vararg The values to extend with. These should match the descriptions passed
+----@param fn The function to create a decorator for.
+----@vararg The values to extend with. These should match the descriptions passed
 ---in `register`:
 ---```lua
 ---local function somefn(arg1, arg2, opts1, opts2)
@@ -20,7 +23,7 @@ end
 ---	{key = "opts2 is extended with this"},
 ---	{key = "and opts1 with this"})
 ---```
----@return function: The decorated function.
+----@return function: The decorated function.
 function M.apply(fn, ...)
 	local extend_properties = function_properties[fn]
 	assert(

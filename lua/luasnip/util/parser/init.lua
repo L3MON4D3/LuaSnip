@@ -7,6 +7,9 @@ local functions = require("luasnip.util.functions")
 local util = require("luasnip.util.util")
 local extend_decorator = require("luasnip.util.extend_decorator")
 
+---@class Parser
+---@field parse_snippet fun(context: table|number|string, body: string, opts: table|nil): table
+---@field parse_snipmate fun(context: table|number|string, body: string, opts: table|nil): table
 local M = {}
 
 ---Parse snippet represented by `body`.

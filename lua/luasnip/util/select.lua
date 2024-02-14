@@ -57,6 +57,7 @@ local function restore_registers(restore_data)
 	end
 end
 
+---@type string
 -- subtle: `:lua` exits VISUAL, which means that the '< '>-marks will be set correctly!
 -- Afterwards, we can just use <cmd>lua, which does not change the mode.
 M.select_keys =

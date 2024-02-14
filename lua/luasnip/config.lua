@@ -34,7 +34,16 @@ end
 -- declare here to use in set_config.
 local c
 
+---@class UserConfig
+---@field ext_opts table<string, table>
+---@field history boolean
+---@field update_events string[]
+---@field updateevents string[]
+
+---@alias SetConfig fun(user_config: UserConfig)
+
 c = {
+	---@type SetConfig
 	set_config = function(user_config)
 		user_config = user_config or {}
 		local conf = vim.deepcopy(conf_defaults)

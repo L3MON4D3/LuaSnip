@@ -325,7 +325,9 @@ local function find_outer_snippet(node)
 	return node
 end
 
+---@param fts string[]
 local function redirect_filetypes(fts)
+	---@type string[]
 	local snippet_fts = {}
 
 	for _, ft in ipairs(fts) do
@@ -334,7 +336,9 @@ local function redirect_filetypes(fts)
 
 	return snippet_fts
 end
-
+---@generic T : table
+---@param list T
+---@return T
 local function deduplicate(list)
 	vim.validate({ list = { list, "table" } })
 	local ret = {}
