@@ -1448,7 +1448,7 @@ describe("snippets_basic", function()
 	end)
 
 	it("node-callbacks are executed correctly.", function()
-		exec_lua[[
+		exec_lua([[
 			enter_qwer = false
 			enter_qwer_via_parent = false
 
@@ -1461,12 +1461,12 @@ describe("snippets_basic", function()
 			end}} } )
 
 			ls.snip_expand(snip)
-		]]
+		]])
 
 		assert.are.same(true, exec_lua("return enter_qwer"))
 		assert.are.same(true, exec_lua("return enter_qwer_via_parent"))
 
-		exec_lua[[
+		exec_lua([[
 			enter_snode = false
 			enter_snode_m1 = false
 			enter_snode_via_parent = false
@@ -1486,7 +1486,7 @@ describe("snippets_basic", function()
 			end}}, } )
 
 			ls.snip_expand(snip)
-		]]
+		]])
 
 		assert.are.same(true, exec_lua("return enter_snode"))
 		assert.are.same(true, exec_lua("return enter_snode_m1"))
