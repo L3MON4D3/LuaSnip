@@ -106,12 +106,21 @@ function M.session_setup_luasnip(opts)
 					end
 				or vim.treesitter.require_language
 
-			-- this is a nop on new versions of neovim, where the lua-parser is shipped by default.
-			ts_lang_add("lua", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/lua.so")
-
 			ts_lang_add("json", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/json.so")
 			ts_lang_add("jsonc", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/jsonc.so")
 		]])
+
+		local version = exec_lua([[ return vim.version() ]])
+		local nvim_07_or_09 = (version.minor == 7 or version.minor == 9)
+			and version.major == 0
+		if nvim_07_or_09 then
+			-- 0.7 and 0.9 need a different parser than master :/
+			-- (actually, master has a lua-parser built-in, so we don't need to
+			-- load one at all in that case :) )
+			exec_lua(
+				[[ts_lang_add("lua", os.getenv("LUASNIP_SOURCE") .. "/tests/parsers/lua_07_09.so")]]
+			)
+		end
 	end
 
 	helpers.exec_lua(
