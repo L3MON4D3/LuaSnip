@@ -72,6 +72,12 @@ function M.prevent_jsregexp()
 	]])
 end
 
+-- neovim#ec37101abea724286967f973bd3bf73fe432bd0d changes the default-color of visual.
+-- Just set it to the old default so the tests don't have to be changed.
+function M.setup_compat_colors()
+	helpers.exec("hi Visual guifg=NONE guibg=LightGray")
+end
+
 function M.session_setup_luasnip(opts)
 	opts = opts or {}
 	local no_snip_globals = opts.no_snip_globals ~= nil and opts.no_snip_globals
@@ -178,6 +184,8 @@ function M.session_setup_luasnip(opts)
 			k = require("luasnip.nodes.key_indexer").new_key
 		]])
 	end
+
+	M.setup_compat_colors()
 end
 
 function M.static_docstring_test(snip_str, static, docstring)
