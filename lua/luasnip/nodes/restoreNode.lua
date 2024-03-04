@@ -302,6 +302,20 @@ function RestoreNode:extmarks_valid()
 	return node_util.generic_extmarks_valid(self, self.snip)
 end
 
+function RestoreNode:subtree_do(opts)
+	opts.pre(self)
+	if self.snip then
+		self.snip:subtree_do(opts)
+	else
+		if opts.static then
+			-- try using stored snippet for recursion when static and regular
+			-- snip does not exist.
+			self.parent.snippet.stored[self.key]:subtree_do(opts)
+		end
+	end
+	opts.post(self)
+end
+
 return {
 	R = R,
 }

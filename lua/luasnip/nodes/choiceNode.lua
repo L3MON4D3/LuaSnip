@@ -422,6 +422,12 @@ function ChoiceNode:extmarks_valid()
 	return node_util.generic_extmarks_valid(self, self.active_choice)
 end
 
+function ChoiceNode:subtree_do(opts)
+	opts.pre(self)
+	self.active_choice:subtree_do(opts)
+	opts.post(self)
+end
+
 return {
 	C = C,
 }
