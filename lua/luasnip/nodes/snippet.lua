@@ -107,11 +107,6 @@ function Snippet:init_nodes()
 				insert_nodes[node.pos] = node
 			end
 		end
-
-		node.update_dependents = function(node)
-			node:_update_dependents()
-			node.parent:update_dependents()
-		end
 	end
 
 	if insert_nodes[1] then
@@ -361,16 +356,6 @@ local function _S(snip, nodes, opts)
 
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
-
-	-- if the snippet is expanded inside another snippet (can be recognized by
-	-- non-nil parent_node), the node of the snippet this one is inside has to
-	-- update its dependents.
-	function snip:_update_dependents()
-		if self.parent_node then
-			self.parent_node:update_dependents()
-		end
-	end
-	snip.update_dependents = snip._update_dependents
 
 	snip:init_nodes()
 
@@ -661,6 +646,7 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 				-- enter current node, it will contain the new snippet.
 				current_node:input_enter_children()
 			end
+
 		else
 			-- if no parent_node, completely leave.
 			node_util.refocus(current_node, nil)
@@ -770,7 +756,7 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	self.mark = mark(old_pos, pos, mark_opts)
 
 	self:update()
-	self:update_all_dependents()
+	self:update_dependents({children=true})
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
 	start_node.mark = self.nodes[1].mark
@@ -940,6 +926,8 @@ function Snippet:fake_expand(opts)
 
 	self:indent("")
 
+	self.___static_expanded = true
+
 	-- ext_opts don't matter here, just use convenient values.
 	self.effective_child_ext_opts = self.child_ext_opts
 	self.ext_opts = self.node_ext_opts
@@ -1107,7 +1095,6 @@ function Snippet:input_leave(_, dry_run)
 	end
 
 	self:event(events.leave)
-	self:update_dependents()
 
 	-- set own ext_opts to snippet-passive, there is no passive for snippets.
 	self.mark:update_opts(self.ext_opts.snippet_passive)
@@ -1304,23 +1291,6 @@ function Snippet:set_argnodes(dict)
 	node_mod.Node.set_argnodes(self, dict)
 	for _, node in ipairs(self.nodes) do
 		node:set_argnodes(dict)
-	end
-end
-
-function Snippet:update_all_dependents()
-	-- call the version that only updates this node.
-	self:_update_dependents()
-	-- only for insertnodes, others will not have dependents.
-	for _, node in ipairs(self.insert_nodes) do
-		node:update_all_dependents()
-	end
-end
-function Snippet:update_all_dependents_static()
-	-- call the version that only updates this node.
-	self:_update_dependents_static()
-	-- only for insertnodes, others will not have dependents.
-	for _, node in ipairs(self.insert_nodes) do
-		node:update_all_dependents_static()
 	end
 end
 
@@ -1570,6 +1540,13 @@ function Snippet:subtree_do(opts)
 	opts.post(self)
 end
 
+function Snippet:get_snippet()
+	if self.type == types.snippet then
+		return self
+	else
+		return self.parent.snippet
+	end
+end
 
 -- affect all children nested into this snippet.
 function Snippet:subtree_leave_entered()
@@ -1587,6 +1564,7 @@ function Snippet:subtree_leave_entered()
 		end
 	end
 end
+
 return {
 	Snippet = Snippet,
 	S = S,

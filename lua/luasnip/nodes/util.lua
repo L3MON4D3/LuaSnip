@@ -1,4 +1,5 @@
 local util = require("luasnip.util.util")
+local tbl_util = require("luasnip.util.table")
 local ext_util = require("luasnip.util.ext_opts")
 local types = require("luasnip.util.types")
 local key_indexer = require("luasnip.nodes.key_indexer")
@@ -771,6 +772,33 @@ local function nodelist_adjust_rgravs(
 	end
 end
 
+local function find_node_dependents(node)
+	local node_position = node.absolute_insert_position
+	local dict = node:get_snippet().dependents_dict
+	local nodes = {}
+
+	-- this might also be called from a node which does not possess a position!
+	-- (for example, a functionNode may be depended upon via its key)
+	if node_position then
+		node_position[#node_position + 1] = "dependents"
+		vim.list_extend(nodes, dict:find_all(node_position, "dependent") or {})
+		node_position[#node_position] = nil
+	end
+
+	vim.list_extend(
+		nodes,
+		dict:find_all({ node, "dependents" }, "dependent") or {}
+	)
+
+	if node.key then
+		vim.list_extend(
+			nodes,
+			dict:find_all({ "key", node.key, "dependents" }, "dependent") or {}
+		)
+	end
+
+	return nodes
+end
 
 local function node_subtree_do(node, opts)
 	-- provide default-values.
@@ -783,6 +811,48 @@ local function node_subtree_do(node, opts)
 
 	node:subtree_do(opts)
 end
+
+
+local function collect_dependents(node, which, static)
+	local dependents_set = {}
+
+	if which.own then
+		for _, dep in ipairs(find_node_dependents(node)) do
+			dependents_set[dep] = true
+		end
+	end
+	if which.parents then
+		-- find dependents of all ancestors without duplicates.
+		local path_to_root = root_path(node, static)
+		-- remove `node` from path (its dependents are included if `which.own`
+		-- is set)
+		table.remove(path_to_root, 1)
+		for _, ancestor in ipairs(path_to_root) do
+			for _, dep in ipairs(find_node_dependents(ancestor)) do
+				dependents_set[dep] = true
+			end
+		end
+	end
+	if which.children then
+		-- only collects children in same snippet as node.
+		node_subtree_do(node, {
+			pre = function(st_node)
+				-- don't update for self.
+				if st_node == node then
+					return
+				end
+
+				for _, dep in ipairs(find_node_dependents(st_node)) do
+					dependents_set[dep] = true
+				end
+			end,
+			static = static
+		})
+	end
+
+	return tbl_util.set_to_list(dependents_set)
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -805,5 +875,7 @@ return {
 	interactive_node = interactive_node,
 	root_path = root_path,
 	nodelist_adjust_rgravs = nodelist_adjust_rgravs,
+	find_node_dependents = find_node_dependents,
+	collect_dependents = collect_dependents,
 	node_subtree_do = node_subtree_do
 }

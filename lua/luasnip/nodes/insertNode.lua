@@ -100,13 +100,9 @@ function ExitNode:input_leave(no_move, dry_run)
 	end
 end
 
-function ExitNode:_update_dependents() end
 function ExitNode:update_dependents() end
-function ExitNode:update_all_dependents() end
 
-function ExitNode:_update_dependents_static() end
 function ExitNode:update_dependents_static() end
-function ExitNode:update_all_dependents_static() end
 function ExitNode:is_interactive()
 	return true
 end
@@ -265,7 +261,6 @@ function InsertNode:input_leave(_, dry_run)
 	self.input_active = false
 	self:event(events.leave)
 
-	self:update_dependents()
 	self.mark:update_opts(self:get_passive_ext_opts())
 end
 
