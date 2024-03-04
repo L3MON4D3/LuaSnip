@@ -408,9 +408,13 @@ end
 DynamicNode.make_args_absolute = FunctionNode.make_args_absolute
 DynamicNode.set_dependents = FunctionNode.set_dependents
 
-function DynamicNode:resolve_position(position)
+function DynamicNode:resolve_position(position, static)
 	-- position must be 0, there are no other options.
-	return self.snip
+	if static then
+		return self.static_snip
+	else
+		return self.snip
+	end
 end
 
 function DynamicNode:subtree_set_pos_rgrav(pos, direction, rgrav)
