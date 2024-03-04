@@ -2026,12 +2026,13 @@ describe("session", function()
 			{2:-- INSERT --}                                      |]],
 			})
 
-			-- delete snippet-text while an update for the dynamicNode is pending
-			-- => when the dynamicNode is left during `refocus`, the deletion will
-			-- be detected, and snippet removed from the jumplist.
-			feed("<Esc>kkkVjjjjjd")
+			-- delete extmark manually of current node manually, to simulate an
+			-- issue with it.
+			-- => when the dynamicNode is left during `refocus`, the deletion
+			-- will be detected, and snippet removed from the jumplist.
+			exec_lua([[vim.api.nvim_buf_del_extmark(0, ls.session.ns_id, ls.session.current_nodes[1].mark.id)]])
 
-			feed("jifn")
+			feed("Gofn")
 			expand()
 
 			-- make sure the snippet-roots-list is still an array, and we did not

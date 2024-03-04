@@ -134,18 +134,59 @@ local function unlink_current()
 	unlink_set_adjacent_as_current_no_log(current.parent.snippet)
 end
 
--- return next active node.
-local function safe_jump_current(dir, no_move, dry_run)
-	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
-	if not node then
-		return nil
+local store_id = 0
+local function store_cursor_node_relative(node)
+	local data = {}
+
+	local snippet_current_node = node
+
+	-- store for each snippet!
+	-- the innermost snippet may be destroyed, and we would have to restore the
+	-- cursor in a snippet above that.
+	while snippet_current_node do
+		local snip = snippet_current_node:get_snippet()
+
+		local snip_data = {}
+
+		snip_data.key = node.key
+		node.store_id = store_id
+		snip_data.store_id = store_id
+		snip_data.node = snippet_current_node
+
+		store_id = store_id + 1
+
+		snip_data.cursor_end_relative = util.pos_sub(util.get_cursor_0ind(), node.mark:get_endpoint(1))
+
+		data[snip] = snip_data
+
+		snippet_current_node = snip:get_snippet().parent_node
 	end
 
-	local ok, res = pcall(node.jump_from, node, dir, no_move, dry_run)
-	if ok then
-		return res
-	else
-		local snip = node.parent.snippet
+	return data
+end
+
+local function get_corresponding_node(parent, data)
+	return parent:find_node(function(test_node)
+		return (test_node.store_id == data.store_id) or (data.key ~= nil and test_node.key == data.key)
+	end)
+end
+
+local function restore_cursor_pos_relative(node, data)
+	util.set_cursor_0ind(
+		util.pos_add(
+			node.mark:get_endpoint(1),
+			data.cursor_end_relative
+		)
+	)
+end
+
+local function node_update_dependents_preserve_position(node, opts)
+	local restore_data = store_cursor_node_relative(node)
+
+	-- update all nodes that depend on this one.
+	local ok, res = pcall(node.update_dependents, node, {own=true, parents=true})
+	if not ok then
+		local snip = node:get_snippet()
 
 		unlink_set_adjacent_as_current(
 			snip,
@@ -153,9 +194,90 @@ local function safe_jump_current(dir, no_move, dry_run)
 			snip.trigger,
 			res
 		)
-		return session.current_nodes[vim.api.nvim_get_current_buf()]
+		return { jump_done = false, new_node = session.current_nodes[vim.api.nvim_get_current_buf()] }
+	end
+
+	-- update successful => check if the current node is still visible.
+	if node.visible then
+		if not opts.no_move and opts.restore_position then
+			-- node is visible: restore position.
+			local active_snippet = node:get_snippet()
+			restore_cursor_pos_relative(node, restore_data[active_snippet])
+		end
+
+		return { jump_done = false, new_node = node }
+	else
+		-- node not visible => need to find a new node to set as current.
+
+		-- first, find leafmost (starting at node) visible node.
+		local active_snippet = node:get_snippet()
+		while not active_snippet.visible do
+			local parent_node = active_snippet.parent_node
+			if not parent_node then
+				-- very unlikely/not possible: all snippets are exited.
+				return { jump_done = false, new_node = nil }
+			end
+			active_snippet = parent_node:get_snippet()
+		end
+
+		-- have found first visible snippet => look for dynamicNode.
+		local snip_restore_data = restore_data[active_snippet]
+		local node_parent = snip_restore_data.node.parent
+
+		-- find visible dynamicNode that contained the (now-inactive) insertNode.
+		-- since the node was no longer visible after an update, it must have
+		-- been contained in a dynamicNode, and we don't have to handle the
+		-- case that we can't find it.
+		while node_parent.dynamicNode == nil or node_parent.dynamicNode.visible == false do
+			node_parent = node_parent.parent
+		end
+		local d = node_parent.dynamicNode
+		assert(d.active, "Visible dynamicNode that was a parent of the current node is not active after the update!! If you get this message, please open an issue with LuaSnip!")
+
+		local new_node = get_corresponding_node(d, snip_restore_data)
+
+		if new_node then
+			node_util.refocus(d, new_node)
+
+			if not opts.no_move and opts.restore_position then
+				-- node is visible: restore position
+				restore_cursor_pos_relative(new_node, snip_restore_data)
+			end
+
+			return { jump_done = false, new_node = new_node }
+		else
+			-- could not find corresponding node -> just jump into the
+			-- dynamicNode that should have generated it.
+			return { jump_done = true, new_node = d:jump_into_snippet(opts.no_move) }
+		end
 	end
 end
+
+-- return next active node.
+local function safe_jump_current(dir, no_move, dry_run)
+	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
+	if not node then
+		return nil
+	end
+
+	-- don't update for -1-node.
+	if not dry_run and node.pos >= 0 then
+		local upd_res = node_update_dependents_preserve_position(node, { no_move = no_move, restore_position = false })
+		if upd_res.jump_done then
+			return upd_res.new_node
+		else
+			node = upd_res.new_node
+		end
+	end
+
+	if node then
+		local ok, res = pcall(node.jump_from, node, dir, no_move, dry_run)
+		if ok then
+			return res
+		end
+	end
+end
+
 local function jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
@@ -474,52 +596,12 @@ end
 
 local function active_update_dependents()
 	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
-	-- special case for startNode, cannot focus on those (and they can't
-	-- have dependents)
-	-- don't update if a jump/change_choice is in progress.
-	if not session.jump_active and active and active.pos > 0 then
-		-- Save cursor-pos to restore later.
-		local cur = util.get_cursor_0ind()
-		local cur_mark = vim.api.nvim_buf_set_extmark(
-			0,
-			session.ns_id,
-			cur[1],
-			cur[2],
-			{ right_gravity = false }
-		)
-
-		local ok, err = pcall(active.update_dependents, active)
-		if not ok then
-			unlink_set_adjacent_as_current(
-				active.parent.snippet,
-				"Error while updating dependents for snippet %s due to error %s",
-				active.parent.snippet.trigger,
-				err
-			)
-			return
-		end
-
-		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
-		ok, err = pcall(active.focus, active)
-		if not ok then
-			unlink_set_adjacent_as_current(
-				active.parent.snippet,
-				"Error while entering node in snippet %s: %s",
-				active.parent.snippet.trigger,
-				err
-			)
-
-			return
-		end
-
-		-- Don't account for utf, nvim_win_set_cursor doesn't either.
-		cur = vim.api.nvim_buf_get_extmark_by_id(
-			0,
-			session.ns_id,
-			cur_mark,
-			{ details = false }
-		)
-		util.set_cursor_0ind(cur)
+	-- don't update if a jump/change_choice is in progress, or if we don't have
+	-- an active node.
+	if not session.jump_active and active ~= nil then
+		local upd_res = node_update_dependents_preserve_position(active, { no_move = false, restore_position = true })
+		upd_res.new_node:focus()
+		session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_node
 	end
 end
 
