@@ -316,6 +316,15 @@ function RestoreNode:subtree_do(opts)
 	opts.post(self)
 end
 
+function RestoreNode:subtree_leave_entered()
+	if self.active then
+		if self.snip then
+			self.snip:subtree_leave_entered()
+		end
+		self:input_leave()
+	end
+end
+
 return {
 	R = R,
 }

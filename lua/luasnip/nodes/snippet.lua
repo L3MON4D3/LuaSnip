@@ -1570,6 +1570,23 @@ function Snippet:subtree_do(opts)
 	opts.post(self)
 end
 
+
+-- affect all children nested into this snippet.
+function Snippet:subtree_leave_entered()
+	if self.active then
+		for _, node in ipairs(self.nodes) do
+			node:subtree_leave_entered()
+		end
+		self:input_leave()
+	else
+		if self.type ~= types.snippetNode then
+			-- the exit-nodes (-1 and 0) may be active if the snippet itself is
+			-- not; just do these two calls, no hurt if they're not active.
+			self.prev:subtree_leave_entered()
+			self.insert_nodes[0]:subtree_leave_entered()
+		end
+	end
+end
 return {
 	Snippet = Snippet,
 	S = S,
