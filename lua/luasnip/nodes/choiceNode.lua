@@ -24,18 +24,6 @@ function ChoiceNode:init_nodes()
 			end,
 		})
 
-		-- replace nodes' original update_dependents with function that also
-		-- calls this choiceNodes' update_dependents.
-		--
-		-- cannot define as `function node:update_dependents()` as _this_
-		-- choiceNode would be `self`.
-		-- Also rely on node.choice, as using `self` there wouldn't be caught
-		-- by copy and the wrong node would be updated.
-		choice.update_dependents = function(node)
-			node:_update_dependents()
-			node.choice:update_dependents()
-		end
-
 		choice.next_choice = self.choices[i + 1]
 		choice.prev_choice = self.choices[i - 1]
 	end
@@ -162,7 +150,7 @@ function ChoiceNode:input_leave(_, dry_run)
 	self:event(events.leave)
 
 	self.mark:update_opts(self:get_passive_ext_opts())
-	self:update_dependents()
+
 	session.active_choice_nodes[vim.api.nvim_get_current_buf()] =
 		self.prev_choice_node
 	self.active = false
@@ -261,7 +249,7 @@ function ChoiceNode:set_choice(choice, current_node)
 	-- cleared mark in set_mark_rgrav (which will be called in
 	-- self:set_text({""}) a few lines below).
 	self.active_choice = nil
-	self:set_text({ "" })
+	self:set_text_raw({ "" })
 
 	self.active_choice = choice
 
@@ -282,8 +270,7 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice:subtree_set_pos_rgrav(to, -1, true)
 
 	self.active_choice:update_restore()
-	self.active_choice:update_all_dependents()
-	self:update_dependents()
+	self:update_dependents({own=true, parents=true, children=true})
 
 	-- Another node may have been entered in update_dependents.
 	self:focus()
@@ -382,20 +369,6 @@ function ChoiceNode:set_argnodes(dict)
 	for _, node in ipairs(self.choices) do
 		node:set_argnodes(dict)
 	end
-end
-
-function ChoiceNode:update_all_dependents()
-	-- call the version that only updates this node.
-	self:_update_dependents()
-
-	self.active_choice:update_all_dependents()
-end
-
-function ChoiceNode:update_all_dependents_static()
-	-- call the version that only updates this node.
-	self:_update_dependents_static()
-
-	self.active_choice:update_all_dependents_static()
 end
 
 function ChoiceNode:resolve_position(position)
