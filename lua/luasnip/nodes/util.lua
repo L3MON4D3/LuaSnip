@@ -764,6 +764,18 @@ local function nodelist_adjust_rgravs(
 	end
 end
 
+
+local function node_subtree_do(node, opts)
+	-- provide default-values.
+	if not opts.pre then
+		opts.pre = util.nop
+	end
+	if not opts.post then
+		opts.post = util.nop
+	end
+
+	node:subtree_do(opts)
+end
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -786,4 +798,5 @@ return {
 	interactive_node = interactive_node,
 	root_path = root_path,
 	nodelist_adjust_rgravs = nodelist_adjust_rgravs,
+	node_subtree_do = node_subtree_do
 }

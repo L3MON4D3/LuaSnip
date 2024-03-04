@@ -1562,6 +1562,14 @@ function Snippet:extmarks_valid()
 	return true
 end
 
+function Snippet:subtree_do(opts)
+	opts.pre(self)
+	for _, child in ipairs(self.nodes) do
+		child:subtree_do(opts)
+	end
+	opts.post(self)
+end
+
 return {
 	Snippet = Snippet,
 	S = S,

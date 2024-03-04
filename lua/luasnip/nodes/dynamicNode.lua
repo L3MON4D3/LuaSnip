@@ -434,6 +434,20 @@ function DynamicNode:extmarks_valid()
 	return true
 end
 
+function DynamicNode:subtree_do(opts)
+	opts.pre(self)
+	if opts.static then
+		if self.static_snip then
+			self.static_snip:subtree_do(opts)
+		end
+	else
+		if self.snip then
+			self.snip:subtree_do(opts)
+		end
+	end
+	opts.post(self)
+end
+
 return {
 	D = D,
 }

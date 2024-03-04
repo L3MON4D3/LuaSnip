@@ -647,6 +647,12 @@ function Node:leaf()
 	)
 end
 
+
+function Node:subtree_do(opts)
+	opts.pre(self)
+	opts.post(self)
+end
+
 return {
 	Node = Node,
 	focus_node = focus_node,
