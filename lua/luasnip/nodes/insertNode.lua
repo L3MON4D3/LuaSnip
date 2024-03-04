@@ -265,8 +265,8 @@ function InsertNode:input_leave(_, dry_run)
 end
 
 function InsertNode:exit()
-	if self.inner_first then
-		self.inner_first:exit()
+	for _, snip in ipairs(self:child_snippets()) do
+		snip:exit()
 	end
 
 	-- reset runtime-acquired values.
