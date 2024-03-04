@@ -707,7 +707,14 @@ local function root_path(node, static)
 	local path = {}
 
 	while node do
-		local node_snippet = node.parent.snippet
+		local node_snippet
+		if node.parent == nil then
+			-- node is snippet.
+			node_snippet = node
+		else
+			node_snippet = node.parent.snippet
+		end
+
 		local snippet_node_path = get_nodes_between(node_snippet, node, static)
 		-- get_nodes_between gives parent -> node, but we need
 		-- node -> parent => insert back to front.
