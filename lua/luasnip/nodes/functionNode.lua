@@ -56,11 +56,11 @@ function FunctionNode:update()
 	end
 
 	-- don't expand tabs in parent.indentstr, use it as-is.
-	self:set_text(util.indent(text, self.parent.indentstr))
+	self:set_text_raw(util.indent(text, self.parent.indentstr))
 
 	-- assume that functionNode can't have a parent as its dependent, there is
 	-- no use for that I think.
-	self:update_dependents()
+	self:update_dependents({own=true, parents=true})
 end
 
 local update_errorstring = [[
@@ -99,7 +99,7 @@ end
 function FunctionNode:update_restore()
 	-- only if args still match.
 	if self.static_text and vim.deep_equal(self:get_args(), self.last_args) then
-		self:set_text(self.static_text)
+		self:set_text_raw(self.static_text)
 	else
 		self:update()
 	end

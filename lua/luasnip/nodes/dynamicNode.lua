@@ -44,7 +44,6 @@ function DynamicNode:input_leave(_, dry_run)
 	end
 	self:event(events.leave)
 
-	self:update_dependents()
 	self.active = false
 	self.mark:update_opts(self:get_passive_ext_opts())
 end
@@ -112,6 +111,11 @@ function DynamicNode:jump_into(dir, no_move, dry_run)
 	end
 end
 
+function DynamicNode:jump_into_snippet(no_move)
+	self.active = false
+	return self:jump_into(1, no_move, false)
+end
+
 function DynamicNode:update()
 	local args = self:get_args()
 	if vim.deep_equal(self.last_args, args) then
@@ -137,11 +141,12 @@ function DynamicNode:update()
 			self.snip.old_state,
 			unpack(self.user_args)
 		)
+		self.snip:subtree_leave_entered()
 		self.snip:exit()
 		self.snip = nil
 
 		-- focuses node.
-		self:set_text({ "" })
+		self:set_text_raw({ "" })
 	else
 		self:focus()
 		if not args then
@@ -170,10 +175,6 @@ function DynamicNode:update()
 	tmp.mark =
 		self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
 	tmp.dynamicNode = self
-	tmp.update_dependents = function(node)
-		node:_update_dependents()
-		node.dynamicNode:update_dependents()
-	end
 
 	tmp:init_positions(self.snip_absolute_position)
 	tmp:init_insert_positions(self.snip_absolute_insert_position)
@@ -204,9 +205,11 @@ function DynamicNode:update()
 	-- - a node could only depend on nodes outside of tmp
 	-- - a node outside of tmp could depend on one inside of tmp
 	tmp:update()
-	tmp:update_all_dependents()
-
-	self:update_dependents()
+	-- update nodes that depend on this dynamicNode, nodes that are parents
+	-- (and thus have changed text after this update), and all of the
+	-- children's depedents (since they may have dependents outside this
+	-- dynamicNode, who have not yet been updated)
+	self:update_dependents({own=true, children=true, parents=true})
 end
 
 local update_errorstring = [[
@@ -268,10 +271,6 @@ function DynamicNode:update_static()
 	tmp.snippet = self.parent.snippet
 
 	tmp.dynamicNode = self
-	tmp.update_dependents_static = function(node)
-		node:_update_dependents_static()
-		node.dynamicNode:update_dependents_static()
-	end
 
 	tmp:resolve_child_ext_opts()
 	tmp:resolve_node_ext_opts()
@@ -295,13 +294,11 @@ function DynamicNode:update_static()
 
 	tmp:static_init()
 
-	tmp:update_static()
-	-- updates dependents in tmp.
-	tmp:update_all_dependents_static()
-
 	self.static_snip = tmp
+
+	tmp:update_static()
 	-- updates own dependents.
-	self:update_dependents_static()
+	self:update_dependents_static({own=true, parents=true, children=true})
 end
 
 function DynamicNode:exit()
