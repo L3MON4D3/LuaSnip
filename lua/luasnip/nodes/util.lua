@@ -64,7 +64,7 @@ local function wrap_args(args)
 end
 
 -- includes child, does not include parent.
-local function get_nodes_between(parent, child)
+local function get_nodes_between(parent, child, static)
 	local nodes = {}
 
 	-- special case for nodes without absolute_position (which is only
@@ -80,7 +80,7 @@ local function get_nodes_between(parent, child)
 	local indx = #parent.absolute_position + 1
 	local prev = parent
 	while child_pos[indx] do
-		local next = prev:resolve_position(child_pos[indx])
+		local next = prev:resolve_position(child_pos[indx], static)
 		nodes[#nodes + 1] = next
 		prev = next
 		indx = indx + 1
@@ -703,12 +703,12 @@ local function snippettree_find_undamaged_node(pos, opts)
 	return prev_parent, prev_parent_children, child_indx, node
 end
 
-local function root_path(node)
+local function root_path(node, static)
 	local path = {}
 
 	while node do
 		local node_snippet = node.parent.snippet
-		local snippet_node_path = get_nodes_between(node_snippet, node)
+		local snippet_node_path = get_nodes_between(node_snippet, node, static)
 		-- get_nodes_between gives parent -> node, but we need
 		-- node -> parent => insert back to front.
 		for i = #snippet_node_path, 1, -1 do
