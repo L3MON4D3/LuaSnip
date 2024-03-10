@@ -764,6 +764,7 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	-- needed for querying node-path from snippet to this node.
 	start_node.absolute_position = { -1 }
 	start_node.parent = self
+	start_node.visible = true
 
 	-- hook up i0 and start_node, and then the snippet itself.
 	-- they are outside, not inside the snippet.
