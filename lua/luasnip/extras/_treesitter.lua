@@ -126,14 +126,15 @@ local function captures_iter(captures)
 		local current_match
 		local current_capture_id
 		local iter
+		local pattern
 
 		iter = function()
 			-- if there is no current match to continue,
 			if not current_match then
-				_, current_match, _ = match_iter()
+				pattern, current_match, _ = match_iter()
 
 				-- occurs once there are no more matches.
-				if not current_match then
+				if not pattern then
 					return nil
 				end
 			end
