@@ -1,7 +1,6 @@
 return {
 	check = function()
 		vim.health.start("luasnip")
-		vim.health.info()
 		local jsregexp = require("luasnip.util.jsregexp")
 		if jsregexp then
 			vim.health.ok("jsregexp is installed")
