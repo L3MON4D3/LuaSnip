@@ -184,6 +184,7 @@ describe("session", function()
 		jump(1)
 		jump(1)
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -217,6 +218,7 @@ describe("session", function()
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
 		})
+
 		-- delete whole buffer.
 		feed("<Esc>ggVGcfn")
 		-- immediately expand at the old position of the snippet.
@@ -341,6 +343,7 @@ describe("session", function()
 		jump(1)
 		jump(1)
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -1542,6 +1545,7 @@ describe("session", function()
 		jump(1)
 		jump(1)
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
