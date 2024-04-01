@@ -15,4 +15,4 @@ jobs:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         with:
           dependencies: |
-            jsregexp >= 0.0.5, <= 0.0.6
+            jsregexp >= 0.0.5, <= 0.0.7
