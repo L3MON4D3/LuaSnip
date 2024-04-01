@@ -199,6 +199,7 @@ describe("snippets_basic", function()
 
 		-- jump into second of inner.
 		exec_lua("ls.jump(1)")
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			a[a[]a^b]ab                                        |
