@@ -148,6 +148,7 @@ describe("session", function()
 	it("Deleted snippet is handled properly in expansion.", function()
 		feed("o<Cr><Cr><Up>fn")
 		exec_lua("ls.expand()")
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -227,6 +228,7 @@ describe("session", function()
 		-- if we did something wrong.
 		jump(-1)
 		jump(-1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			^/**                                               |
@@ -268,6 +270,7 @@ describe("session", function()
 		jump(1)
 		jump(1)
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
@@ -302,11 +305,13 @@ describe("session", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({ unchanged = true })
 	end)
 	it("Deleted snippet is handled properly when jumping.", function()
 		feed("o<Cr><Cr><Up>fn")
 		exec_lua("ls.expand()")
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -1376,6 +1381,7 @@ describe("session", function()
 		jump(1)
 		jump(1)
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
