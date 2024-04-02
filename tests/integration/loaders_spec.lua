@@ -1073,11 +1073,12 @@ describe("loaders:", function()
 		feed("iemptylinetest")
 		exec_lua("ls.expand()")
 		screen:expect({
-		grid = [[
+			grid = [[
 			                                                  |
 			        indented                                  |
 			^                                                  |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]] })
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 end)

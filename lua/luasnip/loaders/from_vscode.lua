@@ -14,11 +14,15 @@ local clean_invalidated =
 -- create snippetProxy which does not trim lines and dedent text.
 -- It's fair to use passed test as-is, if it's from json.
 local parse = require("luasnip.util.parser").parse_snippet
-local sp = require("luasnip.util.extend_decorator").apply(require("luasnip.nodes.snippetProxy"), {}, {
-	parse_fn = function(ctx, body)
-		return parse(ctx, body, { trim_empty=false, dedent=false })
-	end
-})
+local sp = require("luasnip.util.extend_decorator").apply(
+	require("luasnip.nodes.snippetProxy"),
+	{},
+	{
+		parse_fn = function(ctx, body)
+			return parse(ctx, body, { trim_empty = false, dedent = false })
+		end,
+	}
+)
 
 local json_decoders = {
 	json = util.json_decode,
