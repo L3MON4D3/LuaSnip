@@ -22,5 +22,13 @@
 		"luasnip": {
 			"autotrigger": true
 		}
+	},
+	"snip3": {
+		"prefix": "emptylinetest",
+		"body": [
+			"",
+			"	indented",
+			""
+		]
 	}
 }

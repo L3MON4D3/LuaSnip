@@ -11,6 +11,15 @@ local refresh_notify =
 local clean_invalidated =
 	require("luasnip.session.enqueueable_operations").clean_invalidated
 
+-- create snippetProxy which does not trim lines and dedent text.
+-- It's fair to use passed test as-is, if it's from json.
+local parse = require("luasnip.util.parser").parse_snippet
+local sp = require("luasnip.util.extend_decorator").apply(require("luasnip.nodes.snippetProxy"), {}, {
+	parse_fn = function(ctx, body)
+		return parse(ctx, body, { trim_empty=false, dedent=false })
+	end
+})
+
 local json_decoders = {
 	json = util.json_decode,
 	jsonc = require("luasnip.util.jsonc").decode,
@@ -47,7 +56,6 @@ end
 --- @param file string Path to file
 ---@return LuaSnip.Loaders.SnippetFileData
 local function get_file_snippets(file)
-	local sp = require("luasnip.nodes.snippetProxy")
 	local source = require("luasnip.session.snippet_collection.source")
 	local multisnippet = require("luasnip.nodes.multiSnippet")
 

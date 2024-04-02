@@ -1062,5 +1062,22 @@ describe("loaders:", function()
 		end
 	)
 
-	it("include/exclude are respected", function() end)
+	it("vscode retains empty trailing/leading lines.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_vscode").load({ paths={"%s"} }) ]],
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/vscode-snippets"
+			)
+		)
+
+		feed("iemptylinetest")
+		exec_lua("ls.expand()")
+		screen:expect({
+		grid = [[
+			                                                  |
+			        indented                                  |
+			^                                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]] })
+	end)
 end)
