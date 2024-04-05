@@ -60,9 +60,9 @@ install_jsregexp: jsregexp
 
 uninstall_jsregexp:
 	# also remove binaries of older version.
-	rm "$(shell pwd)/lua/luasnip-jsregexp.so"
-	rm "$(shell pwd)/lua/deps/luasnip-jsregexp.so"
-	rm "$(shell pwd)/lua/luasnip-jsregexp.lua"
+	rm -f "$(shell pwd)/lua/luasnip-jsregexp.so"
+	rm -f "$(shell pwd)/deps/luasnip-jsregexp.so"
+	rm -f "$(shell pwd)/lua/luasnip-jsregexp.lua"
 
 TEST_07?=true
 TEST_09?=true
