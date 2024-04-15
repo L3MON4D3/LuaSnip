@@ -1,7 +1,10 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua = helpers.exec_lua
+local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("luasnip.extra.otf", function()
+	ls_helpers.clear()
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
 	local function check(test_name, input, output)
 		it(test_name, function()
 			assert.are.same(
@@ -17,7 +20,6 @@ describe("luasnip.extra.otf", function()
 		end)
 	end
 
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	check("Only text", "one", { { "TXT", "one" } })
 	check("Text and inputs", "local $val = require'module'.$color", {

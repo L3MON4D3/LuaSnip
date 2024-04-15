@@ -1,13 +1,12 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed = helpers.exec_lua, helpers.feed
 local ls_helpers = require("helpers")
+local exec_lua, feed = ls_helpers.exec_lua, ls_helpers.feed
 local Screen = require("test.functional.ui.screen")
 
 describe("Extra-nodes:", function()
 	local screen
 
 	before_each(function()
-		helpers.clear()
+		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 3)
@@ -113,7 +112,7 @@ describe("Extra-nodes:", function()
 		-- create bigger screen for this test.
 		-- TODO: rewrite all tests for this screen-size.
 		screen:detach()
-		helpers.clear()
+		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 5)

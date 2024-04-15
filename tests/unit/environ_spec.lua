@@ -1,7 +1,10 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua = helpers.exec_lua
+local ls_helpers = require("helpers")
+local exec_lua, exec = ls_helpers.exec_lua, ls_helpers.exec
 
 describe("luasnip.util.environ", function()
+	ls_helpers.clear()
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
 	local function check_not_empty(test_name, namespace_setup, var_name)
 		it(test_name, function()
 			assert.is_true(
@@ -124,7 +127,6 @@ describe("luasnip.util.environ", function()
 			)
 		end)
 	end
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	check_not_empty("Has builtin namespace var", [[]], "CURRENT_YEAR")
 	check_not_empty(

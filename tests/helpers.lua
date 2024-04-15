@@ -1,9 +1,20 @@
-local helpers = require("test.functional.helpers")(after_each)
+local helpers_ok, helpers = pcall(require, "test.functional.testutil")
+if not helpers_ok then
+	helpers_ok, helpers = pcall(require, "test.functional.helpers")
+end
+
+helpers = helpers()
+
 local exec_lua = helpers.exec_lua
 local exec = helpers.exec
 local assert = require("luassert")
 
-local M = {}
+local M = {
+	exec = exec,
+	exec_lua = exec_lua,
+	clear = helpers.clear,
+	feed = helpers.feed
+}
 
 function M.jsregexp_it(it, name, fn)
 	for _, version in ipairs({ "005", "006", "luasnip" }) do

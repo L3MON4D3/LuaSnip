@@ -1,8 +1,7 @@
 -- Test longer-running sessions of snippets.
 -- Should cover things like deletion (handle removed text gracefully) and insertion.
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed, exec = helpers.exec_lua, helpers.feed, helpers.exec
 local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 local Screen = require("test.functional.ui.screen")
 
 local function expand()
@@ -19,7 +18,7 @@ describe("session", function()
 	local screen
 
 	before_each(function()
-		helpers.clear()
+		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip({ hl_choiceNode = true })
 
 		-- add a rather complicated snippet.

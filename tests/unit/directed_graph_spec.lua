@@ -1,15 +1,17 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua = helpers.exec_lua
+local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("luasnip.util.directed_graph:", function()
+	ls_helpers.clear()
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
 	-- count and edges separately because
 	-- 1. it's easier and
 	-- 2. otherwise (pass only edges) we can't create vertices without edges.
 	local function check_topsort(mess, v_count, edges, out_expected)
 		it(mess, function()
-			assert.are.same(
-				out_expected,
-				exec_lua(
+
+			local res = exec_lua(
 					[[
 					local v_count, edges = ...
 					verts = {}
@@ -39,6 +41,11 @@ describe("luasnip.util.directed_graph:", function()
 					v_count,
 					edges
 				)
+
+			-- error(res)
+			assert.are.same(
+				out_expected,
+				res
 			)
 		end)
 	end

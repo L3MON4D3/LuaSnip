@@ -1,6 +1,5 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed, exec = helpers.exec_lua, helpers.feed, helpers.exec
 local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 local Screen = require("test.functional.ui.screen")
 local assert = require("luassert")
 
@@ -20,7 +19,7 @@ describe("loaders:", function()
 	local screen
 
 	before_each(function()
-		helpers.clear()
+		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip({ no_snip_globals = true })
 
 		ls_helpers.scratch_prepare()
@@ -844,8 +843,7 @@ describe("loaders:", function()
 		feed(
 			[[i{ "name": "snippets", "contributes": { "snippets": [{"language": ["all"], "path": "./all.json"}] } }]]
 		)
-		feed("<Esc>:w<Cr>")
-		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
 		feed("<Esc>:w<Cr>")
 		exec_lua("vim.wait(100, function() end)")
 
@@ -902,7 +900,7 @@ describe("loaders:", function()
 			ls_helpers.scratch_edit("vs/snips.code-snippets")
 
 			feed([[i{"snip": {"prefix": "asdf", "body": ["qwer"]}}]])
-			feed("<Esc>:w<Cr>")
+			exec_lua("vim.wait(100, function() end)")
 			feed("<Esc>:w<Cr>")
 			exec_lua("vim.wait(100, function() end)")
 

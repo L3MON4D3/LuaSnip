@@ -1,13 +1,12 @@
-local helpers = require("test.functional.helpers")()
-local exec_lua = helpers.exec_lua
 local ls_helpers = require("helpers")
+local exec_lua = ls_helpers.exec_lua
 local mkdir = ls_helpers.scratch_mkdir
 local touch = ls_helpers.scratch_touch
 local edit = ls_helpers.scratch_edit
 
 describe("fs_events", function()
 	before_each(function()
-		helpers.clear()
+		ls_helpers.clear()
 
 		ls_helpers.session_setup_luasnip()
 		ls_helpers.scratch_prepare()

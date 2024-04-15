@@ -1,19 +1,18 @@
-local helpers = require("test.functional.helpers")(after_each)
 local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("expand_conditions", function()
-	before_each(function()
-		helpers.clear()
-		ls_helpers.session_setup_luasnip()
-		helpers.exec_lua("noop = function() end")
-	end)
+	-- before_each(function()
+	-- 	ls_helpers.clear()
+	-- 	exec_lua("noop = function() end")
+	-- end)
 
 	-- apparently clear() needs to run before anything else...
-	helpers.clear()
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	ls_helpers.clear()
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 	it("simple", function()
 		local function foo()
-			return helpers.exec_lua([[
+			return exec_lua([[
 			local mkcond = require("luasnip.extras.conditions").make_condition
 			local c = mkcond(function() return true end)
 			return c() == true
@@ -27,7 +26,7 @@ describe("expand_conditions", function()
 			local function foo(b1, b2)
 				-- Attention: use this only when testing (otherwise (pot.
 				-- malicious) users might inject code)
-				return helpers.exec_lua(
+				return exec_lua(
 					([[
 					local mkcond = require("luasnip.extras.conditions").make_condition
 					local c = mkcond(function() return %s end) * mkcond(function() return %s end)
@@ -61,7 +60,7 @@ describe("expand_conditions", function()
 			local function foo(b1, b2)
 				-- Attention: use this only when testing (otherwise (pot.
 				-- malicious) users might inject code)
-				return helpers.exec_lua(([[
+				return exec_lua(([[
 					local mkcond = require("luasnip.extras.conditions").make_condition
 					local c = mkcond(function() return %s end) + mkcond(function() return %s end)
 					return c() == %s
@@ -89,7 +88,7 @@ describe("expand_conditions", function()
 			local function foo(b1, b2)
 				-- Attention: use this only when testing (otherwise (pot.
 				-- malicious) users might inject code)
-				return helpers.exec_lua(
+				return exec_lua(
 					([[
 					local mkcond = require("luasnip.extras.conditions").make_condition
 					local c = mkcond(function() return %s end) ^ mkcond(function() return %s end)
@@ -123,7 +122,7 @@ describe("expand_conditions", function()
 			local function foo(b1, b2)
 				-- Attention: use this only when testing (otherwise (pot.
 				-- malicious) users might inject code)
-				return helpers.exec_lua(([[
+				return exec_lua(([[
 					local mkcond = require("luasnip.extras.conditions").make_condition
 					local c = mkcond(function() return %s end) %% mkcond(function() return %s end)
 					return c() == %s
@@ -151,7 +150,7 @@ describe("expand_conditions", function()
 			local function foo(b1)
 				-- Attention: use this only when testing (otherwise (pot.
 				-- malicious) users might inject code)
-				return helpers.exec_lua(([[
+				return exec_lua(([[
 					local mkcond = require("luasnip.extras.conditions").make_condition
 					local c = -mkcond(function() return %s end)
 					return c() == %s
@@ -171,7 +170,7 @@ describe("expand_conditions", function()
 			local function foo(b1, b2, b3)
 				-- Attention: use this only when testing (otherwise (pot.
 				-- malicious) users might inject code)
-				return helpers.exec_lua(
+				return exec_lua(
 					([[
 					local mkcond = require("luasnip.extras.conditions").make_condition
 					local c = - ( mkcond(function() return %s end) + mkcond(function() return %s end) * mkcond(function() return %s end)) ^ ( mkcond(function() return %s end) + mkcond(function() return %s end) * mkcond(function() return %s end))
@@ -217,7 +216,7 @@ describe("expand_conditions", function()
 	describe("line_begin", function()
 		it("is at begin", function()
 			local function foo()
-				return helpers.exec_lua([[
+				return exec_lua([[
 				local conds = require("luasnip.extras.expand_conditions")
 				local c = conds.line_begin
 				return not c("hello world", "hello world") ~= true -- allow nil/object
@@ -228,7 +227,7 @@ describe("expand_conditions", function()
 		end)
 		it("is NOT at begin", function()
 			local function foo()
-				return helpers.exec_lua([[
+				return exec_lua([[
 				local conds = require("luasnip.extras.expand_conditions")
 				local c = conds.line_begin
 				return not c("hello world", "ld") ~= false -- allow nil/object
@@ -241,7 +240,7 @@ describe("expand_conditions", function()
 	describe("line_end", function()
 		it("is at begin", function()
 			local function foo()
-				return helpers.exec_lua([[
+				return exec_lua([[
 					local gcl_bak = vim.api.nvim_get_current_line
 					vim.api.nvim_get_current_line = function() return "hello world ending" end
 
@@ -259,7 +258,7 @@ describe("expand_conditions", function()
 		end)
 		it("is NOT at begin", function()
 			local function foo()
-				return helpers.exec_lua([[
+				return exec_lua([[
 					local gcl_bak = vim.api.nvim_get_current_line
 					vim.api.nvim_get_current_line = function() return "hello world ending" end
 

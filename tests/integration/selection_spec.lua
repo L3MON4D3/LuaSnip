@@ -1,13 +1,12 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed = helpers.exec_lua, helpers.feed
 local ls_helpers = require("helpers")
+local exec_lua, feed = ls_helpers.exec_lua, ls_helpers.feed
 local Screen = require("test.functional.ui.screen")
 
 describe("selection", function()
 	local screen
 
 	before_each(function()
-		helpers.clear()
+		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 3)
@@ -45,7 +44,7 @@ describe("selection", function()
 	it(
 		"Text inside an insertNode is SELECTed with selection=exclusive",
 		function()
-			helpers.exec("set selection=exclusive")
+			ls_helpers.exec("set selection=exclusive")
 			exec_lua([[
 			ls.snip_expand(
 				s("trig", {
@@ -84,7 +83,7 @@ describe("selection", function()
 	end)
 
 	it("Selection includes linebreak with selection=exclusive", function()
-		helpers.exec("set selection=exclusive")
+		ls_helpers.exec("set selection=exclusive")
 		exec_lua([[
 			ls.snip_expand(
 				s("trig", {
@@ -123,7 +122,7 @@ describe("selection", function()
 	end)
 
 	it("Multiline Selection works fine with selection=exclusive", function()
-		helpers.exec("set selection=exclusive")
+		ls_helpers.exec("set selection=exclusive")
 		exec_lua([[
 			ls.snip_expand(
 				s("trig", {

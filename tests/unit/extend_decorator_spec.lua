@@ -1,14 +1,10 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua = helpers.exec_lua
-local exec = helpers.exec
 local ls_helpers = require("helpers")
+local exec_lua, exec = ls_helpers.exec_lua, ls_helpers.exec
 
 describe("luasnip.util.extend_decorator", function()
-	before_each(function()
-		helpers.clear()
-		ls_helpers.session_setup_luasnip()
-		helpers.exec_lua("noop = function() end")
-	end)
+	ls_helpers.clear()
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
 	local shared_setup1 = [[
 			local function passthrough(arg1, arg2)
 				return arg1, arg2
@@ -18,8 +14,6 @@ describe("luasnip.util.extend_decorator", function()
 			ed.register(passthrough, {arg_indx = 1}, {arg_indx = 2})
 	]]
 	it("works", function()
-		exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
-
 		assert.is_true(exec_lua(shared_setup1 .. [[
 			ext = ed.apply(passthrough, {key = "first"}, {key = "second"})
 			return vim.deep_equal({ext()}, {{key = "first"}, {key = "second"}})
@@ -27,8 +21,6 @@ describe("luasnip.util.extend_decorator", function()
 	end)
 
 	it("extended variable can be overwritten", function()
-		exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
-
 		assert.is_true(exec_lua(shared_setup1 .. [[
 			ext = ed.apply(passthrough, {key = "first"}, {key = "second"})
 			return vim.deep_equal({ext({key = "override_first"})}, {{key = "override_first"}, {key = "second"}})
@@ -36,8 +28,6 @@ describe("luasnip.util.extend_decorator", function()
 	end)
 
 	it("extended variable can be overwritten", function()
-		exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
-
 		assert.is_true(exec_lua([[
 			local function passthrough(arg1, arg2)
 				return arg1, arg2

@@ -1,13 +1,12 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua, feed = helpers.exec_lua, helpers.feed
 local ls_helpers = require("helpers")
+local exec_lua, feed = ls_helpers.exec_lua, ls_helpers.feed
 local Screen = require("test.functional.ui.screen")
 
 describe("Jumping", function()
 	local screen
 
 	before_each(function()
-		helpers.clear()
+		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 5)
@@ -41,7 +40,7 @@ describe("Jumping", function()
 			})
 		]]
 
-		helpers.exec("set foldenable foldmethod=manual")
+		ls_helpers.exec("set foldenable foldmethod=manual")
 
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 		screen:expect({

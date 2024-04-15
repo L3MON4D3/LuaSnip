@@ -1,15 +1,14 @@
-local helpers = require("test.functional.helpers")(after_each)
-
-local works = function(snippets, opts) end
+local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("snippet_collection.add/get", function()
 	-- apparently clear() needs to run before anything else...
-	helpers.clear()
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	ls_helpers.clear()
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	it("get_id", function()
 		local function foo()
-			return helpers.exec_lua([[
+			return exec_lua([[
 				local s,t = require("luasnip").snippet, require("luasnip").text_node
 				local collection = require("luasnip.session.snippet_collection")
 				collection.clear_snippets()
@@ -25,7 +24,7 @@ describe("snippet_collection.add/get", function()
 
 	it("get_snippets", function()
 		local function foo()
-			return helpers.exec_lua([[
+			return exec_lua([[
 				local s,t = require("luasnip").snippet, require("luasnip").text_node
 				local collection = require("luasnip.session.snippet_collection")
 				collection.clear_snippets()
@@ -49,12 +48,12 @@ end)
 
 describe("add_snippets invalidation", function()
 	-- apparently clear() needs to run before anything else...
-	helpers.clear()
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	ls_helpers.clear()
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	it("", function()
 		local function foo()
-			return helpers.exec_lua([[
+			return exec_lua([[
 					local s,t = require("luasnip").snippet, require("luasnip").text_node
 					local collection = require("luasnip.session.snippet_collection")
 					collection.clear_snippets()

@@ -1,4 +1,5 @@
-local helpers = require("test.functional.helpers")(after_each)
+local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 ---@param params { msg: string, fmt: string, args: string, expected: string, opts: string, prolouge: string}
 local works = function(params)
@@ -7,7 +8,7 @@ local works = function(params)
 		-- fails if number- and string-keys are mixed ({1,2} works fine, {1, b=2} fails).
 		-- So we limit ourselves to just passing strings, which are then turned into tables
 		-- while load()ing the function.
-		local result = helpers.exec_lua(string.format(
+		local result = exec_lua(string.format(
 			[[
 						local args = %s
 						local mock_args = {}
@@ -45,7 +46,7 @@ end
 local fails = function(msg, fmt, args, opts)
 	it(msg, function()
 		assert.has_error(function()
-			helpers.exec_lua(
+			exec_lua(
 				string.format(
 					'return require("luasnip.extras.fmt").interpolate("%s", %s, %s)',
 					fmt,
@@ -59,9 +60,9 @@ end
 
 describe("fmt.interpolate", function()
 	-- apparently clear() needs to run before anything else...
-	helpers.clear()
+	ls_helpers.clear()
 	-- set in makefile.
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	works({
 		msg = "expands with no numbers",

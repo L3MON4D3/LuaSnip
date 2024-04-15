@@ -1,7 +1,10 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua = helpers.exec_lua
+local ls_helpers = require("helpers")
+local exec_lua = ls_helpers.exec_lua
 
 describe("luasnip.util.str:dedent", function()
+	ls_helpers.clear()
+	ls_helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
 	local function check(test_name, input, output)
 		it(test_name, function()
 			assert.are.same(

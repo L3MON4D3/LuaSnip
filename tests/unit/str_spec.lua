@@ -1,4 +1,5 @@
-local helpers = require("test.functional.helpers")(after_each)
+local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 local works = function(msg, string, left, right, expected)
 	it(msg, function()
@@ -6,7 +7,7 @@ local works = function(msg, string, left, right, expected)
 		-- fails if number- and string-keys are mixed ({1,2} works fine, {1, b=2} fails).
 		-- So we limit ourselves to just passing strings, which are then turned into tables
 		-- while load()ing the function.
-		local result = helpers.exec_lua(string.format(
+		local result = exec_lua(string.format(
 			[[
 					local res = {}
 					for from, to in require("luasnip.util.str").unescaped_pairs("%s", "%s", "%s") do
@@ -24,9 +25,8 @@ end
 
 describe("str.unescaped_pairs", function()
 	-- apparently clear() needs to run before anything else...
-	helpers.clear()
-	-- set in makefile.
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	ls_helpers.clear()
+	ls_helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	-- double \, since it is turned into a string twice.
 	works(

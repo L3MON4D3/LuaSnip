@@ -1,5 +1,5 @@
-local helpers = require("test.functional.helpers")(after_each)
-local exec_lua = helpers.exec_lua
+local ls_helpers = require("helpers")
+local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("split_lines", function()
 	local function check(test_name, filestring, lines)
@@ -19,10 +19,10 @@ describe("split_lines", function()
 	end
 
 	-- apparently clear() needs to run before anything else...
-	helpers.clear()
+	ls_helpers.clear()
 	-- LUASNIP_SOURCE is set in makefile (or before that, even).
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
-	helpers.exec_lua('vim.env.MYVIMRC = "/.vimrc"')
+	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+	exec_lua('vim.env.MYVIMRC = "/.vimrc"')
 
 	check("works for DOS-files", "aaa\r\nbbb\r\nccc", { "aaa", "bbb", "ccc" })
 	check(
