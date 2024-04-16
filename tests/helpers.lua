@@ -13,7 +13,7 @@ local M = {
 	exec = exec,
 	exec_lua = exec_lua,
 	clear = helpers.clear,
-	feed = helpers.feed
+	feed = helpers.feed,
 }
 
 function M.jsregexp_it(it, name, fn)

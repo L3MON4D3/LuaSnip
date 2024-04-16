@@ -150,9 +150,10 @@ describe("selection", function()
 		]])
 		-- ^ denotes cursor, has to be behind "f".
 		screen:expect({
-		  grid = [[
+			grid = [[
 		    asdf^                                              |
 		    {3:second line}                                       |
-		    {2:-- SELECT --}                                      |]]})
+		    {2:-- SELECT --}                                      |]],
+		})
 	end)
 end)

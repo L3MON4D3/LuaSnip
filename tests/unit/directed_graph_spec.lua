@@ -1,5 +1,6 @@
 local ls_helpers = require("helpers")
-local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
+local exec_lua, feed, exec =
+	ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("luasnip.util.directed_graph:", function()
 	ls_helpers.clear()
@@ -10,9 +11,8 @@ describe("luasnip.util.directed_graph:", function()
 	-- 2. otherwise (pass only edges) we can't create vertices without edges.
 	local function check_topsort(mess, v_count, edges, out_expected)
 		it(mess, function()
-
 			local res = exec_lua(
-					[[
+				[[
 					local v_count, edges = ...
 					verts = {}
 
@@ -38,15 +38,12 @@ describe("luasnip.util.directed_graph:", function()
 						return graph_verts_reverse[vert]
 					end, sorting)
 				]],
-					v_count,
-					edges
-				)
+				v_count,
+				edges
+			)
 
 			-- error(res)
-			assert.are.same(
-				out_expected,
-				res
-			)
+			assert.are.same(out_expected, res)
 		end)
 	end
 

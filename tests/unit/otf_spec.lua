@@ -1,5 +1,6 @@
 local ls_helpers = require("helpers")
-local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
+local exec_lua, feed, exec =
+	ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("luasnip.extra.otf", function()
 	ls_helpers.clear()
@@ -19,7 +20,6 @@ describe("luasnip.extra.otf", function()
 			)
 		end)
 	end
-
 
 	check("Only text", "one", { { "TXT", "one" } })
 	check("Text and inputs", "local $val = require'module'.$color", {

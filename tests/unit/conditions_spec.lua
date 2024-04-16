@@ -1,5 +1,6 @@
 local ls_helpers = require("helpers")
-local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
+local exec_lua, feed, exec =
+	ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("expand_conditions", function()
 	-- before_each(function()

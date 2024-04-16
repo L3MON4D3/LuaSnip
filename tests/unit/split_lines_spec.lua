@@ -1,5 +1,6 @@
 local ls_helpers = require("helpers")
-local exec_lua, feed, exec = ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
+local exec_lua, feed, exec =
+	ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 
 describe("split_lines", function()
 	local function check(test_name, filestring, lines)
