@@ -1257,7 +1257,9 @@ describe("snippets_basic", function()
 
 		feed("aa")
 		exec_lua([[ ls.expand() ]])
+		exec_lua("vim.wait(10, function() end)")
 		exec_lua([[ ls.jump(1) ]])
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			a:(a:(^))                                          |

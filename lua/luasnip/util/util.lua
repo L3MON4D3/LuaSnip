@@ -167,11 +167,22 @@ local function any_select(b, e)
 	replace_feedkeys(
 		-- this esc -> movement sometimes leads to a slight flicker
 		-- TODO: look into preventing that reliably.
-		-- simple move -> <esc>v isn't possible, leaving insert moves the
-		-- cursor, maybe do check for mode beforehand.
+		-- Go into visual, then place endpoints.
+		-- This is to allow us to place the cursor on the \n of a line.
+		-- see #1158
 		"<esc>"
+		-- open folds that contain this selection.
+		-- we assume that the selection is contained in at most one fold, and
+		-- that that fold covers b.
+		-- if we open the fold while visual is active, the selection will be
+		-- wrong, so this is necessary before we enter VISUAL.
 		.. cursor_set_keys(b)
+		-- start visual highlight and move to b again.
+		-- since we are now in visual, this might actually move the cursor.
 		.. "v"
+		.. cursor_set_keys(b)
+		-- swap to other end of selection, and move it to e.
+		.. "o"
 		.. (vim.o.selection == "exclusive" and
 			cursor_set_keys(e) or
 			-- set before

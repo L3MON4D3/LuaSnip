@@ -345,7 +345,9 @@ describe("session", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
 		exec_lua("vim.wait(10, function() end)")
 		screen:expect({

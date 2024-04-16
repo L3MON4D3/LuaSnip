@@ -140,4 +140,19 @@ describe("selection", function()
 			unchanged = true,
 		})
 	end)
+
+	it("Selection works when starting at a linebreak.", function()
+		exec_lua([[
+			ls.snip_expand(
+				s("trig", {
+					t"asdf", i(1, {"", "second line"})
+				}) )
+		]])
+		-- ^ denotes cursor, has to be behind "f".
+		screen:expect({
+		  grid = [[
+		    asdf^                                              |
+		    {3:second line}                                       |
+		    {2:-- SELECT --}                                      |]]})
+	end)
 end)
