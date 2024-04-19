@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.8.0            Last change: 2024 April 16
+*luasnip.txt*            For NVIM v0.8.0            Last change: 2024 April 19
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -227,6 +227,10 @@ roots, but don’t jump to them) is useful for a super-tab like mapping
 previous roots. Since there would almost always be more jumps if the roots are
 linked, regular `<Tab>` would not work almost all the time, and thus
 `link_roots` has to stay disabled.
+
+If the snippet is not a child, but a root, it can be exited when reaching to
+last node, `$0`, if `exit_roots` is enabled. This setting may avoid unexpected
+behavior by disallowing to jump earlier (finished) snippets.
 
 
 ==============================================================================
@@ -3372,10 +3376,13 @@ These are the settings you can provide to `luasnip.setup()`:
     |luasnip-basics-snippet-insertion| for more context.
 - `link_roots`: Whether snippet-roots should be linked. See
     |luasnip-basics-snippet-insertion| for more context.
+- `exit_roots`: Whether snippet-roots should exit at reaching at their `$0`. See
+    |luasnip-basics-snippet-insertion| for more context.
 - `link_children`: Whether children should be linked. See
     |luasnip-basics-snippet-insertion| for more context.
 - `history` (deprecated): if not nil, `keep_roots`, `link_roots`, and
-    `link_children` will bet set to the value of `history`. This is just to ensure
+    `link_children` will be set to the value of `history`, and `exit_roots` will
+    set to inverse value of `history`. This is just to ensure
     backwards-compatibility.
 - `update_events`: Choose which events trigger an update of the active nodes’
     dependents. Default is just `'InsertLeave'`, `'TextChanged,TextChangedI'` would
