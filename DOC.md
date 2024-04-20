@@ -154,10 +154,6 @@ Since there would almost always be more jumps if the roots are linked, regular
 `<Tab>` would not work almost all the time, and thus `link_roots` has to stay
 disabled.
 
-If the snippet is not a child, but a root, it can be exited when reaching to
-last node, `$0`, if `exit_roots` is enabled. This setting may avoid unexpected
-behavior by disallowing to jump earlier (finished) snippets.
-
 # Node
 
 Every node accepts, as its last parameter, an optional table of arguments.
@@ -3506,8 +3502,11 @@ These are the settings you can provide to `luasnip.setup()`:
   [Basics-Snippet-Insertion](#snippet-insertion) for more context.
 - `link_roots`: Whether snippet-roots should be linked. See
   [Basics-Snippet-Insertion](#snippet-insertion) for more context.
-- `exit_roots`: Whether snippet-roots should exit at reaching at their `$0`.
-  See [Basics-Snippet-Insertion](#snippet-insertion) for more context.
+- `exit_roots`: Whether snippet-roots should exit at reaching at their last
+  node, `$0`. This setting is only valid for root snippets, not child snippets.
+  This setting may avoid unexpected behavior by disallowing to jump earlier
+  (finished) snippets. Check [Basics-Snippet-Insertion](#snippet-insertion) for
+  more information on snippet-roots.
 - `link_children`: Whether children should be linked. See
   [Basics-Snippet-Insertion](#snippet-insertion) for more context.
 - `history` (deprecated): if not nil, `keep_roots`, `link_roots`, and
