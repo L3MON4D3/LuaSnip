@@ -103,6 +103,7 @@ return {
 	-- corresponds to legacy "history=false".
 	keep_roots = false,
 	link_roots = false,
+	exit_roots = true,
 	link_children = false,
 
 	update_events = "InsertLeave",
