@@ -134,7 +134,8 @@ describe("loaders:", function()
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]})
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Can lazy-load from multiple sources", function()
