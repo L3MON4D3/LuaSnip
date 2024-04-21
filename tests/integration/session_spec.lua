@@ -183,7 +183,9 @@ describe("session", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
 		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
@@ -1378,10 +1380,15 @@ describe("session", function()
 		expand()
 		-- jump to one before jumping out of child-snippet.
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
 		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
@@ -1627,8 +1634,11 @@ describe("session", function()
 
 		-- check connectivity.
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
@@ -2001,8 +2011,11 @@ describe("session", function()
 			feed("o<Cr><Cr><Cr><Esc>kkifn")
 			expand()
 			jump(1)
+			exec_lua("vim.wait(10, function() end)")
 			jump(1)
+			exec_lua("vim.wait(10, function() end)")
 			jump(1)
+			exec_lua("vim.wait(10, function() end)")
 			feed("int a")
 			screen:expect({
 				grid = [[

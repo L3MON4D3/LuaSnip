@@ -325,16 +325,16 @@ function Collection.new(
 		end
 	end
 
-	local watcher_ok, err = pcall(path_watcher, manifest_path, {
+	local ok, watcher_or_err = pcall(path_watcher, manifest_path, {
 		-- don't handle removals for now.
 		add = update_manifest,
 		change = update_manifest,
 	}, { lazy = lazy_watcher, fs_event_providers = fs_event_providers })
 
-	if not watcher_ok then
-		error(("Could not create watcher: %s"):format(err))
+	if not ok then
+		error(("Could not create watcher: %s"):format(watcher_or_err))
 	end
-	o.manifest_watcher = watcher_ok
+	o.manifest_watcher = watcher_or_err
 
 	log.info("Initialized snippet-collection with manifest %s", manifest_path)
 
