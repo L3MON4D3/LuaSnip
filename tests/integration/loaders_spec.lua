@@ -112,6 +112,28 @@ describe("loaders:", function()
 		)
 	end)
 
+	for_all_loaders("removes all snippets when cleanup is called.", function()
+		-- make sure the loader worked.
+		feed("iall1")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			expands? jumps? ^  !                               |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
+		exec_lua("ls.cleanup()")
+		feed("<Esc>ccall1")
+		exec_lua("ls.expand()")
+		screen:expect({grid = [[
+			all1^                                              |
+			{0:~                                                 }|*3
+			{2:-- INSERT --}                                      |]]})
+	end)
+
 	it("Can lazy-load from multiple sources", function()
 		ls_helpers.loaders["snipmate(lazy)"]("snippets")
 		ls_helpers.loaders["vscode(lazy)"]()
