@@ -1326,6 +1326,50 @@ describe("snippets_basic", function()
 		})
 	end)
 
+	it("exit_roots exits when the last node of snippet-root is reached.", function()
+		exec_lua([[
+			ls.setup({
+				exit_roots = true
+			})
+			ls.add_snippets("all", {
+			s("aa", { t{"( "}, i(1, "1"), t{" )"}, i(0, "0") })
+			})
+		]])
+
+		feed("iaa")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			( ^1 )0                                            |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]
+		})
+		feed("aa")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			( ( ^1 )0 )0                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]
+		})
+		-- verify we do not exit when reaching to a child root
+		exec_lua("ls.jump(1) ls.jump(-1)")
+		screen:expect({
+			grid = [[
+			( ( ^1 )0 )0                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]
+		})
+		-- be sure that reaching root $0 exits.
+		exec_lua("ls.jump(1) ls.jump(1) ls.jump(-1)")
+		screen:expect({
+			grid = [[
+			( ( 1 )0 )^0                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]
+		})
+	end)
+
 	it("focus correctly adjusts gravities of parent-snippets.", function()
 		exec_lua([[
 			ls.setup{
