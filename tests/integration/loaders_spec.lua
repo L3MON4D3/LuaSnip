@@ -131,9 +131,10 @@ describe("loaders:", function()
 		screen:expect({
 			grid = [[
 			all1^                                              |
-			{0:~                                                 }|*3
-			{2:-- INSERT --}                                      |]],
-		})
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]})
 	end)
 
 	it("Can lazy-load from multiple sources", function()
@@ -864,6 +865,7 @@ describe("loaders:", function()
 
 		-- double as quick test for package.jsonc
 		ls_helpers.scratch_edit("snippets/package.jsonc")
+		exec_lua("vim.wait(100, function() end)")
 
 		feed(
 			[[i{ "name": "snippets", "contributes": { "snippets": [{"language": ["all"], "path": "./all.json"}] } }]]
