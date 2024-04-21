@@ -128,10 +128,12 @@ describe("loaders:", function()
 		exec_lua("ls.cleanup()")
 		feed("<Esc>ccall1")
 		exec_lua("ls.expand()")
-		screen:expect({grid = [[
+		screen:expect({
+			grid = [[
 			all1^                                              |
 			{0:~                                                 }|*3
-			{2:-- INSERT --}                                      |]]})
+			{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("Can lazy-load from multiple sources", function()
