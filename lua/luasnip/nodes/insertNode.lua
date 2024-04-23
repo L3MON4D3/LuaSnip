@@ -266,7 +266,7 @@ end
 
 function InsertNode:exit()
 	for _, snip in ipairs(self:child_snippets()) do
-		snip:exit()
+		snip:remove_from_jumplist()
 	end
 
 	-- reset runtime-acquired values.

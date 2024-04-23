@@ -678,6 +678,8 @@ local function snippettree_find_undamaged_node(pos, opts)
 			-- The position of the offending snippet is returned in child_indx,
 			-- and we can remove it here.
 			prev_parent_children[child_indx]:remove_from_jumplist()
+			-- remove_from_jumplist modified prev_parent_children, don't need
+			-- to re-assign since we have a pointer to that table.
 		elseif found_parent ~= nil and not found_parent:extmarks_valid() then
 			-- found snippet damaged (the idea to sidestep the damaged snippet,
 			-- even if no error occurred _right now_, is to ensure that we can
