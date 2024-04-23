@@ -253,6 +253,17 @@ local function node_update_dependents_preserve_position(node, opts)
 	end
 end
 
+local function active_update_dependents()
+	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
+	-- don't update if a jump/change_choice is in progress, or if we don't have
+	-- an active node.
+	if not session.jump_active and active ~= nil then
+		local upd_res = node_update_dependents_preserve_position(active, { no_move = false, restore_position = true })
+		upd_res.new_node:focus()
+		session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_node
+	end
+end
+
 -- return next active node.
 local function safe_jump_current(dir, no_move, dry_run)
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
@@ -434,6 +445,11 @@ local function snip_expand(snippet, opts)
 	-- -1 to disable count.
 	vim.cmd([[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]])
 
+	-- schedule update of active node.
+	-- Not really happy with this, but for some reason I don't have time to
+	-- investigate, nvim_buf_get_text does not return the updated text :/
+	vim.schedule(active_update_dependents)
+
 	return snip
 end
 
@@ -602,17 +618,6 @@ local function get_current_choices()
 	end
 
 	return choice_lines
-end
-
-local function active_update_dependents()
-	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
-	-- don't update if a jump/change_choice is in progress, or if we don't have
-	-- an active node.
-	if not session.jump_active and active ~= nil then
-		local upd_res = node_update_dependents_preserve_position(active, { no_move = false, restore_position = true })
-		upd_res.new_node:focus()
-		session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_node
-	end
 end
 
 local function store_snippet_docstrings(snippet_table)
