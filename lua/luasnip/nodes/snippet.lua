@@ -474,6 +474,10 @@ function Snippet:remove_from_jumplist()
 	-- nxt is snippet.
 	local nxt = self.next.next
 
+	-- the advantage of remove_from_jumplist over exit is that the former
+	-- modifies its parents child_snippets, or the root-snippet-list.
+	-- Since the owners of this snippets' child_snippets are invalid anyway, we
+	-- don't bother modifying them.
 	self:exit()
 
 	local sibling_list = self.parent_node ~= nil
