@@ -100,9 +100,6 @@ function ExitNode:input_leave(no_move, dry_run)
 	end
 end
 
-function ExitNode:update_dependents() end
-
-function ExitNode:update_dependents_static() end
 function ExitNode:is_interactive()
 	return true
 end
