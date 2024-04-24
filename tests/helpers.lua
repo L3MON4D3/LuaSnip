@@ -1,6 +1,9 @@
 local helpers_ok, helpers = pcall(require, "test.functional.testutil")
 if not helpers_ok then
 	helpers_ok, helpers = pcall(require, "test.functional.helpers")
+	if not helpers_ok then
+		helpers_ok, helpers = pcall(require, "test.functional.testnvim")
+	end
 end
 
 helpers = helpers()

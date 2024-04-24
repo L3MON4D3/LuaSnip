@@ -874,6 +874,8 @@ describe("loaders:", function()
 		exec_lua("vim.wait(100, function() end)")
 		feed("<Esc>:w<Cr>")
 		exec_lua("vim.wait(100, function() end)")
+		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
 
 		screen:expect({
 			grid = [[
