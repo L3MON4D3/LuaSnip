@@ -392,6 +392,10 @@ describe("session", function()
 		jump(1)
 	end)
 	it("Deleting nested snippet only removes it.", function()
+		ls_helpers.session_setup_luasnip({
+			setup_extend = { exit_roots = false },
+			hl_choiceNode = true
+		})
 		feed("o<Cr><Cr><Up>fn")
 		exec_lua("ls.expand()")
 		screen:expect({
@@ -700,6 +704,7 @@ describe("session", function()
 			exec_lua(([[
 				ls.setup({
 					link_children = %s,
+					exit_roots = false,
 				})
 			]]):format(link_children_val))
 
@@ -1466,6 +1471,7 @@ describe("session", function()
 			ls.setup({
 				keep_roots = true,
 				link_roots = true,
+				exit_roots = false,
 				link_children = true,
 				delete_check_events = "TextChanged",
 				ext_opts = {
@@ -1928,6 +1934,7 @@ describe("session", function()
 			ls.setup({
 				keep_roots = true,
 				link_roots = true,
+				exit_roots = false,
 				link_children = true
 			})
 		]])
