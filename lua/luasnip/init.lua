@@ -160,7 +160,10 @@ local function jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
 		local next_node = util.no_region_check_wrap(safe_jump_current, dir)
-
+		if next_node == nil then
+			session.current_nodes[vim.api.nvim_get_current_buf()] = nil
+			return false
+		end
 		if session.config.exit_roots then
 			if next_node.pos == 0 and next_node.parent.parent_node == nil then
 				session.current_nodes[vim.api.nvim_get_current_buf()] = nil
