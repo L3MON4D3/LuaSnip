@@ -394,7 +394,7 @@ describe("session", function()
 	it("Deleting nested snippet only removes it.", function()
 		ls_helpers.session_setup_luasnip({
 			setup_extend = { exit_roots = false },
-			hl_choiceNode = true
+			hl_choiceNode = true,
 		})
 		feed("o<Cr><Cr><Up>fn")
 		exec_lua("ls.expand()")
