@@ -1372,6 +1372,64 @@ describe("snippets_basic", function()
 			})
 		end
 	)
+	it(
+		"exit_roots = false stays in the root node but exits child.",
+		function()
+			exec_lua([[
+			ls.setup({
+				exit_roots = false
+			})
+			ls.add_snippets("all", {
+			s("aa", { t{"( "}, i(1, "1"), t{" )"}, i(0, "0") })
+			})
+		]])
+
+			feed("iaa")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
+			( ^1 )0                                            |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]],
+			})
+			-- screen:snapshot_util()
+			feed("aa")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
+			( ( ^1 )0 )0                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]],
+			})
+			-- do not exit when reaching to a child root
+			exec_lua("ls.jump(1) ls.jump(-1)")
+			screen:expect({
+				grid = [[
+			( ( ^1 )0 )0                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]],
+			})
+			-- root $0 does not exit.
+			exec_lua("ls.jump(1) ls.jump(1) ls.jump(-1)")
+			screen:expect({
+				grid = [[
+			( ^({3: 1 )0} )0                                       |
+			{0:~                                                 }|
+			{2:-- SELECT --}                                      |]]
+			})
+			-- new root snippet exits earlier root.
+			exec_lua("ls.jump(1)")
+			feed("aa")
+			exec_lua("ls.expand()")
+			exec_lua("ls.jump(-1) ls.jump(-1)")
+			screen:expect({
+				grid = [[
+			( ( 1 )0 )^( 1 )0                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]
+			})
+		end
+	)
 
 	it("focus correctly adjusts gravities of parent-snippets.", function()
 		exec_lua([[
