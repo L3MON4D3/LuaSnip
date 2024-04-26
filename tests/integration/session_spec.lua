@@ -20,7 +20,10 @@ describe("session", function()
 
 	before_each(function()
 		ls_helpers.clear()
-		ls_helpers.session_setup_luasnip({ hl_choiceNode = true })
+		ls_helpers.session_setup_luasnip({
+			setup_extend = { exit_roots = false },
+			hl_choiceNode = true,
+		})
 
 		-- add a rather complicated snippet.
 		-- It may be a bit hard to grasp, but will cover lots and lots of
@@ -392,10 +395,6 @@ describe("session", function()
 		jump(1)
 	end)
 	it("Deleting nested snippet only removes it.", function()
-		ls_helpers.session_setup_luasnip({
-			setup_extend = { exit_roots = false },
-			hl_choiceNode = true,
-		})
 		feed("o<Cr><Cr><Up>fn")
 		exec_lua("ls.expand()")
 		screen:expect({
