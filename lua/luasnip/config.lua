@@ -58,6 +58,7 @@ c = {
 		if user_config.history ~= nil then
 			conf.keep_roots = user_config.history
 			conf.link_roots = user_config.history
+			conf.exit_roots = not user_config.history
 			conf.link_children = user_config.history
 
 			-- unset key to prevent handling twice.

@@ -20,7 +20,10 @@ describe("session", function()
 
 	before_each(function()
 		ls_helpers.clear()
-		ls_helpers.session_setup_luasnip({ hl_choiceNode = true })
+		ls_helpers.session_setup_luasnip({
+			setup_extend = { exit_roots = false },
+			hl_choiceNode = true,
+		})
 
 		-- add a rather complicated snippet.
 		-- It may be a bit hard to grasp, but will cover lots and lots of
@@ -700,6 +703,7 @@ describe("session", function()
 			exec_lua(([[
 				ls.setup({
 					link_children = %s,
+					exit_roots = false,
 				})
 			]]):format(link_children_val))
 
@@ -1466,6 +1470,7 @@ describe("session", function()
 			ls.setup({
 				keep_roots = true,
 				link_roots = true,
+				exit_roots = false,
 				link_children = true,
 				delete_check_events = "TextChanged",
 				ext_opts = {
@@ -1928,6 +1933,7 @@ describe("session", function()
 			ls.setup({
 				keep_roots = true,
 				link_roots = true,
+				exit_roots = false,
 				link_children = true
 			})
 		]])
