@@ -189,8 +189,7 @@ local function any_select(b, e)
 			-- set before
 			cursor_set_keys(e, true))
 		.. "o<C-G><C-r>_"
-		.. string.format("<Cmd>setlocal %slazyredraw<CR>", vim.o.lazyredraw and "" or "no")
-	)
+		.. string.format("<Cmd>setlocal %slazyredraw<CR>", vim.o.lazyredraw and "" or "no"))
 end
 
 local function normal_move_on_insert(new_cur_pos)
