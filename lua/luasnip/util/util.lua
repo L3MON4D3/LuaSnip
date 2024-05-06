@@ -165,8 +165,6 @@ end
 local function any_select(b, e)
 	-- stylua: ignore
 	replace_feedkeys(
-		-- this esc -> movement sometimes leads to a slight flicker
-		-- TODO: look into preventing that reliably.
 		-- Go into visual, then place endpoints.
 		-- This is to allow us to place the cursor on the \n of a line.
 		-- see #1158
