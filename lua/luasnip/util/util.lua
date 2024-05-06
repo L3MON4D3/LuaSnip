@@ -170,7 +170,8 @@ local function any_select(b, e)
 		-- Go into visual, then place endpoints.
 		-- This is to allow us to place the cursor on the \n of a line.
 		-- see #1158
-		"<esc>"
+		"<Cmd>setlocal lazyredraw<CR>"
+		.. "<esc>"
 		-- open folds that contain this selection.
 		-- we assume that the selection is contained in at most one fold, and
 		-- that that fold covers b.
@@ -187,7 +188,9 @@ local function any_select(b, e)
 			cursor_set_keys(e) or
 			-- set before
 			cursor_set_keys(e, true))
-		.. "o<C-G><C-r>_" )
+		.. "o<C-G><C-r>_"
+		.. string.format("<Cmd>setlocal %slazyredraw<CR>", vim.o.lazyredraw and "" or "no")
+	)
 end
 
 local function normal_move_on_insert(new_cur_pos)
