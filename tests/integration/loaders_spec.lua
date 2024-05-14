@@ -1114,7 +1114,8 @@ describe("loaders:", function()
 		exec_lua(
 			string.format(
 				[[ require("luasnip.loaders.from_vscode").load({ paths={"%s"} }) ]],
-				os.getenv("LUASNIP_SOURCE") .. "/tests/data/symlink-vscode/snippets"
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/symlink-vscode/snippets"
 			)
 		)
 		feed("iall1")
@@ -1125,7 +1126,7 @@ describe("loaders:", function()
 			{0:~                                                 }|
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]]
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 end)
