@@ -1109,4 +1109,23 @@ describe("loaders:", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("vscode correctly loads files if package.json is symlinked.", function()
+		exec_lua(
+			string.format(
+				[[ require("luasnip.loaders.from_vscode").load({ paths={"%s"} }) ]],
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/symlink-vscode/snippets"
+			)
+		)
+		feed("iall1")
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			expands? jumps?   !^                               |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]]
+		})
+	end)
 end)

@@ -63,11 +63,16 @@ else
 	MYCONFIG_ROOT = vim.fn.getcwd()
 end
 
-function Path.expand(filepath)
-	local expanded = filepath
+-- sometimes we don't want to resolve symlinks, but handle ~/ and ./
+function Path.expand_keep_symlink(filepath)
+	-- omit second return-value of :gsub
+	local res = filepath
 		:gsub("^~", vim.env.HOME)
 		:gsub("^[.][/\\]", MYCONFIG_ROOT .. sep)
-	return uv.fs_realpath(expanded)
+	return res
+end
+function Path.expand(filepath)
+	return uv.fs_realpath(Path.expand_keep_symlink(filepath))
 end
 
 -- do our best at normalizing a non-existing path.
