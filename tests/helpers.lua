@@ -375,11 +375,25 @@ function M.scratch_mkdir(scratch_rel)
 	os.execute(('mkdir -p "%s/%s"'):format(scratchdir_path, scratch_rel))
 end
 function M.scratch_mv(scratch_from, scratch_to)
-	os.execute(('mv "%s/%s" "%s/%s"'):format(scratchdir_path, scratch_from, scratchdir_path, scratch_to))
+	os.execute(
+		('mv "%s/%s" "%s/%s"'):format(
+			scratchdir_path,
+			scratch_from,
+			scratchdir_path,
+			scratch_to
+		)
+	)
 end
 -- mv -T
 function M.scratch_mv_T(scratch_from, scratch_to)
-	os.execute(('mv -T "%s/%s" "%s/%s"'):format(scratchdir_path, scratch_from, scratchdir_path, scratch_to))
+	os.execute(
+		('mv -T "%s/%s" "%s/%s"'):format(
+			scratchdir_path,
+			scratch_from,
+			scratchdir_path,
+			scratch_to
+		)
+	)
 end
 function M.scratch_touch(scratch_rel)
 	os.execute(('touch "%s/%s"'):format(scratchdir_path, scratch_rel))

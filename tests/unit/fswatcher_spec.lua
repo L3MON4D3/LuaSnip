@@ -261,8 +261,8 @@ describe("fs_events", function()
 				["a/a"] = 1,
 				["a/b"] = 1,
 				["a/c/e"] = 1,
-				["a/d/e"] = 1
-			}
+				["a/d/e"] = 1,
+			},
 		}, exec_lua([[return {changed, seen}]]))
 	end)
 
