@@ -6,14 +6,14 @@ local function from_cursor_pos()
 		local cursor = require("luasnip.util.util").get_cursor_0ind()
 		-- assumption: languagetree uses 0-indexed byte-ranges.
 		return {
-			parser
+			vim.treesitter.language.get_filetypes(parser
 				:language_for_range({
 					cursor[1],
 					cursor[2],
 					cursor[1],
 					cursor[2],
 				})
-				:lang(),
+				:lang()),
 		}
 	else
 		return {}
