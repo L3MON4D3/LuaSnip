@@ -185,9 +185,21 @@ function TreeWatcher:fs_event_callback(err, relpath, events)
 			end
 
 			if f_type == "file" then
-				self:new_file(relpath, full_path)
+				if self.files[relpath] then
+					-- rename and file exists => a new file was moved into its
+					-- place => handle as changed file.
+					self:change_file(relpath, full_path)
+				else
+					self:new_file(relpath, full_path)
+				end
 				return
 			elseif f_type == "directory" then
+				if self.dir_watchers[relpath] then
+					-- rename and directory exists => directory is overwritten
+					-- => stop recursively, clear, and start a new watcher.
+					self.dir_watchers[relpath]:stop()
+					self.dir_watchers[relpath] = nil
+				end
 				self:new_dir(relpath, full_path)
 				return
 			end

@@ -3,6 +3,8 @@ local exec_lua = ls_helpers.exec_lua
 local mkdir = ls_helpers.scratch_mkdir
 local touch = ls_helpers.scratch_touch
 local edit = ls_helpers.scratch_edit
+local mv = ls_helpers.scratch_mv
+local mv_T = ls_helpers.scratch_mv_T
 
 describe("fs_events", function()
 	before_each(function()
@@ -203,6 +205,65 @@ describe("fs_events", function()
 				["a/4/a/b/a"] = 0,
 			},
 		}, exec_lua([[return {seen_files, seen_dirs, changed}]]))
+	end)
+
+	it("libuv triggers change on overwriting existing entry.", function()
+		mkdir("a")
+		touch("a/a")
+		touch("a/b")
+		mkdir("a/c")
+		touch("a/c/e")
+		mkdir("a/d")
+
+		exec_lua([[
+			changed = {
+				["a/a"] = 0,
+				["a/b"] = 0,
+				["a/c/e"] = 0,
+				["a/d/e"] = 0,
+			}
+			seen = {
+				["a/a"] = 0,
+				["a/b"] = 0,
+				["a/c/e"] = 0,
+				["a/d/e"] = 0,
+			}
+
+			ls.log.set_loglevel("debug")
+			watcher = scratch_tree_watcher("a", 3, {
+				change_file = function(path)
+					changed[path] = changed[path] + 1
+				end,
+				new_file = function(path)
+					seen[path] = seen[path] + 1
+				end
+			}, {lazy=false, fs_event_providers = {libuv = true} } )
+			ls.log.set_loglevel("warn")
+		]])
+
+		-- make sure a/b is marked as changed.
+		mv("a/a", "a/b")
+		-- make sure a/d/e is seen.
+		mv_T("a/c", "a/d")
+
+		assert.are.same({
+			{
+				["a/b"] = 1,
+				-- we don't handle file-removal, it's currently out of scope
+				-- for the loaders to remove snippets when the file is removed,
+				-- so we don't have to handle it here.
+				["a/a"] = 0,
+				-- both are only created, not changed.
+				["a/c/e"] = 0,
+				["a/d/e"] = 0,
+			},
+			{
+				["a/a"] = 1,
+				["a/b"] = 1,
+				["a/c/e"] = 1,
+				["a/d/e"] = 1,
+			},
+		}, exec_lua([[return {changed, seen}]]))
 	end)
 
 	it("lazy registration works with libuv.", function()
