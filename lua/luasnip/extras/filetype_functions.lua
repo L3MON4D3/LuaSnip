@@ -1,3 +1,11 @@
+local function fts_from_ts_lang(lang)
+	-- In case of someone using nvim <= 0.9
+	if vim.treesitter.language and vim.treesitter.language.get_filetypes then
+		return vim.treesitter.language.get_filetypes(lang)
+	end
+	return { lang }
+end
+
 local function from_cursor_pos()
 	-- get_parser errors if parser not present (no grammar for language).
 	local has_parser, parser = pcall(vim.treesitter.get_parser)
@@ -5,23 +13,22 @@ local function from_cursor_pos()
 	if has_parser then
 		local cursor = require("luasnip.util.util").get_cursor_0ind()
 		-- assumption: languagetree uses 0-indexed byte-ranges.
-		return {
-			vim.treesitter.language.get_filetypes(parser
-				:language_for_range({
-					cursor[1],
-					cursor[2],
-					cursor[1],
-					cursor[2],
-				})
-				:lang()),
-		}
+		local lang = parser
+			:language_for_range({
+				cursor[1],
+				cursor[2],
+				cursor[1],
+				cursor[2],
+			})
+			:lang()
+		return fts_from_ts_lang(lang)
 	else
 		return {}
 	end
 end
 
 local function from_filetype()
-	return vim.split(vim.bo.filetype, ".", true)
+	return vim.split(vim.bo.filetype, ".", { plain = true, trimemtpy = false })
 end
 
 -- NOTE: Beware that the resulting filetypes may differ from the ones in `vim.bo.filetype`. (for
