@@ -1,9 +1,14 @@
 local function fts_from_ts_lang(lang)
+	local fts = {}
 	-- In case of someone using nvim <= 0.9
 	if vim.treesitter.language and vim.treesitter.language.get_filetypes then
-		return vim.treesitter.language.get_filetypes(lang)
+		fts = vim.treesitter.language.get_filetypes(lang)
 	end
-	return { lang }
+	-- Keep lang as part of the result, for backward compatibility
+	if not vim.list_contains(fts, lang) then
+		table.insert(fts, lang)
+	end
+	return fts
 end
 
 local function from_cursor_pos()
