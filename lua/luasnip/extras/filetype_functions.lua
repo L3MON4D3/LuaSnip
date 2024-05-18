@@ -1,3 +1,11 @@
+local function list_contains(haystack, needle)
+	for _, v in ipairs(haystack) do
+		if v == needle then
+			return true
+		end
+	end
+	return false
+end
 local function fts_from_ts_lang(lang)
 	local fts = {}
 	-- In case of someone using nvim <= 0.9
@@ -5,7 +13,7 @@ local function fts_from_ts_lang(lang)
 		fts = vim.treesitter.language.get_filetypes(lang)
 	end
 	-- Keep lang as part of the result, for backward compatibility
-	if not vim.list_contains(fts, lang) then
+	if not list_contains(fts, lang) then
 		table.insert(fts, lang)
 	end
 	return fts
