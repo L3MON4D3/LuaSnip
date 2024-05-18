@@ -4,10 +4,10 @@ local function fts_from_ts_lang(lang)
 	if vim.treesitter.language and vim.treesitter.language.get_filetypes then
 		fts = vim.treesitter.language.get_filetypes(lang)
 	end
-	-- Keep lang as part of the result, for backward compatibility
-	if not vim.list_contains(fts, lang) then
-		table.insert(fts, lang)
-	end
+	-- Keep lang as part of the result, for backward compatibility.
+	-- If lang is already part of fts, one entry will be removed by deduplicate
+	-- in get_snippet_filetypes().
+	table.insert(fts, lang)
 	return fts
 end
 

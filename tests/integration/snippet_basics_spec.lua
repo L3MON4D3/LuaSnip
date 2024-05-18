@@ -8,7 +8,7 @@ describe("snippets_basic", function()
 
 	before_each(function()
 		ls_helpers.clear()
-		ls_helpers.session_setup_luasnip()
+		ls_helpers.session_setup_luasnip({setup_parsers=true})
 
 		screen = Screen.new(50, 3)
 		screen:attach()
@@ -1596,5 +1596,30 @@ describe("snippets_basic", function()
 		assert.are.same(true, exec_lua("return enter_snode"))
 		assert.are.same(true, exec_lua("return enter_snode_m1"))
 		assert.are.same(true, exec_lua("return enter_snode_via_parent"))
+	end)
+
+	it("Correct filetype is recognized via treesitter.", function()
+		exec_lua([=[
+			ls.setup({
+				ft_func = require("luasnip.extras.filetype_functions").from_cursor_pos
+			})
+			ls.add_snippets("lua", {
+				s("asdf", t[[print("qwer")]])
+			})
+		]=])
+		exec("set ft=lua")
+		feed([[ilocal function a()  end<Esc>hhhi]])
+		screen:expect({
+			grid = [[
+			  local function a() ^ end                           |
+			  {0:~                                                 }|
+			  {2:-- INSERT --}                                      |]]})
+		feed([[asdf]])
+		exec_lua("ls.expand()")
+		screen:expect({
+			grid = [[
+			  local function a() print("qwer")^ end              |
+			  {0:~                                                 }|
+			  {2:-- INSERT --}                                      |]]})
 	end)
 end)
