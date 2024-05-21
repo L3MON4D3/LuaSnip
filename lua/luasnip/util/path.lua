@@ -193,14 +193,27 @@ function Path.components(path)
 	return vim.split(path, sep, { plain = true, trimempty = true })
 end
 
-function Path.parent(path)
-	local last_component = path:match("%" .. sep .. "[^" .. sep .. "]+$")
-	if not last_component then
-		return nil
-	end
+Path.parent = (function()
+	if sep == "/" then
+		return function(path)
+			local last_component = path:match("[^/]+[/]*$")
+			if not last_component or #path == #last_component then
+				return nil
+			end
 
-	return path:sub(1, #path - #last_component)
-end
+			return path:sub(1, #path - #last_component)
+		end
+	else
+		return function(path)
+			local last_component = path:match("[^/\\]+[/\\]*$")
+			if not last_component or #path == #last_component then
+				return nil
+			end
+
+			return path:sub(1, #path - #last_component)
+		end
+	end
+end)()
 
 -- returns nil if the file does not exist!
 Path.normalize = uv.fs_realpath
