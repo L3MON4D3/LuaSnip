@@ -193,14 +193,72 @@ function Path.components(path)
 	return vim.split(path, sep, { plain = true, trimempty = true })
 end
 
-function Path.parent(path)
-	local last_component = path:match("%" .. sep .. "[^" .. sep .. "]+$")
-	if not last_component then
-		return nil
+---Get parent of a path, without trailing separator
+---if path is a directory or does not have a parent, returns nil
+---Example:
+---  On platforms that use "\\" backslash as path separator, e.g., Windows:
+---    Path.parent("C:/project_root/file.txt") -- returns "C:/project_root"
+---    Path.parent([[C:\project_root\file.txt]]) -- returns [[C:\project_root]]
+---
+---    -- the followings return `nil`s
+---    Path.parent("C:/")
+---    Path.parent([[C:\]])
+---    Path.parent([[C:\project_root\]])
+---
+---    -- WARN: although it's unlikely that we will reach the driver's root
+---    -- level, Path.parent("C:\file.txt") returns "C:", and please be
+---    -- cautious when passing the parent path to some vim functions because
+---    -- some vim functions on Windows treat "C:" as a file instead:
+---    --   vim.fn.fnamemodify("C:", ":p") -- returns $CWD .. sep .. "C:"
+---    -- To get the desired result, use vim.fn.fnamemodify("C:" .. sep, ":p")
+---
+---  On platforms that use "/" forward slash as path separator, e.g., linux:
+---    Path.parent("/project_root/file.txt") returns "/project_root"
+---    Path.parent("/file.txt") returns ""
+---
+---    -- the followings return `nil`s
+---    Path.parent("/")
+---    Path.parent("/project_root/")
+---
+---    -- backslash in a valid filename character in linux:
+---    Path.parent([[/project_root/\valid\file\name.txt]]) returns "/project_root"
+Path.parent = (function()
+	---@alias PathSeparator "/" | "\\"
+	---@param os_sep PathSeparator
+	---@return fun(string): string | nil
+	local function generate_parent(os_sep)
+		if os_sep == "/" then
+			---@param path string
+			---@return string | nil
+			return function(path)
+				local last_component = path:match("[/]+[^/]+$")
+				if not last_component then
+					return nil
+				end
+
+				return path:sub(1, #path - #last_component)
+			end
+		else
+			---@param path string
+			---@return string | nil
+			return function(path)
+				local last_component = path:match("[/\\]+[^/\\]+$")
+				if not last_component then
+					return nil
+				end
+
+				return path:sub(1, #path - #last_component)
+			end
+		end
 	end
 
-	return path:sub(1, #path - #last_component)
-end
+	-- for test only
+	if __LUASNIP_TEST_SEP_OVERRIDE then
+		return generate_parent
+	else
+		return generate_parent(sep)
+	end
+end)()
 
 -- returns nil if the file does not exist!
 Path.normalize = uv.fs_realpath
