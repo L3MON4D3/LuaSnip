@@ -165,7 +165,7 @@ Common opts:
 
 * `node_ext_opts` and `merge_node_ext_opts`: Control `ext_opts` (most likely
   highlighting) of the node. Described in detail in [ext_opts](#ext_opts)
-* `key`: The node can be reffered to by this key. Useful for either [Key
+* `key`: The node can be referred to by this key. Useful for either [Key
   Indexer](#key-indexer) or for finding the node at runtime (See
   [Snippets-api](#snippets-api)), for example inside a `dynamicNode`. The keys
   do not have to be unique across the entire lifetime of the snippet, but at any
@@ -751,7 +751,7 @@ ChoiceNodes allow choosing between multiple nodes.
 
 - `jump_index`: `number`, since choiceNodes can be jumped to, they need a
   jump-index (Info in [Basics-Jump-Index](#jump-index)).
-- `choices`: `node[]|node`, the choices. The first will be initialliy active.
+- `choices`: `node[]|node`, the choices. The first will be initially active.
   A list of nodes will be turned into a `snippetNode`.
 - `node_opts`: `table`. `choiceNode` supports the keys common to all nodes
   described in [Node](#node), and one additional key:
@@ -904,7 +904,7 @@ All of these parameters except `indentstring` are exactly the same as in
 
 - `indentstring`: `string`, will be used to indent the nodes inside this
   `snippetNode`.  
-  All occurences of `"$PARENT_INDENT"` are replaced with the actual indent of
+  All occurrences of `"$PARENT_INDENT"` are replaced with the actual indent of
   the parent.
 
 # DynamicNode
@@ -1305,7 +1305,7 @@ manipulation.
 - `lambda`: An object created by applying string-operations to `l._n`, objects
   representing the `n`th argnode.  
   For example: 
-  - `l._1:gsub("a", "e")` replaces all occurences of "a" in the text of the
+  - `l._1:gsub("a", "e")` replaces all occurrences of "a" in the text of the
   first argnode with "e", or
   - `l._1 .. l._2` concatenates text of the first and second argnode.
   If an argnode contains multiple lines of text, they are concatenated with
@@ -1392,7 +1392,7 @@ Examples:
     m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
   })
   ```
-  This inserts the text of the node with jump-index 1, with all occurences of
+  This inserts the text of the node with jump-index 1, with all occurrences of
   `a` replaced with `e`, if the second insertNode matches the first exactly.
 
   <!-- panvimdoc-ignore-start -->
@@ -1540,7 +1540,7 @@ any way, correspond to the jump-index of the nodes!
 
 `fmt(format:string, nodes:table of nodes, opts:table|nil) -> table of nodes`
 
-* `format`: a string. Occurences of `{<somekey>}` ( `{}` are customizable; more
+* `format`: a string. Occurrences of `{<somekey>}` ( `{}` are customizable; more
   on that later) are replaced with `content[<somekey>]` (which should be a
   node), while surrounding text becomes `textNode`s.  
   To escape a delimiter, repeat it (`"{{"`).  
@@ -1550,7 +1550,7 @@ any way, correspond to the jump-index of the nodes!
   numbered placeholder).
   If a key appears more than once in `format`, the node in
   `content[<duplicate_key>]` is inserted for the first, and copies of it for
-  subsequent occurences.
+  subsequent occurrences.
 * `nodes`: just a table of nodes.
 * `opts`: optional arguments:
   * `delimiters`: string, two characters. Change `{}` to some other pair, e.g.
@@ -1660,7 +1660,7 @@ vnoremap <c-f>  "ec<cmd>lua require('luasnip.extras.otf').on_the_fly("e")<cr>
 inoremap <c-f>  <cmd>lua require('luasnip.extras.otf').on_the_fly("e")<cr>
 ```
 
-Obviously, `<c-f>` is arbritary and can be changed to any other key combo.
+Obviously, `<c-f>` is arbitrary and can be changed to any other key combo.
 Another interesting application is allowing multiple on-the-fly snippets at the
 same time by retrieving snippets from multiple registers:
 ```vim
@@ -1709,7 +1709,7 @@ Contains some utility functions that can be passed to the `ft_func` or
 * `from_cursor_pos`: uses treesitter to determine the filetype at the cursor.
   With that, it's possible to expand snippets in injected regions, as long as
   the treesitter parser supports them.
-  If this is used in conjuction with `lazy_load`, extra care must be taken that
+  If this is used in conjunction with `lazy_load`, extra care must be taken that
   all the filetypes that can be expanded in a given buffer are also returned by
   `load_ft_func` (otherwise their snippets may not be loaded).
   This can easily be achieved with `extend_load_ft`.
@@ -1717,7 +1717,7 @@ Contains some utility functions that can be passed to the `ft_func` or
   A simple solution to the problem described above is loading more filetypes
   than just that of the target buffer when `lazy_load`ing. This can be done
   ergonomically via `extend_load_ft`: calling it with a table where the keys are
-  filetypes, and the values are the filetypes that should be loaded additionaly
+  filetypes, and the values are the filetypes that should be loaded additionally
   returns a function that can be passed to `load_ft_func` and takes care of
   extending the filetypes properly.
 
@@ -1742,7 +1742,7 @@ of snippet which alters text before the snippet's trigger. While these
 can be implemented using regTrig snippets, this helper makes the process easier
 in most cases.
 
-The simplest example, which surrounds the text preceeding the `.br` with
+The simplest example, which surrounds the text preceding the `.br` with
 brackets `[]`, looks like:
 
 ```lua
@@ -1802,7 +1802,7 @@ as the table in the same position for `s` except:
     against. The default match pattern is `"[%w%.%_%-]+$"`. Note the `$`. This
     matches since only the line _up until_ the beginning of the trigger is
     matched against the pattern, which makes the character immediately
-    preceeding the trigger match as the end of the string.
+    preceding the trigger match as the end of the string.
 
 Some other match strings, including the default, are available from the postfix
 module. `require("luasnip.extras.postfix).matches`:
@@ -1838,7 +1838,7 @@ below) it will get run after the builtin callback.
 Instead of triggering a postfix-snippet when some pattern matches in front of
 the trigger, it might be useful to match if some specific treesitter-nodes
 surround/are in front of the trigger.  
-While this functionality can also be implemented by a cusutom
+While this functionality can also be implemented by a custom
 `resolveExpandParams`, this helper simplifies the common cases.  
 
 This matching of treesitter-nodes can be done either
@@ -1849,7 +1849,7 @@ This matching of treesitter-nodes can be done either
 * by providing a function that manually walks the node-tree, and returns the
   node in front of the trigger on success (for increased flexibility).
 
-A simple example, which surrounds the previous node's text preceeding the `.mv`
+A simple example, which surrounds the previous node's text preceding the `.mv`
 with `std::move()` in cpp files, looks like:
 
 ```lua
@@ -2305,9 +2305,9 @@ LuaSnip, best copy the source file: `/lua/luasnip/util/extend_decorator.lua`).
   * arg_indx, `number` (required): the position of the parameter to override.
   * extend, `fn(arg, extend_value) -> effective_arg` (optional): this function
     is used to extend the args passed to the decorated function.
-    It defaults to a function which just extends the the arg-table with the
+    It defaults to a function which just extends the arg-table with the
     extend table (accepts `nil`).
-    This extend behaviour is adaptable to accomodate `s`, where the first
+    This extend behaviour is adaptable to accommodate `s`, where the first
     argument may be string or table.
 
 `apply(fn, ...) -> decorated_fn`:
@@ -2535,12 +2535,12 @@ The lsp-spec states:
 ----
 
 With `$name` or `${name:default}` you can insert the value of a variable.  
-When a variable isn’t set, its default or the empty string is inserted.
-When a variable is unknown (that is, its name isn’t defined) the name of the variable is inserted and it is transformed into a placeholder.
+When a variable isn't set, its default or the empty string is inserted.
+When a variable is unknown (that is, its name isn't defined) the name of the variable is inserted and it is transformed into a placeholder.
 
 ----
 
-The above necessiates a differentiation between `unknown` and `unset` variables:
+The above necessitates a differentiation between `unknown` and `unset` variables:
 
 For LuaSnip, a variable `VARNAME` is `unknown` when `env.VARNAME` returns `nil` and `unset`
 if it returns an empty string.
@@ -2582,7 +2582,7 @@ where `opts` can contain the following keys:
 - `include`: List of languages to include, includes everything by default.
 - `{override,default}_priority`: These keys are passed straight to the
   `add_snippets`-calls (documented in [API](#api)) and can therefore change the
-  priority of snippets loaded from some colletion (or, in combination with
+  priority of snippets loaded from some collection (or, in combination with
   `{in,ex}clude`, only some of its snippets).
 - `fs_event_providers`: `table<string, boolean>?`, specifies which mechanisms
   should be used to watch files for updates/creation.  
