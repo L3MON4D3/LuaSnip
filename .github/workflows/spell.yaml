@@ -1,0 +1,13 @@
+name: 'Check spelling'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+
+jobs:
+  spellcheck: # run the action
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: streetsidesoftware/cspell-action@v6
+        with:
+          files: '*.md'

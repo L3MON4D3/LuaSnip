@@ -1,0 +1,27 @@
+{
+  "words": [
+    "luasnip",
+    "fmta",
+    "panvimdoc",
+    "behaviour",
+    "extmarks",
+    "cond",
+    "compe",
+    "jsregexp",
+    "vimscript",
+    "keymap",
+    "nvim",
+    "Neovim",
+    "snoremap",
+    "Keymaps",
+    "autotriggered",
+    "autosnippet",
+    "autosnippets",
+    "debuginfo",
+    "debuginfo"
+  ],
+            "ignoreRegExpList": [
+                "`[^`]+`"
+            ],
+
+}
