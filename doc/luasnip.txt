@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.8.0             Last change: 2024 May 24
+*luasnip.txt*             For NVIM v0.8.0             Last change: 2024 June 3
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -759,7 +759,7 @@ ChoiceNodes allow choosing between multiple nodes.
 
 - `jump_index`: `number`, since choiceNodes can be jumped to, they need a
     jump-index (Info in |luasnip-basics-jump-index|).
-- `choices`: `node[]|node`, the choices. The first will be initialliy active.
+- `choices`: `node[]|node`, the choices. The first will be initially active.
     A list of nodes will be turned into a `snippetNode`.
 - `node_opts`: `table`. `choiceNode` supports the keys common to all nodes
     described in |luasnip-node|, and one additional key:
@@ -1629,7 +1629,7 @@ Contains some utility functions that can be passed to the `ft_func` or
     the buffer.
 - `from_cursor_pos`: uses treesitter to determine the filetype at the cursor.
     With that, it’s possible to expand snippets in injected regions, as long as
-    the treesitter parser supports them. If this is used in conjuction with
+    the treesitter parser supports them. If this is used in conjunction with
     `lazy_load`, extra care must be taken that all the filetypes that can be
     expanded in a given buffer are also returned by `load_ft_func` (otherwise their
     snippets may not be loaded). This can easily be achieved with `extend_load_ft`.
@@ -1661,7 +1661,7 @@ which alters text before the snippet’s trigger. While these can be
 implemented using regTrig snippets, this helper makes the process easier in
 most cases.
 
-The simplest example, which surrounds the text preceeding the `.br` with
+The simplest example, which surrounds the text preceding the `.br` with
 brackets `[]`, looks like:
 
 >lua
@@ -1709,7 +1709,7 @@ as the table in the same position for `s` except:
     against. The default match pattern is `"[%w%.%_%-]+$"`. Note the `$`. This
     matches since only the line _up until_ the beginning of the trigger is
     matched against the pattern, which makes the character immediately
-    preceeding the trigger match as the end of the string.
+    preceding the trigger match as the end of the string.
 
 Some other match strings, including the default, are available from the postfix
 module. `require("luasnip.extras.postfix).matches`:
@@ -1746,7 +1746,7 @@ TREESITTER-POSTFIX-SNIPPET         *luasnip-extras-treesitter-postfix-snippet*
 Instead of triggering a postfix-snippet when some pattern matches in front of
 the trigger, it might be useful to match if some specific treesitter-nodes
 surround/are in front of the trigger. While this functionality can also be
-implemented by a cusutom `resolveExpandParams`, this helper simplifies the
+implemented by a custom `resolveExpandParams`, this helper simplifies the
 common cases.
 
 This matching of treesitter-nodes can be done either
@@ -1757,7 +1757,7 @@ This matching of treesitter-nodes can be done either
 - by providing a function that manually walks the node-tree, and returns the
     node in front of the trigger on success (for increased flexibility).
 
-A simple example, which surrounds the previous node’s text preceeding the
+A simple example, which surrounds the previous node’s text preceding the
 `.mv` with `std::move()` in cpp files, looks like:
 
 >lua
@@ -2394,7 +2394,7 @@ variable is unknown (that is, its name isn’t defined) the name of the
 variable is inserted and it is transformed into a placeholder.
 
 ------------------------------------------------------------------------------
-The above necessiates a differentiation between `unknown` and `unset`
+The above necessitates a differentiation between `unknown` and `unset`
 variables:
 
 For LuaSnip, a variable `VARNAME` is `unknown` when `env.VARNAME` returns `nil`
@@ -2439,7 +2439,7 @@ where `opts` can contain the following keys:
 - `include`: List of languages to include, includes everything by default.
 - `{override,default}_priority`: These keys are passed straight to the
     `add_snippets`-calls (documented in |luasnip-api|) and can therefore change the
-    priority of snippets loaded from some colletion (or, in combination with
+    priority of snippets loaded from some collection (or, in combination with
     `{in,ex}clude`, only some of its snippets).
 - `fs_event_providers`: `table<string, boolean>?`, specifies which mechanisms
     should be used to watch files for updates/creation.
