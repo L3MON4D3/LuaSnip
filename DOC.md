@@ -3374,7 +3374,7 @@ au User SomeUserEvent echom "SomeUserEvent was triggered"
 or
 ```lua
 vim.api.nvim_create_autocommand("User", {
-	patter = "SomeUserEvent",
+	pattern = "SomeUserEvent",
 	command = "echom SomeUserEvent was triggered"
 })
 ```
