@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.8.0            Last change: 2024 June 07
+*luasnip.txt*             For NVIM v0.8.0            Last change: 2024 June 26
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -3232,7 +3232,7 @@ or
 
 >lua
     vim.api.nvim_create_autocommand("User", {
-        patter = "SomeUserEvent",
+        pattern = "SomeUserEvent",
         command = "echom SomeUserEvent was triggered"
     })
 <
