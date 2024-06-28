@@ -6,14 +6,17 @@ describe("luasnip.loaders.util:", function()
 	exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 
 	it("Correctly splits scopes with spaces.", function()
-		local res =
-			exec_lua([[return require("luasnip.loaders.util").scopestring_to_filetypes("javascript, typescript")]])
+		local res = exec_lua(
+			[[return require("luasnip.loaders.util").scopestring_to_filetypes("javascript, typescript")]]
+		)
 		assert.are.same({ "javascript", "typescript" }, res)
-		local res =
-			exec_lua([[return require("luasnip.loaders.util").scopestring_to_filetypes(" javascript, typescript")]])
+		local res = exec_lua(
+			[[return require("luasnip.loaders.util").scopestring_to_filetypes(" javascript, typescript")]]
+		)
 		assert.are.same({ "javascript", "typescript" }, res)
-		local res =
-			exec_lua([[return require("luasnip.loaders.util").scopestring_to_filetypes("javascript , typescript ")]])
+		local res = exec_lua(
+			[[return require("luasnip.loaders.util").scopestring_to_filetypes("javascript , typescript ")]]
+		)
 		assert.are.same({ "javascript", "typescript" }, res)
 	end)
 end)
