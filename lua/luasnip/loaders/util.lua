@@ -301,5 +301,5 @@ return {
 	get_load_fts = get_load_fts,
 	add_file_snippets = add_file_snippets,
 	normalize_opts = normalize_opts,
-	scopestring_to_filetypes = scopestring_to_filetypes
+	scopestring_to_filetypes = scopestring_to_filetypes,
 }
