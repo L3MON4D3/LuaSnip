@@ -1724,13 +1724,21 @@ describe("session", function()
 
 		-- end up back in last node, not in textNode-expanded snippet.
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		jump(1)
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |

@@ -188,7 +188,9 @@ describe("snippets_basic", function()
 			{ "a[]ab" }
 		)
 		exec_lua("ls.snip_expand(" .. snip .. ")")
+		exec_lua("vim.wait(10, function() end)")
 		exec_lua("ls.snip_expand(" .. snip .. ")")
+		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			a[a[^]ab]ab                                        |
