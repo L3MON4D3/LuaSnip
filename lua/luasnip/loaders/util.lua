@@ -281,6 +281,11 @@ local function normalize_opts(opts)
 	}
 end
 
+local function scopestring_to_filetypes(str)
+	local str_trimmed = str:gsub("^%s+", ""):gsub("%s+$", "")
+	return vim.split(str_trimmed, "%s*[.,]%s*")
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
@@ -296,4 +301,5 @@ return {
 	get_load_fts = get_load_fts,
 	add_file_snippets = add_file_snippets,
 	normalize_opts = normalize_opts,
+	scopestring_to_filetypes = scopestring_to_filetypes
 }
