@@ -103,7 +103,7 @@ local function get_file_snippets(file)
 		-- vscode documents `,`, but `.` also works.
 		-- an entry `false` in this list will cause a `ft=nil` for the snippet.
 		local filetypes = parts.scope
-				and util.scopestring_to_filetypes(parts.scope)
+				and loader_util.scopestring_to_filetypes(parts.scope)
 			or { false }
 
 		local contexts = {}
