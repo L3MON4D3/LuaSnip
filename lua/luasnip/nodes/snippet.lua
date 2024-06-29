@@ -826,7 +826,7 @@ function Snippet:matches(line_to_cursor)
 			from == 1
 			or string.match(
 					string.sub(line_to_cursor, from - 1, from - 1),
-					"[%w_]"
+					"[\\%w_]"
 				)
 				== nil
 		)
