@@ -61,6 +61,8 @@ end
 -- Afterwards, we can just use <cmd>lua, which does not change the mode.
 M.select_keys =
 	[[:lua require("luasnip.util.select").pre_cut()<Cr>gv"zs<cmd>lua require('luasnip.util.select').post_cut("z")<Cr>]]
+M.copy_keys =
+	[[:lua require("luasnip.util.select").pre_cut()<Cr>gv"zy<cmd>lua require('luasnip.util.select').post_cut("z")<Cr>]]
 
 local saved_registers
 local lines
