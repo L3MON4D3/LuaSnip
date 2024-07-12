@@ -65,6 +65,12 @@ c = {
 			conf.history = nil
 		end
 
+		if user_config.store_selection_keys ~= nil then
+			conf.cut_selection_keys = user_config.store_selection_keys
+
+			user_config.store_selection_keys = nil
+		end
+
 		for k, v in pairs(user_config) do
 			conf[k] = v
 		end
@@ -125,12 +131,21 @@ c = {
 			end)
 		end
 
-		if session.config.store_selection_keys then
+		if session.config.cut_selection_keys then
 			vim.cmd(
 				string.format(
 					[[xnoremap <silent>  %s  %s]],
-					session.config.store_selection_keys,
+					session.config.cut_selection_keys,
 					require("luasnip.util.select").select_keys
+				)
+			)
+		end
+		if session.config.copy_selection_keys then
+			vim.cmd(
+				string.format(
+					[[xnoremap <silent>  %s  %s]],
+					session.config.copy_selection_keys,
+					require("luasnip.util.select").copy_keys
 				)
 			)
 		end
