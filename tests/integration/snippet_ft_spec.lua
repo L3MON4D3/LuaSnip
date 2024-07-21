@@ -21,7 +21,10 @@ describe("snippet-ft tooling", function()
 			[5] = { foreground = Screen.colors.Yellow1 },
 			[6] = { foreground = Screen.colors.Magenta1 },
 			[7] = { bold = true, foreground = Screen.colors.Blue1 },
-			[8] = { foreground = Screen.colors.Blue4, background = Screen.colors.LightGray },
+			[8] = {
+				foreground = Screen.colors.Blue4,
+				background = Screen.colors.LightGray,
+			},
 		})
 		exec([[
 			hi Identifier guifg=Red
@@ -43,9 +46,17 @@ describe("snippet-ft tooling", function()
 	end)
 
 	it("syntax works as expected", function()
-		exec(("edit %s"):format(os.getenv("LUASNIP_SOURCE") .. "/tests/data/syntaxtest.snippets"))
+		exec(
+			("edit %s"):format(
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/syntaxtest.snippets"
+			)
+		)
 
-		exec(("source %s/syntax/snippets.vim"):format(os.getenv("LUASNIP_SOURCE")))
+		exec(
+			("source %s/syntax/snippets.vim"):format(
+				os.getenv("LUASNIP_SOURCE")
+			)
+		)
 
 		screen:expect({
 			grid = [[
@@ -78,14 +89,27 @@ describe("snippet-ft tooling", function()
 				{7:~                                                 }|
 				{7:~                                                 }|
 				{7:~                                                 }|
-				                                                  |]] })
+				                                                  |]],
+		})
 	end)
 
 	it("folding works as expected", function()
-		exec(("edit %s"):format(os.getenv("LUASNIP_SOURCE") .. "/tests/data/syntaxtest.snippets"))
+		exec(
+			("edit %s"):format(
+				os.getenv("LUASNIP_SOURCE") .. "/tests/data/syntaxtest.snippets"
+			)
+		)
 
-		exec(("source %s/ftplugin/snippets.vim"):format(os.getenv("LUASNIP_SOURCE")))
-		exec(("source %s/syntax/snippets.vim"):format(os.getenv("LUASNIP_SOURCE")))
+		exec(
+			("source %s/ftplugin/snippets.vim"):format(
+				os.getenv("LUASNIP_SOURCE")
+			)
+		)
+		exec(
+			("source %s/syntax/snippets.vim"):format(
+				os.getenv("LUASNIP_SOURCE")
+			)
+		)
 
 		exec("set foldenable foldlevel=99")
 		feed("zM")
@@ -121,6 +145,7 @@ describe("snippet-ft tooling", function()
 				{7:~                                                 }|
 				{7:~                                                 }|
 				{7:~                                                 }|
-				                                                  |]] })
+				                                                  |]],
+		})
 	end)
 end)
