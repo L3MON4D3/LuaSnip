@@ -632,8 +632,10 @@ end
 function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 
-	local pre_expand_res = self:event(events.pre_expand, { expand_pos = pos, expand_pos_mark_id = pos_id })
-		or {}
+	local pre_expand_res = self:event(
+		events.pre_expand,
+		{ expand_pos = pos, expand_pos_mark_id = pos_id }
+	) or {}
 
 	-- update pos, event-callback might have moved the extmark.
 	pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
