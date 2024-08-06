@@ -632,6 +632,12 @@ end
 function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 
+	local pre_expand_res = self:event(events.pre_expand, { expand_pos = pos, expand_pos_mark_id = pos_id })
+		or {}
+
+	-- update pos, event-callback might have moved the extmark.
+	pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
+
 	-- find tree-node the snippet should be inserted at (could be before another node).
 	local _, sibling_snippets, own_indx, parent_node =
 		node_util.snippettree_find_undamaged_node(pos, {
@@ -696,11 +702,6 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 			sibling_snippets[i]:subtree_set_pos_rgrav(pos, 1, true)
 		end
 	end
-
-	local pre_expand_res = self:event(events.pre_expand, { expand_pos = pos })
-		or {}
-	-- update pos, event-callback might have moved the extmark.
-	pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 
 	Environ:override(env, pre_expand_res.env_override or {})
 

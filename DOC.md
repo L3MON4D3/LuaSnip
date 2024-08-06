@@ -3400,6 +3400,8 @@ The node and `event_args` can be accessed through `require("luasnip").session`:
   `event_args`:
   * `expand_pos`: `{<row>, <column>}`, position at which the snippet will be
   	expanded. `<row>` and `<column>` are both 0-indexed.
+  * `expand_pos_mark_id`: `number`, the id of the extmark luasnip uses to track
+    `expand_pos`. This may be moved around freely.
   `event_res`:
   * `env_override`: `map string->(string[]|string)`, override or extend the
     snippet's environment (`snip.env`).

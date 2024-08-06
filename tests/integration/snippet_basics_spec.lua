@@ -1626,4 +1626,24 @@ describe("snippets_basic", function()
 			  {2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("expand-position may be moved in pre_expand.", function()
+		feed("i.")
+
+		exec_lua[[
+			snip = s("foo", {
+				t"asdf"
+			}, {callbacks = {[-1] = { [events.pre_expand] = function(node, event_args)
+				vim.api.nvim_buf_set_extmark(0, ls.session.ns_id, 0,0, {id = event_args.expand_pos_mark_id})
+			end}} } )
+
+			ls.snip_expand(snip)
+		]]
+
+		screen:expect({
+			grid = [[
+				asdf^.                                             |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]]})
+	end)
 end)
