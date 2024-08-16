@@ -59,21 +59,19 @@ end
 
 -- subtle: `:lua` exits VISUAL, which means that the '< '>-marks will be set correctly!
 -- Afterwards, we can just use <cmd>lua, which does not change the mode.
-M.select_keys =
-	[[:lua require("luasnip.util.select").pre_cut()<Cr>gv"zs<cmd>lua require('luasnip.util.select').post_cut("z")<Cr>]]
-M.copy_keys =
-	[[:lua require("luasnip.util.select").pre_cut()<Cr>gv"zy<cmd>lua require('luasnip.util.select').post_cut("z")<Cr>]]
+M.cut_keys =
+	[[<Esc><cmd>lua require("luasnip.util.select").pre_yank("z")<Cr>gv"zs<cmd>lua require('luasnip.util.select').post_yank("z")<Cr>]]
 
 local saved_registers
 local lines
 local start_line, start_col, end_line, end_col
 local mode
-function M.pre_cut()
+function M.pre_yank(yank_register)
 	-- store registers so we don't change any of them.
 	-- "" is affected since we perform a cut (s), 1-9 also (although :h
 	-- quote_number seems to state otherwise for cuts to specific registers..?).
 	saved_registers =
-		store_registers("", "1", "2", "3", "4", "5", "6", "7", "8", "9", "z")
+		store_registers("", "1", "2", "3", "4", "5", "6", "7", "8", "9", yank_register)
 
 	-- store data needed for de-indenting lines.
 	start_line = vim.fn.line("'<") - 1
@@ -85,9 +83,9 @@ function M.pre_cut()
 	mode = vim.fn.visualmode()
 end
 
-function M.post_cut(register_name)
+function M.post_yank(yank_register)
 	-- remove trailing newline.
-	local chunks = vim.split(vim.fn.getreg(register_name):gsub("\n$", ""), "\n")
+	local chunks = vim.split(vim.fn.getreg(yank_register):gsub("\n$", ""), "\n")
 
 	-- make sure to restore the registers to the state they were before cutting.
 	restore_registers(saved_registers)

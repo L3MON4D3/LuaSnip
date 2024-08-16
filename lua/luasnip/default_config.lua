@@ -112,7 +112,6 @@ return {
 	delete_check_events = nil,
 
 	-- preserve default of store_selection_keys.
-	copy_selection_keys = nil,
 	cut_selection_keys = nil,
 
 	ext_opts = {
