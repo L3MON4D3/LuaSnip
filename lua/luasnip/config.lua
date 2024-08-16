@@ -136,16 +136,7 @@ c = {
 				string.format(
 					[[xnoremap <silent>  %s  %s]],
 					session.config.cut_selection_keys,
-					require("luasnip.util.select").select_keys
-				)
-			)
-		end
-		if session.config.copy_selection_keys then
-			vim.cmd(
-				string.format(
-					[[xnoremap <silent>  %s  %s]],
-					session.config.copy_selection_keys,
-					require("luasnip.util.select").copy_keys
+					require("luasnip.util.select").cut_keys
 				)
 			)
 		end
