@@ -70,8 +70,19 @@ function M.pre_yank(yank_register)
 	-- store registers so we don't change any of them.
 	-- "" is affected since we perform a cut (s), 1-9 also (although :h
 	-- quote_number seems to state otherwise for cuts to specific registers..?).
-	saved_registers =
-		store_registers("", "1", "2", "3", "4", "5", "6", "7", "8", "9", yank_register)
+	saved_registers = store_registers(
+		"",
+		"1",
+		"2",
+		"3",
+		"4",
+		"5",
+		"6",
+		"7",
+		"8",
+		"9",
+		yank_register
+	)
 
 	-- store data needed for de-indenting lines.
 	start_line = vim.fn.line("'<") - 1
