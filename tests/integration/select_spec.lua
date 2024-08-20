@@ -94,7 +94,7 @@ describe("Selection", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				                                                  |]]
+				                                                  |]],
 		})
 		exec_lua([[ls.lsp_expand(".$LS_SELECT_RAW.")]])
 		screen:expect({
@@ -105,7 +105,8 @@ describe("Selection", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]]})
+				{2:-- INSERT --}                                      |]],
+		})
 	end)
 
 	it("works with linewise-selection.", function()
