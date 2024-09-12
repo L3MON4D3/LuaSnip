@@ -54,19 +54,24 @@ end
 
 local M = {}
 
+--- The file path we're currently logging into.
+function M.log_location()
+        return logpath
+end
+--- Time formatting for logs. Defaults to '%X'.
+M.time_fmt = '%X'
+
+local function make_log_level(level)
+        return function(msg)
+                log_line_append(string.format("%s | %s | %s", level, os.date(M.time_fmt), msg))
+        end
+end
+
 local log = {
-	error = function(msg)
-		log_line_append("ERROR | " .. msg)
-	end,
-	warn = function(msg)
-		log_line_append("WARN  | " .. msg)
-	end,
-	info = function(msg)
-		log_line_append("INFO  | " .. msg)
-	end,
-	debug = function(msg)
-		log_line_append("DEBUG | " .. msg)
-	end,
+	error = make_log_level('ERROR'),
+	warn = make_log_level('WARN'),
+	info = make_log_level('INFO'),
+	debug = make_log_level('DEBUG'),
 }
 
 -- functions copied directly by deepcopy.
