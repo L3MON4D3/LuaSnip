@@ -1,4 +1,4 @@
-*luasnip.txt*            For NVIM v0.8.0           Last change: 2024 August 28
+*luasnip.txt*          For NVIM v0.8.0          Last change: 2024 September 12
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -3319,9 +3319,13 @@ hints towards what is going wrong.
 The log is stored in `<vim.fn.stdpath("log")>/luasnip.log`
 (`<vim.fn.stdpath("cache")>/luasnip.log` for Neovim versions where
 `stdpath("log")` does not exist), and can be opened by calling `ls.log.open()`.
-The loglevel (granularity of reported events) can be adjusted by calling
+You can get the log path through `ls.log.log_location()`. The loglevel
+(granularity of reported events) can be adjusted by calling
 `ls.log.set_loglevel("error"|"warn"|"info"|"debug")`. `"debug"` has the highest
-granularity, `"error"` the lowest, the default is `"warn"`.
+granularity, `"error"` the lowest, the default is `"warn"`. You can also adjust
+the datetime formatting through the `ls.log.time_fmt` variable. By default, it
+uses the `'%X'` formatting, which results in the full time (hour, minutes and
+seconds) being shown.
 
 Once this log grows too large (10MiB, currently not adjustable), it will be
 renamed to `luasnip.log.old`, and a new, empty log created in its place. If
