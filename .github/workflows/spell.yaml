@@ -1,0 +1,12 @@
+---
+name: Check spelling
+
+on:
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  spellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: gevhaz/word-warden@v1.0.0
