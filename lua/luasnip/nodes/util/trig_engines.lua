@@ -6,7 +6,9 @@ local default_match_pattern, default_match_plain, default_match_vim
 
 local function apply_common_opts(line_to_cursor, opts)
 	if opts and opts.max_len then
-		return line_to_cursor:sub(#line_to_cursor - opts.max_len + 1)
+		return line_to_cursor:sub(
+			math.max(0, #line_to_cursor - opts.max_len + 1)
+		)
 	else
 		return line_to_cursor
 	end
