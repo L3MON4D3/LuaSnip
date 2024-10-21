@@ -890,7 +890,9 @@ describe("loaders:", function()
 
 		feed([[i{"snip": {"prefix": "asdf", "body": ["qwer"]}}]])
 		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
 		feed("<Esc>:w<Cr>")
+		exec_lua("vim.wait(100, function() end)")
 		feed("<Esc>:w<Cr>")
 		exec_lua("vim.wait(100, function() end)")
 

@@ -139,6 +139,7 @@ describe("Jumping", function()
 
 		-- jump into restoreNode in first choice.
 		exec_lua("ls.jump(1)")
+		exec_lua("vim.wait(10, function() end)")
 		exec_lua("ls.change_choice(1)")
 		screen:expect({
 			grid = [[
@@ -164,6 +165,7 @@ describe("Jumping", function()
 		-- into first of third choice and change, should end up in first of
 		-- first choice.
 		exec_lua("ls.jump(-1)")
+		exec_lua("vim.wait(10, function() end)")
 		exec_lua("ls.change_choice(1)")
 		screen:expect({
 			grid = [[
