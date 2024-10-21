@@ -82,17 +82,19 @@ describe("loaders:", function()
 		exec_lua(
 			[[require("luasnip.extras.snip_location").jump_to_active_snippet()]]
 		)
+		-- remove error-message for easier version-compatibility (it was changed
+		-- somewhere between 0.9 and master at the time of writing).
+		feed(":")
 		screen:expect({
 			grid = [[
-			^{                                                 |
-			        "snip1": {                                |
-			                "prefix": "all1",                 |
-			                "body": [                         |
-			                        "expands? jumps? $1 $2 !" |
-			                ]                                 |
-			        },                                        |
-			Could not determine ran...help treesitter-parsers |]],
-		})
+			  {                                                 |
+			          "snip1": {                                |
+			                  "prefix": "all1",                 |
+			                  "body": [                         |
+			                          "expands? jumps? $1 $2 !" |
+			                  ]                                 |
+			          },                                        |
+			  :^                                                 |]]})
 	end)
 
 	it("snipmate: highlights snippet-definition.", function()
