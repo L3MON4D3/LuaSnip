@@ -27,7 +27,15 @@ local enqueued_actions = {}
 local function _feedkeys_insert(id, keys)
 	executing_id = id
 	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes(keys .. "<cmd>lua require('luasnip.util.feedkeys').confirm(" .. id .. ")<cr>", true, false, true),
+		vim.api.nvim_replace_termcodes(
+			keys
+				.. "<cmd>lua require('luasnip.util.feedkeys').confirm("
+				.. id
+				.. ")<cr>",
+			true,
+			false,
+			true
+		),
 		-- folds are opened manually now, no need to pass t.
 		-- n prevents langmap from interfering.
 		"ni",
@@ -132,9 +140,9 @@ end
 function M.confirm(id)
 	executing_id = nil
 
-	if enqueued_actions[id+1] then
-		enqueued_actions[id+1](id+1)
-		enqueued_actions[id+1] = nil
+	if enqueued_actions[id + 1] then
+		enqueued_actions[id + 1](id + 1)
+		enqueued_actions[id + 1] = nil
 	end
 end
 

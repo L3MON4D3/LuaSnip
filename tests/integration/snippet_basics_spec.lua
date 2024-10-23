@@ -1653,6 +1653,7 @@ describe("snippets_basic", function()
 			grid = [[
 			  qwer                                              |
 			  qwe^r                                              |
-			                                                    |]]})
+			                                                    |]],
+		})
 	end)
 end)

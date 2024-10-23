@@ -94,7 +94,8 @@ describe("loaders:", function()
 			                          "expands? jumps? $1 $2 !" |
 			                  ]                                 |
 			          },                                        |
-			  :^                                                 |]]})
+			  :^                                                 |]],
+		})
 	end)
 
 	it("snipmate: highlights snippet-definition.", function()

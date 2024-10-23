@@ -2156,7 +2156,8 @@ describe("session", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --recording @a}                          |]] })
+				{2:-- INSERT --recording @a}                          |]],
+		})
 		change()
 		jump()
 		screen:expect({
@@ -2190,7 +2191,8 @@ describe("session", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --recording @a}                          |]] })
+				{2:-- INSERT --recording @a}                          |]],
+		})
 		change()
 		feed("aa")
 		jump()
@@ -2229,7 +2231,8 @@ describe("session", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				{2:-- INSERT --recording @a}                          |]] })
+				{2:-- INSERT --recording @a}                          |]],
+		})
 		feed("cc<Esc>Gqo<Esc>@a")
 		screen:expect({
 			grid = [[
@@ -2262,6 +2265,7 @@ describe("session", function()
 				{0:~                                                 }|
 				{0:~                                                 }|
 				{0:~                                                 }|
-				                                                  |]] })
+				                                                  |]],
+		})
 	end)
 end)

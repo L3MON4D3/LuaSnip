@@ -121,7 +121,9 @@ c = {
 		end)
 		if session.config.enable_autosnippets then
 			ls_autocmd("InsertCharPre", function()
-				require("luasnip.util.feedkeys").feedkeys_insert("<cmd>lua require('luasnip').expand_auto()<cr>")
+				require("luasnip.util.feedkeys").feedkeys_insert(
+					"<cmd>lua require('luasnip').expand_auto()<cr>"
+				)
 			end)
 		end
 
