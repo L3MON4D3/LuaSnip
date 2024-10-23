@@ -64,16 +64,7 @@ end, { force = true })
 
 --stylua: ignore
 vim.api.nvim_create_user_command("LuaSnipListAvailable", function()
-	(
-		(
-			vim.version
-			and type(vim.version) == "table"
-			and (
-				((vim.version().major == 0) and (vim.version().minor >= 9))
-				or (vim.version().major > 0) )
-		) and vim.print
-		  or vim.pretty_print
-	)(require("luasnip").available())
+	(require("luasnip.util.vimversion").ge(0,9,0) and vim.print or vim.pretty_print)(require("luasnip").available())
 end, { force = true })
 
 require("luasnip.config")._setup()

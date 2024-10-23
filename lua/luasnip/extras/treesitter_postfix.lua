@@ -1,4 +1,4 @@
-if vim.version().major == 0 and vim.version().minor < 9 then
+if not require("luasnip.util.vimversion").ge(0,9,0) then
 	-- need LanguageTree:tree_for_range and don't want to go through the hassle
 	-- of differentiating multiple version of query.get/parse.
 	error("treesitter_postfix does not support neovim < 0.9")
