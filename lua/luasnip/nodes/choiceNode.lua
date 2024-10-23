@@ -270,7 +270,7 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice:subtree_set_pos_rgrav(to, -1, true)
 
 	self.active_choice:update_restore()
-	self:update_dependents({own=true, parents=true, children=true})
+	self:update_dependents({ own = true, parents = true, children = true })
 
 	-- Another node may have been entered in update_dependents.
 	self:focus()

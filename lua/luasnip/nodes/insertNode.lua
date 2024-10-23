@@ -7,6 +7,8 @@ local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local extend_decorator = require("luasnip.util.extend_decorator")
 local feedkeys = require("luasnip.util.feedkeys")
+local snippet_string = require("luasnip.nodes.util.snippet_string")
+local str_util = require("luasnip.util.str")
 
 local function I(pos, static_text, opts)
 	static_text = util.to_string_table(static_text)
@@ -21,7 +23,7 @@ local function I(pos, static_text, opts)
 			-- will only be needed for 0-node, -1-node isn't set with this.
 			ext_gravities_active = { false, false },
 			inner_active = false,
-			input_active = false
+			input_active = false,
 		}, opts)
 	else
 		return InsertNode:new({
@@ -31,7 +33,7 @@ local function I(pos, static_text, opts)
 			dependents = {},
 			type = types.insertNode,
 			inner_active = false,
-			input_active = false
+			input_active = false,
 		}, opts)
 	end
 end
@@ -324,6 +326,30 @@ function InsertNode:subtree_leave_entered()
 		self:input_leave()
 	end
 end
+
+function InsertNode:get_snippetstring()
+	local self_from, self_to = self.mark:pos_begin_end_raw()
+	local text = vim.api.nvim_buf_get_text(0, self_from[1], self_from[2], self_to[1], self_to[2], {})
+
+	local snippetstring = snippet_string.new()
+	local current = {0,0}
+	for _, snip in ipairs(self:child_snippets()) do
+		local snip_from, snip_to = snip.mark:pos_begin_end_raw()
+		local snip_from_base_rel = util.pos_offset(self_from, snip_from)
+		local snip_to_base_rel   = util.pos_offset(self_from, snip_to)
+
+		snippetstring:append_text(str_util.multiline_substr(text, current, snip_from_base_rel))
+		snippetstring:append_snip(snip, str_util.multiline_substr(text, snip_from_base_rel, snip_to_base_rel))
+		current = snip_to_base_rel
+	end
+	snippetstring:append_text(str_util.multiline_substr(text, current, util.pos_offset(self_from, self_to)))
+
+	return snippetstring
+end
+
+function InsertNode:store()
+end
+
 
 return {
 	I = I,

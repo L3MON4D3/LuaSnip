@@ -6,6 +6,7 @@ local events = require("luasnip.util.events")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local types = require("luasnip.util.types")
 local opt_args = require("luasnip.nodes.optional_arg")
+local snippet_string = require("luasnip.nodes.util.snippet_string")
 
 local Node = {}
 
@@ -151,6 +152,13 @@ function Node:get_text()
 	end)
 	-- if deleted.
 	return ok and text or { "" }
+end
+
+-- if not overriden, just use get_text.
+function Node:get_snippetstring()
+	local snipstring = snippet_string.new()
+	snipstring:append_text(self:get_text())
+	return snipstring
 end
 
 function Node:set_old_text()
@@ -533,11 +541,11 @@ function Node:set_text(text)
 
 	if self:get_snippet().___static_expanded then
 		self.static_text = text_indented
-		self:update_dependents_static({own=true, parents=true})
+		self:update_dependents_static({ own = true, parents = true })
 	else
 		if self.visible then
 			self:set_text_raw(text_indented)
-			self:update_dependents({own=true, parents=true})
+			self:update_dependents({ own = true, parents = true })
 		end
 	end
 end
