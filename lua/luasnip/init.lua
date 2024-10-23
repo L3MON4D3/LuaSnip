@@ -155,7 +155,8 @@ local function store_cursor_node_relative(node)
 
 		store_id = store_id + 1
 
-		snip_data.cursor_end_relative = util.pos_sub(util.get_cursor_0ind(), node.mark:get_endpoint(1))
+		snip_data.cursor_end_relative =
+			util.pos_sub(util.get_cursor_0ind(), node.mark:get_endpoint(1))
 
 		data[snip] = snip_data
 
@@ -167,16 +168,14 @@ end
 
 local function get_corresponding_node(parent, data)
 	return parent:find_node(function(test_node)
-		return (test_node.store_id == data.store_id) or (data.key ~= nil and test_node.key == data.key)
+		return (test_node.store_id == data.store_id)
+			or (data.key ~= nil and test_node.key == data.key)
 	end)
 end
 
 local function restore_cursor_pos_relative(node, data)
 	util.set_cursor_0ind(
-		util.pos_add(
-			node.mark:get_endpoint(1),
-			data.cursor_end_relative
-		)
+		util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative)
 	)
 end
 
@@ -184,7 +183,8 @@ local function node_update_dependents_preserve_position(node, opts)
 	local restore_data = store_cursor_node_relative(node)
 
 	-- update all nodes that depend on this one.
-	local ok, res = pcall(node.update_dependents, node, {own=true, parents=true})
+	local ok, res =
+		pcall(node.update_dependents, node, { own = true, parents = true })
 	if not ok then
 		local snip = node:get_snippet()
 
@@ -194,7 +194,10 @@ local function node_update_dependents_preserve_position(node, opts)
 			snip.trigger,
 			res
 		)
-		return { jump_done = false, new_node = session.current_nodes[vim.api.nvim_get_current_buf()] }
+		return {
+			jump_done = false,
+			new_node = session.current_nodes[vim.api.nvim_get_current_buf()],
+		}
 	end
 
 	-- update successful => check if the current node is still visible.
@@ -228,11 +231,17 @@ local function node_update_dependents_preserve_position(node, opts)
 		-- since the node was no longer visible after an update, it must have
 		-- been contained in a dynamicNode, and we don't have to handle the
 		-- case that we can't find it.
-		while node_parent.dynamicNode == nil or node_parent.dynamicNode.visible == false do
+		while
+			node_parent.dynamicNode == nil
+			or node_parent.dynamicNode.visible == false
+		do
 			node_parent = node_parent.parent
 		end
 		local d = node_parent.dynamicNode
-		assert(d.active, "Visible dynamicNode that was a parent of the current node is not active after the update!! If you get this message, please open an issue with LuaSnip!")
+		assert(
+			d.active,
+			"Visible dynamicNode that was a parent of the current node is not active after the update!! If you get this message, please open an issue with LuaSnip!"
+		)
 
 		local new_node = get_corresponding_node(d, snip_restore_data)
 
@@ -248,7 +257,10 @@ local function node_update_dependents_preserve_position(node, opts)
 		else
 			-- could not find corresponding node -> just jump into the
 			-- dynamicNode that should have generated it.
-			return { jump_done = true, new_node = d:jump_into_snippet(opts.no_move) }
+			return {
+				jump_done = true,
+				new_node = d:jump_into_snippet(opts.no_move),
+			}
 		end
 	end
 end
@@ -258,7 +270,10 @@ local function active_update_dependents()
 	-- don't update if a jump/change_choice is in progress, or if we don't have
 	-- an active node.
 	if not session.jump_active and active ~= nil then
-		local upd_res = node_update_dependents_preserve_position(active, { no_move = false, restore_position = true })
+		local upd_res = node_update_dependents_preserve_position(
+			active,
+			{ no_move = false, restore_position = true }
+		)
 		upd_res.new_node:focus()
 		session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_node
 	end
@@ -273,7 +288,10 @@ local function safe_jump_current(dir, no_move, dry_run)
 
 	-- don't update for -1-node.
 	if not dry_run and node.pos >= 0 then
-		local upd_res = node_update_dependents_preserve_position(node, { no_move = no_move, restore_position = false })
+		local upd_res = node_update_dependents_preserve_position(
+			node,
+			{ no_move = no_move, restore_position = false }
+		)
 		if upd_res.jump_done then
 			return upd_res.new_node
 		else

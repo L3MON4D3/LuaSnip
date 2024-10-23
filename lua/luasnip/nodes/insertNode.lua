@@ -20,7 +20,7 @@ local function I(pos, static_text, opts)
 			-- will only be needed for 0-node, -1-node isn't set with this.
 			ext_gravities_active = { false, false },
 			inner_active = false,
-			input_active = false
+			input_active = false,
 		}, opts)
 	else
 		return InsertNode:new({
@@ -30,7 +30,7 @@ local function I(pos, static_text, opts)
 			dependents = {},
 			type = types.insertNode,
 			inner_active = false,
-			input_active = false
+			input_active = false,
 		}, opts)
 	end
 end

@@ -533,11 +533,11 @@ function Node:set_text(text)
 
 	if self:get_snippet().___static_expanded then
 		self.static_text = text_indented
-		self:update_dependents_static({own=true, parents=true})
+		self:update_dependents_static({ own = true, parents = true })
 	else
 		if self.visible then
 			self:set_text_raw(text_indented)
-			self:update_dependents({own=true, parents=true})
+			self:update_dependents({ own = true, parents = true })
 		end
 	end
 end

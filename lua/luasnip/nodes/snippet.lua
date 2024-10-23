@@ -650,7 +650,6 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 				-- enter current node, it will contain the new snippet.
 				current_node:input_enter_children()
 			end
-
 		else
 			-- if no parent_node, completely leave.
 			node_util.refocus(current_node, nil)
@@ -760,7 +759,7 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	self.mark = mark(old_pos, pos, mark_opts)
 
 	self:update()
-	self:update_dependents({children=true})
+	self:update_dependents({ children = true })
 
 	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
 	start_node.mark = self.nodes[1].mark

@@ -814,7 +814,6 @@ local function node_subtree_do(node, opts)
 	node:subtree_do(opts)
 end
 
-
 local function collect_dependents(node, which, static)
 	local dependents_set = {}
 
@@ -848,7 +847,7 @@ local function collect_dependents(node, which, static)
 					dependents_set[dep] = true
 				end
 			end,
-			static = static
+			static = static,
 		})
 	end
 
@@ -879,5 +878,5 @@ return {
 	nodelist_adjust_rgravs = nodelist_adjust_rgravs,
 	find_node_dependents = find_node_dependents,
 	collect_dependents = collect_dependents,
-	node_subtree_do = node_subtree_do
+	node_subtree_do = node_subtree_do,
 }
