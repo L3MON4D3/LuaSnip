@@ -3619,6 +3619,7 @@ These are the settings you can provide to `luasnip.setup()`:
 ## Adding Snippets
 
 <a id="troubleshooting-adding-snippets-loaders"></a>
+
 ### Loaders
 
 * **Filetypes**. LuaSnip uses `all` as the global filetype. As most snippet
