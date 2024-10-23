@@ -151,7 +151,6 @@ describe("session", function()
 	it("Deleted snippet is handled properly in expansion.", function()
 		feed("o<Cr><Cr><Up>fn")
 		exec_lua("ls.expand()")
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -186,11 +185,8 @@ describe("session", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -233,7 +229,6 @@ describe("session", function()
 		-- if we did something wrong.
 		jump(-1)
 		jump(-1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			^/**                                               |
@@ -275,7 +270,6 @@ describe("session", function()
 		jump(1)
 		jump(1)
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
@@ -310,13 +304,11 @@ describe("session", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({ unchanged = true })
 	end)
 	it("Deleted snippet is handled properly when jumping.", function()
 		feed("o<Cr><Cr><Up>fn")
 		exec_lua("ls.expand()")
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -351,11 +343,8 @@ describe("session", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			                                                  |
@@ -1384,17 +1373,11 @@ describe("session", function()
 		expand()
 		-- jump to one before jumping out of child-snippet.
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
@@ -1565,7 +1548,6 @@ describe("session", function()
 		jump(1)
 		jump(1)
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
@@ -1639,11 +1621,8 @@ describe("session", function()
 
 		-- check connectivity.
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
@@ -1724,21 +1703,13 @@ describe("session", function()
 
 		-- end up back in last node, not in textNode-expanded snippet.
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		jump(1)
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			/**                                               |
@@ -2025,11 +1996,8 @@ describe("session", function()
 			feed("o<Cr><Cr><Cr><Esc>kkifn")
 			expand()
 			jump(1)
-			exec_lua("vim.wait(10, function() end)")
 			jump(1)
-			exec_lua("vim.wait(10, function() end)")
 			jump(1)
-			exec_lua("vim.wait(10, function() end)")
 			feed("int a")
 			screen:expect({
 				grid = [[
@@ -2144,4 +2112,156 @@ describe("session", function()
 			})
 		end
 	)
+
+	it("macro-replay is correct.", function()
+		local function expand()
+			feed("<Plug>luasnip-expand-snippet")
+		end
+		local function jump()
+			feed("<Plug>luasnip-jump-next")
+		end
+		local function change()
+			feed("<Plug>luasnip-next-choice")
+		end
+		feed("qaifn")
+		expand()
+		screen:expect({
+			grid = [[
+				/**                                               |
+				 * A short Description                            |
+				 */                                               |
+				^public void myFunc() { {4:●}                          |
+				                                                  |
+				}                                                 |
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{2:-- INSERT --recording @a}                          |]] })
+		change()
+		jump()
+		screen:expect({
+			grid = [[
+				/**                                               |
+				 * A short Description                            |
+				 */                                               |
+				private ^void myFunc() { {4:●}                         |
+				                                                  |
+				}                                                 |
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{2:-- INSERT --recording @a}                          |]] })
+		change()
+		feed("aa")
+		jump()
+		feed("bb")
+		jump()
+		jump()
+		change()
+		screen:expect({
+			grid = [[
+				/**                                               |
+				 * A short Description                            |
+				 *                                                |
+				 * @return                                        |
+				 *                                                |
+				 * @throws                                        |
+				 */                                               |
+				private aa bb() {4:●}                                 |
+				 throws ^ {                                        |
+				                                                  |
+				}                                                 |
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{2:-- INSERT --recording @a}                          |]] })
+		feed("cc<Esc>Gqo<Esc>@a")
+		screen:expect({
+			grid = [[
+				/**                                               |
+				 * A short Description                            |
+				 *                                                |
+				 * @return                                        |
+				 *                                                |
+				 * @throws cc                                     |
+				 */                                               |
+				private aa bb()                                   |
+				 throws cc {                                      |
+				                                                  |
+				}                                                 |
+				/**                                               |
+				 * A short Description                            |
+				 *                                                |
+				 * @return                                        |
+				 *                                                |
+				 * @throws                                        |
+				 */                                               |
+				private aa bb() {4:●}                                 |
+				 throws cc {                                      |
+				                                                  |
+				^}                                                 |
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				{0:~                                                 }|
+				                                                  |]] })
+	end)
 end)

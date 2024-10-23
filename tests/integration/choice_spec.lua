@@ -98,9 +98,7 @@ describe("ChoiceNode", function()
 		-- change text in insertNode.
 		feed("c")
 		exec_lua("ls.jump(1)")
-		exec_lua("vim.wait(10, function() end)")
 		exec_lua("ls.change_choice(1)")
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			c ^b                                               |
@@ -118,9 +116,7 @@ describe("ChoiceNode", function()
 
 		-- change choice on outer choiceNode.
 		exec_lua("ls.jump(-1)")
-		exec_lua("vim.wait(10, function() end)")
 		exec_lua("ls.change_choice(1)")
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			^b                                                 |

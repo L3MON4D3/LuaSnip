@@ -3,6 +3,7 @@ local ext_util = require("luasnip.util.ext_opts")
 local types = require("luasnip.util.types")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local session = require("luasnip.session")
+local feedkeys = require("luasnip.util.feedkeys")
 
 local function subsnip_init_children(parent, children)
 	for _, child in ipairs(children) do
@@ -125,7 +126,7 @@ end
 
 local function select_node(node)
 	local node_begin, node_end = node.mark:pos_begin_end_raw()
-	util.any_select(node_begin, node_end)
+	feedkeys.select_range(node_begin, node_end)
 end
 
 local function print_dict(dict)

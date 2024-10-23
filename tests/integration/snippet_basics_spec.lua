@@ -47,8 +47,6 @@ describe("snippets_basic", function()
 	end)
 
 	it("Can accept custom jump_into_func.", function()
-		local snip = [[
-		]]
 		exec_lua([[
 			ls.add_snippets("all", {
 				s("trig", {
@@ -190,7 +188,6 @@ describe("snippets_basic", function()
 		exec_lua("ls.snip_expand(" .. snip .. ")")
 		exec_lua("vim.wait(10, function() end)")
 		exec_lua("ls.snip_expand(" .. snip .. ")")
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			a[a[^]ab]ab                                        |
@@ -201,7 +198,6 @@ describe("snippets_basic", function()
 
 		-- jump into second of inner.
 		exec_lua("ls.jump(1)")
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			a[a[]a^b]ab                                        |
@@ -350,6 +346,7 @@ describe("snippets_basic", function()
 			}) )
 		]]
 			exec_lua(expand_snip)
+			exec_lua("vim.wait(10, function() end)")
 			exec_lua(expand_snip)
 			screen:expect({
 				grid = [[
@@ -1260,9 +1257,7 @@ describe("snippets_basic", function()
 
 		feed("aa")
 		exec_lua([[ ls.expand() ]])
-		exec_lua("vim.wait(10, function() end)")
 		exec_lua([[ ls.jump(1) ]])
-		exec_lua("vim.wait(10, function() end)")
 		screen:expect({
 			grid = [[
 			a:(a:(^))                                          |
@@ -1646,5 +1641,18 @@ describe("snippets_basic", function()
 				{0:~                                                 }|
 				{2:-- INSERT --}                                      |]],
 		})
+	end)
+
+	it("autosnippets are triggered in macro.", function()
+		exec_lua([[
+			ls.add_snippets("all", {
+				s({trig="qwer", snippetType="autosnippet"}, { t"asdf" }) })
+		]])
+		feed("qaiqwer<Esc>qo<Esc>@a")
+		screen:expect({
+			grid = [[
+			  qwer                                              |
+			  qwe^r                                              |
+			                                                    |]]})
 	end)
 end)
