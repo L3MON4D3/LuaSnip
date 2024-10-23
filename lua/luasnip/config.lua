@@ -121,13 +121,7 @@ c = {
 		end)
 		if session.config.enable_autosnippets then
 			ls_autocmd("InsertCharPre", function()
-				Luasnip_just_inserted = true
-			end)
-			ls_autocmd({ "TextChangedI", "TextChangedP" }, function()
-				if Luasnip_just_inserted then
-					require("luasnip").expand_auto()
-					Luasnip_just_inserted = nil
-				end
+				require("luasnip.util.feedkeys").feedkeys_insert("<cmd>lua require('luasnip').expand_auto()<cr>")
 			end)
 		end
 

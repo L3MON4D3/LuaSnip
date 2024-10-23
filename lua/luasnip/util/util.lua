@@ -125,84 +125,6 @@ local function bytecol_to_utfcol(pos)
 	return { pos[1], vim.str_utfindex(line[1] or "", pos[2]) }
 end
 
-local function replace_feedkeys(keys, opts)
-	vim.api.nvim_feedkeys(
-		vim.api.nvim_replace_termcodes(keys, true, false, true),
-		-- folds are opened manually now, no need to pass t.
-		-- n prevents langmap from interfering.
-		opts or "n",
-		true
-	)
-end
-
--- pos: (0,0)-indexed.
-local function cursor_set_keys(pos, before)
-	if before then
-		if pos[2] == 0 then
-			pos[1] = pos[1] - 1
-			-- pos2 is set to last columnt of previous line.
-			-- # counts bytes, but win_set_cursor expects bytes, so all's good.
-			pos[2] =
-				#vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)[1]
-		else
-			pos[2] = pos[2] - 1
-		end
-	end
-
-	return "<cmd>lua vim.api.nvim_win_set_cursor(0,{"
-		-- +1, win_set_cursor starts at 1.
-		.. pos[1] + 1
-		.. ","
-		-- -1 works for multibyte because of rounding, apparently.
-		.. pos[2]
-		.. "})"
-		.. "<cr><cmd>:silent! foldopen!<cr>"
-end
-
--- any for any mode.
--- other functions prefixed with eg. normal have to be in that mode, the
--- initial esc removes that need.
-local function any_select(b, e)
-	-- stylua: ignore
-	replace_feedkeys(
-		-- this esc -> movement sometimes leads to a slight flicker
-		-- TODO: look into preventing that reliably.
-		-- Go into visual, then place endpoints.
-		-- This is to allow us to place the cursor on the \n of a line.
-		-- see #1158
-		"<esc>"
-		-- open folds that contain this selection.
-		-- we assume that the selection is contained in at most one fold, and
-		-- that that fold covers b.
-		-- if we open the fold while visual is active, the selection will be
-		-- wrong, so this is necessary before we enter VISUAL.
-		.. cursor_set_keys(b)
-		-- start visual highlight and move to b again.
-		-- since we are now in visual, this might actually move the cursor.
-		.. "v"
-		.. cursor_set_keys(b)
-		-- swap to other end of selection, and move it to e.
-		.. "o"
-		.. (vim.o.selection == "exclusive" and
-			cursor_set_keys(e) or
-			-- set before
-			cursor_set_keys(e, true))
-		.. "o<C-G><C-r>_" )
-end
-
-local function normal_move_on_insert(new_cur_pos)
-	-- moving in normal and going into insert is kind of annoying, eg. when the
-	-- cursor is, in normal, on a tab, i will set it on the beginning of the
-	-- tab. There's more problems, but this is very safe.
-	replace_feedkeys("i" .. cursor_set_keys(new_cur_pos))
-end
-
-local function insert_move_on(new_cur_pos)
-	-- maybe feedkeys this too.
-	set_cursor_0ind(new_cur_pos)
-	vim.api.nvim_command("redraw!")
-end
-
 local function multiline_equal(t1, t2)
 	for i, line in ipairs(t1) do
 		if line ~= t2[i] then
@@ -479,9 +401,6 @@ return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
 	move_to_mark = move_to_mark,
-	normal_move_on_insert = normal_move_on_insert,
-	insert_move_on = insert_move_on,
-	any_select = any_select,
 	remove_n_before_cur = remove_n_before_cur,
 	get_current_line_to_cursor = get_current_line_to_cursor,
 	line_chars_before = line_chars_before,
