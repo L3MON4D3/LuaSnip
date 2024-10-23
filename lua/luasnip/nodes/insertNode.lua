@@ -6,6 +6,7 @@ local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
 local events = require("luasnip.util.events")
 local extend_decorator = require("luasnip.util.extend_decorator")
+local feedkeys = require("luasnip.util.feedkeys")
 
 local function I(pos, static_text, opts)
 	static_text = util.to_string_table(static_text)
@@ -49,16 +50,7 @@ function ExitNode:input_enter(no_move, dry_run)
 		self.parent:subtree_set_pos_rgrav(begin_pos, 1, true)
 
 		if not no_move then
-			if vim.fn.mode() == "i" then
-				util.insert_move_on(begin_pos)
-			else
-				vim.api.nvim_feedkeys(
-					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-					"n",
-					true
-				)
-				util.normal_move_on_insert(begin_pos)
-			end
+			feedkeys.insert_at(begin_pos)
 		end
 
 		self:event(events.enter)
@@ -122,20 +114,9 @@ function InsertNode:input_enter(no_move, dry_run)
 		-- SELECT snippet text only when there is text to select (more oft than not there isnt).
 		local mark_begin_pos, mark_end_pos = self.mark:pos_begin_end_raw()
 		if not util.pos_equal(mark_begin_pos, mark_end_pos) then
-			util.any_select(mark_begin_pos, mark_end_pos)
+			feedkeys.select_range(mark_begin_pos, mark_end_pos)
 		else
-			-- if current and target mode is INSERT, there's no reason to leave it.
-			if vim.fn.mode() == "i" then
-				util.insert_move_on(mark_begin_pos)
-			else
-				-- mode might be VISUAL or something else, but <Esc> always leads to normal.
-				vim.api.nvim_feedkeys(
-					vim.api.nvim_replace_termcodes("<Esc>", true, false, true),
-					"n",
-					true
-				)
-				util.normal_move_on_insert(mark_begin_pos)
-			end
+			feedkeys.insert_at(mark_begin_pos)
 		end
 	end
 
