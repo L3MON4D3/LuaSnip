@@ -16,7 +16,7 @@ local function I(pos, static_text, opts)
 	if pos == 0 then
 		return ExitNode:new({
 			pos = pos,
-			static_text = static_text,
+			static_text = snippet_string.new(static_text),
 			mark = nil,
 			dependents = {},
 			type = types.exitNode,
@@ -28,7 +28,7 @@ local function I(pos, static_text, opts)
 	else
 		return InsertNode:new({
 			pos = pos,
-			static_text = static_text,
+			static_text = snippet_string.new(static_text),
 			mark = nil,
 			dependents = {},
 			type = types.insertNode,
@@ -260,7 +260,7 @@ end
 
 function InsertNode:get_docstring()
 	-- copy as to not in-place-modify static text.
-	return util.string_wrap(self.static_text, rawget(self, "pos"))
+	return util.string_wrap(self:get_static_text(), rawget(self, "pos"))
 end
 
 function InsertNode:is_interactive()
@@ -329,9 +329,19 @@ end
 
 function InsertNode:get_snippetstring()
 	local self_from, self_to = self.mark:pos_begin_end_raw()
-	local text = vim.api.nvim_buf_get_text(0, self_from[1], self_from[2], self_to[1], self_to[2], {})
+	-- only do one get_text, and establish relative offsets partition this
+	-- text.
+	local ok, text = pcall(vim.api.nvim_buf_get_text, 0, self_from[1], self_from[2], self_to[1], self_to[2], {})
 
 	local snippetstring = snippet_string.new()
+
+	if not ok then
+		-- return empty in case of failure.
+		-- This may frequently occur when the snippet is `exit`ed due to
+		-- failure and insertNodes fetch the text in the course of `store`.
+		return snippetstring
+	end
+
 	local current = {0,0}
 	for _, snip in ipairs(self:child_snippets()) do
 		local snip_from, snip_to = snip.mark:pos_begin_end_raw()
@@ -347,9 +357,62 @@ function InsertNode:get_snippetstring()
 	return snippetstring
 end
 
-function InsertNode:store()
+function InsertNode:expand_tabs(tabwidth, indentstrlen)
+	self.static_text:expand_tabs(tabwidth, indentstrlen)
 end
 
+function InsertNode:indent(indentstr)
+	self.static_text:indent(indentstr)
+end
+
+function InsertNode:store()
+	self.static_text = self:get_snippetstring()
+end
+
+function InsertNode:put_initial(pos)
+	self.static_text:put(pos)
+	self.visible = true
+	local _, child_snippet_idx = node_util.binarysearch_pos(self.parent.snippet.child_snippets, pos, true, "outside")
+	for snip in self.static_text:iter_snippets() do
+		-- don't have to pass a current_node, we don't need it since we can
+		-- certainly link the snippet into this insertNode.
+		snip:insert_into_jumplist(nil, self, self.parent.snippet.child_snippets, child_snippet_idx)
+		child_snippet_idx = child_snippet_idx + 1
+	end
+end
+
+function InsertNode:get_static_text()
+	if not self.visible and not self.static_visible then
+		return nil
+	end
+	return self.static_text:str()
+end
+
+function InsertNode:set_text(text)
+	local text_indented = util.indent(text, self.parent.indentstr)
+
+	if self:get_snippet().___static_expanded then
+		self.static_text = snippet_string.new(text_indented)
+		self:update_dependents_static({ own = true, parents = true })
+	else
+		if self.visible then
+			self:set_text_raw(text_indented)
+			self:update_dependents({ own = true, parents = true })
+		end
+	end
+end
+
+function InsertNode:find_node(predicate, opts)
+	if opts and opts.find_in_child_snippets then
+		for _, snip in ipairs(self:child_snippets()) do
+			local node_in_child = snip:find_node(predicate, opts)
+			if node_in_child then
+				return node_in_child
+			end
+		end
+	end
+	return nil
+end
 
 return {
 	I = I,
