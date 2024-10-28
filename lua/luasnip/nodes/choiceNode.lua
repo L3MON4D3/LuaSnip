@@ -210,12 +210,12 @@ end
 
 function ChoiceNode:setup_choice_jumps() end
 
-function ChoiceNode:find_node(predicate)
+function ChoiceNode:find_node(predicate, opts)
 	if self.active_choice then
 		if predicate(self.active_choice) then
 			return self.active_choice
 		else
-			return self.active_choice:find_node(predicate)
+			return self.active_choice:find_node(predicate, opts)
 		end
 	end
 	return nil
@@ -279,14 +279,14 @@ function ChoiceNode:set_choice(choice, current_node)
 	if self.restore_cursor then
 		local target_node = self:find_node(function(test_node)
 			return test_node.change_choice_id == change_choice_id
-		end)
+		end, {find_in_child_snippets = true})
 
 		if target_node then
-			-- the node that the cursor was in when changeChoice was called exists
-			-- in the active choice! Enter it and all nodes between it and this choiceNode,
-			-- then set the cursor.
-			-- Pass no_move=true, we will set the cursor ourselves.
-			node_util.enter_nodes_between(self, target_node, true)
+			-- the node that the cursor was in when changeChoice was called
+			-- exists in the active choice! Enter it and all nodes between it
+			-- and this choiceNode, then set the cursor.
+
+			node_util.refocus(self, target_node)
 
 			if insert_pre_cc then
 				util.set_cursor_0ind(

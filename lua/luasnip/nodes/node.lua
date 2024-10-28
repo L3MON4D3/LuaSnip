@@ -193,8 +193,8 @@ function Node:update() end
 
 function Node:update_static() end
 
-function Node:expand_tabs(tabwidth, indentstr)
-	util.expand_tabs(self.static_text, tabwidth, indentstr)
+function Node:expand_tabs(tabwidth, indentstrlen)
+	util.expand_tabs(self.static_text, tabwidth, indentstrlen)
 end
 
 function Node:indent(indentstr)
