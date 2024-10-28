@@ -368,12 +368,12 @@ function DynamicNode:update_restore()
 	end
 end
 
-function DynamicNode:find_node(predicate)
+function DynamicNode:find_node(predicate, opts)
 	if self.snip then
 		if predicate(self.snip) then
 			return self.snip
 		else
-			return self.snip:find_node(predicate)
+			return self.snip:find_node(predicate, opts)
 		end
 	end
 	return nil
