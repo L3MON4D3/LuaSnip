@@ -7,6 +7,7 @@ local tNode = require("luasnip.nodes.textNode").textNode
 local extend_decorator = require("luasnip.util.extend_decorator")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local opt_args = require("luasnip.nodes.optional_arg")
+local snippet_string = require("luasnip.nodes.util.snippet_string")
 
 local function F(fn, args, opts)
 	opts = opts or {}
@@ -36,7 +37,7 @@ end
 FunctionNode.get_docstring = FunctionNode.get_static_text
 
 function FunctionNode:update()
-	local args = self:get_args()
+	local args = node_util.str_args(self:get_args())
 	-- skip this update if
 	-- - not all nodes are available.
 	-- - the args haven't changed.
@@ -69,7 +70,8 @@ Error while evaluating functionNode@%d for snippet '%s':
  
 :h luasnip-docstring for more info]]
 function FunctionNode:update_static()
-	local args = self:get_static_args()
+	local args = node_util.str_args(self:get_static_args())
+
 	-- skip this update if
 	-- - not all nodes are available.
 	-- - the args haven't changed.
@@ -97,8 +99,9 @@ function FunctionNode:update_static()
 end
 
 function FunctionNode:update_restore()
+	local args = node_util.str_args(self:get_args())
 	-- only if args still match.
-	if self.static_text and vim.deep_equal(self:get_args(), self.last_args) then
+	if self.static_text and vim.deep_equal(args, self.last_args) then
 		self:set_text_raw(self.static_text)
 	else
 		self:update()
