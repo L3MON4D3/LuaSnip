@@ -154,11 +154,17 @@ function Node:get_text()
 	return ok and text or { "" }
 end
 
--- if not overriden, just use get_text.
 function Node:get_snippetstring()
-	local snipstring = snippet_string.new()
-	snipstring:append_text(self:get_text())
-	return snipstring
+	-- if this is not overridden, get_text returns a multiline string.
+	return snippet_string.new(self:get_text())
+end
+
+function Node:get_static_snippetstring()
+	if not self.visible and not self.static_visible then
+		return nil
+	end
+	-- if this is not overridden, get_static_text() is a multiline string.
+	return snippet_string.new(self:get_static_text())
 end
 
 function Node:set_old_text()
@@ -291,10 +297,10 @@ local function get_args(node, get_text_func_name)
 end
 
 function Node:get_args()
-	return get_args(self, "get_text")
+	return get_args(self, "get_snippetstring")
 end
 function Node:get_static_args()
-	return get_args(self, "get_static_text")
+	return get_args(self, "get_static_snippetstring")
 end
 
 function Node:get_jump_index()

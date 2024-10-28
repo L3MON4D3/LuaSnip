@@ -11,12 +11,14 @@ local snippet_string = require("luasnip.nodes.util.snippet_string")
 local str_util = require("luasnip.util.str")
 
 local function I(pos, static_text, opts)
-	static_text = util.to_string_table(static_text)
+	if not snippet_string.isinstance(static_text) then
+		static_text = snippet_string.new(util.to_string_table(static_text))
+	end
 
+	local node
 	if pos == 0 then
-		return ExitNode:new({
+		node = ExitNode:new({
 			pos = pos,
-			static_text = snippet_string.new(static_text),
 			mark = nil,
 			dependents = {},
 			type = types.exitNode,
@@ -26,9 +28,8 @@ local function I(pos, static_text, opts)
 			input_active = false,
 		}, opts)
 	else
-		return InsertNode:new({
+		node = InsertNode:new({
 			pos = pos,
-			static_text = snippet_string.new(static_text),
 			mark = nil,
 			dependents = {},
 			type = types.insertNode,
@@ -36,6 +37,12 @@ local function I(pos, static_text, opts)
 			input_active = false,
 		}, opts)
 	end
+
+	-- make static text owned by this insertNode.
+	-- This includes copying it so that it is separate from the snippets that
+	-- were potentially captured in `get_args`.
+	node.static_text = static_text:reown(node)
+	return node
 end
 extend_decorator.register(I, { arg_indx = 3 })
 
@@ -328,6 +335,10 @@ function InsertNode:subtree_leave_entered()
 end
 
 function InsertNode:get_snippetstring()
+	if not self.visible then
+		return nil
+	end
+
 	local self_from, self_to = self.mark:pos_begin_end_raw()
 	-- only do one get_text, and establish relative offsets partition this
 	-- text.
@@ -356,6 +367,12 @@ function InsertNode:get_snippetstring()
 
 	return snippetstring
 end
+function InsertNode:get_static_snippetstring()
+	if not self.visible and not self.static_visible then
+		return nil
+	end
+	return self.static_text
+end
 
 function InsertNode:expand_tabs(tabwidth, indentstrlen)
 	self.static_text:expand_tabs(tabwidth, indentstrlen)
@@ -372,7 +389,16 @@ end
 function InsertNode:put_initial(pos)
 	self.static_text:put(pos)
 	self.visible = true
-	local _, child_snippet_idx = node_util.binarysearch_pos(self.parent.snippet.child_snippets, pos, true, "outside")
+	local _, child_snippet_idx = node_util.binarysearch_pos(
+		self.parent.snippet.child_snippets,
+		pos,
+		-- we are always focused on this node when this is called (I'm pretty
+		-- sure at least), so we should follow the gravity when finding this
+		-- index.
+		true,
+		-- try to enter snippets I guess.
+		node_util.binarysearch_preference.inside)
+
 	for snip in self.static_text:iter_snippets() do
 		-- don't have to pass a current_node, we don't need it since we can
 		-- certainly link the snippet into this insertNode.
