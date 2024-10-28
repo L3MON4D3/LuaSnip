@@ -18,6 +18,7 @@ local function D(pos, fn, args, opts)
 		type = types.dynamicNode,
 		mark = nil,
 		user_args = opts.user_args or {},
+		snippetstring_args = opts.snippetstring_args or false,
 		dependents = {},
 		active = false,
 	}, opts)
@@ -118,7 +119,10 @@ end
 
 function DynamicNode:update()
 	local args = self:get_args()
-	if vim.deep_equal(self.last_args, args) then
+	local str_args = node_util.str_args(args)
+	local effective_args = self.snippetstring_args and args or str_args
+
+	if vim.deep_equal(self.last_args, str_args) then
 		-- no update, the args still match.
 		return
 	end
@@ -136,7 +140,7 @@ function DynamicNode:update()
 
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
-			args,
+			effective_args,
 			self.parent,
 			self.snip.old_state,
 			unpack(self.user_args)
@@ -150,14 +154,17 @@ function DynamicNode:update()
 	else
 		self:focus()
 		if not args then
-			-- no snippet exists, set an empty one.
+			-- not all args are available => set to empty snippet.
 			tmp = SnippetNode(nil, {})
 		else
 			-- also enter node here.
-			tmp = self.fn(args, self.parent, nil, unpack(self.user_args))
+			tmp = self.fn(effective_args, self.parent, nil, unpack(self.user_args))
 		end
 	end
-	self.last_args = args
+
+	-- make sure update only when text changed, not if there was just some kind
+	-- of metadata-modification of one of the snippets.
+	self.last_args = str_args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
@@ -219,7 +226,10 @@ Error while evaluating dynamicNode@%d for snippet '%s':
 :h luasnip-docstring for more info]]
 function DynamicNode:update_static()
 	local args = self:get_static_args()
-	if vim.deep_equal(self.last_static_args, args) then
+	local str_args = node_util.str_args(args)
+	local effective_args = self.snippetstring_args and args or str_args
+
+	if vim.deep_equal(self.last_static_args, str_args) then
 		-- no update, the args still match.
 		return
 	end
@@ -234,7 +244,7 @@ function DynamicNode:update_static()
 		-- build new snippet before exiting, markers may be needed for construncting.
 		ok, tmp = pcall(
 			self.fn,
-			args,
+			effective_args,
 			self.parent,
 			self.snip.old_state,
 			unpack(self.user_args)
@@ -246,7 +256,7 @@ function DynamicNode:update_static()
 		else
 			-- also enter node here.
 			ok, tmp =
-				pcall(self.fn, args, self.parent, nil, unpack(self.user_args))
+				pcall(self.fn, effective_args, self.parent, nil, unpack(self.user_args))
 		end
 	end
 	if not ok then
@@ -256,7 +266,7 @@ function DynamicNode:update_static()
 		-- set empty snippet on failure
 		tmp = SnippetNode(nil, {})
 	end
-	self.last_static_args = args
+	self.last_static_args = str_args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
@@ -331,7 +341,10 @@ end
 
 function DynamicNode:update_restore()
 	-- only restore snippet if arg-values still match.
-	if self.stored_snip and vim.deep_equal(self:get_args(), self.last_args) then
+	local args = self:get_args()
+	local str_args = node_util.str_args(args)
+
+	if self.stored_snip and vim.deep_equal(str_args, self.last_args) then
 		local tmp = self.stored_snip
 
 		tmp.mark =
