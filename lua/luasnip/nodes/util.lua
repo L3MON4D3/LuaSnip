@@ -5,6 +5,7 @@ local types = require("luasnip.util.types")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local session = require("luasnip.session")
 local feedkeys = require("luasnip.util.feedkeys")
+local snippet_string = require("luasnip.nodes.util.snippet_string")
 
 local function subsnip_init_children(parent, children)
 	for _, child in ipairs(children) do
@@ -855,6 +856,12 @@ local function collect_dependents(node, which, static)
 	return tbl_util.set_to_list(dependents_set)
 end
 
+local function str_args(args)
+	return args and vim.tbl_map(function(arg)
+		return snippet_string.isinstance(arg) and arg:str() or arg
+	end, args)
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -880,4 +887,5 @@ return {
 	find_node_dependents = find_node_dependents,
 	collect_dependents = collect_dependents,
 	node_subtree_do = node_subtree_do,
+	str_args = str_args
 }
