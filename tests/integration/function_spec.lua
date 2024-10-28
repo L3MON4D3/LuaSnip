@@ -179,8 +179,8 @@ describe("FunctionNode", function()
 			})
 		]]
 			assert.are.same(
-				exec_lua("return " .. snip .. ":get_static_text()"),
-				{ "cccc aaaa" }
+				{ "cccc aaaa" },
+				exec_lua("return " .. snip .. ":get_static_text()")
 			)
 			-- the functionNode shouldn't be evaluated after expansion, the ai[2][2] isn't available.
 			exec_lua("ls.snip_expand(" .. snip .. ")")
