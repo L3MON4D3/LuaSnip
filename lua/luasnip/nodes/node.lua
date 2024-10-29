@@ -243,7 +243,7 @@ function Node:event(event)
 	})
 end
 
-local function get_args(node, get_text_func_name)
+local function get_args(node, get_text_func_name, static)
 	local argnodes_text = {}
 	for key, arg in ipairs(node.args_absolute) do
 		local is_optional = opt_args.is_opt(arg)
@@ -276,13 +276,20 @@ local function get_args(node, get_text_func_name)
 		end
 		-- maybe the node is part of a dynamicNode and not yet generated.
 		if argnode then
-			-- now, store traverses the whole tree, and if one argnode includes
-			-- another we'd duplicate some work.
-			-- But I don't think there's a really good reason for doing
-			-- something like this (we already have all the data by capturing
-			-- the outer argnode), and even if it happens, it should occur only
-			-- rarely.
-			argnode:store()
+			if not static and argnode.visible then
+				-- Don't store (aka call get_snippetstring) if this is a static
+				-- update (there will be no associated buffer-region!) and
+				-- don't store if the node is not visible. (Then there's
+				-- nothing to store anyway)
+
+				-- now, store traverses the whole tree, and if one argnode includes
+				-- another we'd duplicate some work.
+				-- But I don't think there's a really good reason for doing
+				-- something like this (we already have all the data by capturing
+				-- the outer argnode), and even if it happens, it should occur only
+				-- rarely.
+				argnode:store()
+			end
 			local argnode_text = argnode[get_text_func_name](argnode)
 			-- can only occur with `get_text`. If one returns nil, the argnode
 			-- isn't visible or some other error occured. Either way, return nil
@@ -304,10 +311,10 @@ local function get_args(node, get_text_func_name)
 end
 
 function Node:get_args()
-	return get_args(self, "get_snippetstring")
+	return get_args(self, "get_snippetstring", false)
 end
 function Node:get_static_args()
-	return get_args(self, "get_static_snippetstring")
+	return get_args(self, "get_static_snippetstring", true)
 end
 
 function Node:get_jump_index()
