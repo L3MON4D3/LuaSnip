@@ -383,6 +383,9 @@ function InsertNode:indent(indentstr)
 end
 
 function InsertNode:store()
+	for _, snip in ipairs(self:child_snippets()) do
+		snip:store()
+	end
 	self.static_text = self:get_snippetstring()
 end
 
