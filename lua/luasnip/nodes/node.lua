@@ -276,6 +276,13 @@ local function get_args(node, get_text_func_name)
 		end
 		-- maybe the node is part of a dynamicNode and not yet generated.
 		if argnode then
+			-- now, store traverses the whole tree, and if one argnode includes
+			-- another we'd duplicate some work.
+			-- But I don't think there's a really good reason for doing
+			-- something like this (we already have all the data by capturing
+			-- the outer argnode), and even if it happens, it should occur only
+			-- rarely.
+			argnode:store()
 			local argnode_text = argnode[get_text_func_name](argnode)
 			-- can only occur with `get_text`. If one returns nil, the argnode
 			-- isn't visible or some other error occured. Either way, return nil
