@@ -459,4 +459,93 @@ screen:expect({
   ]]
 })
 	end)
+
+	-- make sure store and update_restore propagate.
+	it("correctly restores snippets (3).", function()
+
+		exec_lua([[
+			ls.setup({link_children = true})
+			ls.snip_expand(s("trig", {
+				i(1, "asdf"), t" ", d(2, function(args)
+					return sn(nil, {
+						r(1, "key", i(1)),
+						i(2, args[1])
+					})
+				end, {1})
+			}))
+		]])
+		exec_lua[[ls.jump(1)]]
+
+		local function exp()
+			exec_lua([[
+				ls.snip_expand(s("trig", {
+					t("("), r(1, "inside_pairs", dl(1, l.LS_SELECT_DEDENT)), t(")")
+				}))
+			]])
+			feed("i")
+		end
+
+		exp()
+		exec_lua"ls.jump(1)"
+		exp()
+		exec_lua"ls.jump(1)"
+		exp()
+		feed("<space><space>i<left><left>")
+		exp()
+		exp()
+		exp()
+screen:expect({
+  grid = [[
+    asdf (i)(i)(i (i(i(i^))) i)asdf                    |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+		-- 11x to get back to the i1.
+		exec_lua"ls.jump(-1) ls.jump(-1) ls.jump(-1)"
+		exec_lua"ls.jump(-1) ls.jump(-1) ls.jump(-1)"
+		exec_lua"ls.jump(-1) ls.jump(-1) ls.jump(-1)"
+		exec_lua"ls.jump(-1) ls.jump(-1)"
+		feed("qwer")
+		exec_lua"ls.jump(1)"
+screen:expect({
+  grid = [[
+    qwer ^({3:i)(i)(i (i(i(i))) i)}qwer                    |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(1) ls.jump(1) ls.jump(1)"
+screen:expect({
+  grid = [[
+    qwer (i)(^i)(i (i(i(i))) i)qwer                    |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(1) ls.jump(1) ls.jump(1)"
+screen:expect({
+  grid = [[
+    qwer (i)(i)(i (^i{3:(i(i))}) i)qwer                    |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(1) ls.jump(1) ls.jump(1)"
+screen:expect({
+  grid = [[
+    qwer (i)(i)(i (i(i(i)^)) i)qwer                    |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(1) ls.jump(1) ls.jump(1) ls.jump(1)"
+screen:expect({
+  grid = [[
+    qwer (i)(i)(i (i(i(i))) i)^q{3:wer}                    |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+	end)
 end)
