@@ -238,8 +238,9 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice:store()
 
 	-- tear down current choice.
-	-- leave all so the choice (could be a snippet) is in the correct state for the next enter.
-	node_util.leave_nodes_between(self.active_choice, current_node)
+	-- leave all so the choice (could be a snippet) is in the correct state for
+	-- the next enter.
+	node_util.refocus(current_node, self.active_choice)
 
 	self.active_choice:exit()
 
