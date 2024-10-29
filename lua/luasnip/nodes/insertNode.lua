@@ -399,8 +399,8 @@ function InsertNode:put_initial(pos)
 		-- sure at least), so we should follow the gravity when finding this
 		-- index.
 		true,
-		-- try to enter snippets I guess.
-		node_util.binarysearch_preference.inside)
+		-- don't enter snippets, we want to find the position of this node.
+		node_util.binarysearch_preference.outside)
 
 	for snip in self.static_text:iter_snippets() do
 		-- don't have to pass a current_node, we don't need it since we can
