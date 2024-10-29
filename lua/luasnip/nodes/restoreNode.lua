@@ -36,8 +36,7 @@ function RestoreNode:exit()
 
 	self.visible = false
 	self.mark:clear()
-	-- snip should exist if exit is called.
-	self.snip:store()
+
 	-- will be copied on restore, no need to copy here too.
 	self.parent.snippet.stored[self.key] = self.snip
 	self.snip:exit()
