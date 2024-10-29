@@ -187,8 +187,6 @@ function DynamicNode:update()
 	tmp:resolve_node_ext_opts()
 	tmp:subsnip_init()
 
-	tmp.mark =
-		self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
 	tmp.dynamicNode = self
 
 	tmp:init_positions(self.snip_absolute_position)
@@ -205,7 +203,13 @@ function DynamicNode:update()
 	tmp:indent(self.parent.indentstr)
 
 	-- sets own extmarks false,true
+	-- focus and then set snippetNode-gravity => make sure that
+	-- snippetNode-extmark is shifted correctly.
 	self:focus()
+
+	tmp.mark =
+		self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
+
 	local from, to = self.mark:pos_begin_end_raw()
 	-- inserts nodes with extmarks false,false
 	tmp:put_initial(from)
@@ -355,9 +359,6 @@ function DynamicNode:update_restore()
 	if self.stored_snip and vim.deep_equal(str_args, self.last_args) then
 		local tmp = self.stored_snip
 
-		tmp.mark =
-			self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
-
 		-- position might (will probably!!) still have changed, so update it
 		-- here too (as opposed to only in update).
 		tmp:init_positions(self.snip_absolute_position)
@@ -370,7 +371,9 @@ function DynamicNode:update_restore()
 
 		-- sets own extmarks false,true
 		self:focus()
-		-- inserts nodes with extmarks false,false
+		tmp.mark =
+			self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
+
 		local from, to = self.mark:pos_begin_end_raw()
 		tmp:put_initial(from)
 		-- adjust gravity in left side of snippet, such that it matches the current
