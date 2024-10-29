@@ -449,6 +449,16 @@ function InsertNode:update_restore()
 	end
 end
 
+function InsertNode:subtree_do(opts)
+	opts.pre(self)
+	if opts.do_child_snippets then
+		for _, snip in ipairs(self:child_snippets()) do
+			snip:subtree_do(opts)
+		end
+	end
+	opts.post(self)
+end
+
 return {
 	I = I,
 }
