@@ -9,6 +9,7 @@ local extend_decorator = require("luasnip.util.extend_decorator")
 local feedkeys = require("luasnip.util.feedkeys")
 local snippet_string = require("luasnip.nodes.util.snippet_string")
 local str_util = require("luasnip.util.str")
+local log = require("luasnip.util.log").new("insertNode")
 
 local function I(pos, static_text, opts)
 	if not snippet_string.isinstance(static_text) then
@@ -347,9 +348,8 @@ function InsertNode:get_snippetstring()
 	local snippetstring = snippet_string.new()
 
 	if not ok then
+		log.warn("Failure while getting text of insertNode: " .. text)
 		-- return empty in case of failure.
-		-- This may frequently occur when the snippet is `exit`ed due to
-		-- failure and insertNodes fetch the text in the course of `store`.
 		return snippetstring
 	end
 
