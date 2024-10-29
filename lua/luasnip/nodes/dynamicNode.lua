@@ -138,6 +138,14 @@ function DynamicNode:update()
 			return
 		end
 
+		-- make sure all nodes store their up-to-date content.
+		-- This is relevant if an argnode contains a snippet which contains a
+		-- restoreNode: the snippet will be copied and the `self.snip:exit`
+		-- will cause a store for the original snippet, but not the copy that
+		-- may be inserted into `tmp` by `self.fn`.
+		self.snip:store()
+		self.snip:subtree_leave_entered()
+
 		-- build new snippet before exiting, markers may be needed for construncting.
 		tmp = self.fn(
 			effective_args,
@@ -145,7 +153,7 @@ function DynamicNode:update()
 			self.snip.old_state,
 			unpack(self.user_args)
 		)
-		self.snip:subtree_leave_entered()
+
 		self.snip:exit()
 		self.snip = nil
 
