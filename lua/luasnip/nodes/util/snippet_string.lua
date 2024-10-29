@@ -112,7 +112,8 @@ function SnippetString:reown(new_parent)
 				pre = function(node)
 					node.mark:invalidate()
 				end,
-				post = util.nop
+				post = util.nop,
+				do_child_snippets = true
 			})
 			snipcop:exit()
 			-- set correct parent_node.
