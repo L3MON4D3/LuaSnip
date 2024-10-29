@@ -1133,12 +1133,12 @@ end
 
 function Snippet:exit()
 	if self.type == types.snippet then
-		-- if exit is called, this will not be visited again.
-		-- Thus, also clean up the child-snippets, which will also not be
-		-- visited again, since they can only be visited through self.
-		for _, child in ipairs(self.child_snippets) do
-			child:exit()
+		-- insertNode also call exit for their child_snippets, but if we
+		-- :exit() the whole snippet we can just remove all of them here.
+		for _, snip in ipairs(self.child_snippets) do
+			snip:exit()
 		end
+		self.child_snippets = {}
 	end
 
 	self.visible = false
