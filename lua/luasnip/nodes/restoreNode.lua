@@ -215,7 +215,11 @@ function RestoreNode:get_docstring()
 	return self.docstring
 end
 
-function RestoreNode:store() end
+function RestoreNode:store()
+	if self.snip then
+		self.snip:store()
+	end
+end
 
 -- will be restored through other means.
 function RestoreNode:update_restore()
