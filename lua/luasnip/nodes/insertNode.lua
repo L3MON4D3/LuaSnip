@@ -443,6 +443,12 @@ function InsertNode:find_node(predicate, opts)
 	return nil
 end
 
+function InsertNode:update_restore()
+	for _, snip in pairs(self:child_snippets()) do
+		snip:update_restore()
+	end
+end
+
 return {
 	I = I,
 }

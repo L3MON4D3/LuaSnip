@@ -223,7 +223,8 @@ function DynamicNode:update()
 	-- Both are needed, because
 	-- - a node could only depend on nodes outside of tmp
 	-- - a node outside of tmp could depend on one inside of tmp
-	tmp:update()
+	tmp:update_restore()
+
 	-- update nodes that depend on this dynamicNode, nodes that are parents
 	-- (and thus have changed text after this update), and all of the
 	-- children's depedents (since they may have dependents outside this
