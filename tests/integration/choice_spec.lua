@@ -208,7 +208,7 @@ describe("ChoiceNode", function()
 			{2:-- SELECT --}                                      |]],
 		})
 		assert.are.same(exec_lua("return ls.get_current_choices()"), {
-			"${${1:a}}",
+			"${${1:b}}",
 			"none",
 		})
 
