@@ -42,7 +42,7 @@ local function I(pos, static_text, opts)
 	-- make static text owned by this insertNode.
 	-- This includes copying it so that it is separate from the snippets that
 	-- were potentially captured in `get_args`.
-	node.static_text = static_text:reown(node)
+	node.static_text = static_text:copy()
 	return node
 end
 extend_decorator.register(I, { arg_indx = 3 })
@@ -406,6 +406,7 @@ function InsertNode:put_initial(pos)
 		-- don't have to pass a current_node, we don't need it since we can
 		-- certainly link the snippet into this insertNode.
 		snip:insert_into_jumplist(nil, self, self.parent.snippet.child_snippets, child_snippet_idx)
+
 		child_snippet_idx = child_snippet_idx + 1
 	end
 end

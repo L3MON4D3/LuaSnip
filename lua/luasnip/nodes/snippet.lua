@@ -531,6 +531,10 @@ function Snippet:insert_into_jumplist(
 	-- have not yet inserted self!!
 	local next_snippet = sibling_snippets[own_indx]
 
+	-- can set this immediately
+	-- parent_node is nil if the snippet is toplevel.
+	self.parent_node = parent_node
+
 	-- only consider sibling-snippets with the same parent-node as
 	-- previous/next snippet for linking-purposes.
 	-- They are siblings because they are expanded in the same snippet, not
@@ -764,9 +768,6 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	self.prev = start_node
 	self.insert_nodes[0].prev = self
 	self.next = self.insert_nodes[0]
-
-	-- parent_node is nil if the snippet is toplevel.
-	self.parent_node = parent_node
 
 	self:put(pos)
 
