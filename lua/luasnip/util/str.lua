@@ -179,6 +179,17 @@ function M.multiline_substr(str, from, to)
 	return res
 end
 
+function M.multiline_upper(str)
+	for i, s in ipairs(str) do
+		str[i] = s:upper()
+	end
+end
+function M.multiline_lower(str)
+	for i, s in ipairs(str) do
+		str[i] = s:lower()
+	end
+end
+
 -- modifies strmod
 function M.multiline_append(strmod, strappend)
 	strmod[#strmod] = strmod[#strmod] .. strappend[1]
