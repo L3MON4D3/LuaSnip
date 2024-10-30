@@ -270,4 +270,41 @@ describe("ChoiceNode", function()
 			"${e}",
 		})
 	end)
+
+	it("can depend on choiceNode.", function()
+		exec_lua([[
+			ls.snip_expand(
+				s("sss",{
+					c(1, {
+					  t("."),
+					  t("by bullet points"),
+					  t("by creating stories"),
+					}, { key = "sum-typ" }),
+					f(function(args)
+					  local res ={}
+					  if string.match(args[1][1],"bullet") then
+						table.insert(res, "by-bullet-points")
+					  elseif string.match(args[1][1],"stories") then
+						table.insert(res, "by-creating-stories")
+					  else
+						table.insert(res," -->")
+					  end
+					  return res
+					end, k("sum-typ")),
+				})
+			)
+		]])
+
+		screen:expect({
+			grid = [[
+			  ^. -->                                             |
+			  {0:~                                                 }|
+			  {2:-- INSERT --}                                      |]] })
+		exec_lua("ls.change_choice(1)")
+		screen:expect({
+			grid = [[
+			  ^by bullet pointsby-bullet-points                  |
+			  {0:~                                                 }|
+			  {2:-- INSERT --}                                      |]] })
+	end)
 end)

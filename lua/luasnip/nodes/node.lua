@@ -393,8 +393,8 @@ function Node:set_argnodes(dict)
 		dict:set(self.absolute_insert_position, self)
 		self.absolute_insert_position[#self.absolute_insert_position] = nil
 	end
-	if self.key then
-		dict:set({ "key", self.key, "node" }, self)
+	if rawget(self, "key") then
+		dict:set({ "key", rawget(self, "key"), "node" }, self)
 	end
 end
 
