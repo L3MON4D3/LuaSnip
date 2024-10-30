@@ -170,7 +170,7 @@ local function get_corresponding_node(parent, data)
 	return parent:find_node(function(test_node)
 		return (test_node.store_id == data.store_id)
 			or (data.key ~= nil and test_node.key == data.key)
-	end)
+	end, {find_in_child_snippets = true})
 end
 
 local function restore_cursor_pos_relative(node, data)
