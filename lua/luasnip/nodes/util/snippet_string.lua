@@ -100,7 +100,7 @@ function SnippetString:put(pos)
 	end
 end
 
-function SnippetString:reown(new_parent)
+function SnippetString:copy()
 	-- on 0.7 vim.deepcopy does not behave correctly => have to manually copy.
 	return setmetatable(vim.tbl_map(function(snipstr_or_str)
 		if snipstr_or_str.snip then
@@ -133,9 +133,9 @@ function SnippetString:reown(new_parent)
 				post = util.nop,
 				do_child_snippets = true
 			})
+			-- snippet may have been active (for example if captured as an
+			-- argnode), so finally exit here (so we can put_initial it again!)
 			snipcop:exit()
-			-- set correct parent_node.
-			snipcop.parent_node = new_parent
 
 			return {snip = snipcop}
 		else
