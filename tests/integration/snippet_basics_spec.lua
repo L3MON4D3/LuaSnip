@@ -1402,6 +1402,7 @@ describe("snippets_basic", function()
 			}
 		]])
 		exec_lua([[ls.lsp_expand("a$1$1a")]])
+		exec_lua("vim.wait(10, function() end)")
 		exec_lua([[ls.lsp_expand("b$1")]])
 		feed("ccc")
 		exec_lua([[ls.active_update_dependents()]])
