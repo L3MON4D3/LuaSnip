@@ -414,7 +414,7 @@ function InsertNode:get_static_text()
 	if not self.visible and not self.static_visible then
 		return nil
 	end
-	return self.static_text:str()
+	return vim.split(self.static_text:str(), "\n")
 end
 
 function InsertNode:set_text(text)

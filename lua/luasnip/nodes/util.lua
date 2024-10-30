@@ -858,7 +858,7 @@ end
 
 local function str_args(args)
 	return args and vim.tbl_map(function(arg)
-		return snippet_string.isinstance(arg) and arg:str() or arg
+		return snippet_string.isinstance(arg) and vim.split(arg:str(), "\n") or arg
 	end, args)
 end
 
