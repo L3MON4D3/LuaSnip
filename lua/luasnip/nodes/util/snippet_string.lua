@@ -144,4 +144,87 @@ function SnippetString:copy()
 	end, self), SnippetString_mt)
 end
 
+-- copy without copying snippets.
+function SnippetString:flatcopy()
+	local res = {}
+	for i, v in ipairs(self) do
+		res[i] = util.shallow_copy(v)
+	end
+	return setmetatable(res, SnippetString_mt)
+end
+
+-- where o is string, string[] or SnippetString.
+local function to_snippetstring(o)
+	if type(o) == "string" then
+		return M.new({o})
+	elseif getmetatable(o) == SnippetString_mt then
+		return o
+	else
+		return M.new(o)
+	end
+end
+
+function SnippetString.concat(a, b)
+	a = to_snippetstring(a):flatcopy()
+	b = to_snippetstring(b):flatcopy()
+	vim.list_extend(a, b)
+
+	return a
+end
+SnippetString_mt.__concat = SnippetString.concat
+
+function SnippetString:_upper()
+	for i, v in ipairs(self) do
+		if v.snip then
+			v.snip:subtree_do({
+				pre = function(node)
+					if node.static_text then
+						if M.isinstance(node.static_text) then
+							node.static_text:_upper()
+						else
+							str_util.multiline_upper(node.static_text)
+						end
+					end
+				end,
+				post = util.nop
+			})
+		else
+			self[i] = v:upper()
+		end
+	end
+end
+
+function SnippetString:upper()
+	local cop = self:copy()
+	cop:_upper()
+	return cop
+end
+
+function SnippetString:_lower()
+	for i, v in ipairs(self) do
+		if v.snip then
+			v.snip:subtree_do({
+				pre = function(node)
+					if node.static_text then
+						if M.isinstance(node.static_text) then
+							node.static_text:_lower()
+						else
+							str_util.multiline_lower(node.static_text)
+						end
+					end
+				end,
+				post = util.nop
+			})
+		else
+			self[i] = v:lower()
+		end
+	end
+end
+
+function SnippetString:lower()
+	local cop = self:copy()
+	cop:_lower()
+	return cop
+end
+
 return M
