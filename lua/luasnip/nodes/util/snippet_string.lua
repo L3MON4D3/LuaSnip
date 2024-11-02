@@ -332,45 +332,13 @@ local function _replace(self, replacements, snipstr_map)
 end
 
 -- replacements may not be zero-width!
-function SnippetString:replace(replacements)
+local function replace(self, replacements)
 	local snipstr_map = {}
 	gen_snipstr_map(self, snipstr_map, 1)
 	_replace(self, replacements, snipstr_map)
 end
 
--- gsub will preserve snippets as long as a substituted region does not overlap
--- more than one node.
--- gsub will ignore zero-length matches. In these cases, it becomes less easy
--- to define the association of new string -> static_text it should be
--- associated with, so these are ignored (until a sensible behaviour is clear
--- (maybe respect rgrav behaviour? does not seem useful)).
-function SnippetString:gsub(pattern, repl)
-	self = self:copy()
-
-	local find_from = 1
-	local str = self:str()
-	local replacements = {}
-	while true do
-		local match_from, match_to = str:find(pattern, find_from)
-		if not match_from then
-			break
-		end
-		-- only allow matches that are not empty.
-		if match_from ~= match_to then
-			table.insert(replacements, {
-				from = match_from,
-				to = match_to,
-				str = str:sub(match_from, match_to):gsub(pattern, repl)
-			})
-		end
-		find_from = match_to + 1
-	end
-	self:replace(replacements)
-
-	return self
-end
-
-function SnippetString:_upper()
+local function upper(self)
 	for i, v in ipairs(self) do
 		if v.snip then
 			v.snip:subtree_do({
@@ -391,13 +359,7 @@ function SnippetString:_upper()
 	end
 end
 
-function SnippetString:upper()
-	local cop = self:copy()
-	cop:_upper()
-	return cop
-end
-
-function SnippetString:_lower()
+local function lower(self)
 	for i, v in ipairs(self) do
 		if v.snip then
 			v.snip:subtree_do({
@@ -420,8 +382,48 @@ end
 
 function SnippetString:lower()
 	local cop = self:copy()
-	cop:_lower()
+	lower(cop)
 	return cop
+end
+function SnippetString:upper()
+	local cop = self:copy()
+	upper(cop)
+	return cop
+end
+
+-- gsub will preserve snippets as long as a substituted region does not overlap
+-- more than one node.
+-- gsub will ignore zero-length matches. In these cases, it becomes less easy
+-- to define the association of new string -> static_text it should be
+-- associated with, so these are ignored (until a sensible behaviour is clear
+-- (maybe respect rgrav behaviour? does not seem useful)).
+-- Also, it should be straightforward to circumvent this by doing something
+-- like :gsub("(.)", "%1_") or :gsub("(.)", "_%1") to choose the "side" where a
+-- new char is inserted,
+function SnippetString:gsub(pattern, repl)
+	self = self:copy()
+
+	local find_from = 1
+	local str = self:str()
+	local replacements = {}
+	while true do
+		local match_from, match_to = str:find(pattern, find_from)
+		if not match_from then
+			break
+		end
+		-- only allow matches that are not empty.
+		if match_from <= match_to then
+			table.insert(replacements, {
+				from = match_from,
+				to = match_to,
+				str = str:sub(match_from, match_to):gsub(pattern, repl)
+			})
+		end
+		find_from = match_to + 1
+	end
+	replace(self, replacements)
+
+	return self
 end
 
 return M
