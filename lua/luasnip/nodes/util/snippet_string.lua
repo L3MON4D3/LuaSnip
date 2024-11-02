@@ -426,4 +426,43 @@ function SnippetString:gsub(pattern, repl)
 	return self
 end
 
+function SnippetString:sub(from, to)
+	self = self:copy()
+
+	local snipstr_map = {}
+	local str = gen_snipstr_map(self, snipstr_map, 1)
+
+	to = to or #str
+
+	-- negative -> positive
+	if from < 0 then
+		from = #str + from + 1
+	end
+	if to < 0 then
+		to = #str + to + 1
+	end
+
+	-- empty range => return empty snippetString.
+	if from > #str or to < from or to < 1 then
+		return M.new({""})
+	end
+
+	from = math.max(from, 1)
+	to = math.min(to, #str)
+
+	local replacements = {}
+	-- from <= 1 => don't need to remove from beginning.
+	if from > 1 then
+		table.insert(replacements, { from=1, to=from-1, str = "" })
+	end
+	-- to >= #str => don't need to remove from end.
+	if to < #str then
+		table.insert(replacements, { from=to+1, to=#str, str = "" })
+	end
+
+	_replace(self, replacements, snipstr_map)
+	return self
+end
+
+
 return M
