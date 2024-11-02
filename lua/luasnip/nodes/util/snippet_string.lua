@@ -299,7 +299,7 @@ local function _replace(self, replacements, snipstr_map)
 									-- will still be answered correctly.
 									local str = table.concat(node.static_text, "\n")
 									node.static_text = vim.split(
-										str:sub(1, node_relative_repl_from-2) .. repl.str .. str:sub(node_relative_repl_to+1), "\n")
+										str:sub(1, node_relative_repl_from-1) .. repl.str .. str:sub(node_relative_repl_to+1), "\n")
 								end
 								-- update string in snipstr_map.
 								snipstr_map[snip] = snipstr_map[snip]:sub(1, repl.from - v_from_from-1) .. repl.str .. snipstr_map[snip]:sub(repl.to - v_to_from+1)
