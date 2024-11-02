@@ -253,8 +253,8 @@ local function _replace(self, replacements, snipstr_map)
 	for i = #replacements, 1, -1 do
 		local repl = replacements[i]
 
-		local v_i_to = find(self, v_i_search_from, -1 , repl.from, snipstr_map)
-		local v_i_from = find(self, v_i_to, -1, repl.to, snipstr_map)
+		local v_i_to = find(self, v_i_search_from, -1 , repl.to, snipstr_map)
+		local v_i_from = find(self, v_i_to, -1, repl.from, snipstr_map)
 
 		-- next range may begin in v_i_from, before the currently inserted
 		-- one.
