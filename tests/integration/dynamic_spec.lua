@@ -366,4 +366,59 @@ describe("DynamicNode", function()
 			)
 		end
 	)
+
+	it("dynamicNode can depend on itself.", function()
+		exec_lua([[
+			ls.setup({
+				update_events = "TextChangedI"
+			})
+			ls.snip_expand(s("trig", {
+				d(1, function(args)
+					if not args[1] then
+						return sn(nil, {i(1, "asdf", {key = "ins"})})
+					else
+						return sn(nil, {i(1, args[1][1]:gsub("a", "e"), {key = "ins"})})
+					end
+				end, {opt(k("ins"))})
+			}))
+		]])
+screen:expect({
+  grid = [[
+    ^e{3:sdf}                                              |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		feed("aaaaa")
+screen:expect({
+  grid = [[
+    eeeee^                                             |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+	end)
+
+	it("selected text is selected again after updating (when possible).", function()
+		exec_lua[[
+			ls.snip_expand(s("trig", {
+				d(1, function(args)
+					if not args[1] then
+						return sn(nil, {i(1, "asdf", {key = "ins"})})
+					else
+						return sn(nil, {i(1, args[1]:gsub("a", "e"), {key = "ins"})})
+					end
+				end, {opt(k("ins"))}, {snippetstring_args = true})
+			}))
+		]]
+		feed("<Esc>a")
+		exec_lua("ls.lsp_expand('${1:asdf}')")
+screen:expect({
+  grid = [[
+    e^e{3:sdf}sdf                                          |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+	end)
 end)
