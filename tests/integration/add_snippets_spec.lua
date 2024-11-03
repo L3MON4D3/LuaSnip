@@ -131,7 +131,7 @@ describe("add_snippets", function()
 			assert.are.same(
 				1000,
 				exec_lua(
-					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+					[[return ls.session.current_nodes[1].parent.snippet.effective_priority]]
 				)
 			)
 
@@ -153,7 +153,7 @@ describe("add_snippets", function()
 			assert.are.same(
 				1001,
 				exec_lua(
-					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+					[[return ls.session.current_nodes[1].parent.snippet.effective_priority]]
 				)
 			)
 
@@ -177,7 +177,7 @@ describe("add_snippets", function()
 			assert.are.same(
 				1002,
 				exec_lua(
-					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+					[[return ls.session.current_nodes[1].parent.snippet.effective_priority]]
 				)
 			)
 
@@ -206,7 +206,7 @@ describe("add_snippets", function()
 			assert.are.same(
 				1003,
 				exec_lua(
-					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+					[[return ls.session.current_nodes[1].parent.snippet.effective_priority]]
 				)
 			)
 
@@ -222,7 +222,7 @@ describe("add_snippets", function()
 			assert.are.same(
 				1002,
 				exec_lua(
-					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+					[[return ls.session.current_nodes[1].parent.snippet.effective_priority]]
 				)
 			)
 		end
