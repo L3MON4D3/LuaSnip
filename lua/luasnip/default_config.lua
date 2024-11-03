@@ -53,6 +53,9 @@ local lazy_snip_env = {
 	k = function()
 		return require("luasnip.nodes.key_indexer").new_key
 	end,
+	opt = function()
+		return require("luasnip.nodes.optional_arg").new_opt
+	end,
 	ai = function()
 		return require("luasnip.nodes.absolute_indexer")
 	end,
