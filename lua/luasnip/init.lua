@@ -2,6 +2,7 @@ local util = require("luasnip.util.util")
 local lazy_table = require("luasnip.util.lazy_table")
 local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
+local feedkeys = require("luasnip.util.feedkeys")
 
 local session = require("luasnip.session")
 local snippet_collection = require("luasnip.session.snippet_collection")
@@ -158,6 +159,12 @@ local function store_cursor_node_relative(node)
 		snip_data.cursor_end_relative =
 			util.pos_sub(util.get_cursor_0ind(), node.mark:get_endpoint(1))
 
+		if vim.fn.mode() == "s" then
+			local getpos_v = vim.fn.getpos("v")
+			local selection_end_pos = {getpos_v[2]-1, getpos_v[3]}
+			snip_data.selection_other_end_end_relative = util.pos_sub(selection_end_pos, node.mark:get_endpoint(1))
+		end
+
 		data[snip] = snip_data
 
 		snippet_current_node = snip:get_snippet().parent_node
@@ -174,9 +181,16 @@ local function get_corresponding_node(parent, data)
 end
 
 local function restore_cursor_pos_relative(node, data)
-	util.set_cursor_0ind(
-		util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative)
-	)
+	if data.selection_other_end_end_relative then
+		-- is a selection => restore it.
+		local selection_from = util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative)
+		local selection_to = util.pos_add(node.mark:get_endpoint(1), data.selection_other_end_end_relative)
+		feedkeys.select_range(selection_from, selection_to)
+	else
+		util.set_cursor_0ind(
+			util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative)
+		)
+	end
 end
 
 local function node_update_dependents_preserve_position(node, opts)
