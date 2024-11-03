@@ -111,41 +111,53 @@ describe("add_snippets", function()
 		})
 	end)
 
-	it("respects priority and stores the effective priority in the snippet.", function()
-		exec_lua([[
+	it(
+		"respects priority and stores the effective priority in the snippet.",
+		function()
+			exec_lua([[
 		ls.add_snippets("all", {
 			ls.parser.parse_snippet({trig = "trig"}, "bbb")
 		})
 		]])
 
-		feed("itrig")
-		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
+			feed("itrig")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
 			bbb^                                               |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-		assert.are.same(1000, exec_lua([[return ls.session.current_nodes[1].parent.snippet.priority]]))
+			})
+			assert.are.same(
+				1000,
+				exec_lua(
+					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+				)
+			)
 
-		exec_lua([[
+			exec_lua([[
 		ls.add_snippets("all", {
 			-- overrides previous trig-snippet
 			ls.parser.parse_snippet({trig = "trig", priority = 1001}, "aaa"),
 		})
 		]])
-		-- delete and re-trigger.
-		feed("<Esc>dditrig")
-		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
+			-- delete and re-trigger.
+			feed("<Esc>dditrig")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
 			aaa^                                               |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-		assert.are.same(1001, exec_lua([[return ls.session.current_nodes[1].parent.snippet.priority]]))
+			})
+			assert.are.same(
+				1001,
+				exec_lua(
+					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+				)
+			)
 
-		exec_lua([[
+			exec_lua([[
 		ls.add_snippets("all", {
 			-- overrides previous trig-snippet
 			ls.parser.parse_snippet({trig = "trig", priority = 999}, "ccc"),
@@ -153,18 +165,23 @@ describe("add_snippets", function()
 			override_priority = 1002
 		})
 		]])
-		-- delete and re-trigger.
-		feed("<Esc>dditrig")
-		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
+			-- delete and re-trigger.
+			feed("<Esc>dditrig")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
 			ccc^                                               |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-		assert.are.same(1002, exec_lua([[return ls.session.current_nodes[1].parent.snippet.priority]]))
+			})
+			assert.are.same(
+				1002,
+				exec_lua(
+					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+				)
+			)
 
-		exec_lua([[
+			exec_lua([[
 		ls.add_snippets("all", {
 			-- make sure snippet-priority isn't superseded by default_priority.
 			-- check by overriding previous trig-snippet.
@@ -177,29 +194,39 @@ describe("add_snippets", function()
 			default_priority = 1002
 		})
 		]])
-		-- delete and re-trigger.
-		feed("<Esc>dditrig")
-		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
+			-- delete and re-trigger.
+			feed("<Esc>dditrig")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
 			ddd^                                               |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-		assert.are.same(1003, exec_lua([[return ls.session.current_nodes[1].parent.snippet.priority]]))
+			})
+			assert.are.same(
+				1003,
+				exec_lua(
+					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+				)
+			)
 
-
-		-- delete and re-trigger.
-		feed("<Esc>dditreg")
-		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
+			-- delete and re-trigger.
+			feed("<Esc>dditreg")
+			exec_lua("ls.expand()")
+			screen:expect({
+				grid = [[
 			bbb^                                               |
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
-		})
-		assert.are.same(1002, exec_lua([[return ls.session.current_nodes[1].parent.snippet.priority]]))
-	end)
+			})
+			assert.are.same(
+				1002,
+				exec_lua(
+					[[return ls.session.current_nodes[1].parent.snippet.priority]]
+				)
+			)
+		end
+	)
 
 	it("add autosnippets by option", function()
 		exec_lua("ls.config.setup({ enable_autosnippets = true })")
