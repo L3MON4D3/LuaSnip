@@ -234,6 +234,8 @@ function M.add_snippets(snippets, opts)
 					or opts.default_priority
 					or 1000
 
+				snip.priority = snip_prio
+
 				-- if snippetType undefined by snippet, take default value from opts
 				local snip_type = snip.snippetType ~= nil and snip.snippetType
 					or opts.type
