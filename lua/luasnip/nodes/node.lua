@@ -330,10 +330,8 @@ function Node:set_ext_opts(name)
 	end
 end
 
--- for insert,functionNode.
-function Node:store()
-	self.static_text = self:get_text()
-end
+-- default impl. for textNode and functionNode (fNode stores after an update).
+function Node:store() end
 
 function Node:update_restore() end
 
