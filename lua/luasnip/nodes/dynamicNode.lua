@@ -332,8 +332,6 @@ function DynamicNode:exit()
 	if self.snip then
 		self.snip:exit()
 	end
-	self.stored_snip = self.snip
-	self.snip = nil
 	self.active = false
 end
 
@@ -341,7 +339,7 @@ function DynamicNode:set_ext_opts(name)
 	Node.set_ext_opts(self, name)
 
 	-- might not have been generated (missing nodes).
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:set_ext_opts(name)
 	end
 end
@@ -357,8 +355,9 @@ function DynamicNode:update_restore()
 	local args = self:get_args()
 	local str_args = node_util.str_args(args)
 
-	if self.stored_snip and vim.deep_equal(str_args, self.last_args) then
-		local tmp = self.stored_snip
+	-- only insert snip if it is not currently visible!
+	if self.snip and not self.snip.visible and vim.deep_equal(str_args, self.last_args) then
+		local tmp = self.snip
 
 		-- position might (will probably!!) still have changed, so update it
 		-- here too (as opposed to only in update).
@@ -370,8 +369,8 @@ function DynamicNode:update_restore()
 		tmp:set_dependents()
 		tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
-		-- sets own extmarks false,true
-		self:focus()
+		-- also focuses node, and sets own extmarks false,true
+		self:set_text_raw({ "" })
 		tmp.mark =
 			self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
 
@@ -441,20 +440,20 @@ end
 
 function DynamicNode:subtree_set_pos_rgrav(pos, direction, rgrav)
 	self.mark:set_rgrav(-direction, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_pos_rgrav(pos, direction, rgrav)
 	end
 end
 
 function DynamicNode:subtree_set_rgrav(rgrav)
 	self.mark:set_rgravs(rgrav, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_rgrav(rgrav)
 	end
 end
 
 function DynamicNode:extmarks_valid()
-	if self.snip then
+	if self.snip and self.snip.visible then
 		return node_util.generic_extmarks_valid(self, self.snip)
 	end
 	return true

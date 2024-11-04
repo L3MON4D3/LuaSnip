@@ -40,7 +40,6 @@ function RestoreNode:exit()
 	-- will be copied on restore, no need to copy here too.
 	self.parent.snippet.stored[self.key] = self.snip
 	self.snip:exit()
-	self.snip = nil
 	self.active = false
 end
 
@@ -273,14 +272,14 @@ end
 
 function RestoreNode:subtree_set_pos_rgrav(pos, direction, rgrav)
 	self.mark:set_rgrav(-direction, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_pos_rgrav(pos, direction, rgrav)
 	end
 end
 
 function RestoreNode:subtree_set_rgrav(rgrav)
 	self.mark:set_rgravs(rgrav, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_rgrav(rgrav)
 	end
 end
