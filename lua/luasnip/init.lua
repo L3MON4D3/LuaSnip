@@ -192,8 +192,8 @@ local function restore_cursor_pos_relative(node, data)
 	end
 end
 
-local function node_update_dependents_preserve_position(node, opts)
-	local restore_data = store_cursor_node_relative(node)
+local function node_update_dependents_preserve_position(node, current, opts)
+	local restore_data = store_cursor_node_relative(current)
 
 	-- update all nodes that depend on this one.
 	local ok, res =
@@ -209,19 +209,19 @@ local function node_update_dependents_preserve_position(node, opts)
 		)
 		return {
 			jump_done = false,
-			new_node = session.current_nodes[vim.api.nvim_get_current_buf()],
+			new_current = session.current_nodes[vim.api.nvim_get_current_buf()],
 		}
 	end
 
 	-- update successful => check if the current node is still visible.
-	if node.visible then
+	if current.visible then
 		if not opts.no_move and opts.restore_position then
 			-- node is visible: restore position.
-			local active_snippet = node:get_snippet()
-			restore_cursor_pos_relative(node, restore_data[active_snippet])
+			local active_snippet = current:get_snippet()
+			restore_cursor_pos_relative(current, restore_data[active_snippet])
 		end
 
-		return { jump_done = false, new_node = node }
+		return { jump_done = false, new_current = current }
 	else
 		-- node not visible => need to find a new node to set as current.
 
@@ -231,7 +231,7 @@ local function node_update_dependents_preserve_position(node, opts)
 			local parent_node = active_snippet.parent_node
 			if not parent_node then
 				-- very unlikely/not possible: all snippets are exited.
-				return { jump_done = false, new_node = nil }
+				return { jump_done = false, new_current = nil }
 			end
 			active_snippet = parent_node:get_snippet()
 		end
@@ -256,40 +256,44 @@ local function node_update_dependents_preserve_position(node, opts)
 			"Visible dynamicNode that was a parent of the current node is not active after the update!! If you get this message, please open an issue with LuaSnip!"
 		)
 
-		local new_node = get_corresponding_node(d, snip_restore_data)
+		local new_current = get_corresponding_node(d, snip_restore_data)
 
-		if new_node then
-			node_util.refocus(d, new_node)
+		if new_current then
+			node_util.refocus(d, new_current)
 
 			if not opts.no_move and opts.restore_position then
 				-- node is visible: restore position
-				restore_cursor_pos_relative(new_node, snip_restore_data)
+				restore_cursor_pos_relative(new_current, snip_restore_data)
 			end
 
-			return { jump_done = false, new_node = new_node }
+			return { jump_done = false, new_current = new_current }
 		else
 			-- could not find corresponding node -> just jump into the
 			-- dynamicNode that should have generated it.
 			return {
 				jump_done = true,
-				new_node = d:jump_into_snippet(opts.no_move),
+				new_current = d:jump_into_snippet(opts.no_move),
 			}
 		end
 	end
 end
 
-local function active_update_dependents()
+local function update_dependents(node)
 	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
 	-- don't update if a jump/change_choice is in progress, or if we don't have
 	-- an active node.
 	if active ~= nil then
 		local upd_res = node_update_dependents_preserve_position(
+			node,
 			active,
 			{ no_move = false, restore_position = true }
 		)
-		upd_res.new_node:focus()
-		session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_node
+		upd_res.new_current:focus()
+		session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_current
 	end
+end
+local function active_update_dependents()
+	update_dependents(session.current_nodes[vim.api.nvim_get_current_buf()])
 end
 
 -- return next active node.
@@ -303,12 +307,13 @@ local function safe_jump_current(dir, no_move, dry_run)
 	if not dry_run and node.pos >= 0 then
 		local upd_res = node_update_dependents_preserve_position(
 			node,
+			node,
 			{ no_move = no_move, restore_position = false }
 		)
 		if upd_res.jump_done then
-			return upd_res.new_node
+			return upd_res.new_current
 		else
-			node = upd_res.new_node
+			node = upd_res.new_current
 		end
 	end
 
