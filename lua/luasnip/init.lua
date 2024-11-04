@@ -156,13 +156,12 @@ local function store_cursor_node_relative(node)
 
 		store_id = store_id + 1
 
+		local cursor_state = feedkeys.last_state()
 		snip_data.cursor_end_relative =
-			util.pos_sub(util.get_cursor_0ind(), node.mark:get_endpoint(1))
+			util.pos_sub(cursor_state.pos, node.mark:get_endpoint(1))
 
-		if vim.fn.mode() == "s" then
-			local getpos_v = vim.fn.getpos("v")
-			local selection_end_pos = {getpos_v[2]-1, getpos_v[3]}
-			snip_data.selection_other_end_end_relative = util.pos_sub(selection_end_pos, node.mark:get_endpoint(1))
+		if cursor_state.pos_end then
+			snip_data.selection_other_end_end_relative = util.pos_sub(cursor_state.pos_end, node.mark:get_endpoint(1))
 		end
 
 		data[snip] = snip_data
