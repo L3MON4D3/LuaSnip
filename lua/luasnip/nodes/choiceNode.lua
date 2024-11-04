@@ -248,7 +248,7 @@ function ChoiceNode:set_choice(choice, current_node)
 	--
 	-- active_choice has to be disabled (nilled?) to prevent reading from
 	-- cleared mark in set_mark_rgrav (which will be called in
-	-- self:set_text({""}) a few lines below).
+	-- self:set_text_raw({""}) a few lines below).
 	self.active_choice = nil
 	self:set_text_raw({ "" })
 
@@ -271,10 +271,8 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice:subtree_set_pos_rgrav(to, -1, true)
 
 	self.active_choice:update_restore()
-	self:update_dependents({ own = true, parents = true, children = true })
+	-- update outside dependents later, in init.lua:set_choice!
 
-	-- Another node may have been entered in update_dependents.
-	self:focus()
 	self:event(events.change_choice)
 
 	if self.restore_cursor then

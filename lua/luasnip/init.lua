@@ -622,6 +622,7 @@ local function change_choice(val)
 		session.current_nodes[vim.api.nvim_get_current_buf()]
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
+	active_update_dependents()
 end
 
 local function set_choice(choice_indx)
@@ -639,6 +640,7 @@ local function set_choice(choice_indx)
 		session.current_nodes[vim.api.nvim_get_current_buf()]
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
+	active_update_dependents()
 end
 
 local function get_current_choices()
