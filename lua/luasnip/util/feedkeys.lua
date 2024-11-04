@@ -68,11 +68,13 @@ end
 local function cursor_set_keys(pos, before)
 	if before then
 		if pos[2] == 0 then
-			pos[1] = pos[1] - 1
-			-- pos2 is set to last columnt of previous line.
-			-- # counts bytes, but win_set_cursor expects bytes, so all's good.
-			pos[2] =
-				#vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)[1]
+			local prev_line_str = vim.api.nvim_buf_get_lines(0, pos[1]-1, pos[1], false)[1]
+			if prev_line_str then
+				-- set onto last column of previous line, if possible.
+				pos[1] = pos[1] - 1
+				-- # counts bytes, but win_set_cursor expects bytes, so all's good.
+				pos[2] = #prev_line_str
+			end
 		else
 			pos[2] = pos[2] - 1
 		end
