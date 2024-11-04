@@ -20,12 +20,14 @@ local log = require("luasnip.util.log").new("main")
 
 local function no_region_check_wrap(fn, ...)
 	session.jump_active = true
-	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
-	vim.schedule(function()
+	local fn_res = fn(...)
+	-- once all movements and text-modifications (and autocommands triggered by
+	-- these) are done, we can set jump_active false, and allow the various
+	-- autocommands to change luasnip-state again.
+	feedkeys.enqueue_action(function()
 		session.jump_active = false
 	end)
 
-	local fn_res = fn(...)
 	return fn_res
 end
 
