@@ -779,6 +779,7 @@ function API.change_choice(val)
 		session.current_nodes[vim.api.nvim_get_current_buf()]
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
+	active_update_dependents()
 end
 
 --- Set the currently active choice.
@@ -798,6 +799,7 @@ function API.set_choice(choice_indx)
 		session.current_nodes[vim.api.nvim_get_current_buf()]
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
+	active_update_dependents()
 end
 
 --- Get a string-representation of all the current choiceNode's choices.
