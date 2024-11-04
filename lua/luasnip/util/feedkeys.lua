@@ -58,6 +58,13 @@ local function enqueue_action(fn, keys_id)
 	end
 end
 
+function M.enqueue_action(fn)
+	enqueue_action(function(id)
+		fn()
+		M.confirm(id)
+	end, next_id())
+end
+
 function M.feedkeys_insert(keys)
 	enqueue_action(function(id)
 		_feedkeys_insert(id, keys)
