@@ -632,7 +632,7 @@ function Node:update_dependents(which)
 	local dependents = node_util.collect_dependents(self, which, false)
 	for _, node in ipairs(dependents) do
 		if node.visible then
-			node:update()
+			node:update_restore()
 		end
 	end
 end
