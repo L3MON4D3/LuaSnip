@@ -58,6 +58,7 @@ function FunctionNode:update()
 
 	-- don't expand tabs in parent.indentstr, use it as-is.
 	self:set_text_raw(util.indent(text, self.parent.indentstr))
+	self.static_text = text
 
 	-- assume that functionNode can't have a parent as its dependent, there is
 	-- no use for that I think.
