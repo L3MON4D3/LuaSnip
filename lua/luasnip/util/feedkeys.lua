@@ -128,7 +128,6 @@ function M.insert_at(pos)
 			-- We don't have to set the executing_id, since there's no way
 			-- enqueue_action could be called before `confirm`.
 			util.set_cursor_0ind(pos)
-			vim.api.nvim_command("redraw!")
 			M.confirm(id)
 		else
 			-- mode might be VISUAL or something else => <Esc> to know we're in NORMAL.

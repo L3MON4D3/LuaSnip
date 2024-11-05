@@ -1656,4 +1656,27 @@ describe("snippets_basic", function()
 			                                                    |]],
 		})
 	end)
+
+	it("cursor position is correctly updated after expanding an autosnippet.", function()
+		exec_lua[[
+			vim.o.concealcursor = 'i'
+
+			ls.setup{
+				history = true,
+				enable_autosnippets = true,
+			}
+			ls.add_snippets("all", {
+					ls.s({trig="asdf", snippetType="autosnippet"}, {ls.t"System.out.println(", ls.i(1, ""), ls.t")"})
+			})
+		]]
+		feed("iasdf")
+		-- this test seems to mostly fail on nvim0.7, but let's include it here anyway.
+screen:expect({
+  grid = [[
+    System.out.println(^)                              |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+	end)
 end)
