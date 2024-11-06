@@ -400,8 +400,9 @@ screen:expect({
 	end)
 
 	it("selected text is selected again after updating (when possible).", function()
-		exec_lua[[
-			ls.snip_expand(s("trig", {
+
+		assert.are.same({"${1:${1:esdf}}$0"}, exec_lua[[
+			snip = s("trig", {
 				d(1, function(args)
 					if not args[1] then
 						return sn(nil, {i(1, "asdf", {key = "ins"})})
@@ -409,7 +410,11 @@ screen:expect({
 						return sn(nil, {i(1, args[1]:gsub("a", "e"), {key = "ins"})})
 					end
 				end, {opt(k("ins"))}, {snippetstring_args = true})
-			}))
+			})
+			return snip:get_docstring()
+		]])
+		exec_lua[[
+			ls.snip_expand(snip)
 		]]
 		feed("<Esc>a")
 		exec_lua("ls.lsp_expand('${1:asdf}')")
