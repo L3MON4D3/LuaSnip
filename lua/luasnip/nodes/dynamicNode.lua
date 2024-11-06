@@ -284,7 +284,7 @@ function DynamicNode:update_static()
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
 	tmp.indx = self.indx
-	tmp.pos = rawget(self, "pos")
+	tmp.pos = self.pos
 
 	tmp.next = self
 	tmp.prev = self
