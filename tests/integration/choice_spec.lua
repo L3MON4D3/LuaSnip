@@ -308,4 +308,17 @@ describe("ChoiceNode", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
+
+	it("correctly gives current content of choices.", function()
+		assert.are.same({"${1:asdf}", "qwer"}, exec_lua[[
+			ls.snip_expand(s("trig", {
+				c(1, {
+					i(1, "asdf"),
+					t"qwer"
+				})
+			}))
+			ls.change_choice()
+			return ls.get_current_choices()
+		]])
+	end)
 end)
