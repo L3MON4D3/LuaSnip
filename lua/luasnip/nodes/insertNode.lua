@@ -268,7 +268,7 @@ end
 
 function InsertNode:get_docstring()
 	-- copy as to not in-place-modify static text.
-	return util.string_wrap(self:get_static_text(), rawget(self, "pos"))
+	return util.string_wrap(self:get_static_text(), self.pos)
 end
 
 function InsertNode:is_interactive()
