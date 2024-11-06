@@ -2277,4 +2277,53 @@ describe("session", function()
 				                                                  |]],
 		})
 	end)
+
+	it("position is restored correctly after change_choice.", function()
+		feed("ifn")
+		expand()
+		jump(1)
+		jump(1)
+		jump(1)
+		jump(1)
+		change(1)
+		feed("asdf")
+		change(1)
+		change(1)
+		change(1)
+		-- currently wrong!
+screen:expect({
+  grid = [[
+    /**                                               |
+     * A short Description                            |
+     */                                               |
+    public void myFunc()^ { {4:●}                          |
+                                                      |
+    }                                                 |
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+	end)
 end)

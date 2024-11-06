@@ -200,9 +200,7 @@ local function restore_cursor_pos_relative(node, data)
 		local selection_to = util.pos_add(node.mark:get_endpoint(1), data.selection_other_end_end_relative)
 		feedkeys.select_range(selection_from, selection_to)
 	else
-		util.set_cursor_0ind(
-			util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative)
-		)
+		feedkeys.move_to(util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative))
 	end
 end
 
