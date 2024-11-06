@@ -32,28 +32,6 @@ function Node:new(o, opts)
 end
 
 function Node:get_static_text()
-	-- return nil if not visible.
-	-- This will prevent updates if not all nodes are visible during
-	-- docstring/static_text-generation. (One example that would otherwise fail
-	-- is the following snippet:
-	--
-	-- s("trig", {
-	-- 	i(1, "cccc"),
-	-- 	t" ",
-	-- 	c(2, {
-	-- 		t"aaaa",
-	-- 		i(nil, "bbbb")
-	-- 	}),
-	-- 	f(function(args) return args[1][1]..args[2][1] end, {ai[2][2], 1} )
-	-- })
-	--
-	-- )
-	-- By also allowing visible, and not only static_visible, the docstrings
-	-- generated during `get_current_choices` (ie. without having the whole
-	-- snippet `static_init`ed) get better.
-	if not self.visible and not self.static_visible then
-		return nil
-	end
 	return self.static_text
 end
 
@@ -160,9 +138,6 @@ function Node:get_snippetstring()
 end
 
 function Node:get_static_snippetstring()
-	if not self.visible and not self.static_visible then
-		return nil
-	end
 	-- if this is not overridden, get_static_text() is a multiline string.
 	return snippet_string.new(self:get_static_text())
 end
@@ -275,8 +250,13 @@ local function get_args(node, get_text_func_name, static)
 			dict_key[#dict_key] = nil
 		end
 		-- maybe the node is part of a dynamicNode and not yet generated.
-		if argnode then
-			if not static and argnode.visible then
+		-- also handle the argnode as not-present if
+		-- * we are doing a regular update and it is not visible, or
+		-- * we are doing a static update and it is not static_visible or
+		--   visible (this second condition is to allow the docstring-generation
+		--   to be improved by data provided after the expansion)
+		if argnode and ((static and (argnode.static_visible or argnode.visible)) or (not static and argnode.visible)) then
+			if not static then
 				-- Don't store (aka call get_snippetstring) if this is a static
 				-- update (there will be no associated buffer-region!) and
 				-- don't store if the node is not visible. (Then there's
