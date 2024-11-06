@@ -151,6 +151,17 @@ function M.insert_at(pos)
 	end, id)
 end
 
+-- move, without changing mode.
+function M.move_to(pos)
+	local id = next_id()
+	enqueued_cursor_state = {pos = pos, id = id}
+
+	enqueue_action(function()
+		util.set_cursor_0ind(pos)
+		M.confirm(id)
+	end, id)
+end
+
 function M.confirm(id)
 	executing_id = nil
 
