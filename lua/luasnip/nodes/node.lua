@@ -357,8 +357,8 @@ function Node:set_argnodes(dict)
 		dict:set(self.absolute_insert_position, self)
 		self.absolute_insert_position[#self.absolute_insert_position] = nil
 	end
-	if rawget(self, "key") then
-		dict:set({ "key", rawget(self, "key"), "node" }, self)
+	if self.key then
+		dict:set({ "key", self.key, "node" }, self)
 	end
 end
 
@@ -598,20 +598,20 @@ function Node:linkable()
 	-- linkable if insert or exitNode.
 	return vim.tbl_contains(
 		{ types.insertNode, types.exitNode },
-		rawget(self, "type")
+		self.type
 	)
 end
 function Node:interactive()
 	-- interactive if immediately inside choiceNode.
 	return vim.tbl_contains(
 		{ types.insertNode, types.exitNode },
-		rawget(self, "type")
-	) or rawget(self, "choice") ~= nil
+		self.type
+	) or self.choice ~= nil
 end
 function Node:leaf()
 	return vim.tbl_contains(
 		{ types.textNode, types.functionNode, types.insertNode, types.exitNode },
-		rawget(self, "type")
+		self.type
 	)
 end
 

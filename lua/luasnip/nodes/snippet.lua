@@ -1002,7 +1002,7 @@ function Snippet:get_docstring()
 	-- function/dynamicNodes.
 	-- if not outer snippet, wrap it in ${}.
 	self.docstring = self.type == types.snippet and docstring
-		or util.string_wrap(docstring, rawget(self, "pos"))
+		or util.string_wrap(docstring, self.pos)
 	return self.docstring
 end
 

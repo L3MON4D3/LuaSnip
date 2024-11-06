@@ -17,12 +17,6 @@ function ChoiceNode:init_nodes()
 
 		-- forward values for unknown keys from choiceNode.
 		choice.choice = self
-		local node_mt = getmetatable(choice)
-		setmetatable(choice, {
-			__index = function(node, key)
-				return node_mt[key] or node.choice[key]
-			end,
-		})
 
 		choice.next_choice = self.choices[i + 1]
 		choice.prev_choice = self.choices[i - 1]
@@ -65,6 +59,13 @@ end
 extend_decorator.register(C, { arg_indx = 3 })
 
 function ChoiceNode:subsnip_init()
+	for _, choice in ipairs(self.choices) do
+		choice.parent = self.parent
+		-- only insertNode needs this.
+		if choice.type == 2 or choice.type == 1 or choice.type == 3 then
+			choice.pos = self.pos
+		end
+	end
 	node_util.subsnip_init_children(self.parent, self.choices)
 end
 
@@ -168,7 +169,7 @@ end
 function ChoiceNode:get_docstring()
 	return util.string_wrap(
 		self.choices[1]:get_docstring(),
-		rawget(self, "pos")
+		self.pos
 	)
 end
 

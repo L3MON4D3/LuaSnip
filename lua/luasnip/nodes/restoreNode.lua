@@ -174,7 +174,7 @@ local function snip_init(self, snip)
 
 	snip.snippet = self.parent.snippet
 	-- pos should be nil if the restoreNode is inside a choiceNode.
-	snip.pos = rawget(self, "pos")
+	snip.pos = self.pos
 
 	snip:resolve_child_ext_opts()
 	snip:resolve_node_ext_opts()
