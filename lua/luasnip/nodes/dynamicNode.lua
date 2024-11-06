@@ -66,6 +66,8 @@ function DynamicNode:get_docstring()
 	if not self.docstring then
 		if self.static_snip then
 			self.docstring = self.static_snip:get_docstring()
+		elseif self.snip then
+			self.docstring = self.snip:get_docstring()
 		else
 			self.docstring = { "" }
 		end
