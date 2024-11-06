@@ -368,9 +368,6 @@ function InsertNode:get_snippetstring()
 	return snippetstring
 end
 function InsertNode:get_static_snippetstring()
-	if not self.visible and not self.static_visible then
-		return nil
-	end
 	return self.static_text
 end
 
@@ -412,9 +409,6 @@ function InsertNode:put_initial(pos)
 end
 
 function InsertNode:get_static_text()
-	if not self.visible and not self.static_visible then
-		return nil
-	end
 	return vim.split(self.static_text:str(), "\n")
 end
 
