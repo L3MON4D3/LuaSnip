@@ -187,7 +187,7 @@ local function linkable_node(node)
 	-- node.type has to be one of insertNode, exitNode.
 	return vim.tbl_contains(
 		{ types.insertNode, types.exitNode },
-		rawget(node, "type")
+		node.type
 	)
 end
 
@@ -200,7 +200,7 @@ end
 local function non_linkable_node(node)
 	return vim.tbl_contains(
 		{ types.textNode, types.functionNode },
-		rawget(node, "type")
+		node.type
 	)
 end
 -- return whether a node is certainly (not) interactive.
