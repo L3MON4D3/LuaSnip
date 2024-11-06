@@ -259,7 +259,7 @@ function DynamicNode:update_static()
 			self.fn,
 			effective_args,
 			self.parent,
-			self.snip.old_state,
+			self.static_snip.old_state,
 			unpack(self.user_args)
 		)
 	else
