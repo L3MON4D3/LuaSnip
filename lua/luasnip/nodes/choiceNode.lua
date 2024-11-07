@@ -8,6 +8,8 @@ local mark = require("luasnip.util.mark").mark
 local session = require("luasnip.session")
 local sNode = require("luasnip.nodes.snippet").SN
 local extend_decorator = require("luasnip.util.extend_decorator")
+local feedkeys = require("luasnip.util.feedkeys")
+local log = require("luasnip.util.log").new("choice")
 
 function ChoiceNode:init_nodes()
 	for i, choice in ipairs(self.choices) do
@@ -233,8 +235,8 @@ function ChoiceNode:set_choice(choice, current_node)
 
 	local insert_pre_cc = vim.fn.mode() == "i"
 	-- is byte-indexed! Doesn't matter here, but important to be aware of.
-	local cursor_pos_pre_relative =
-		util.pos_sub(util.get_cursor_0ind(), current_node.mark:pos_begin_raw())
+	local cursor_node_offset =
+		util.pos_offset(current_node.mark:pos_begin(), util.get_cursor_0ind())
 
 	self.active_choice:store()
 
@@ -289,10 +291,10 @@ function ChoiceNode:set_choice(choice, current_node)
 			node_util.refocus(self, target_node)
 
 			if insert_pre_cc then
-				util.set_cursor_0ind(
-					util.pos_add(
-						target_node.mark:pos_begin_raw(),
-						cursor_pos_pre_relative
+				feedkeys.move_to(
+					util.pos_from_offset(
+						target_node.mark:pos_begin(),
+						cursor_node_offset
 					)
 				)
 			else
