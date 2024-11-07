@@ -321,4 +321,185 @@ describe("ChoiceNode", function()
 			return ls.get_current_choices()
 		]])
 	end)
+
+	it("correctly restores the generated node of a dynamicNode.", function()
+		assert.are.same({ "${1:${${1:aaa}${2:${1:aaa}}}}$0" }, exec_lua[[
+			snip = s("trig", {
+				c(1, {
+					r(nil, "restore_key", {
+						i(1, "aaa"), d(2, function(args) return sn(nil, {i(1, args[1])}) end, {1}, {snippetstring_args = true})
+					}),
+					{
+						t"a",
+						r(1, "restore_key"),
+						t"a"
+					}
+				})
+			})
+			return snip:get_docstring()
+		]])
+		exec_lua("ls.snip_expand(snip)")
+		feed("qwer")
+		exec_lua("ls.jump(1)")
+screen:expect({
+  grid = [[
+    qwer^q{3:wer}                                          |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+	exec_lua("ls.change_choice(1)")
+screen:expect({
+  grid = [[
+    a^q{3:wer}qwera                                        |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+	end)
+
+	it("cursor is correctly restored after change", function()
+		screen:detach()
+
+		ls_helpers.clear()
+		ls_helpers.session_setup_luasnip()
+
+		screen = Screen.new(50, 7)
+		screen:attach()
+		screen:set_default_attr_ids({
+			[0] = { bold = true, foreground = Screen.colors.Blue },
+			[1] = { bold = true, foreground = Screen.colors.Brown },
+			[2] = { bold = true },
+			[3] = { background = Screen.colors.LightGray },
+		})
+
+		exec_lua[=[
+			ls.snip_expand(s("trig", {
+				c(1, {
+					fmt([[
+						local {} = function()
+							{}
+						end
+					]], {r(1, "name", i(1, "fname")), sn(2, {t{"aaaa", "bbbb"},r(1, "body", i(1, "fbody"))}) }),
+					fmt([[
+						local function {}()
+							{}
+						end
+					]], {r(1, "name", i(1, "fname")), r(2, "body", i(1, "fbody"))})
+				}, {restore_cursor = true})
+			}))
+		]=]
+		exec_lua("vim.wait(10, function() end)")
+
+		exec_lua"ls.jump(1)"
+		feed("asdf<Cr>asdf<Cr>qwer<Cr><Tab>aaaa<Left><Left>")
+screen:expect({
+  grid = [[
+    local fname = function()                          |
+            aaaa                                      |
+    bbbbasdf                                          |
+    asdf                                              |
+    qwer                                              |
+            aa^aa                                      |
+    {2:-- INSERT --}                                      |
+  ]]
+})
+		exec_lua"ls.change_choice(1)"
+screen:expect({
+  grid = [[
+    local function fname()                            |
+            asdf                                      |
+    asdf                                              |
+    qwer                                              |
+            aa^aa                                      |
+    end                                               |
+    {2:-- INSERT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(-1)"
+		exec_lua"ls.jump(1)"
+screen:expect({
+  grid = [[
+    local function fname()                            |
+            ^a{3:sdf}                                      |
+    {3:asdf}                                              |
+    {3:qwer}                                              |
+    {3:        aaaa}                                      |
+    end                                               |
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.change_choice(1)"
+screen:expect({
+  grid = [[
+            aaaa                                      |
+    bbbb^a{3:sdf}                                          |
+    {3:asdf}                                              |
+    {3:qwer}                                              |
+    {3:        aaaa}                                      |
+    end                                               |
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		feed("i<Esc><C-Y>")
+		exec_lua"ls.change_choice(1)"
+		exec_lua[=[
+			ls.snip_expand(s("for", {
+				t"for ", c(1, {
+					sn(nil, {i(1, "k"), t", ", i(2, "v"), t" in ", c(3, {{t"pairs(",i(1),t")"}, {t"ipairs(",i(1),t")"}, i(nil)}, {restore_cursor = true}) }),
+					sn(nil, {i(1, "val"), t" in ", i(2) }),
+					sn(nil, {i(1, "i"), t" = ", i(2), t", ", i(3) }),
+					fmt([[{} in vim.gsplit({})]], {i(1, "str"), i(2)})
+				}, {restore_cursor = true}), t{" do", "\t"}, isn(2, {dl(1, l.LS_SELECT_DEDENT)}, "$PARENT_INDENT\t"), t{"", "end"}
+			}))
+		]=]
+screen:expect({
+  grid = [[
+    local function fname()                            |
+            for ^k, v in pairs() do                    |
+                                                      |
+            endi                                      |
+    end                                               |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.change_choice(1)"
+screen:expect({
+  grid = [[
+    local function fname()                            |
+            for ^v{3:al} in  do                            |
+                                                      |
+            endi                                      |
+    end                                               |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(1)"
+		exec_lua"ls.jump(1)"
+screen:expect({
+  grid = [[
+    local function fname()                            |
+            for val in  do                            |
+                    ^                                  |
+            endi                                      |
+    end                                               |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+		exec_lua"ls.change_choice(1)"
+screen:expect({
+  grid = [[
+    local fname = function()                          |
+            aaaa                                      |
+    bbbbfor val in  do                                |
+                    ^                                  |
+            endi                                      |
+    end                                               |
+    {2:-- INSERT --}                                      |
+  ]]
+})
+	end)
 end)
