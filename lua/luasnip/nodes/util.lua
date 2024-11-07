@@ -862,6 +862,59 @@ local function str_args(args)
 	end, args)
 end
 
+local store_id = 0
+local function store_cursor_node_relative(node)
+	local data = {}
+
+	local snippet_current_node = node
+
+	local cursor_state = feedkeys.last_state()
+
+	-- store for each snippet!
+	-- the innermost snippet may be destroyed, and we would have to restore the
+	-- cursor in a snippet above that.
+	while snippet_current_node do
+		local snip = snippet_current_node:get_snippet()
+
+		local snip_data = {}
+
+		snip_data.key = node.key
+		node.store_id = store_id
+		snip_data.store_id = store_id
+		snip_data.node = snippet_current_node
+
+		store_id = store_id + 1
+
+		snip_data.cursor_start_relative =
+			util.pos_offset(node.mark:get_endpoint(-1), cursor_state.pos)
+
+		snip_data.mode = cursor_state.mode
+
+		if cursor_state.pos_v then
+			snip_data.selection_end_start_relative = util.pos_offset(node.mark:get_endpoint(-1), cursor_state.pos_v)
+		end
+
+		data[snip] = snip_data
+
+		snippet_current_node = snip:get_snippet().parent_node
+	end
+
+	return data
+end
+
+local function restore_cursor_pos_relative(node, data)
+	if data.mode == "i" then
+		feedkeys.insert_at(util.pos_from_offset(node.mark:get_endpoint(-1), data.cursor_start_relative))
+	elseif data.mode == "s" then
+		-- is a selection => restore it.
+		local selection_from = util.pos_from_offset(node.mark:get_endpoint(-1), data.cursor_start_relative)
+		local selection_to = util.pos_from_offset(node.mark:get_endpoint(-1), data.selection_end_start_relative)
+		feedkeys.select_range(selection_from, selection_to)
+	else
+		feedkeys.move_to_normal(util.pos_from_offset(node.mark:get_endpoint(-1), data.cursor_start_relative))
+	end
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -887,5 +940,7 @@ return {
 	find_node_dependents = find_node_dependents,
 	collect_dependents = collect_dependents,
 	node_subtree_do = node_subtree_do,
-	str_args = str_args
+	str_args = str_args,
+	store_cursor_node_relative = store_cursor_node_relative,
+	restore_cursor_pos_relative = restore_cursor_pos_relative
 }

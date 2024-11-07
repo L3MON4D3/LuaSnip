@@ -149,43 +149,6 @@ local function unlink_current()
 	unlink_set_adjacent_as_current_no_log(current.parent.snippet)
 end
 
-local store_id = 0
-local function store_cursor_node_relative(node)
-	local data = {}
-
-	local snippet_current_node = node
-
-	-- store for each snippet!
-	-- the innermost snippet may be destroyed, and we would have to restore the
-	-- cursor in a snippet above that.
-	while snippet_current_node do
-		local snip = snippet_current_node:get_snippet()
-
-		local snip_data = {}
-
-		snip_data.key = node.key
-		node.store_id = store_id
-		snip_data.store_id = store_id
-		snip_data.node = snippet_current_node
-
-		store_id = store_id + 1
-
-		local cursor_state = feedkeys.last_state()
-		snip_data.cursor_end_relative =
-			util.pos_sub(cursor_state.pos, node.mark:get_endpoint(1))
-
-		if cursor_state.pos_end then
-			snip_data.selection_other_end_end_relative = util.pos_sub(cursor_state.pos_end, node.mark:get_endpoint(1))
-		end
-
-		data[snip] = snip_data
-
-		snippet_current_node = snip:get_snippet().parent_node
-	end
-
-	return data
-end
-
 local function get_corresponding_node(parent, data)
 	return parent:find_node(function(test_node)
 		return (test_node.store_id == data.store_id)
@@ -193,19 +156,8 @@ local function get_corresponding_node(parent, data)
 	end, {find_in_child_snippets = true})
 end
 
-local function restore_cursor_pos_relative(node, data)
-	if data.selection_other_end_end_relative then
-		-- is a selection => restore it.
-		local selection_from = util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative)
-		local selection_to = util.pos_add(node.mark:get_endpoint(1), data.selection_other_end_end_relative)
-		feedkeys.select_range(selection_from, selection_to)
-	else
-		feedkeys.move_to(util.pos_add(node.mark:get_endpoint(1), data.cursor_end_relative))
-	end
-end
-
 local function node_update_dependents_preserve_position(node, current, opts)
-	local restore_data = store_cursor_node_relative(current)
+	local restore_data = node_util.store_cursor_node_relative(current)
 
 	-- update all nodes that depend on this one.
 	local ok, res =
@@ -230,7 +182,7 @@ local function node_update_dependents_preserve_position(node, current, opts)
 		if not opts.no_move and opts.restore_position then
 			-- node is visible: restore position.
 			local active_snippet = current:get_snippet()
-			restore_cursor_pos_relative(current, restore_data[active_snippet])
+			node_util.restore_cursor_pos_relative(current, restore_data[active_snippet])
 		end
 
 		return { jump_done = false, new_current = current }
@@ -275,7 +227,7 @@ local function node_update_dependents_preserve_position(node, current, opts)
 
 			if not opts.no_move and opts.restore_position then
 				-- node is visible: restore position
-				restore_cursor_pos_relative(new_current, snip_restore_data)
+				node_util.restore_cursor_pos_relative(new_current, snip_restore_data)
 			end
 
 			return { jump_done = false, new_current = new_current }
@@ -621,23 +573,33 @@ local function safe_choice_action(snip, ...)
 		return session.current_nodes[vim.api.nvim_get_current_buf()]
 	end
 end
-local function change_choice(val)
+local function change_choice(val, opts)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+
 	assert(active_choice, "No active choiceNode")
+
+	-- if the active choice exists current_node still does.
+	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
+	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node)
+
 	local new_active = no_region_check_wrap(
 		safe_choice_action,
 		active_choice.parent.snippet,
 		active_choice.change_choice,
 		active_choice,
 		val,
-		session.current_nodes[vim.api.nvim_get_current_buf()]
+		session.current_nodes[vim.api.nvim_get_current_buf()],
+		restore_data
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 	active_update_dependents()
 end
 
-local function set_choice(choice_indx)
+local function set_choice(choice_indx, opts)
+	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
+	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node)
+
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
@@ -649,7 +611,8 @@ local function set_choice(choice_indx)
 		active_choice.set_choice,
 		active_choice,
 		choice,
-		session.current_nodes[vim.api.nvim_get_current_buf()]
+		current_node,
+		restore_data
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 	active_update_dependents()

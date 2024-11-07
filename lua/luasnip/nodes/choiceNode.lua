@@ -227,16 +227,11 @@ end
 -- used to uniquely identify this change-choice-action.
 local change_choice_id = 0
 
-function ChoiceNode:set_choice(choice, current_node)
+function ChoiceNode:set_choice(choice, current_node, cursor_restore_data)
 	change_choice_id = change_choice_id + 1
 	-- to uniquely identify this node later (storing the pointer isn't enough
 	-- because this is supposed to work with restoreNodes, which are copied).
 	current_node.change_choice_id = change_choice_id
-
-	local insert_pre_cc = vim.fn.mode() == "i"
-	-- is byte-indexed! Doesn't matter here, but important to be aware of.
-	local cursor_node_offset =
-		util.pos_offset(current_node.mark:pos_begin(), util.get_cursor_0ind())
 
 	self.active_choice:store()
 
@@ -289,17 +284,8 @@ function ChoiceNode:set_choice(choice, current_node)
 			-- and this choiceNode, then set the cursor.
 
 			node_util.refocus(self, target_node)
+			node_util.restore_cursor_pos_relative(target_node, cursor_restore_data[target_node.parent.snippet])
 
-			if insert_pre_cc then
-				feedkeys.move_to(
-					util.pos_from_offset(
-						target_node.mark:pos_begin(),
-						cursor_node_offset
-					)
-				)
-			else
-				node_util.select_node(target_node)
-			end
 			return target_node
 		end
 	end
@@ -307,12 +293,13 @@ function ChoiceNode:set_choice(choice, current_node)
 	return self.active_choice:jump_into(1)
 end
 
-function ChoiceNode:change_choice(dir, current_node)
+function ChoiceNode:change_choice(dir, current_node, cursor_restore_data)
 	-- stylua: ignore
 	return self:set_choice(
 		dir == 1 and self.active_choice.next_choice
 		          or self.active_choice.prev_choice,
-		current_node )
+		current_node,
+		cursor_restore_data)
 end
 
 function ChoiceNode:copy()
