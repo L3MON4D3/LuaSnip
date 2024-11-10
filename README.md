@@ -27,7 +27,7 @@ Neovim >= 0.7 (extmarks)
 `jsregexp` for `lsp-snippet-transformations` (see [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) for some tips on installing it).
 
 # Setup
-## Install 
+## Install
 * With your preferred plugin manager i.e. [vim-plug](https://github.com/junegunn/vim-plug), [Packer](https://github.com/wbthomason/packer.nvim) or [lazy](https://github.com/folke/lazy.nvim)  
   **Packer**:
   ```lua
@@ -60,6 +60,19 @@ Neovim >= 0.7 (extmarks)
   Releases will be tagged as `vMajor.Minor.Patch`, we recommend following the latest Major release.  
   Consider watching the repository's releases so you're notified when a new version becomes available.
 
+> [!NOTE]
+> On Windows, you need to use a shell that can run Unix commands (MinGW,MSYS2,etc).
+> Luckily, Git offers a `sh.exe`, so you don't need to install a heavy MSYS2 environment.
+> Other than Git, you also need a C compiler and `make` to install `jsregexp`.
+> You may also need to change the build command: `make install_jsregexp CC=gcc.exe SHELL=C:/path/to/sh.exe .SHELLFLAGS=-c`:
+
+```text
+SHELL=C:/path/to/Git/usr/bin/sh.exe # if Git/MinGW/MSYS2 `sh.exe` is not in PATH
+.SHELLFLAGS=-c # if Git/MinGW/MSYS2 `sh.exe` is not in PATH
+CC=gcc.exe # if CC's default value cc is not set (when `which cc` fails to find the compiler command)
+NEOVIM_BIN_PATH=C:/path/to/Neovim/bin # if the Makefile's fails to automatically detect the Neovim/bin path
+```
+
 ## Keymaps
 In Vim script, with `<Tab>` for jumping forward/expanding a snippet, `<Shift-Tab>` for
 jumping backward, and `<Ctrl-E>` for changing the current choice when in a
@@ -67,7 +80,7 @@ jumping backward, and `<Ctrl-E>` for changing the current choice when in a
 ```vim
 " press <Tab> to expand or jump in a snippet. These can also be mapped separately
 " via <Plug>luasnip-expand-snippet and <Plug>luasnip-jump-next.
-imap <silent><expr> <Tab> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<Tab>' 
+imap <silent><expr> <Tab> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<Tab>'
 " -1 for jumping backwards.
 inoremap <silent> <S-Tab> <cmd>lua require'luasnip'.jump(-1)<Cr>
 
@@ -177,7 +190,7 @@ Note: instead of immediately reading the official documentation, you may want to
 - The [Wiki](https://github.com/L3MON4D3/LuaSnip/wiki) contains some useful LuaSnip extensions and some examples of advanced snippets and configs.
 - Configuration is documented [in `DOC.md`](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#config-options) as well.
 
-【中文版】DOC in Chinese is [here](https://zjp-cn.github.io/neovim0.6-blogs/nvim/luasnip/doc1.html). 
+【中文版】DOC in Chinese is [here](https://zjp-cn.github.io/neovim0.6-blogs/nvim/luasnip/doc1.html).
 
 ### Resources for new users
 Here are some LuaSnip videos and tutorials on the Web:

@@ -105,3 +105,12 @@ there'd
 truthy
 varargs
 vsnip
+Unix
+MinGW
+CC's
+usr
+gcc
+exe
+Makefile's
+MSYS
+SHELLFLAGS
