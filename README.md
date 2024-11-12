@@ -70,7 +70,7 @@ Neovim >= 0.7 (extmarks)
 SHELL=C:/path/to/Git/usr/bin/sh.exe # if Git/MinGW/MSYS2 `sh.exe` is not in PATH
 .SHELLFLAGS=-c # if Git/MinGW/MSYS2 `sh.exe` is not in PATH
 CC=gcc.exe # if CC's default value cc is not set (when `which cc` fails to find the compiler command)
-NEOVIM_BIN_PATH=C:/path/to/Neovim/bin # if the Makefile's fails to automatically detect the Neovim/bin path
+NEOVIM_BIN_PATH=C:/path/to/Neovim/bin # if the Makefile fails to automatically detect the Neovim/bin path
 ```
 
 ## Keymaps

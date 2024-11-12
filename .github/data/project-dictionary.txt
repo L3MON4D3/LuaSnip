@@ -111,6 +111,5 @@ CC's
 usr
 gcc
 exe
-Makefile's
 MSYS
 SHELLFLAGS
