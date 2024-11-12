@@ -63,10 +63,21 @@ endif
 ifeq ($(LUASNIP_DETECTED_OS),Windows)
 	# If neovim is installed by scoop, only scoop/shims is exposed. We need to find original nvim/bin that contains lua51.dll
 	# If neovim is installed by winget or other methods, nvim/bin is already included in PATH.
+	# Double quotes the absolute path if it contains spaces
+
+	# `scoop prefix neovim` outputs either
+	# 	1. C:\Users\MyUsername\scoop\apps\neovim\current
+	# 	2. Could not find app path for 'neovim'.
+	# On Git Bash, scoop returns 0 and writes error to stdout in case 2. This is tracked by
+	# @link: https://github.com/ScoopInstaller/Scoop/issues/6228
+	# The following code will also work if future scoop returns 1 for unknown `package`
+	#
+	# On Git Bash, `which nvim` returns a Unix style path: `/c/Program Files/Git/bin/nvim`
+	# Convertion to `"C:/Program Files/Git/bin/nvim"` may be needed if neovim is running in powershell or pwsh
 	NEOVIM_BIN_PATH?=$(shell \
-		if (scoop prefix neovim | grep -v 'Could not find app path for') >/dev/null 2>&1; then \
+		if (scoop prefix neovim | grep '^[A-Z]:[/\\]') >/dev/null 2>&1; then \
 			echo "$$(scoop prefix neovim)/bin" | sed 's/\\\\/\\//g' | sed 's/\\(.*\\) \\(.*\\)/"\\1 \\2"/'; \
-		elif which nvim > /dev/null 2>&1; then \
+		elif which nvim >/dev/null 2>&1; then \
 			dirname "$$(which nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//' | sed 's/\\(.*\\) \\(.*\\)/"\\1 \\2"/'; \
 		fi)
 
