@@ -5,6 +5,8 @@ local util = require("luasnip.util.util")
 local SnippetString = {}
 local SnippetString_mt = {
 	__index = SnippetString,
+
+	-- __concat and __tostring will be set later on.
 }
 
 local M = {}
@@ -12,8 +14,8 @@ local M = {}
 ---Create new SnippetString.
 ---@param initial_str string[]?, optional initial multiline string.
 ---@return SnippetString
-function M.new(initial_str)
-	local o = {initial_str and table.concat(initial_str, "\n")}
+function M.new(initial_str, metadata)
+	local o = {initial_str and table.concat(initial_str, "\n"), marks = {}, metadata = metadata}
 	return setmetatable(o, SnippetString_mt)
 end
 
@@ -120,7 +122,7 @@ function SnippetString:put(pos)
 end
 
 function SnippetString:copy()
-	-- on 0.7 vim.deepcopy does not behave correctly => have to manually copy.
+	-- on 0.7 vim.deepcopy does not behave correctly on snippets => have to manually copy.
 	return setmetatable(vim.tbl_map(function(snipstr_or_str)
 		if snipstr_or_str.snip then
 			local snip = snipstr_or_str.snip
@@ -158,7 +160,8 @@ function SnippetString:copy()
 
 			return {snip = snipcop}
 		else
-			return snipstr_or_str
+			-- handles raw strings and marks and metadata
+			return vim.deepcopy(snipstr_or_str)
 		end
 	end, self), SnippetString_mt)
 end
@@ -169,6 +172,9 @@ function SnippetString:flatcopy()
 	for i, v in ipairs(self) do
 		res[i] = util.shallow_copy(v)
 	end
+	-- we simply copy marks including their id's.
+	res.marks = vim.deepcopy(self.marks)
+	res.metadata = vim.deepcopy(self.metadata)
 	return setmetatable(res, SnippetString_mt)
 end
 
@@ -187,6 +193,28 @@ function SnippetString.concat(a, b)
 	a = to_snippetstring(a):flatcopy()
 	b = to_snippetstring(b):flatcopy()
 	vim.list_extend(a, b)
+
+	-- now, this means we may have duplicated mark-ids.
+	-- I think this is okay because we will simply always return the first
+	-- occurence of some id.
+	--
+	-- An alternative would be to modify the mark-ids to be non-overlapping, but
+	-- then we may not be able to retrieve all marks.
+	for _, mark in ipairs(b.marks) do
+		-- bit wasteful to compute a:str here.
+		-- Think about caching the total length of the snippetString.
+		mark.pos = mark.pos + #a:str()
+	end
+
+	vim.list_extend(a.marks, b.marks)
+
+	-- overwrite metadata from a.
+	-- I don't think this will be a problem for the usecase of storing the
+	-- luasnip_changedtick, since all snippetStrings present in some
+	-- dynamicNode will have the same changedtick.
+	for k, v in pairs(b.metadata) do
+		a.metadata[k] = v
+	end
 
 	return a
 end
@@ -328,6 +356,28 @@ local function _replace(self, replacements, snipstr_map)
 			-- start-position of string has to be updated.
 			snipstr_map[self][v_i_from] = v_from_from
 		end
+
+		-- update marks.
+		-- take note that repl_from and repl_to are given wrt. the outermost
+		-- snippet_string, and mark.pos is relative to self.
+		-- So, these have to be converted to and from.
+		local self_offset = snipstr_map[self][1]-1
+		for _, mark in ipairs(self.marks) do
+			if repl.to < mark.pos + self_offset then
+				-- mark shifted to the right.
+				mark.pos = mark.pos - (repl.to - repl.from+1) + #repl.str
+			elseif repl.from < mark.pos + self_offset then
+				-- we already know that repl.to >= mark.pos.
+				-- This means that the marker is inside the deleted region, and
+				-- we have to somehow find a sensible new position.
+				-- For now, simply preserve the marks position if the new str
+				-- still covers the region, otherwise shift it to the beginning
+				-- or end of the newly inserted text, depending on rgrav.
+				mark.pos = (mark.rgrav and repl.to+1 or repl.from) - self_offset
+			end
+			-- in this case the replacement is completely behind the marks
+			-- position, don't have to change it.
+		end
 	end
 end
 
@@ -464,5 +514,42 @@ function SnippetString:sub(from, to)
 	return self
 end
 
+
+-- add a kind-of extmark to the text in this buffer. It moves with inserted
+-- text, and has a gravity to control into which direction it shifts.
+-- pos is 1-based and refers to one character in the string, rgrav = true can be
+-- understood as the mark being incident with the characters right edge (replace
+-- character at pos with multiple characters => mark will move to the right of
+-- the newly inserted chars), and rgrav = false with the left edge (replace char
+-- with multiple chars => mark stays at char).
+-- If the edge is in the middle of multiple characters (for example rgrav=true,
+-- and chars at pos and pos+1 are replaced), the mark is removed.
+function SnippetString:add_mark(id, pos, rgrav)
+	-- I'd expect there to be at most 0-2 marks in any given static_text, which
+	-- are those set to track the cursor-position.
+	-- We can thus use a flat array in favor of more complicated data
+	-- structures.
+	-- Internally, treat all marks as sticking to the left edge of their
+	-- respective character, and simply +1 or -1 them to match gravity
+	-- (rgrav=true @ pos === rgrav=false @ pos+1).
+	-- gravity still has to be stored to correctly return the marks position
+	-- when it is retrieved.
+	table.insert(self.marks, {
+		id = id,
+		pos = pos + (rgrav and 1 or 0),
+		rgrav = rgrav})
+end
+
+function SnippetString:get_mark_pos(id)
+	for _, mark in ipairs(self.marks) do
+		if mark.id == id then
+			return mark.pos - (mark.rgrav and 1 or 0)
+		end
+	end
+end
+
+function SnippetString:clear_marks()
+	self.marks = {}
+end
 
 return M
