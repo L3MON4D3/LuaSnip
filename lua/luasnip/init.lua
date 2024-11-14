@@ -172,7 +172,7 @@ end
 
 local function node_update_dependents_preserve_position(node, current, opts)
 	-- set luasnip_changedtick so that static_text is preserved when possible.
-	local restore_data = node_util.store_cursor_node_relative(current, {place_cursor_mark = true})
+	local restore_data = opts.cursor_restore_data or node_util.store_cursor_node_relative(current, {place_cursor_mark = true})
 
 	-- update all nodes that depend on this one.
 	local ok, res =
@@ -289,7 +289,7 @@ local function node_update_dependents_preserve_position(node, current, opts)
 	end
 end
 
-local function update_dependents(node)
+local function update_dependents(node, opts)
 	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
 	-- don't update if a jump/change_choice is in progress, or if we don't have
 	-- an active node.
@@ -297,7 +297,7 @@ local function update_dependents(node)
 		local upd_res = node_update_dependents_preserve_position(
 			node,
 			active,
-			{ no_move = false, restore_position = true }
+			{ no_move = false, restore_position = true, cursor_restore_data = opts and opts.cursor_restore_data }
 		)
 		if upd_res.new_current then
 			upd_res.new_current:focus()
@@ -305,8 +305,8 @@ local function update_dependents(node)
 		end
 	end
 end
-local function _active_update_dependents()
-	update_dependents(session.current_nodes[vim.api.nvim_get_current_buf()])
+local function _active_update_dependents(opts)
+	update_dependents(session.current_nodes[vim.api.nvim_get_current_buf()], opts)
 end
 
 local function active_update_dependents()
@@ -649,12 +649,24 @@ end
 local function _change_choice(val, opts)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
-	assert(active_choice, "No active choiceNode")
+
+	-- make sure we update completely, there may have been changes to the
+	-- buffer since the last update.
+	if not opts.skip_update then
+		assert(active_choice, "No active choiceNode")
+
+		_active_update_dependents({ cursor_restore_data = opts.cursor_restore_data })
+
+		active_choice =
+			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+		if not active_choice then
+			print("Active choice was removed while updating a dynamicNode.")
+			return
+		end
+	end
 
 	-- if the active choice exists current_node still does.
 	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
-
-	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
 
 	local new_active = safe_choice_action(
 		active_choice.parent.snippet,
@@ -662,24 +674,34 @@ local function _change_choice(val, opts)
 		active_choice,
 		val,
 		session.current_nodes[vim.api.nvim_get_current_buf()],
-		restore_data
+		opts.skip_update and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 	_active_update_dependents()
 end
 
-local function change_choice(val, opts)
-	api_do(_change_choice, val, opts)
+local function change_choice(val)
+	api_do(_change_choice, val, {})
 end
 
 local function _set_choice(choice_indx, opts)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
-	assert(active_choice, "No active choiceNode")
+
+	if not opts.skip_update then
+		assert(active_choice, "No active choiceNode")
+
+		_active_update_dependents({ cursor_restore_data = opts.cursor_restore_data })
+
+		active_choice =
+			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+		if not active_choice then
+			print("Active choice was removed while updating a dynamicNode.")
+			return
+		end
+	end
 
 	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
-
-	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
 
 	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
@@ -690,14 +712,16 @@ local function _set_choice(choice_indx, opts)
 		active_choice,
 		choice,
 		current_node,
-		restore_data
+		-- if the update was skipped, we have to use the cursor_restore_data
+		-- here.
+		opts.skip_update and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 	_active_update_dependents()
 end
 
-local function set_choice(choice_indx, opts)
-	api_do(_set_choice, choice_indx, opts)
+local function set_choice(choice_indx)
+	api_do(_set_choice, choice_indx, {})
 end
 
 local function get_current_choices()
@@ -1092,6 +1116,7 @@ local ls_static = {
 	unlink_current = unlink_current,
 	lsp_expand = lsp_expand,
 	active_update_dependents = active_update_dependents,
+	_active_update_dependents = _active_update_dependents,
 	available = available,
 	exit_out_of_region = exit_out_of_region,
 	load_snippet_docstrings = load_snippet_docstrings,
