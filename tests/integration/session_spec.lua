@@ -385,11 +385,11 @@ describe("session", function()
 		-- this fail only here specifically (IIRC there are enough tests that
 		-- do something similar)), and since it's fine on 0.9 and master (which
 		-- matter much more) there shouldn't be an issue in practice.
-		exec_lua[[
+		exec_lua([[
 			if require("luasnip.util.vimversion").ge(0,8,0) then
 				ls.jump(1)
 			end
-		]]
+		]])
 	end)
 	it("Deleting nested snippet only removes it.", function()
 		feed("o<Cr><Cr><Up>fn")
@@ -2291,8 +2291,8 @@ describe("session", function()
 		change(1)
 		change(1)
 		-- currently wrong!
-screen:expect({
-  grid = [[
+		screen:expect({
+			grid = [[
     /**                                               |
      * A short Description                            |
      */                                               |
@@ -2323,7 +2323,7 @@ screen:expect({
     {0:~                                                 }|
     {0:~                                                 }|
     {2:-- INSERT --}                                      |
-  ]]
-})
+  ]],
+		})
 	end)
 end)

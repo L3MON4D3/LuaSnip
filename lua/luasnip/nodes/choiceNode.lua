@@ -169,10 +169,7 @@ function ChoiceNode:get_static_text()
 end
 
 function ChoiceNode:get_docstring()
-	return util.string_wrap(
-		self.choices[1]:get_docstring(),
-		self.pos
-	)
+	return util.string_wrap(self.choices[1]:get_docstring(), self.pos)
 end
 
 function ChoiceNode:jump_into(dir, no_move, dry_run)
@@ -276,7 +273,7 @@ function ChoiceNode:set_choice(choice, current_node, cursor_restore_data)
 	if self.restore_cursor then
 		local target_node = self:find_node(function(test_node)
 			return test_node.change_choice_id == change_choice_id
-		end, {find_in_child_snippets = true})
+		end, { find_in_child_snippets = true })
 
 		if target_node then
 			-- the node that the cursor was in when changeChoice was called
@@ -284,7 +281,10 @@ function ChoiceNode:set_choice(choice, current_node, cursor_restore_data)
 			-- and this choiceNode, then set the cursor.
 
 			node_util.refocus(self, target_node)
-			node_util.restore_cursor_pos_relative(target_node, cursor_restore_data[target_node.parent.snippet.node_store_id])
+			node_util.restore_cursor_pos_relative(
+				target_node,
+				cursor_restore_data[target_node.parent.snippet.node_store_id]
+			)
 
 			return target_node
 		end
