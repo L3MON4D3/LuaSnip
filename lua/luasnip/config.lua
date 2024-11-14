@@ -103,7 +103,14 @@ c = {
 		end
 		ls_autocmd(
 			session.config.update_events,
-			require("luasnip").active_update_dependents
+			function()
+				-- don't update due to events if an update due to luasnip is pending anyway.
+				-- (Also, this would be bad because luasnip may not be in an
+				-- consistent state whenever an autocommand is triggered)
+				if not session.jump_active then
+					require("luasnip").active_update_dependents()
+				end
+			end
 		)
 		if session.config.region_check_events ~= nil then
 			ls_autocmd(session.config.region_check_events, function()
