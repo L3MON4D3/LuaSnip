@@ -22,7 +22,14 @@ local log = require("luasnip.util.log").new("main")
 local luasnip_changedtick = 0
 local function api_enter()
 	session.jump_active = true
-	assert(session.luasnip_changedtick == nil)
+	if session.luasnip_changedtick ~= nil then
+		log.error([[
+api_enter called while luasnip_changedtick was non-nil. This
+may be to a previous error, or due to unexpected control-flow. Check the
+traceback and consider reporting this. Traceback: %s
+]], debug.traceback())
+
+	end
 	session.luasnip_changedtick = luasnip_changedtick
 	luasnip_changedtick = luasnip_changedtick + 1
 end
