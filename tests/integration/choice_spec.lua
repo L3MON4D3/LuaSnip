@@ -522,13 +522,145 @@ screen:expect({
     {2:-- SELECT --}                                      |
   ]]
 })
+		feed("aa<Left>")
+		-- simulate vim.ui.select that modifies the cursor.
+		-- Can happen in the wild with plugins like dressing.nvim (although
+		-- those usually just leave INSERT), and we would like to prevent it.
+		exec_lua[[
+			vim.ui.select = function(_,_,cb)
+			vim.api.nvim_feedkeys(
+				vim.api.nvim_replace_termcodes(
+					"<left><left>",
+					true,
+					false,
+					true
+				),
+				"nix",
+				true)
+
+				cb(nil, 2)
+			end
+		]]
 		-- re-selecting correctly highlights text again (test by editing so the test does not pass immediately, without any changes!)
-		feed("<cmd>lua require('luasnip.extras.select_choice')()<Cr>2<Cr>val")
+		exec_lua("require('luasnip.extras.select_choice')()")
 screen:expect({
   grid = [[
-    for val^ in  do                                    |
+    for a^a in  do                                     |
                                                       |
     {2:-- INSERT --}                                      |
+  ]]
+})
+	end)
+
+	it("updates the active node before changing choice.", function()
+		exec_lua[[
+			ls.setup({
+				link_children = true
+			})
+			ls.snip_expand(s("trig", {
+				t":",
+				c(1, {
+					{r(1, "key", d(1, function(args)
+						if not args[1] then
+							return sn(nil, {i(1, "aa", {key = "i"})})
+						else
+							return sn(nil, {i(1, "cc"), i(2, args[1]:gsub("a", "ee"), {key = "i"})})
+						end
+					end, { opt(k("i")) }, {snippetstring_args = true}))},
+					{t".", r(1, "key"), t"."}
+				}, {restore_cursor = true}),
+				t":"
+			}))
+		]]
+		exec_lua"ls.jump(1)"
+		feed("<esc><right><right>i aa <left><left>")
+screen:expect({
+  grid = [[
+    :ccee a^a ee:                                      |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+		-- if we wouldn't update before the change_choice, the last_args of the
+		-- restored dynamicNode would not fit its current content, and we'd
+		-- lose the text inserted until now due to the update (as opposed to
+		-- a proper restore of dynamicNode.snip, which should occur in a
+		-- restoreNode).
+		exec_lua"ls.change_choice(1)"
+screen:expect({
+  grid = [[
+    :.ccee ee^ee ee.:                                  |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+		exec_lua"ls.set_choice(2)"
+screen:expect({ unchanged = true })
+
+		-- test some more wild stuff, just because.
+		feed("  <left> ")
+		exec_lua[[
+			ls.snip_expand(s("trig", {
+				t":",
+				c(1, {
+					{r(1, "key", d(1, function(args)
+						if not args[1] then
+							return sn(nil, {i(1, "aa", {key = "i"})})
+						else
+							return sn(nil, {i(1, "cc"), i(2, args[1]:gsub("a", "ee"), {key = "i"})})
+						end
+					end, { opt(k("i")) }, {snippetstring_args = true}))},
+					{t".", r(1, "key"), t"."}
+				}, {restore_cursor = true}),
+				t":"
+			}))
+		]]
+
+screen:expect({
+  grid = [[
+    :.ccee e :^c{3:c}eeee:eee ee.:                         |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(1)"
+		feed("<esc><right><right>i aa <left><left>")
+		exec_lua"ls.set_choice(2)"
+screen:expect({
+  grid = [[
+    :.ccee e :.ccee ee^ee ee.:eee ee.:                 |
+    {0:~                                                 }|
+    {2:-- INSERT --}                                      |
+  ]]
+})
+
+		-- reselect outer choiceNode
+		exec_lua"ls.jump(-1)"
+		exec_lua"ls.jump(-1)"
+		exec_lua"ls.jump(-1)"
+		exec_lua"ls.jump(1)"
+screen:expect({
+  grid = [[
+    :.cc^e{3:e e :.ccee eeee ee.:eee ee}.:                 |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.change_choice(1)"
+screen:expect({
+  grid = [[
+    :cc^e{3:e e :.ccee eeee ee.:eee ee}:                   |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		exec_lua"ls.jump(1)"
+		exec_lua"ls.jump(1)"
+screen:expect({
+  grid = [[
+    :ccee e :.cc^e{3:e eeee ee}.:eee ee:                   |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
   ]]
 })
 	end)
