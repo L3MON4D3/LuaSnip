@@ -7,6 +7,7 @@ local events = require("luasnip.util.events")
 local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
 local SnippetNode = require("luasnip.nodes.snippet").SN
 local extend_decorator = require("luasnip.util.extend_decorator")
+local mark = require("luasnip.util.mark").mark
 
 local function D(pos, fn, args, opts)
 	opts = opts or {}
@@ -76,7 +77,32 @@ function DynamicNode:get_docstring()
 end
 
 -- DynamicNode's don't have static text, only set as visible.
-function DynamicNode:put_initial(_)
+function DynamicNode:put_initial(pos)
+	-- if we generated a snippet before, insert it into the buffer now. This
+	-- can happen if this dynamicNode was removed (eg. because of a
+	-- change_choice or an update to a dynamicNode), and is then reinserted due
+	-- to a restoreNode or snippetstring_args.
+	--
+	-- This procedure is necessary to keep 
+	if self.snip then
+		-- position might (will probably!!) still have changed, so update it
+		-- here too (as opposed to only in update).
+		self.snip:init_positions(self.snip_absolute_position)
+		self.snip:init_insert_positions(self.snip_absolute_insert_position)
+
+		self.snip:make_args_absolute()
+
+		self.snip:set_dependents()
+		self.snip:set_argnodes(self.parent.snippet.dependents_dict)
+
+		local old_pos = vim.deepcopy(pos)
+		self.snip:put_initial(pos)
+		local mark_opts = vim.tbl_extend("keep", {
+			right_gravity = false,
+			end_right_gravity = false,
+		}, self.snip:get_passive_ext_opts())
+		self.snip.mark = mark(old_pos, pos, mark_opts)
+	end
 	self.visible = true
 end
 
