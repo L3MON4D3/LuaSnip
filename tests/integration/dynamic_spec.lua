@@ -426,4 +426,36 @@ screen:expect({
   ]]
 })
 	end)
+
+	it("cursor-position is moved with text-manipulations.", function()
+		exec_lua[[
+			ls.snip_expand(s("trig", {
+				d(1, function(args)
+					if not args[1] then
+						return sn(nil, {i(1, "asdf", {key = "ins"})})
+					else
+						return sn(nil, {i(1, args[1]:gsub("a", "ee"), {key = "ins"})})
+					end
+				end, {opt(k("ins"))}, {snippetstring_args = true})
+			}))
+		]]
+
+screen:expect({
+  grid = [[
+    ^e{3:esdf}                                             |
+    {0:~                                                 }|
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		feed("aaaaaa<Left><Left><Esc>")
+screen:expect({
+  grid = [[
+    eeeeee^eeeeee                                      |
+    {0:~                                                 }|
+                                                      |
+  ]]
+})
+	end)
+
+	it("")
 end)

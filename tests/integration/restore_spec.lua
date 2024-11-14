@@ -461,7 +461,7 @@ screen:expect({
 	end)
 
 	-- make sure store and update_restore propagate.
-	it("correctly restores snippets (3).", function()
+	it("correctly restores snippets (4).", function()
 
 		exec_lua([[
 			ls.setup({link_children = true})
