@@ -87,7 +87,24 @@ local function cursor_set_keys(pos, before)
 		end
 	end
 
-	return "<cmd>lua vim.api.nvim_win_set_cursor(0,{"
+	-- since cursor-movements may happen asynchronously to other operations,
+	-- like deleting text, it's possible that we initiate a cursor movement, and
+	-- subsequently delete text, but the text is deleted before the cursor is
+	-- actually moved, which may (in the worst case) cause an error here.
+	-- This can be reproduced with the `session: position is restored correctly
+	-- after change_choice.`-test, which calls change_choice, in which
+	-- 1. active_update_dependents re-selects the currently active insertNode
+	-- 2. the immediately following change_choice removes the text associated
+	--    with the insertNode
+	-- -> the above, and an error here.
+	--
+	-- I think a simple pcall is an appropriate solution, since removing the
+	-- text is very certainly done due to some other luasnip-operation, which
+	-- will also conclude with a cursor-movement.
+	-- Note that the cursor-store for that last movement may look into the
+	-- enqueued_cursor_state-variable, and thus has the correct position, even
+	-- if this move has not yet completed.
+	return "<cmd>lua pcall(vim.api.nvim_win_set_cursor, 0,{"
 		-- +1, win_set_cursor starts at 1.
 		.. pos[1] + 1
 		.. ","
