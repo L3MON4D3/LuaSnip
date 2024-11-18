@@ -90,8 +90,8 @@ JSREGEXP005_PATH=$(PROJECT_ROOT)/deps/jsregexp005
 jsregexp:
 	git submodule init
 	git submodule update
-	$(MAKE) "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"
-	$(MAKE) "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)"
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)"
 
 install_jsregexp: jsregexp
 	# remove old binary.
