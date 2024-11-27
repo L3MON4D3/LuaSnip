@@ -1526,6 +1526,23 @@ ls.add_snippets("all", {
   }, {
     repeat_duplicates = true
   }))
+  s("example5", fmt([[
+    line1: no indent
+
+      line3: 2 space -> 1 indent ('\t')
+        line4: 4 space -> 2 indent ('\t\t')
+  ]], {}, {
+    indent_string = "  "
+  }))
+  -- NOTE: [[\t]] means '\\t'
+  s("example6", fmt([[
+    line1: no indent
+
+    \tline3: '\\t' -> 1 indent ('\t')
+    \t\tline4: '\\t\\t' -> 2 indent ('\t\t')
+  ]], {}, {
+    indent_string = [[\t]]
+  }))
 })
 ```
 
@@ -1560,6 +1577,9 @@ any way, correspond to the jump-index of the nodes!
   	when passing multiline strings via `[[]]` (default true).
   * `dedent`: remove indent common to all lines in `format`. Again, makes
   	passing multiline-strings a bit nicer (default true).
+  * `indent_string`: convert `indent_string` at beginning of each line to unit
+        indent ('\t'). This is applied after `dedent`. Useful when using
+        multiline string in `fmt`. (default empty string, disabled)
   * `repeat_duplicates`: repeat nodes when a key is reused instead of copying
         the node if it has a jump-index, refer to [Basics-Jump-Index](#jump-index) to
         know which nodes have a jump-index (default false).
