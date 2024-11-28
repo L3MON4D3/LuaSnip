@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2024 November 27
+*luasnip.txt*           For NVIM v0.8.0          Last change: 2024 November 28
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1462,7 +1462,7 @@ Simple example:
       s("example5", fmt([[
         line1: no indent
     
-          line3: two space -> 1 indent ('\t')
+          line3: 2 space -> 1 indent ('\t')
             line4: 4 space -> 2 indent ('\t\t')
       ]], {}, {
         indent_string = "  "
