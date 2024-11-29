@@ -127,6 +127,8 @@ loaders and their benefits. The following list serves only as a short overview.
     ```lua
     -- load snippets from path/of/your/nvim/config/my-cool-snippets
     require("luasnip.loaders.from_vscode").lazy_load({ paths = { "./my-cool-snippets" } })
+
+    (Note: It's mandatory to have a 'package.json' file in the snippet directory. For examples, see documentation.)
     ```
 	For more info on the VS Code loader, check the [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L501) or [documentation](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#loaders).
 
