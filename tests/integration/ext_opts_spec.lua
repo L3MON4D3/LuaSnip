@@ -17,8 +17,7 @@ describe("snippets_basic", function()
 			hi Red ctermfg=Red guifg=Red
 		]])
 
-		screen = Screen.new(50, 3)
-		screen:attach()
+		screen = ls_helpers.new_screen(50,3)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue1 },
 			[1] = { bold = true, foreground = Screen.colors.Brown },

@@ -10,8 +10,7 @@ describe("snippets_basic", function()
 		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip({ setup_parsers = true })
 
-		screen = Screen.new(50, 3)
-		screen:attach()
+		screen = ls_helpers.new_screen(50,3)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
@@ -744,8 +743,7 @@ describe("snippets_basic", function()
 		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
 
-		screen = Screen.new(50, 40)
-		screen:attach()
+		screen = ls_helpers.new_screen(50,40)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue1 },
 			[1] = { bold = true, foreground = Screen.colors.Brown },

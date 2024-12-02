@@ -6,17 +6,20 @@ local Screen = require("test.functional.ui.screen")
 describe("treesitter-postfix", function()
 	local screen
 
-	before_each(function()
+	local function setup(...)
 		ls_helpers.clear()
 
-		screen = Screen.new(50, 8)
-		screen:attach()
+		ls_helpers.session_setup_luasnip(...)
+		screen = ls_helpers.new_screen(50,8)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
 			[2] = { bold = true },
 			[3] = { background = Screen.colors.LightGray },
 		})
+	end
+	before_each(function()
+		setup({setup_parsers = true})
 	end)
 
 	after_each(function()
@@ -25,10 +28,6 @@ describe("treesitter-postfix", function()
 
 	for _, reparse_mode in ipairs({ [["live"]], [["copy"]], [[nil]] }) do
 		it(("Default-case works [%s]"):format(reparse_mode), function()
-			ls_helpers.session_setup_luasnip({
-				setup_parsers = true,
-			})
-
 			if
 				exec_lua(
 					[[return vim.version().major == 0 and vim.version().minor < 9]]
@@ -103,10 +102,6 @@ describe("treesitter-postfix", function()
 			})
 		end)
 		it(("Builtin functions work [%s]"):format(reparse_mode), function()
-			ls_helpers.session_setup_luasnip({
-				setup_parsers = true,
-			})
-
 			if
 				exec_lua(
 					[[return vim.version().major == 0 and vim.version().minor < 9]]

@@ -11,7 +11,6 @@ describe("add_snippets", function()
 		ls_helpers.session_setup_luasnip()
 
 		screen = Screen.new(50, 3)
-		screen:attach()
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },

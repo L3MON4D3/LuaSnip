@@ -7,17 +7,20 @@ local assert = require("luassert")
 describe("loaders:", function()
 	local screen
 
-	before_each(function()
+	local function setup(...)
 		ls_helpers.clear()
 
-		screen = Screen.new(50, 8)
-		screen:attach()
+		ls_helpers.session_setup_luasnip(...)
+		screen = ls_helpers.new_screen(50,8)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
 			[2] = { bold = true },
 			[3] = { background = Screen.colors.LightGray },
 		})
+	end
+	before_each(function()
+		setup({no_snip_globals = true})
 	end)
 
 	after_each(function()
@@ -25,7 +28,6 @@ describe("loaders:", function()
 	end)
 
 	it("error-message when source not available", function()
-		ls_helpers.session_setup_luasnip({ no_snip_globals = true })
 		ls_helpers.loaders["vscode(rtp)"]()
 
 		feed("iall1")
@@ -59,7 +61,7 @@ describe("loaders:", function()
 	end)
 
 	it("vscode: error-message when parser not installed.", function()
-		ls_helpers.session_setup_luasnip({
+		setup({
 			no_snip_globals = true,
 			setup_extend = { loaders_store_source = true },
 		})
@@ -78,28 +80,25 @@ describe("loaders:", function()
 			{0:~                                                 }|
 			{2:-- INSERT --}                                      |]],
 		})
-		feed("<esc>")
-		exec_lua(
-			[[require("luasnip.extras.snip_location").jump_to_active_snippet()]]
-		)
+		-- immediately clear error-message.
+		feed("<esc><cmd>lua require('luasnip.extras.snip_location').jump_to_active_snippet()<Cr><Cr>")
 		-- remove error-message for easier version-compatibility (it was changed
 		-- somewhere between 0.9 and master at the time of writing).
-		feed(":")
 		screen:expect({
 			grid = [[
-			  {                                                 |
+			  ^{                                                 |
 			          "snip1": {                                |
 			                  "prefix": "all1",                 |
 			                  "body": [                         |
 			                          "expands? jumps? $1 $2 !" |
 			                  ]                                 |
 			          },                                        |
-			  :^                                                 |]],
+			                                                    |]]
 		})
 	end)
 
 	it("snipmate: highlights snippet-definition.", function()
-		ls_helpers.session_setup_luasnip({
+		setup({
 			no_snip_globals = true,
 			setup_extend = { loaders_store_source = true },
 		})
@@ -136,7 +135,7 @@ describe("loaders:", function()
 	end)
 
 	it("vscode: correctly highlights definition if parser installed", function()
-		ls_helpers.session_setup_luasnip({
+		setup({
 			no_snip_globals = true,
 			setup_extend = { loaders_store_source = true },
 			setup_parsers = true,
@@ -177,7 +176,7 @@ describe("loaders:", function()
 	it(
 		"lua: highlights definition (should always work, the lua-parser is installed by default).",
 		function()
-			ls_helpers.session_setup_luasnip({
+			setup({
 				no_snip_globals = true,
 				setup_extend = { loaders_store_source = true },
 				setup_parsers = true,

@@ -26,7 +26,6 @@ describe("loaders:", function()
 		ls_helpers.scratch_prepare()
 
 		screen = Screen.new(50, 5)
-		screen:attach()
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
