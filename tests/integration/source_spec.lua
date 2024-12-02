@@ -11,7 +11,7 @@ describe("loaders:", function()
 		ls_helpers.clear()
 
 		ls_helpers.session_setup_luasnip(...)
-		screen = ls_helpers.new_screen(50,8)
+		screen = ls_helpers.new_screen(50, 8)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
@@ -20,7 +20,7 @@ describe("loaders:", function()
 		})
 	end
 	before_each(function()
-		setup({no_snip_globals = true})
+		setup({ no_snip_globals = true })
 	end)
 
 	after_each(function()
@@ -81,7 +81,9 @@ describe("loaders:", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		-- immediately clear error-message.
-		feed("<esc><cmd>lua require('luasnip.extras.snip_location').jump_to_active_snippet()<Cr><Cr>")
+		feed(
+			"<esc><cmd>lua require('luasnip.extras.snip_location').jump_to_active_snippet()<Cr><Cr>"
+		)
 		-- remove error-message for easier version-compatibility (it was changed
 		-- somewhere between 0.9 and master at the time of writing).
 		screen:expect({
@@ -93,7 +95,7 @@ describe("loaders:", function()
 			                          "expands? jumps? $1 $2 !" |
 			                  ]                                 |
 			          },                                        |
-			                                                    |]]
+			                                                    |]],
 		})
 	end)
 

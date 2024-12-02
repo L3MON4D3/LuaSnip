@@ -53,7 +53,7 @@ describe("snippetProxy", function()
 	end)
 
 	it("expands correctly", function()
-		local screen = ls_helpers.new_screen(50,3)
+		local screen = ls_helpers.new_screen(50, 3)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
@@ -73,7 +73,7 @@ describe("snippetProxy", function()
 
 	-- one integration test.
 	it("works for triggered expansion", function()
-		local screen = ls_helpers.new_screen(50,3)
+		local screen = ls_helpers.new_screen(50, 3)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },

@@ -8,7 +8,7 @@ describe("Fmt", function()
 	before_each(function()
 		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
-		screen = ls_helpers.new_screen(50,3)
+		screen = ls_helpers.new_screen(50, 3)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },

@@ -10,7 +10,7 @@ describe("snippet-ft tooling", function()
 		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
 
-		screen = ls_helpers.new_screen(50,30)
+		screen = ls_helpers.new_screen(50, 30)
 		screen:set_default_attr_ids({
 			[0] = { bold = false, foreground = Screen.colors.Gray0 },
 			[1] = { foreground = Screen.colors.Cyan1 },

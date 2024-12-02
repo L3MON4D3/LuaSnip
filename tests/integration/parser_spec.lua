@@ -10,7 +10,7 @@ describe("Parser", function()
 		ls_helpers.clear()
 
 		ls_helpers.session_setup_luasnip(...)
-		screen = ls_helpers.new_screen(50,3)
+		screen = ls_helpers.new_screen(50, 3)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
@@ -228,7 +228,7 @@ describe("Parser", function()
 	end)
 
 	it("just inserts the variable if jsregexp is not available.", function()
-		setup({prevent_jsregexp=true})
+		setup({ prevent_jsregexp = true })
 
 		local snip = '"a${TM_LINE_INDEX/(.*)/asdf $1 asdf/g}a"'
 
@@ -260,7 +260,7 @@ describe("Parser", function()
 		})
 	end)
 	it("copies tabstop if jsregexp is not available.", function()
-		setup({prevent_jsregexp=true})
+		setup({ prevent_jsregexp = true })
 
 		-- ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
