@@ -1324,29 +1324,23 @@ parameters as specified above). `then`’s default-value depends on the
 
 Examples:
 
-- `match(n, "^ABC$", "A")`.
-- `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
-    >lua
-        s("trig", {
-          i(1), t":",
-          i(2), t"::",
-          m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
-        })
-    <
-- >lua
+- `match(n, "^ABC$", "A")`, where `n = 1`
+  >lua
             s("extras1", {
               i(1), t { "", "" }, m(1, "^ABC$", "A")
             })
     <
     Inserts "A" if the node with jump-index `n` matches "ABC" exactly, nothing
     otherwise.
-- >lua
+- `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`, where `n = 1`
+  >lua
           s("extras2", {
             i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
           })
     <
     Inserts `"PALINDROME"` if i(1) contains a palindrome.
-- >lua
+- `match(n, lambda._1:match("^" .. lambda._2 .. "$"), lambda._1:gsub("a", "e"))`, where `n = { 1, 2 }`
+  >lua
           s("extras3", {
             i(1), t { "", "" }, i(2), t { "", "" },
             m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
