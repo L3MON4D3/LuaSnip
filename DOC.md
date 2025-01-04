@@ -1349,19 +1349,9 @@ something other than strings).
 
 Examples:
 
-* `match(n, "^ABC$", "A")` .
-* `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` 
+* `match(n, "^ABC$", "A")`
 
   ```lua
-  s("trig", {
-  	i(1), t":",
-  	i(2), t"::",
-  	m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
-  })
-  ```
-
-
-* ```lua
     s("extras1", {
       i(1), t { "", "" }, m(1, "^ABC$", "A")
     })
@@ -1369,12 +1359,14 @@ Examples:
   Inserts "A" if the node with jump-index `n` matches "ABC" exactly, nothing otherwise.
 
   <!-- panvimdoc-ignore-start -->
-  
+
   ![extras1](https://user-images.githubusercontent.com/25300418/184359431-50f90599-3db0-4df0-a3a9-27013e663649.gif)
-  
+
   <!-- panvimdoc-ignore-end -->
 
-* ```lua
+* `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
+
+  ```lua
   s("extras2", {
     i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
   })
@@ -1386,7 +1378,9 @@ Examples:
   ![extras2](https://user-images.githubusercontent.com/25300418/184359435-21e4de9f-c56b-4ee1-bff4-331b68e1c537.gif)
 
   <!-- panvimdoc-ignore-end -->
-* ```lua
+* `match(n, lambda._1:match("^" .. lambda._2 .. "$"), lambda._1:gsub("a", "e"))`
+
+  ```lua
   s("extras3", {
     i(1), t { "", "" }, i(2), t { "", "" },
     m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))

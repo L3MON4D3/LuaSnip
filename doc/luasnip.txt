@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2024 December 02
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2025 January 04
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1324,33 +1324,27 @@ parameters as specified above). `then`’s default-value depends on the
 
 Examples:
 
-- `match(n, "^ABC$", "A")`.
-- `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
+- `match(n, "^ABC$", "A")`
     >lua
-        s("trig", {
-          i(1), t":",
-          i(2), t"::",
-          m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
-        })
-    <
-- >lua
-            s("extras1", {
-              i(1), t { "", "" }, m(1, "^ABC$", "A")
-            })
+          s("extras1", {
+            i(1), t { "", "" }, m(1, "^ABC$", "A")
+          })
     <
     Inserts "A" if the node with jump-index `n` matches "ABC" exactly, nothing
     otherwise.
-- >lua
-          s("extras2", {
-            i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
-          })
+- `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
+    >lua
+        s("extras2", {
+          i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
+        })
     <
     Inserts `"PALINDROME"` if i(1) contains a palindrome.
-- >lua
-          s("extras3", {
-            i(1), t { "", "" }, i(2), t { "", "" },
-            m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
-          })
+- `match(n, lambda._1:match("^" .. lambda._2 .. "$"), lambda._1:gsub("a", "e"))`
+    >lua
+        s("extras3", {
+          i(1), t { "", "" }, i(2), t { "", "" },
+          m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
+        })
     <
     This inserts the text of the node with jump-index 1, with all occurrences of
     `a` replaced with `e`, if the second insertNode matches the first exactly.
