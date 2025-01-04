@@ -1349,7 +1349,7 @@ something other than strings).
 
 Examples:
 
-* `match(n, "^ABC$", "A")`, where `n = 1`
+* `match(n, "^ABC$", "A")`
 
   ```lua
     s("extras1", {
@@ -1364,7 +1364,7 @@ Examples:
 
   <!-- panvimdoc-ignore-end -->
 
-* `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`, where `n = 1`
+* `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
 
   ```lua
   s("extras2", {
@@ -1378,7 +1378,7 @@ Examples:
   ![extras2](https://user-images.githubusercontent.com/25300418/184359435-21e4de9f-c56b-4ee1-bff4-331b68e1c537.gif)
 
   <!-- panvimdoc-ignore-end -->
-* `match(n, lambda._1:match("^" .. lambda._2 .. "$"), lambda._1:gsub("a", "e"))`, where `n = { 1, 2 }`
+* `match(n, lambda._1:match("^" .. lambda._2 .. "$"), lambda._1:gsub("a", "e"))`
 
   ```lua
   s("extras3", {
