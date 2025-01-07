@@ -84,14 +84,15 @@ ifeq ($(LUASNIP_DETECTED_OS),Windows)
 	LUA_LDLIBS?=$(if $(strip $(NEOVIM_BIN_PATH)),-L$(NEOVIM_BIN_PATH) -llua51,)
 endif
 
+CC_ENV:=$(or $(shell which $(CC) 2>/dev/null), $(shell which gcc 2>/dev/null), $(shell which clang 2>/dev/null))
 PROJECT_ROOT:=$(shell pwd 2>/dev/null)
 JSREGEXP_PATH=$(PROJECT_ROOT)/deps/jsregexp
 JSREGEXP005_PATH=$(PROJECT_ROOT)/deps/jsregexp005
 jsregexp:
 	git submodule init
 	git submodule update
-	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"
-	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)"
+	"$(MAKE)" "CC=$(CC_ENV)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"
+	"$(MAKE)" "CC=$(CC_ENV)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)"
 
 install_jsregexp: jsregexp
 	# remove old binary.
