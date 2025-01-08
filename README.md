@@ -61,17 +61,11 @@ Neovim >= 0.7 (extmarks)
   Consider watching the repository's releases so you're notified when a new version becomes available.
 
 > [!NOTE]
-> On Windows, you need to use a shell that can run Unix commands (MinGW,MSYS2,etc).
-> Luckily, Git offers a `sh.exe`, so you don't need to install a heavy MSYS2 environment.
-> Other than Git, you also need a C compiler and `make` to install `jsregexp`.
-> You may also need to change the build command: `make install_jsregexp CC=gcc.exe SHELL=C:/path/to/sh.exe .SHELLFLAGS=-c`:
-
-```text
-SHELL=C:/path/to/Git/usr/bin/sh.exe # if Git/MinGW/MSYS2 `sh.exe` is not in PATH
-.SHELLFLAGS=-c # if Git/MinGW/MSYS2 `sh.exe` is not in PATH
-CC=gcc.exe # if CC's default value cc is not set (when `which cc` fails to find the compiler command)
-NEOVIM_BIN_PATH=C:/path/to/Neovim/bin # if the Makefile fails to automatically detect the Neovim/bin path
-```
+> On Windows, you need a C compiler and `make` to install `jsregexp`. If your
+> compiler choice is not `gcc`, `clang`, or `zig`, you need to explicitly
+> specify the `CC` variable in the build command: `make install_jsregexp
+> CC=your_compiler_program`. Also, make sure `%GIT%/bin` directory is added in
+> the `$PATH` so that `make` can use `%GIT%/bin/sh.exe`.
 
 ## Keymaps
 In Vim script, with `<Tab>` for jumping forward/expanding a snippet, `<Shift-Tab>` for
