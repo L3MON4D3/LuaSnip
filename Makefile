@@ -69,7 +69,7 @@ ifeq ($(LUASNIP_DETECTED_OS),Windows)
 	# On Git Bash, `which nvim` returns a Unix style path: `/c/Program Files/Git/bin/nvim`
 	# Always convert to `C:/Program Files/Git/bin/nvim` for powershell and pwsh users
 	NEOVIM_BIN_PATH?=$(shell \
-		if (scoop prefix neovim | grep '^[A-Z]:[/\\]') >/dev/null 2>&1; then \
+		if (scoop prefix neovim | grep '^[A-Z]:[/\\\\]') >/dev/null 2>&1; then \
 			echo "$$(scoop prefix neovim)/bin" | sed 's/\\\\/\\//g'; \
 		elif which nvim >/dev/null 2>&1; then \
 			dirname "$$(which nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//'; \
