@@ -55,15 +55,9 @@ ifneq (,$(findstring Msys,$(UNAME_ALL)))
 	LUASNIP_DETECTED_OS:=Windows
 endif
 
-# On Windows, you may need to set:
-# 	SHELL=C:/path/to/Git/usr/bin/sh.exe
-# 	.SHELLFLAGS=-c
-# 	CC=gcc
-#	NEOVIM_BIN_PATH=C:/path/to/Neovim/bin # contains lua51.dll, or use your own LUA_LDLIBS
 ifeq ($(LUASNIP_DETECTED_OS),Windows)
 	# If neovim is installed by scoop, only scoop/shims is exposed. We need to find original nvim/bin that contains lua51.dll
 	# If neovim is installed by winget or other methods, nvim/bin is already included in PATH.
-	# Double quotes the absolute path if it contains spaces
 
 	# `scoop prefix neovim` outputs either
 	# 	1. C:\Users\MyUsername\scoop\apps\neovim\current
@@ -73,26 +67,27 @@ ifeq ($(LUASNIP_DETECTED_OS),Windows)
 	# The following code will also work if future scoop returns 1 for unknown `package`
 	#
 	# On Git Bash, `which nvim` returns a Unix style path: `/c/Program Files/Git/bin/nvim`
-	# Convertion to `"C:/Program Files/Git/bin/nvim"` may be needed if neovim is running in powershell or pwsh
+	# Always convert to `C:/Program Files/Git/bin/nvim` for powershell and pwsh users
 	NEOVIM_BIN_PATH?=$(shell \
 		if (scoop prefix neovim | grep '^[A-Z]:[/\\]') >/dev/null 2>&1; then \
-			echo "$$(scoop prefix neovim)/bin" | sed 's/\\\\/\\//g' | sed 's/\\(.*\\) \\(.*\\)/"\\1 \\2"/'; \
+			echo "$$(scoop prefix neovim)/bin" | sed 's/\\\\/\\//g'; \
 		elif which nvim >/dev/null 2>&1; then \
-			dirname "$$(which nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//' | sed 's/\\(.*\\) \\(.*\\)/"\\1 \\2"/'; \
+			dirname "$$(which nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//'; \
 		fi)
 
-	LUA_LDLIBS?=$(if $(strip $(NEOVIM_BIN_PATH)),-L$(NEOVIM_BIN_PATH) -llua51,)
+	# Always double quote the absolute path as it may contain spaces
+	LUA_LDLIBS?=$(if $(strip $(NEOVIM_BIN_PATH)),-L"$(NEOVIM_BIN_PATH)" -llua51,)
 endif
 
 CC_ENV:=$(or $(shell which $(CC) 2>/dev/null), $(shell which gcc 2>/dev/null), $(shell which clang 2>/dev/null))
-PROJECT_ROOT:=$(shell pwd 2>/dev/null)
+PROJECT_ROOT:=$(CURDIR)
 JSREGEXP_PATH=$(PROJECT_ROOT)/deps/jsregexp
 JSREGEXP005_PATH=$(PROJECT_ROOT)/deps/jsregexp005
 jsregexp:
 	git submodule init
 	git submodule update
-	"$(MAKE)" "CC=$(CC_ENV)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"
-	"$(MAKE)" "CC=$(CC_ENV)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" LDLIBS='$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)"
+	"$(MAKE)" "CC=$(CC_ENV)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" 'LDLIBS=$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"
+	"$(MAKE)" "CC=$(CC_ENV)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" 'LDLIBS=$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)"
 
 install_jsregexp: jsregexp
 	# remove old binary.
