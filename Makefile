@@ -33,7 +33,7 @@ nvim: | ${NVIM_PATH}
 	git -C ${NVIM_MASTER_PATH} fetch origin master --depth 1
 	git -C ${NVIM_MASTER_PATH} checkout FETCH_HEAD
 
-LUASNIP_DETECTED_OS?=$(shell uname 2>/dev/null)
+LUASNIP_DETECTED_OS?=$(shell uname;)
 ifeq ($(LUASNIP_DETECTED_OS),Darwin)
 	# flags for dynamic linking on macos, from luarocks
 	# (https://github.com/luarocks/luarocks/blob/9a3c5a879849f4f411a96cf1bdc0c4c7e26ade42/src/luarocks/core/cfg.lua#LL468C37-L468C80)
@@ -47,7 +47,7 @@ ifeq ($(OS_ENV),Windows_NT)
 	LUASNIP_DETECTED_OS:=Windows
 endif
 # Example output on Windows: MINGW64_NT-10.0-19045 DESKTOP-ABCDE 3.4.10-1234567.x86_64 2024-02-14 20:17 UTC x86_64 Msys
-UNAME_ALL:=$(shell uname -a 2>/dev/null)
+UNAME_ALL:=$(shell uname -a;)
 ifneq (,$(findstring MINGW,$(UNAME_ALL)))
 	LUASNIP_DETECTED_OS:=Windows
 endif
@@ -79,7 +79,11 @@ ifeq ($(LUASNIP_DETECTED_OS),Windows)
 	LUA_LDLIBS?=$(if $(strip $(NEOVIM_BIN_PATH)),-L"$(NEOVIM_BIN_PATH)" -llua51,)
 endif
 
-CC_ENV:=$(or $(shell which $(CC) 2>/dev/null), $(shell which gcc 2>/dev/null), $(shell which clang 2>/dev/null))
+CC_ENV:=$(shell (which $(CC) || which gcc || which clang || (which zig >/dev/null && echo "$$(which zig) cc")) 2>/dev/null;)
+ifeq (,$(CC_ENV))
+$(error No compiler is provided in this environment. Please install a C compiler (gcc, clang, or zig).)
+endif
+
 PROJECT_ROOT:=$(CURDIR)
 JSREGEXP_PATH=$(PROJECT_ROOT)/deps/jsregexp
 JSREGEXP005_PATH=$(PROJECT_ROOT)/deps/jsregexp005
@@ -91,7 +95,7 @@ jsregexp:
 
 install_jsregexp: jsregexp
 	# remove old binary.
-	rm "$(PROJECT_ROOT)/lua/luasnip-jsregexp.so" || true
+	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.so"
 	# there is some additional trickery to make this work with jsregexp-0.0.6 in
 	# util/jsregexp.lua.
 	cp "$(JSREGEXP_PATH)/jsregexp.lua" "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua"
