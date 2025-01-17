@@ -121,9 +121,9 @@ loaders and their benefits. The following list serves only as a short overview.
     ```lua
     -- load snippets from path/of/your/nvim/config/my-cool-snippets
     require("luasnip.loaders.from_vscode").lazy_load({ paths = { "./my-cool-snippets" } })
-
-    (Note: It's mandatory to have a 'package.json' file in the snippet directory. For examples, see documentation.)
     ```
+        > NOTE:
+        > It's mandatory to have a `package.json` file in the snippet directory. For examples, see [friendly-snippets](https://github.com/rafamadriz/friendly-snippets/blob/main/package.json).
 	For more info on the VS Code loader, check the [examples](https://github.com/L3MON4D3/LuaSnip/blob/b5a72f1fbde545be101fcd10b70bcd51ea4367de/Examples/snippets.lua#L501) or [documentation](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#loaders).
 
 - **SnipMate-like**: Very similar to VS Code packages; install a plugin that provides snippets and call the `load`-function:
@@ -133,7 +133,7 @@ loaders and their benefits. The following list serves only as a short overview.
     The SnipMate format is very simple, so adding **custom snippets** only requires a few steps:
     - add a directory beside your `init.vim` (or any other place that is in your `runtimepath`) named `snippets`.
     - inside that directory, create files named `<filetype>.snippets` and add snippets for the given filetype in it (for inspiration, check [honza/vim-snippets](https://github.com/honza/vim-snippets/tree/master/snippets)).  
-        ``` snipmate
+        ```snipmate
         # comment
         snippet <trigger> <description>
         <snippet-body>
