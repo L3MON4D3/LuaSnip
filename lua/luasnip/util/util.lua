@@ -269,7 +269,7 @@ local function redirect_filetypes(fts)
 end
 
 local function deduplicate(list)
-	vim.validate({ list = { list, "table" } })
+	vim.validate("list", list, "table")
 	local ret = {}
 	local contains = {}
 	for _, v in ipairs(list) do
