@@ -160,14 +160,18 @@ local function _luasnip_load_file(file)
 		get_loaded_file_debuginfo,
 		nil
 	)
-	local run_ok, file_snippets, file_autosnippets = pcall(func)
+	local run_ok, file_snippets_or_err, file_autosnippets = pcall(func)
 	-- immediately nil it.
 	_G.__luasnip_get_loaded_file_frame_debuginfo = nil
 
 	if not run_ok then
-		log.error("Failed to execute\n: %s", file, file_snippets)
-		error("Failed to execute " .. file .. "\n: " .. file_snippets)
+		local err = file_snippets_or_err
+		log.error("Failed to execute snippet file %s\n: %s", file, err)
+		loader_util.msg_user_snippet_load_failed("from_lua loader", file, err)
+		error(("Failed to execute snippet file %s\n: %s"):format(file, err))
 	end
+
+	local file_snippets = file_snippets_or_err
 
 	-- make sure these aren't nil.
 	file_snippets = file_snippets or {}
