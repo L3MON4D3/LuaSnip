@@ -286,6 +286,19 @@ local function scopestring_to_filetypes(str)
 	return vim.split(str_trimmed, "%s*[.,]%s*")
 end
 
+--- Notify the user that loading a snippet file failed
+---@param what string
+---@param where string
+---@param error string
+local function msg_user_snippet_load_failed(what, where, error)
+	local message = "LuaSnip: " .. what .. " failed to load snippets from " .. where
+	local see_more = "-> Use `:lua require'luasnip'.log.open()` for more details"
+	vim.notify(
+		("%s\n: %s\n\n%s"):format(message, error, see_more),
+		vim.log.levels.WARN
+	)
+end
+
 return {
 	filetypelist_to_set = filetypelist_to_set,
 	split_lines = split_lines,
@@ -302,4 +315,5 @@ return {
 	add_file_snippets = add_file_snippets,
 	normalize_opts = normalize_opts,
 	scopestring_to_filetypes = scopestring_to_filetypes,
+	msg_user_snippet_load_failed = msg_user_snippet_load_failed,
 }
