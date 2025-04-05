@@ -851,7 +851,44 @@ local ls_lazy = {
 	post_yank = function() return require("luasnip.util.select").post_yank end,
 }
 
-ls = lazy_table({
+-- This will never be executed.
+-- It is used to define the type annotation class for all lazy attributes by tricking LuaLS into
+-- exploring all targeted functions and use their documentation for the class methods.
+if false then
+	---@class LuaSnip_lazy
+	_ = {
+		s = require("luasnip.nodes.snippet").S,
+		sn = require("luasnip.nodes.snippet").SN,
+		t = require("luasnip.nodes.textNode").T,
+		f = require("luasnip.nodes.functionNode").F,
+		i = require("luasnip.nodes.insertNode").I,
+		c = require("luasnip.nodes.choiceNode").C,
+		d = require("luasnip.nodes.dynamicNode").D,
+		r = require("luasnip.nodes.restoreNode").R,
+		snippet = require("luasnip.nodes.snippet").S,
+		snippet_node = require("luasnip.nodes.snippet").SN,
+		parent_indexer = require("luasnip.nodes.snippet").P,
+		indent_snippet_node = require("luasnip.nodes.snippet").ISN,
+		text_node = require("luasnip.nodes.textNode").T,
+		function_node = require("luasnip.nodes.functionNode").F,
+		insert_node = require("luasnip.nodes.insertNode").I,
+		choice_node = require("luasnip.nodes.choiceNode").C,
+		dynamic_node = require("luasnip.nodes.dynamicNode").D,
+		restore_node = require("luasnip.nodes.restoreNode").R,
+		parser = require("luasnip.util.parser"),
+		config = require("luasnip.config"),
+		multi_snippet = require("luasnip.nodes.multiSnippet").new_multisnippet,
+		snippet_source = require("luasnip.session.snippet_collection.source"),
+		cut_keys = require("luasnip.util.select").cut_keys,
+		-- keep select_keys for backwards-compatibility.
+		select_keys = require("luasnip.util.select").cut_keys,
+		pre_yank =  require("luasnip.util.select").pre_yank,
+		post_yank = require("luasnip.util.select").post_yank,
+	}
+end
+
+---@class LuaSnip_static
+local ls_static = {
 	expand_or_jumpable = expand_or_jumpable,
 	expand_or_locally_jumpable = expand_or_locally_jumpable,
 	locally_jumpable = locally_jumpable,
@@ -895,6 +932,8 @@ ls = lazy_table({
 	extend_decorator = extend_decorator,
 	log = require("luasnip.util.log"),
 	activate_node = activate_node,
-}, ls_lazy)
+}
 
+---@class LuaSnip: LuaSnip_static, LuaSnip_lazy
+ls = lazy_table(ls_static, ls_lazy)
 return ls
