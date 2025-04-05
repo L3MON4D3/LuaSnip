@@ -291,8 +291,12 @@ end
 ---@param where string
 ---@param error string
 local function msg_user_snippet_load_failed(what, where, error)
-	local message = "LuaSnip: " .. what .. " failed to load snippets from " .. where
-	local see_more = "-> Use `:lua require'luasnip'.log.open()` for more details"
+	local message = "LuaSnip: "
+		.. what
+		.. " failed to load snippets from "
+		.. where
+	local see_more =
+		"-> Use `:lua require'luasnip'.log.open()` for more details"
 	vim.notify(
 		("%s\n: %s\n\n%s"):format(message, error, see_more),
 		vim.log.levels.WARN
