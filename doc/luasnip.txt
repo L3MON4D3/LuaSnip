@@ -1,4 +1,4 @@
-*luasnip.txt*           For NVIM v0.8.0          Last change: 2024 November 18
+*luasnip.txt*           For NVIM v0.8.0           Last change: 2025 January 04
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1324,33 +1324,27 @@ parameters as specified above). `then`’s default-value depends on the
 
 Examples:
 
-- `match(n, "^ABC$", "A")`.
-- `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
+- `match(n, "^ABC$", "A")`
     >lua
-        s("trig", {
-          i(1), t":",
-          i(2), t"::",
-          m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
-        })
-    <
-- >lua
-            s("extras1", {
-              i(1), t { "", "" }, m(1, "^ABC$", "A")
-            })
+          s("extras1", {
+            i(1), t { "", "" }, m(1, "^ABC$", "A")
+          })
     <
     Inserts "A" if the node with jump-index `n` matches "ABC" exactly, nothing
     otherwise.
-- >lua
-          s("extras2", {
-            i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
-          })
+- `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
+    >lua
+        s("extras2", {
+          i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
+        })
     <
     Inserts `"PALINDROME"` if i(1) contains a palindrome.
-- >lua
-          s("extras3", {
-            i(1), t { "", "" }, i(2), t { "", "" },
-            m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
-          })
+- `match(n, lambda._1:match("^" .. lambda._2 .. "$"), lambda._1:gsub("a", "e"))`
+    >lua
+        s("extras3", {
+          i(1), t { "", "" }, i(2), t { "", "" },
+          m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
+        })
     <
     This inserts the text of the node with jump-index 1, with all occurrences of
     `a` replaced with `e`, if the second insertNode matches the first exactly.
@@ -1459,6 +1453,23 @@ Simple example:
       }, {
         repeat_duplicates = true
       }))
+      s("example5", fmt([[
+        line1: no indent
+    
+          line3: 2 space -> 1 indent ('\t')
+            line4: 4 space -> 2 indent ('\t\t')
+      ]], {}, {
+        indent_string = "  "
+      }))
+      -- NOTE: [[\t]] means '\\t'
+      s("example6", fmt([[
+        line1: no indent
+    
+        \tline3: '\\t' -> 1 indent ('\t')
+        \t\tline4: '\\t\\t' -> 2 indent ('\t\t')
+      ]], {}, {
+        indent_string = [[\t]]
+      }))
     })
 <
 
@@ -1487,6 +1498,9 @@ any way, correspond to the jump-index of the nodes!
         when passing multiline strings via `[[]]` (default true).
     - `dedent`: remove indent common to all lines in `format`. Again, makes
         passing multiline-strings a bit nicer (default true).
+    - `indent_string`: convert `indent_string` at beginning of each line to unit
+        indent (’). This is applied after `dedent`. Useful when using
+        multiline string in `fmt`. (default empty string, disabled)
     - `repeat_duplicates`: repeat nodes when a key is reused instead of copying
         the node if it has a jump-index, refer to |luasnip-basics-jump-index| to
         know which nodes have a jump-index (default false).

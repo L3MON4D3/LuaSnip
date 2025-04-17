@@ -134,8 +134,7 @@ describe("session", function()
 			})
 		]])
 
-		screen = Screen.new(50, 30)
-		screen:attach()
+		screen = ls_helpers.new_screen(50, 30)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
@@ -1917,8 +1916,7 @@ describe("session", function()
 			})
 		]])
 			screen:detach()
-			screen = Screen.new(50, 4)
-			screen:attach()
+			screen = ls_helpers.new_screen(50, 4)
 			screen:set_default_attr_ids({
 				[0] = { bold = true, foreground = Screen.colors.Blue },
 				[1] = { bold = true, foreground = Screen.colors.Brown },
@@ -2053,8 +2051,7 @@ describe("session", function()
 		function()
 			screen:detach()
 			-- make screen smaller :)
-			screen = Screen.new(50, 3)
-			screen:attach()
+			screen = ls_helpers.new_screen(50, 3)
 			screen:set_default_attr_ids({
 				[0] = { bold = true, foreground = Screen.colors.Blue },
 				[1] = { bold = true, foreground = Screen.colors.Brown },

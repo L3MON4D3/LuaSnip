@@ -1349,19 +1349,9 @@ something other than strings).
 
 Examples:
 
-* `match(n, "^ABC$", "A")` .
-* `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")` 
+* `match(n, "^ABC$", "A")`
 
   ```lua
-  s("trig", {
-  	i(1), t":",
-  	i(2), t"::",
-  	m({1, 2}, l._1:match("^"..l._2.."$"), l._1:gsub("a", "e"))
-  })
-  ```
-
-
-* ```lua
     s("extras1", {
       i(1), t { "", "" }, m(1, "^ABC$", "A")
     })
@@ -1369,12 +1359,14 @@ Examples:
   Inserts "A" if the node with jump-index `n` matches "ABC" exactly, nothing otherwise.
 
   <!-- panvimdoc-ignore-start -->
-  
+
   ![extras1](https://user-images.githubusercontent.com/25300418/184359431-50f90599-3db0-4df0-a3a9-27013e663649.gif)
-  
+
   <!-- panvimdoc-ignore-end -->
 
-* ```lua
+* `match(n, lambda._1:match(lambda._1:reverse()), "PALINDROME")`
+
+  ```lua
   s("extras2", {
     i(1, "INPUT"), t { "", "" }, m(1, l._1:match(l._1:reverse()), "PALINDROME")
   })
@@ -1386,7 +1378,9 @@ Examples:
   ![extras2](https://user-images.githubusercontent.com/25300418/184359435-21e4de9f-c56b-4ee1-bff4-331b68e1c537.gif)
 
   <!-- panvimdoc-ignore-end -->
-* ```lua
+* `match(n, lambda._1:match("^" .. lambda._2 .. "$"), lambda._1:gsub("a", "e"))`
+
+  ```lua
   s("extras3", {
     i(1), t { "", "" }, i(2), t { "", "" },
     m({ 1, 2 }, l._1:match("^" .. l._2 .. "$"), l._1:gsub("a", "e"))
@@ -1526,6 +1520,23 @@ ls.add_snippets("all", {
   }, {
     repeat_duplicates = true
   }))
+  s("example5", fmt([[
+    line1: no indent
+
+      line3: 2 space -> 1 indent ('\t')
+        line4: 4 space -> 2 indent ('\t\t')
+  ]], {}, {
+    indent_string = "  "
+  }))
+  -- NOTE: [[\t]] means '\\t'
+  s("example6", fmt([[
+    line1: no indent
+
+    \tline3: '\\t' -> 1 indent ('\t')
+    \t\tline4: '\\t\\t' -> 2 indent ('\t\t')
+  ]], {}, {
+    indent_string = [[\t]]
+  }))
 })
 ```
 
@@ -1560,6 +1571,9 @@ any way, correspond to the jump-index of the nodes!
   	when passing multiline strings via `[[]]` (default true).
   * `dedent`: remove indent common to all lines in `format`. Again, makes
   	passing multiline-strings a bit nicer (default true).
+  * `indent_string`: convert `indent_string` at beginning of each line to unit
+        indent ('\t'). This is applied after `dedent`. Useful when using
+        multiline string in `fmt`. (default empty string, disabled)
   * `repeat_duplicates`: repeat nodes when a key is reused instead of copying
         the node if it has a jump-index, refer to [Basics-Jump-Index](#jump-index) to
         know which nodes have a jump-index (default false).

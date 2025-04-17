@@ -185,12 +185,15 @@ end
 --   opts: optional table
 --     trim_empty: boolean, remove whitespace-only first/last lines, default true
 --     dedent: boolean, remove all common indent in `str`, default true
+--     indent_string: string, convert `indent_string` at beginning of each line to unit indent ('\t')
+--                            after applying `dedent`, default empty string (disabled)
 --     ... the rest is passed to `interpolate`
 -- Returns: list of snippet nodes
 local function format_nodes(str, nodes, opts)
 	local defaults = {
 		trim_empty = true,
 		dedent = true,
+		indent_string = "",
 	}
 	opts = vim.tbl_extend("force", defaults, opts or {})
 
