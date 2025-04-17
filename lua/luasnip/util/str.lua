@@ -18,12 +18,46 @@ local function dedent(lines)
 	end
 end
 
+---Convert string `from` to unit indent
+---@param lines string[]
+---@param from string
+---@param unit_indent string
+local function convert_indent(lines, from, unit_indent)
+	local from_length = #from
+	if #lines == 0 or from_length == 0 or from == unit_indent then
+		return
+	end
+
+	local from_bytes = { string.byte(from, 1, from_length) }
+	for i = 1, #lines do
+		local line_bytes = { string.byte(lines[i], 1, #lines[i]) }
+		local line_length = #line_bytes
+		local indent_count = 0
+		local j, k = 1, 1
+		while j <= line_length and line_bytes[j] == from_bytes[k] do
+			if k == from_length then
+				indent_count = indent_count + 1
+			end
+			j = j + 1
+			k = k % from_length + 1
+		end
+		if indent_count > 0 then
+			lines[i] = string.format(
+				"%s%s",
+				string.rep(unit_indent, indent_count),
+				string.sub(lines[i], from_length * indent_count + 1)
+			)
+		end
+	end
+end
+
 ---Applies opts to lines.
 ---lines is modified in-place.
 ---@param lines string[].
 ---@param options table, required, can have values:
 ---  - trim_empty: removes empty first and last lines.
 ---  - dedent: removes indent common to all lines.
+---  - indent_string: an unit indent at beginning of each line after applying `dedent`, default empty string (disabled)
 function M.process_multiline(lines, options)
 	if options.trim_empty then
 		if lines[1]:match("^%s*$") then
@@ -37,11 +71,21 @@ function M.process_multiline(lines, options)
 	if options.dedent then
 		dedent(lines)
 	end
+
+	if options.indent_string and #options.indent_string > 0 then
+		convert_indent(lines, options.indent_string, "\t")
+	end
 end
 
 function M.dedent(s)
 	local lst = vim.split(s, "\n")
 	dedent(lst)
+	return table.concat(lst, "\n")
+end
+
+function M.convert_indent(s, indent_string)
+	local lst = vim.split(s, "\n")
+	convert_indent(lst, indent_string, "\t")
 	return table.concat(lst, "\n")
 end
 

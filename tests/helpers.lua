@@ -11,6 +11,7 @@ helpers = helpers()
 local exec_lua = helpers.exec_lua
 local exec = helpers.exec
 local assert = require("luassert")
+local Screen = require("test.functional.ui.screen")
 
 local M = {
 	exec = exec,
@@ -105,6 +106,11 @@ function M.session_setup_luasnip(opts)
 	end
 	-- nil or true.
 	local hl_choiceNode = opts.hl_choiceNode
+	local prevent_jsregexp = opts.prevent_jsregexp
+
+	if prevent_jsregexp then
+		M.prevent_jsregexp()
+	end
 
 	-- stylua: ignore
 	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
@@ -410,6 +416,13 @@ function M.scratch_edit(scratch_rel)
 	-- can replace with "write ++p" once we drop support for old versions.
 	M.scratch_mkdir(scratch_rel:gsub("%/[^%/]+$", ""))
 	exec(("write"):format(scratchdir_path, scratch_rel))
+end
+
+function M.new_screen(...)
+	local screen = Screen.new(...)
+	-- screen.attach fails on nvim-0.11.0+
+	pcall(screen.attach, screen)
+	return screen
 end
 
 return M
