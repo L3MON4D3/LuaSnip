@@ -111,12 +111,14 @@ uninstall_jsregexp:
 TEST_07?=true
 TEST_09?=true
 TEST_MASTER?=true
+PREVENT_LUA_PATH_LEAK?=true
 # Expects to be run from repo-location (eg. via `make -C path/to/luasnip`).
 test: nvim install_jsregexp
 	# unset PATH and CPATH to prevent system-env leaking into the neovim-build,
 	# add our helper-functions to lpath.
 	# exit as soon as an error occurs.
-	unset LUA_PATH LUA_CPATH; \
+	# For some Reason, on 0.9.0, `make functionaltest` has to be preceded by a regular make for doc to build.
+	if ${PREVENT_LUA_PATH_LEAK}; then unset LUA_PATH LUA_CPATH; fi; \
 	export LUASNIP_SOURCE=$(PROJECT_ROOT); \
 	export JSREGEXP_ABS_PATH=$(JSREGEXP_PATH); \
 	export JSREGEXP005_ABS_PATH=$(JSREGEXP005_PATH); \
@@ -124,5 +126,5 @@ test: nvim install_jsregexp
 	export BUSTED_ARGS=--lpath=$(PROJECT_ROOT)/tests/?.lua; \
 	set -e; \
 	if ${TEST_07}; then "$(MAKE)" -C ${NVIM_0.7_PATH} functionaltest DEPS_CMAKE_FLAGS=-DUSE_BUNDLED_GPERF=OFF; fi; \
-	if ${TEST_09}; then "$(MAKE)" -C ${NVIM_0.9_PATH} functionaltest; fi; \
+	if ${TEST_09}; then "$(MAKE)" -C ${NVIM_0.9_PATH}; "$(MAKE)" -C ${NVIM_0.9_PATH} functionaltest; fi; \
 	if ${TEST_MASTER}; then "$(MAKE)" -C ${NVIM_MASTER_PATH} functionaltest; fi;
