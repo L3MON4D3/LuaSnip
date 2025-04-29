@@ -125,6 +125,6 @@ test: nvim install_jsregexp
 	export TEST_FILE=$(realpath ${TEST_FILE}); \
 	export BUSTED_ARGS=--lpath=$(PROJECT_ROOT)/tests/?.lua; \
 	set -e; \
-	if ${TEST_07}; then "$(MAKE)" -C ${NVIM_0.7_PATH} functionaltest DEPS_CMAKE_FLAGS=-DUSE_BUNDLED_GPERF=OFF; fi; \
-	if ${TEST_09}; then "$(MAKE)" -C ${NVIM_0.9_PATH}; "$(MAKE)" -C ${NVIM_0.9_PATH} functionaltest; fi; \
-	if ${TEST_MASTER}; then "$(MAKE)" -C ${NVIM_MASTER_PATH} functionaltest; fi;
+	if ${TEST_07}; then "$(MAKE)" -C ${NVIM_0.7_PATH} functionaltest DEPS_CMAKE_FLAGS=-DUSE_BUNDLED_GPERF=OFF -j; fi; \
+	if ${TEST_09}; then "$(MAKE)" -C ${NVIM_0.9_PATH} -j; "$(MAKE)" -C ${NVIM_0.9_PATH} functionaltest -j; fi; \
+	if ${TEST_MASTER}; then "$(MAKE)" -C ${NVIM_MASTER_PATH} functionaltest -j; fi;
