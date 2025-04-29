@@ -128,3 +128,9 @@ test: nvim install_jsregexp
 	if ${TEST_07}; then "$(MAKE)" -C ${NVIM_0.7_PATH} functionaltest DEPS_CMAKE_FLAGS=-DUSE_BUNDLED_GPERF=OFF -j; fi; \
 	if ${TEST_09}; then "$(MAKE)" -C ${NVIM_0.9_PATH} -j; "$(MAKE)" -C ${NVIM_0.9_PATH} functionaltest -j; fi; \
 	if ${TEST_MASTER}; then "$(MAKE)" -C ${NVIM_MASTER_PATH} functionaltest -j; fi;
+
+test_nix: nvim install_jsregexp
+	set -e; \
+	if ${TEST_07}; then nix develop .#nvim_07 -c make test; fi; \
+	if ${TEST_09}; then nix develop .#nvim_09 -c make test; fi; \
+	if ${TEST_MASTER}; then nix develop .#nvim_master -c make test; fi;
