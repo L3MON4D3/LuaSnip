@@ -111,30 +111,27 @@ describe("snippets_basic", function()
 		exec_lua([[
 			ls.jump(1)
 		]])
-		screen:expect({
-			grid = [[
-		  texttext again^and again                           |
-		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			texttext again^and again                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 		exec_lua([[
 			ls.jump(-1)
 		]])
-		screen:expect({
-			grid = [[
-		  text^text againand again                           |
-		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			text^text againand again                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 		exec_lua([[
 			ls.jump(1)
 			ls.jump(1)
 		]])
-		screen:expect({
-			grid = [[
-		  texttext againand again^                           |
-		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			texttext againand again^                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 
@@ -152,25 +149,22 @@ describe("snippets_basic", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		feed("<Plug>luasnip-jump-next")
-		screen:expect({
-			grid = [[
-		  texttext again^and again                           |
-		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			texttext again^and again                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 		feed("<Plug>luasnip-jump-prev")
-		screen:expect({
-			grid = [[
-		  text^text againand again                           |
-		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			text^text againand again                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 		feed("<Plug>luasnip-jump-next<Plug>luasnip-jump-next")
-		screen:expect({
-			grid = [[
-		  texttext againand again^                           |
-		  {0:~                                                 }|
-		  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			texttext againand again^                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 
@@ -930,40 +924,36 @@ describe("snippets_basic", function()
 		"text is inserted into the selected node, when dynamicNode is present",
 		function()
 			exec_lua([[
-			ls.snip_expand(s("", {
-				i(4), i(1), d(2, function()
-					return sn(nil, {i(2), i(1)})
-				end, {3}), i(3, "text??")
-			}))
-		]])
-			screen:expect({
-				grid = [[
-			^text??                                            |
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
+				ls.snip_expand(s("", {
+					i(4), i(1), d(2, function()
+						return sn(nil, {i(2), i(1)})
+					end, {3}), i(3, "text??")
+				}))
+			]])
+			screen:expect({ grid = [[
+				^text??                                            |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]],
 			})
 
 			exec_lua("ls.jump(1) ls.jump(1) ls.jump(1)")
 			feed("refresh dNode ")
-			screen:expect({
-				grid = [[
-			refresh dNode ^                                    |
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
+			screen:expect({ grid = [[
+				refresh dNode ^                                    |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]],
 			})
 			exec_lua("ls.jump(1)")
-			screen:expect({
-				grid = [[
-			^refresh dNode                                     |
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
+			screen:expect({ grid = [[
+				^refresh dNode                                     |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]],
 			})
 			feed("shifts dNode?")
-			screen:expect({
-				grid = [[
-			shifts dNode?^refresh dNode                        |
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?^refresh dNode                        |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]],
 			})
 			-- doing all jump in the same exec_lua fails :/
 			-- Maybe some weird timing-issue with feed..
@@ -971,74 +961,65 @@ describe("snippets_basic", function()
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(-1)")
-			feed(" also shifts dNode ")
-			screen:expect({
-				grid = [[
-			shifts dNode?also shifts dNode ^refresh dNode      |
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
+			feed(" also shifts dNode")
+			screen:expect({ grid = [[
+				shifts dNode?also shifts dNode ^refresh dNode      |
+				{0:~                                                 }|
+				{2:-- INSERT --}                                      |]],
 			})
 			exec_lua("ls.jump(1)")
 			feed(" dNode1 ")
-			screen:expect({
-				grid = [[
-			shifts dNode?also shifts dNode dNode1 ^refresh dNod|
-			e                                                 |
-			{2:-- INSERT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?also shifts dNode dNode1 ^refresh dNod|
+				e                                                 |
+				{2:-- INSERT --}                                      |]],
 			})
 
 			exec_lua("ls.jump(1)")
 			feed(" dNode2 ")
-			screen:expect({
-				grid = [[
-			shifts dNode?also shifts dNode dNode2 ^dNode1 refre|
-			sh dNode                                          |
-			{2:-- INSERT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?also shifts dNode dNode2 ^dNode1 refre|
+				sh dNode                                          |
+				{2:-- INSERT --}                                      |]],
 			})
 
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(-1)")
-			screen:expect({
-				grid = [[
-			shifts dNode?^a{3:lso shifts dNode }dNode2 dNode1 refre|
-			sh dNode                                          |
-			{2:-- SELECT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?^a{3:lso shifts dNode }dNode2 dNode1 refre|
+				sh dNode                                          |
+				{2:-- SELECT --}                                      |]],
 			})
 
 			exec_lua("ls.jump(1)")
-			screen:expect({
-				grid = [[
-			shifts dNode?also shifts dNode dNode2 ^d{3:Node1 }refre|
-			sh dNode                                          |
-			{2:-- SELECT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?also shifts dNode dNode2 ^d{3:Node1 }refre|
+				sh dNode                                          |
+				{2:-- SELECT --}                                      |]],
 			})
 			exec_lua("ls.jump(1)")
-			screen:expect({
-				grid = [[
-			shifts dNode?also shifts dNode ^d{3:Node2 }dNode1 refre|
-			sh dNode                                          |
-			{2:-- SELECT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?also shifts dNode ^d{3:Node2 }dNode1 refre|
+				sh dNode                                          |
+				{2:-- SELECT --}                                      |]],
 			})
 			exec_lua("ls.jump(1)")
-			screen:expect({
-				grid = [[
-			shifts dNode?also shifts dNode dNode2 dNode1 ^r{3:efre}|
-			{3:sh dNode }                                         |
-			{2:-- SELECT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?also shifts dNode dNode2 dNode1 ^r{3:efre}|
+				{3:sh dNode }                                         |
+				{2:-- SELECT --}                                      |]],
 			})
 			exec_lua("ls.jump(1)")
-			screen:expect({
-				grid = [[
-			^s{3:hifts dNode?}also shifts dNode dNode2 dNode1 refre|
-			sh dNode                                          |
-			{2:-- SELECT --}                                      |]],
+			screen:expect({ grid = [[
+				^s{3:hifts dNode?}also shifts dNode dNode2 dNode1 refre|
+				sh dNode                                          |
+				{2:-- SELECT --}                                      |]],
 			})
 			exec_lua("ls.jump(1)")
-			screen:expect({
-				grid = [[
-			shifts dNode?also shifts dNode dNode2 dNode1 refre|
-			sh dNode ^                                         |
-			{2:-- INSERT --}                                      |]],
+			screen:expect({ grid = [[
+				shifts dNode?also shifts dNode dNode2 dNode1 refre|
+				sh dNode ^                                         |
+				{2:-- INSERT --}                                      |]],
 			})
 		end
 	)
@@ -1351,12 +1332,8 @@ describe("snippets_basic", function()
 			})
 			-- verify we do not exit when reaching to a child root
 			exec_lua("ls.jump(1) ls.jump(-1)")
-			screen:expect({
-				grid = [[
-			( ( ^1 )0 )0                                       |
-			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]],
-			})
+			screen:expect({unchanged = true})
+
 			-- be sure that reaching root $0 exits.
 			exec_lua("ls.jump(1) ls.jump(1) ls.jump(-1)")
 			screen:expect({
@@ -1396,12 +1373,7 @@ describe("snippets_basic", function()
 		})
 		-- do not exit when reaching to a child root
 		exec_lua("ls.jump(1) ls.jump(-1)")
-		screen:expect({
-			grid = [[
-			( ( ^1 )0 )0                                       |
-			{0:~                                                 }|
-			{2:-- SELECT --}                                      |]],
-		})
+		screen:expect({unchanged = true})
 		-- root $0 does not exit.
 		exec_lua("ls.jump(1) ls.jump(1) ls.jump(-1)")
 		screen:expect({
@@ -1604,19 +1576,17 @@ describe("snippets_basic", function()
 		]=])
 		exec("set ft=lua")
 		feed([[ilocal function a()  end<Esc>hhhi]])
-		screen:expect({
-			grid = [[
-			  local function a() ^ end                           |
-			  {0:~                                                 }|
-			  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			local function a() ^ end                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 		feed([[asdf]])
 		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
-			  local function a() print("qwer")^ end              |
-			  {0:~                                                 }|
-			  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			local function a() print("qwer")^ end              |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 
@@ -1647,11 +1617,10 @@ describe("snippets_basic", function()
 				s({trig="qwer", snippetType="autosnippet"}, { t"asdf" }) })
 		]])
 		feed("qaiqwer<Esc>qo<Esc>@a")
-		screen:expect({
-			grid = [[
-			  qwer                                              |
-			  qwe^r                                              |
-			                                                    |]],
+		screen:expect({grid = [[
+			qwer                                              |
+			qwe^r                                              |
+			                                                  |]],
 		})
 	end)
 

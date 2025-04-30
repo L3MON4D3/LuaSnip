@@ -86,16 +86,15 @@ describe("loaders:", function()
 		)
 		-- remove error-message for easier version-compatibility (it was changed
 		-- somewhere between 0.9 and master at the time of writing).
-		screen:expect({
-			grid = [[
-			  ^{                                                 |
-			          "snip1": {                                |
-			                  "prefix": "all1",                 |
-			                  "body": [                         |
-			                          "expands? jumps? $1 $2 !" |
-			                  ]                                 |
-			          },                                        |
-			                                                    |]],
+		screen:expect({grid = [[
+			^{                                                 |
+			        "snip1": {                                |
+			                "prefix": "all1",                 |
+			                "body": [                         |
+			                        "expands? jumps? $1 $2 !" |
+			                ]                                 |
+			        },                                        |
+			                                                  |]],
 		})
 	end)
 
@@ -162,8 +161,7 @@ describe("loaders:", function()
 		exec_lua(
 			[[require("luasnip.extras.snip_location").jump_to_active_snippet()]]
 		)
-		screen:expect({
-			grid = [[
+		screen:expect({grid = [[
 			{                                                 |
 			{3:       ^ "snip1": {}                                |
 			{3:                "prefix": "all1",}                 |

@@ -294,18 +294,16 @@ describe("ChoiceNode", function()
 			)
 		]])
 
-		screen:expect({
-			grid = [[
-			  ^. -->                                             |
-			  {0:~                                                 }|
-			  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			^. -->                                             |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 		exec_lua("ls.change_choice(1)")
-		screen:expect({
-			grid = [[
-			  ^by bullet pointsby-bullet-points                  |
-			  {0:~                                                 }|
-			  {2:-- INSERT --}                                      |]],
+		screen:expect({grid = [[
+			^by bullet pointsby-bullet-points                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
 		})
 	end)
 end)

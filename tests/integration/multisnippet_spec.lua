@@ -36,22 +36,21 @@ describe("multisnippets", function()
 			add_ms({"a", "b", "c", "d"}, {t"a or b or c or d"})
 		]])
 		local function test()
-			screen:expect({
-				grid = [[
-				a or b or c or d^                                  |
-				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]],
-			})
 		end
 
 		feed("ia<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({
+			grid = [[
+			a or b or c or d^                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("<Esc>ccb<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({unchanged=true})
 		feed("<Esc>ccc<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({unchanged=true})
 		feed("<Esc>ccd<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({unchanged=true})
 		-- can expand multiple at once.
 		feed(
 			"<Esc>cca<Plug>luasnip-expand-or-jump<Space>b<Plug>luasnip-expand-or-jump"
@@ -77,23 +76,21 @@ describe("multisnippets", function()
 			ls.setup({enable_autosnippets = true})
 			add_ms({{trig="a",snippetType="autosnippet"}, "b", "c", "d"}, {t"a or b or c or d"})
 		]])
-		local function test()
-			screen:expect({
-				grid = [[
-				a or b or c or d^                                  |
-				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]],
-			})
-		end
 		-- autotriggered!
 		feed("ia")
-		test()
+		screen:expect({
+			grid = [[
+			a or b or c or d^                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
+
 		feed("<Esc>ccb<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({unchanged=true})
 		feed("<Esc>ccc<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({unchanged=true})
 		feed("<Esc>ccd<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({unchanged=true})
 	end)
 
 	it("respects `common` context", function()
@@ -102,19 +99,18 @@ describe("multisnippets", function()
 			add_ms({common={trig="a",snippetType="autosnippet"}, "b", "c", {snippetType="snippet"}}, {t"a or b or c or d"})
 		]])
 		local function test()
-			screen:expect({
-				grid = [[
-				a or b or c or d^                                  |
-				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]],
-			})
 		end
 		feed("ia<Plug>luasnip-expand-or-jump")
-		test()
+		screen:expect({
+			grid = [[
+			a or b or c or d^                                  |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]],
+		})
 		feed("<Esc>ccb")
-		test()
+		screen:expect({unchanged=true})
 		feed("<Esc>ccc")
-		test()
+		screen:expect({unchanged=true})
 	end)
 
 	it("respects `opts`", function()
