@@ -949,78 +949,69 @@ describe("snippets_basic", function()
 				{0:~                                                 }|
 				{2:-- INSERT --}                                      |]],
 			})
-			feed("shifts dNode?")
-			screen:expect({ grid = [[
-				shifts dNode?^refresh dNode                        |
+			feed("shifts dNode? ")
+			screen:expect([[
+				shifts dNode? ^refresh dNode                       |
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]],
-			})
+				{2:-- INSERT --}                                      |]])
 			-- doing all jump in the same exec_lua fails :/
 			-- Maybe some weird timing-issue with feed..
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(-1)")
-			feed(" also shifts dNode")
-			screen:expect({ grid = [[
-				shifts dNode?also shifts dNode ^refresh dNode      |
+			feed("also shifts dNode ")
+			screen:expect([[
+				shifts dNode? also shifts dNode ^refresh dNode     |
 				{0:~                                                 }|
-				{2:-- INSERT --}                                      |]],
-			})
-			exec_lua("ls.jump(1)")
-			feed(" dNode1 ")
-			screen:expect({ grid = [[
-				shifts dNode?also shifts dNode dNode1 ^refresh dNod|
-				e                                                 |
-				{2:-- INSERT --}                                      |]],
-			})
+				{2:-- INSERT --}                                      |]])
 
 			exec_lua("ls.jump(1)")
-			feed(" dNode2 ")
-			screen:expect({ grid = [[
-				shifts dNode?also shifts dNode dNode2 ^dNode1 refre|
-				sh dNode                                          |
-				{2:-- INSERT --}                                      |]],
-			})
+			feed("dNode1 ")
+
+			screen:expect([[
+				shifts dNode? also shifts dNode dNode1 ^refresh dNo|
+				de                                                |
+				{2:-- INSERT --}                                      |]])
+			exec_lua("ls.jump(1)")
+			feed("dNode2 ")
+			screen:expect([[
+				shifts dNode? also shifts dNode dNode2 ^dNode1 refr|
+				esh dNode                                         |
+				{2:-- INSERT --}                                      |]])
 
 			exec_lua("ls.jump(-1)")
 			exec_lua("ls.jump(-1)")
-			screen:expect({ grid = [[
-				shifts dNode?^a{3:lso shifts dNode }dNode2 dNode1 refre|
-				sh dNode                                          |
-				{2:-- SELECT --}                                      |]],
-			})
+			screen:expect([[
+				shifts dNode? ^a{3:lso shifts dNode }dNode2 dNode1 refr|
+				esh dNode                                         |
+				{2:-- SELECT --}                                      |]])
 
 			exec_lua("ls.jump(1)")
-			screen:expect({ grid = [[
-				shifts dNode?also shifts dNode dNode2 ^d{3:Node1 }refre|
-				sh dNode                                          |
-				{2:-- SELECT --}                                      |]],
-			})
+			screen:expect([[
+				shifts dNode? also shifts dNode dNode2 ^d{3:Node1 }refr|
+				esh dNode                                         |
+				{2:-- SELECT --}                                      |]])
 			exec_lua("ls.jump(1)")
-			screen:expect({ grid = [[
-				shifts dNode?also shifts dNode ^d{3:Node2 }dNode1 refre|
-				sh dNode                                          |
-				{2:-- SELECT --}                                      |]],
-			})
+			screen:expect([[
+				shifts dNode? also shifts dNode ^d{3:Node2 }dNode1 refr|
+				esh dNode                                         |
+				{2:-- SELECT --}                                      |]])
 			exec_lua("ls.jump(1)")
-			screen:expect({ grid = [[
-				shifts dNode?also shifts dNode dNode2 dNode1 ^r{3:efre}|
-				{3:sh dNode }                                         |
-				{2:-- SELECT --}                                      |]],
-			})
+			screen:expect([[
+				shifts dNode? also shifts dNode dNode2 dNode1 ^r{3:efr}|
+				{3:esh dNode }                                        |
+				{2:-- SELECT --}                                      |]])
 			exec_lua("ls.jump(1)")
-			screen:expect({ grid = [[
-				^s{3:hifts dNode?}also shifts dNode dNode2 dNode1 refre|
-				sh dNode                                          |
-				{2:-- SELECT --}                                      |]],
-			})
+			screen:expect([[
+				^s{3:hifts dNode? }also shifts dNode dNode2 dNode1 refr|
+				esh dNode                                         |
+				{2:-- SELECT --}                                      |]])
 			exec_lua("ls.jump(1)")
-			screen:expect({ grid = [[
-				shifts dNode?also shifts dNode dNode2 dNode1 refre|
-				sh dNode ^                                         |
-				{2:-- INSERT --}                                      |]],
-			})
+			screen:expect([[
+				shifts dNode? also shifts dNode dNode2 dNode1 refr|
+				esh dNode ^                                        |
+				{2:-- INSERT --}                                      |]])
 		end
 	)
 	it(
