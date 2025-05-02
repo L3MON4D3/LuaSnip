@@ -35,8 +35,7 @@ describe("multisnippets", function()
 		exec_lua([[
 			add_ms({"a", "b", "c", "d"}, {t"a or b or c or d"})
 		]])
-		local function test()
-		end
+		local function test() end
 
 		feed("ia<Plug>luasnip-expand-or-jump")
 		screen:expect({
@@ -46,11 +45,11 @@ describe("multisnippets", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		feed("<Esc>ccb<Plug>luasnip-expand-or-jump")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 		feed("<Esc>ccc<Plug>luasnip-expand-or-jump")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 		feed("<Esc>ccd<Plug>luasnip-expand-or-jump")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 		-- can expand multiple at once.
 		feed(
 			"<Esc>cca<Plug>luasnip-expand-or-jump<Space>b<Plug>luasnip-expand-or-jump"
@@ -86,11 +85,11 @@ describe("multisnippets", function()
 		})
 
 		feed("<Esc>ccb<Plug>luasnip-expand-or-jump")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 		feed("<Esc>ccc<Plug>luasnip-expand-or-jump")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 		feed("<Esc>ccd<Plug>luasnip-expand-or-jump")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 	end)
 
 	it("respects `common` context", function()
@@ -98,8 +97,7 @@ describe("multisnippets", function()
 			ls.setup({enable_autosnippets = true})
 			add_ms({common={trig="a",snippetType="autosnippet"}, "b", "c", {snippetType="snippet"}}, {t"a or b or c or d"})
 		]])
-		local function test()
-		end
+		local function test() end
 		feed("ia<Plug>luasnip-expand-or-jump")
 		screen:expect({
 			grid = [[
@@ -108,9 +106,9 @@ describe("multisnippets", function()
 			{2:-- INSERT --}                                      |]],
 		})
 		feed("<Esc>ccb")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 		feed("<Esc>ccc")
-		screen:expect({unchanged=true})
+		screen:expect({ unchanged = true })
 	end)
 
 	it("respects `opts`", function()
