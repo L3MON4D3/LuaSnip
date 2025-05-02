@@ -47,7 +47,9 @@ local function reparse_buffer_after_removing_match(bufnr, region)
 
 	---@type LanguageTree
 	local parser = vim.treesitter.get_string_parser(source, lang, nil)
-	parser:parse()
+	if parser then
+		parser:parse()
+	end
 	return parser, source
 end
 
@@ -85,7 +87,9 @@ function FixBufferContext:enter()
 
 	local parser, source =
 		vim.treesitter.get_parser(self.ori_bufnr), self.ori_bufnr
-	parser:parse()
+	if parser then
+		parser:parse()
+	end
 
 	return parser, source
 end
@@ -111,7 +115,9 @@ function FixBufferContext:leave()
 
 	local parser, source =
 		vim.treesitter.get_parser(self.ori_bufnr), self.ori_bufnr
-	parser:parse()
+	if parser then
+		parser:parse()
+	end
 	return parser, source
 end
 

@@ -71,11 +71,17 @@ local function make_reparse_enter_and_leave_func(
 		return function()
 			return parser, source
 		end, function()
-			parser:destroy()
+			if parser then
+				parser:destroy()
+			end
 		end
 	else
 		return function()
-			return vim.treesitter.get_parser(bufnr), bufnr
+			local parser = vim.treesitter.get_parser(bufnr)
+			if parser then
+				parser:parse()
+			end
+			return parser, bufnr
 		end, function(_) end
 	end
 end
