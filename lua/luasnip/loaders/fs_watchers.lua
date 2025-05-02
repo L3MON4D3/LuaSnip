@@ -279,7 +279,7 @@ function TreeWatcher:start()
 		if not success then
 			log_tree.error(
 				"Could not start libuv-monitor for path %s due to error %s",
-				self.path,
+				self.root,
 				err
 			)
 		else
