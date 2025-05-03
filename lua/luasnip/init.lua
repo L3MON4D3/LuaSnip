@@ -882,7 +882,7 @@ if false then
 		cut_keys = require("luasnip.util.select").cut_keys,
 		-- keep select_keys for backwards-compatibility.
 		select_keys = require("luasnip.util.select").cut_keys,
-		pre_yank =  require("luasnip.util.select").pre_yank,
+		pre_yank = require("luasnip.util.select").pre_yank,
 		post_yank = require("luasnip.util.select").post_yank,
 	}
 end
