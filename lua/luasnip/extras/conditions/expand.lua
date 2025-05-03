@@ -40,8 +40,9 @@ M.line_begin = cond_obj.make_condition(line_begin)
 ---
 --- I think the character wordTrig=true uses should be customized
 --- A condtion seems like the best way to do it
---- @param string pattern should be a character class eg `[%w]`
-local function make_trigger_does_not_follow_char(pattern)
+---
+--- @param pattern string should be a character class eg `[%w]`
+function M.trigger_not_preceded_by(pattern)
 	local condition = function(line_to_cursor, matched_trigger)
 		local line_to_trigger_len = #line_to_cursor - #matched_trigger
 		if line_to_trigger_len == 0 then
@@ -53,9 +54,6 @@ local function make_trigger_does_not_follow_char(pattern)
 	end
 	return cond_obj.make_condition(condition)
 end
-
-M.line_begin = cond_obj.make_condition(line_begin)
-M.make_trigger_does_not_proceed = make_trigger_does_not_follow_char
-M.word_trig_condition = M.make_trigger_does_not_proceed("[%w_]")
+M.word_trig_condition = M.trigger_not_preceded_by("[%w_]")
 
 return M
