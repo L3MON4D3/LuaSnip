@@ -1,4 +1,5 @@
 local session = require("luasnip.session")
+local vimversion = require("luasnip.util.vimversion")
 
 local function get_cursor_0ind()
 	local c = vim.api.nvim_win_get_cursor(0)
@@ -268,8 +269,16 @@ local function redirect_filetypes(fts)
 	return snippet_fts
 end
 
+local function validate(name, value, validator, optional)
+	if vimversion.ge(0, 11, 0) then
+		return vim.validate(name, value, validator, optional)
+	else
+		return vim.validate({name = {value, validator, optional}})
+	end
+end
+
 local function deduplicate(list)
-	vim.validate({ list = { list, "table" } })
+	validate("list", list, "table")
 	local ret = {}
 	local contains = {}
 	for _, v in ipairs(list) do
@@ -438,4 +447,5 @@ return {
 	indx_of = indx_of,
 	ternary = ternary,
 	pos_cmp = pos_cmp,
+	validate = validate,
 }

@@ -280,11 +280,9 @@ end
 
 local function treesitter_postfix(context, nodes, opts)
 	opts = opts or {}
-	vim.validate({
-		context = { context, { "string", "table" } },
-		nodes = { nodes, "table" },
-		opts = { opts, "table" },
-	})
+	util.validate("context", context, { "string", "table" })
+	util.validate("nodes", nodes, { "table" })
+	util.validate("opts", opts, { "table" })
 
 	context = node_util.wrap_context(context)
 	context.wordTrig = false

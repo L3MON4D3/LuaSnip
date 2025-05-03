@@ -48,12 +48,11 @@ end
 local function postfix(context, nodes, opts)
 	opts = opts or {}
 	local user_callback = vim.tbl_get(opts, "callbacks", -1, events.pre_expand)
-	vim.validate({
-		context = { context, { "string", "table" } },
-		nodes = { nodes, "table" },
-		opts = { opts, "table" },
-		user_callback = { user_callback, { "nil", "function" } },
-	})
+
+	util.validate("context", context, { "string", "table" })
+	util.validate("nodes", nodes, "table")
+	util.validate("opts", opts, "table")
+	util.validate("user_callback", user_callback, { "function" }, true)
 
 	context = node_util.wrap_context(context)
 	context.wordTrig = false
