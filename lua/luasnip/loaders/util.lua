@@ -5,7 +5,8 @@ local snippet_collection = require("luasnip.session.snippet_collection")
 local log = require("luasnip.util.log").new("loaders")
 
 local function filetypelist_to_set(list)
-	vim.validate({ list = { list, "table", true } })
+	util.validate("list", list, {"table"}, true)
+
 	if not list then
 		return list
 	end

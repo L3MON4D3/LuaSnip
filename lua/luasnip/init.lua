@@ -730,13 +730,9 @@ local function get_id_snippet(id)
 end
 
 local function add_snippets(ft, snippets, opts)
-	-- don't use yet, not available in some neovim-versions.
-	--
-	-- vim.validate({
-	-- 	filetype = { ft, { "string", "nil" } },
-	-- 	snippets = { snippets, "table" },
-	-- 	opts = { opts, { "table", "nil" } },
-	-- })
+	util.validate("filetype", ft, {"string", "nil"})
+	util.validate("snippets", snippets, {"table"})
+	util.validate("opts", opts, {"table", "nil"})
 
 	opts = opts or {}
 	opts.refresh_notify = opts.refresh_notify or true
