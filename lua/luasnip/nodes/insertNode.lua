@@ -244,9 +244,10 @@ function InsertNode:input_leave(_, dry_run)
 end
 
 function InsertNode:exit()
-	if self.inner_first then
-		self.inner_first:exit()
+	for _, snip in ipairs(self:child_snippets()) do
+		snip:remove_from_jumplist()
 	end
+
 	self.visible = false
 	self.inner_first = nil
 	self.inner_last = nil
