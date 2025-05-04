@@ -3,4 +3,4 @@ root = true
 [*.lua]
 insert_final_newline = true
 indent_style = tab
-max_line_length = 70
+max_line_length = 80
