@@ -18,6 +18,18 @@ local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
 local log = require("luasnip.util.log").new("main")
 
+local function no_region_check_wrap(fn, ...)
+	session.jump_active = true
+	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
+	vim.schedule(function()
+		session.jump_active = false
+	end)
+
+	local fn_res = fn(...)
+	return fn_res
+end
+
+
 local function get_active_snip()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -328,7 +340,7 @@ end
 local function jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
-		local next_node = util.no_region_check_wrap(safe_jump_current, dir)
+		local next_node = no_region_check_wrap(safe_jump_current, dir)
 		if next_node == nil then
 			session.current_nodes[vim.api.nvim_get_current_buf()] = nil
 			return true
@@ -401,7 +413,7 @@ local function locally_jumpable(dir)
 end
 
 local function _jump_into_default(snippet)
-	return util.no_region_check_wrap(snippet.jump_into, snippet, 1)
+	return no_region_check_wrap(snippet.jump_into, snippet, 1)
 end
 
 -- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
@@ -613,7 +625,7 @@ local function change_choice(val)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
-	local new_active = util.no_region_check_wrap(
+	local new_active = no_region_check_wrap(
 		safe_choice_action,
 		active_choice.parent.snippet,
 		active_choice.change_choice,
@@ -631,7 +643,7 @@ local function set_choice(choice_indx)
 	assert(active_choice, "No active choiceNode")
 	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
-	local new_active = util.no_region_check_wrap(
+	local new_active = no_region_check_wrap(
 		safe_choice_action,
 		active_choice.parent.snippet,
 		active_choice.set_choice,
@@ -1057,6 +1069,7 @@ local ls_static = {
 	extend_decorator = extend_decorator,
 	log = require("luasnip.util.log"),
 	activate_node = activate_node,
+	no_region_check_wrap = no_region_check_wrap
 }
 
 ---@class LuaSnip: LuaSnip_static, LuaSnip_lazy
