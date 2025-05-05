@@ -224,9 +224,11 @@ function M.multiline_to_byte_offset(str, pos)
 		-- in this case, pos is outside of the multiline-region.
 		return nil
 	end
-	byte_pos = byte_pos + vim.str_byteindex(pos_line_str, pos[2])
 
-	-- 0- to 1-based columns
+	-- I think we can always assume utf-8?
+	byte_pos = byte_pos + vim.str_byteindex(pos_line_str, "utf-8", pos[2])
+
+	-- 0- to 1-based columns.
 	return byte_pos + 1
 end
 
