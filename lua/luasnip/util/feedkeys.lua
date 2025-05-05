@@ -200,8 +200,17 @@ function M.confirm(id)
 	end
 end
 
--- if there are some operations that move the cursor enqueud, retrieve their
--- target-state, otherwise return the current cursor state.
+---@class LuaSnip.Feedkeys.LastState
+---@field pos LuaSnip.ApiPosition Position of the cursor or beginning of visual
+---area.
+---@field pos_v LuaSnip.ApiPosition Position of the cursor or end of visual
+---area.
+---@field mode string Represents the current mode. Only the first character of
+---`vim.fn.mode()`, so not completely exact.
+
+---if there are some operations that move the cursor enqueued, retrieve their
+---target-state, otherwise return the current cursor state.
+---@return LuaSnip.Feedkeys.LastState
 function M.last_state()
 	if enqueued_cursor_state then
 		local state = vim.deepcopy(enqueued_cursor_state)

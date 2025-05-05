@@ -1,5 +1,6 @@
 local session = require("luasnip.session")
 
+---@class LuaSnip.Mark
 local Mark = {}
 
 function Mark:new(o)

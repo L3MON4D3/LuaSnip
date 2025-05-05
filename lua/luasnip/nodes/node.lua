@@ -8,6 +8,14 @@ local types = require("luasnip.util.types")
 local opt_args = require("luasnip.nodes.optional_arg")
 local snippet_string = require("luasnip.nodes.util.snippet_string")
 
+---@class LuaSnip.Node
+---@field key? any Key to identify the node with.
+---@field store_id? number May be set when the node is used to store/restore.
+---A generic node.
+---@field mark? LuaSnip.Mark The mark associated with this node.
+---@field type number Identifies the type of the snippet.
+---@field next LuaSnip.Node Link to the next node in jump-order.
+---@field prev LuaSnip.Node Link to the previous node in jump-order.
 local Node = {}
 
 function Node:new(o, opts)

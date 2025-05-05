@@ -859,7 +859,38 @@ local function str_args(args)
 		end, args)
 end
 
+---@class LuaSnip.SnippetCursorRestoreData
+---This class holds data about the current position of the cursor in a snippet.
+---@field key string key of the current node.
+---@field store_id number uniquely identifies the data associated with this
+---store-restore cycle.
+---This is necessary because eg. the snippetStrings may contain cursor-positions
+---of more than one restore data, and the correct ones can be identified via
+---store_id.
+---@field node LuaSnip.Node The node the cursor will be stored relative to.
+---@field cursor_start_relative LuaSnip.ApiPosition The position of the cursor,
+---or beginning of selected area, relative to the beginning of `node`.
+---@field selection_end_start_relative LuaSnip.ApiPosition The position of the
+---cursor, or end of selected area, relative to the beginning of `node`. The
+---column is one beyond the byte where the selection ends.
+---@field mode string The first character (see `vim.fn.mode()`) of the mode at
+---the time of `store`.
+
+---@alias LuaSnip.CursorRestoreData table<number, LuaSnip.SnippetCursorRestoreData>
+---Represents the position of the cursor relative to all snippets the cursor was
+---inside.
+---Maps a `store_id` to the data needed to restore the cursor relative to the
+---stored node of that snippet.
+---We need the data relative to all parent-snippets of some node because the
+---first 1,2,... snippets may disappear when a choice is changed.
+
+---@class LuaSnip.StoreCursorNodeRelativeOpts
+---@field place_cursor_mark boolean? Whether to, if possible, place a mark in
+---snippetText.
+
 local store_id = 0
+---@param node LuaSnip.Node The node to store the cursor relative to.
+---@param opts LuaSnip.StoreCursorNodeRelativeOpts
 local function store_cursor_node_relative(node, opts)
 	local data = {}
 
@@ -936,7 +967,7 @@ local function store_cursor_node_relative(node, opts)
 				-- we also have this in static_text, but recomputing the text
 				-- exactly is rather expensive -> text is still in buffer, yank
 				-- it.
-				local str = snippet_current_node:get_text()
+				local str = snippet_current_node:get_text() --[=[@as string[] ]=]
 				local pos_byte_offset = str_util.multiline_to_byte_offset(
 					str,
 					snip_data.cursor_start_relative
