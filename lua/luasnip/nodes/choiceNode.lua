@@ -194,6 +194,7 @@ function ChoiceNode:input_enter(_, dry_run)
 	session.active_choice_nodes[vim.api.nvim_get_current_buf()] = self
 	self.visited = true
 	self.active = true
+	self.input_active = true
 
 	self:event(events.enter)
 end
@@ -203,6 +204,8 @@ function ChoiceNode:input_leave(_, dry_run)
 		dry_run.active[self] = false
 		return
 	end
+
+	self.input_active = false
 
 	self:event(events.leave)
 
@@ -474,6 +477,13 @@ function ChoiceNode:subtree_do(opts)
 	opts.pre(self)
 	self.active_choice:subtree_do(opts)
 	opts.post(self)
+end
+
+function ChoiceNode:subtree_leave_entered()
+	if self.input_active then
+		self.active_choice:subtree_leave_entered()
+		self:input_leave()
+	end
 end
 
 return {
