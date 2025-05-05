@@ -370,8 +370,7 @@ describe("ChoiceNode", function()
 		ls_helpers.clear()
 		ls_helpers.session_setup_luasnip()
 
-		screen = Screen.new(50, 7)
-		screen:attach()
+		screen = ls_helpers.new_screen(50, 7)
 		screen:set_default_attr_ids({
 			[0] = { bold = true, foreground = Screen.colors.Blue },
 			[1] = { bold = true, foreground = Screen.colors.Brown },
@@ -604,7 +603,7 @@ describe("ChoiceNode", function()
 		screen:expect({ unchanged = true })
 
 		-- test some more wild stuff, just because.
-		feed("  <left> ")
+		feed("<space><space><left>")
 		exec_lua([[
 			ls.snip_expand(s("trig", {
 				t":",
@@ -622,52 +621,88 @@ describe("ChoiceNode", function()
 			}))
 		]])
 
-		screen:expect({
-			grid = [[
-    :.ccee e :^c{3:c}eeee:eee ee.:                         |
-    {0:~                                                 }|
-    {2:-- SELECT --}                                      |
-  ]],
-		})
+screen:expect([[
+  :.ccee ee :^c{3:c}eeee: ee ee.:                        |
+  {0:~                                                 }|
+  {2:-- SELECT --}                                      |
+]])
 		exec_lua("ls.jump(1)")
 		feed("<esc><right><right>i aa <left><left>")
 		exec_lua("ls.set_choice(2)")
-		screen:expect({
-			grid = [[
-    :.ccee e :.ccee ee^ee ee.:eee ee.:                 |
-    {0:~                                                 }|
-    {2:-- INSERT --}                                      |
-  ]],
-		})
+
+screen:expect([[
+  :.ccee ee :.ccee ee^ee ee.: ee ee.:                |
+  {0:~                                                 }|
+  {2:-- INSERT --}                                      |
+]])
 
 		-- reselect outer choiceNode
 		exec_lua("ls.jump(-1)")
 		exec_lua("ls.jump(-1)")
 		exec_lua("ls.jump(-1)")
 		exec_lua("ls.jump(1)")
-		screen:expect({
-			grid = [[
-    :.cc^e{3:e e :.ccee eeee ee.:eee ee}.:                 |
-    {0:~                                                 }|
-    {2:-- SELECT --}                                      |
-  ]],
-		})
+screen:expect([[
+  :.cc^e{3:e ee :.ccee eeee ee.: ee ee}.:                |
+  {0:~                                                 }|
+  {2:-- SELECT --}                                      |
+]])
 		exec_lua("ls.change_choice(1)")
-		screen:expect({
-			grid = [[
-    :cc^e{3:e e :.ccee eeee ee.:eee ee}:                   |
-    {0:~                                                 }|
-    {2:-- SELECT --}                                      |
-  ]],
-		})
+screen:expect([[
+  :cc^e{3:e ee :.ccee eeee ee.: ee ee}:                  |
+  {0:~                                                 }|
+  {2:-- SELECT --}                                      |
+]])
 		exec_lua("ls.jump(1)")
 		exec_lua("ls.jump(1)")
-		screen:expect({
-			grid = [[
-    :ccee e :.cc^e{3:e eeee ee}.:eee ee:                   |
-    {0:~                                                 }|
-    {2:-- SELECT --}                                      |
-  ]],
-		})
+screen:expect([[
+  :ccee ee :.cc^e{3:e eeee ee}.: ee ee:                  |
+  {0:~                                                 }|
+  {2:-- SELECT --}                                      |
+]])
+	end)
+
+	it("correctly handles unicode when storing and restoring.", function()
+		exec_lua([=[
+			ls.snip_expand(
+				s("choice", {
+					c(1, {
+						{t"a ", r(1, "k", i(1)), t" a"},
+						{t"bb ", r(1, "k"), t" bb"}
+					}, {restore_cursor = true})
+				}))
+		]=])
+screen:expect([[
+  a ^ a                                              |
+  {0:~                                                 }|
+  {2:-- INSERT --}                                      |
+]])
+		feed("a  a<left><left>")
+		exec_lua([=[
+			ls.snip_expand(s("bad", {i(1, "i…i")}))
+		]=])
+screen:expect([[
+  a a ^i{3:…i} a a                                       |
+  {0:~                                                 }|
+  {2:-- SELECT --}                                      |
+]])
+
+		exec_lua("ls.change_choice(1)")
+screen:expect([[
+  bb a ^i{3:…i} a bb                                     |
+  {0:~                                                 }|
+  {2:-- SELECT --}                                      |
+]])
+		feed("<Esc>la")
+screen:expect([[
+  bb a i…^i a bb                                     |
+  {0:~                                                 }|
+  {2:-- INSERT --}                                      |
+]])
+		exec_lua("ls.change_choice(1)")
+screen:expect([[
+  a a i…^i a a                                       |
+  {0:~                                                 }|
+  {2:-- INSERT --}                                      |
+]])
 	end)
 end)
