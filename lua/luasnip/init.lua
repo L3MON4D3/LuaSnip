@@ -2,6 +2,8 @@ local util = require("luasnip.util.util")
 local lazy_table = require("luasnip.util.lazy_table")
 local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
+local tbl_util = require("luasnip.util.table")
+local feedkeys = require("luasnip.util.feedkeys")
 
 local session = require("luasnip.session")
 local snippet_collection = require("luasnip.session.snippet_collection")
@@ -16,6 +18,41 @@ local ls
 local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
 local log = require("luasnip.util.log").new("main")
+
+local luasnip_changedtick = 0
+local function api_enter()
+	session.jump_active = true
+	if session.luasnip_changedtick ~= nil then
+		log.error(
+			[[
+api_enter called while luasnip_changedtick was non-nil. This
+may be to a previous error, or due to unexpected control-flow. Check the
+traceback and consider reporting this. Traceback: %s
+]],
+			debug.traceback()
+		)
+	end
+	session.luasnip_changedtick = luasnip_changedtick
+	luasnip_changedtick = luasnip_changedtick + 1
+end
+local function api_leave()
+	-- once all movements and text-modifications (and autocommands triggered by
+	-- these) are done, we can set jump_active false, and allow the various
+	-- autocommands to change luasnip-state again.
+	feedkeys.enqueue_action(function()
+		session.jump_active = false
+	end)
+	session.luasnip_changedtick = nil
+end
+
+local function api_do(fn, ...)
+	api_enter()
+
+	local fn_res = fn(...)
+	api_leave()
+
+	return fn_res
+end
 
 local function get_active_snip()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
@@ -134,18 +171,20 @@ local function unlink_current()
 	unlink_set_adjacent_as_current_no_log(current.parent.snippet)
 end
 
--- return next active node.
-local function safe_jump_current(dir, no_move, dry_run)
-	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
-	if not node then
-		return nil
-	end
+local function node_update_dependents_preserve_position(node, current, opts)
+	-- set luasnip_changedtick so that static_text is preserved when possible.
+	local restore_data = opts.cursor_restore_data
+		or node_util.store_cursor_node_relative(
+			current,
+			{ place_cursor_mark = true }
+		)
 
-	local ok, res = pcall(node.jump_from, node, dir, no_move, dry_run)
-	if ok then
-		return res
-	else
-		local snip = node.parent.snippet
+	-- update all nodes that depend on this one.
+	local ok, res =
+		pcall(node.update_dependents, node, { own = true, parents = true })
+
+	if not ok then
+		local snip = node:get_snippet()
 
 		unlink_set_adjacent_as_current(
 			snip,
@@ -153,13 +192,186 @@ local function safe_jump_current(dir, no_move, dry_run)
 			snip.trigger,
 			res
 		)
-		return session.current_nodes[vim.api.nvim_get_current_buf()]
+		return {
+			jump_done = false,
+			new_current = session.current_nodes[vim.api.nvim_get_current_buf()],
+		}
+	end
+
+	-- update successful => check if the current node is still visible.
+	if current.visible then
+		if not opts.no_move and opts.restore_position then
+			-- node is visible: restore position.
+			local active_snippet = current:get_snippet()
+			node_util.restore_cursor_pos_relative(
+				current,
+				restore_data[active_snippet.node_store_id]
+			)
+		end
+
+		return { jump_done = false, new_current = current }
+	else
+		-- node not visible => need to find a new node to set as current.
+
+		-- first, find leafmost (starting at node) visible node.
+		local active_snippet = node:get_snippet()
+		while not active_snippet.visible do
+			local parent_node = active_snippet.parent_node
+			if not parent_node then
+				-- very unlikely/not possible: all snippets are exited.
+				return { jump_done = false, new_current = nil }
+			end
+			active_snippet = parent_node:get_snippet()
+		end
+
+		-- have found first visible snippet => look for visible dynamicNode,
+		-- starting from which we can try to find a new active node.
+		local node_parent =
+			restore_data[active_snippet.node_store_id].node.parent
+
+		-- find visible dynamicNode that contained the (now-inactive) insertNode.
+		-- since the node was no longer visible after an update, it must have
+		-- been contained in a dynamicNode, and we don't have to handle the
+		-- case that we can't find it.
+		while
+			node_parent.dynamicNode == nil
+			or node_parent.dynamicNode.visible == false
+		do
+			node_parent = node_parent.parent
+		end
+		local d = node_parent.dynamicNode
+		assert(
+			d.active,
+			"Visible dynamicNode that was a parent of the current node is not active after the update!! If you get this message, please open an issue with LuaSnip!"
+		)
+
+		local found_nodes = {}
+		d:subtree_do({
+			pre = function(sd_node)
+				if sd_node.key then
+					-- any snippet we encounter here was generated before, and
+					-- if sd_node has the correct key, its snippet has a
+					-- node_store_id that corresponds to it.
+					local snip_node_store_id =
+						sd_node.parent.snippet.node_store_id
+					-- make sure that the key we found belongs to this
+					-- snippets' active node.
+					-- Also use the first valid node, and not the second one.
+					-- Doesn't really matter (ambiguous keys -> undefined
+					-- behaviour), but we should just use the first one, as
+					-- that seems more like what would be expected.
+					if
+						snip_node_store_id
+						and restore_data[snip_node_store_id]
+						and sd_node.key == restore_data[snip_node_store_id].key
+						and not found_nodes[snip_node_store_id]
+					then
+						found_nodes[snip_node_store_id] = sd_node
+					end
+				elseif
+					sd_node.store_id
+					and restore_data[sd_node.store_id]
+					and not found_nodes[sd_node.store_id]
+				then
+					found_nodes[sd_node.store_id] = sd_node
+				end
+			end,
+			post = util.nop,
+			do_child_snippets = true,
+		})
+
+		local new_current
+		for _, store_id in ipairs(restore_data.store_ids) do
+			if found_nodes[store_id] then
+				new_current = found_nodes[store_id]
+				break
+			end
+		end
+
+		if new_current then
+			node_util.refocus(d, new_current)
+
+			if not opts.no_move and opts.restore_position then
+				-- node is visible: restore position
+				node_util.restore_cursor_pos_relative(
+					new_current,
+					restore_data[new_current.parent.snippet.node_store_id]
+				)
+			end
+
+			return { jump_done = false, new_current = new_current }
+		else
+			-- could not find corresponding node -> just jump into the
+			-- dynamicNode that should have generated it.
+			return {
+				jump_done = true,
+				new_current = d:jump_into_snippet(opts.no_move),
+			}
+		end
 	end
 end
-local function jump(dir)
+
+local function update_dependents(node, opts)
+	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
+	-- don't update if a jump/change_choice is in progress, or if we don't have
+	-- an active node.
+	if active ~= nil then
+		local upd_res = node_update_dependents_preserve_position(node, active, {
+			no_move = false,
+			restore_position = true,
+			cursor_restore_data = opts and opts.cursor_restore_data,
+		})
+		if upd_res.new_current then
+			upd_res.new_current:focus()
+			session.current_nodes[vim.api.nvim_get_current_buf()] =
+				upd_res.new_current
+		end
+	end
+end
+local function _active_update_dependents(opts)
+	update_dependents(
+		session.current_nodes[vim.api.nvim_get_current_buf()],
+		opts
+	)
+end
+
+local function active_update_dependents()
+	api_do(_active_update_dependents)
+end
+
+-- return next active node.
+local function safe_jump_current(dir, no_move, dry_run)
+	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
+	if not node then
+		return nil
+	end
+
+	-- don't update for -1-node.
+	if not dry_run and node.pos >= 0 then
+		local upd_res = node_update_dependents_preserve_position(
+			node,
+			node,
+			{ no_move = no_move, restore_position = false }
+		)
+		if upd_res.jump_done then
+			return upd_res.new_current
+		else
+			node = upd_res.new_current
+		end
+	end
+
+	if node then
+		local ok, res = pcall(node.jump_from, node, dir, no_move, dry_run)
+		if ok then
+			return res
+		end
+	end
+end
+
+local function _jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
-		local next_node = util.no_region_check_wrap(safe_jump_current, dir)
+		local next_node = safe_jump_current(dir)
 		if next_node == nil then
 			session.current_nodes[vim.api.nvim_get_current_buf()] = nil
 			return true
@@ -176,6 +388,11 @@ local function jump(dir)
 		return false
 	end
 end
+
+local function jump(dir)
+	return api_do(_jump, dir)
+end
+
 local function jump_destination(dir)
 	-- dry run of jump (+no_move ofc.), only retrieves destination-node.
 	return safe_jump_current(dir, true, { active = {} })
@@ -232,11 +449,11 @@ local function locally_jumpable(dir)
 end
 
 local function _jump_into_default(snippet)
-	return util.no_region_check_wrap(snippet.jump_into, snippet, 1)
+	return snippet:jump_into(1)
 end
 
 -- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
-local function snip_expand(snippet, opts)
+local function _snip_expand(snippet, opts)
 	local snip = snippet:copy()
 
 	opts = opts or {}
@@ -312,14 +529,23 @@ local function snip_expand(snippet, opts)
 	-- -1 to disable count.
 	vim.cmd([[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]])
 
+	-- schedule update of active node.
+	-- Not really happy with this, but for some reason I don't have time to
+	-- investigate, nvim_buf_get_text does not return the updated text :/
+	_active_update_dependents()
+
 	return snip
+end
+
+local function snip_expand(snippet, opts)
+	return api_do(_snip_expand, snippet, opts)
 end
 
 ---Find a snippet matching the current cursor-position.
 ---@param opts table: may contain:
 --- - `jump_into_func`: passed through to `snip_expand`.
 ---@return boolean: whether a snippet was expanded.
-local function expand(opts)
+local function _expand(opts)
 	local expand_params
 	local snip
 	-- find snip via next_expand (set from previous expandable()) or manual matching.
@@ -348,7 +574,7 @@ local function expand(opts)
 			}
 
 		-- override snip with expanded copy.
-		snip = snip_expand(snip, {
+		snip = _snip_expand(snip, {
 			expand_params = expand_params,
 			-- clear trigger-text.
 			clear_region = clear_region,
@@ -360,49 +586,60 @@ local function expand(opts)
 	return false
 end
 
+local function expand(opts)
+	return api_do(_expand, opts)
+end
+
 local function expand_auto()
-	local snip, expand_params =
-		match_snippet(util.get_current_line_to_cursor(), "autosnippets")
-	if snip then
-		local cursor = util.get_cursor_0ind()
-		local clear_region = expand_params.clear_region
-			or {
-				from = {
-					cursor[1],
-					cursor[2] - #expand_params.trigger,
-				},
-				to = cursor,
-			}
-		snip = snip_expand(snip, {
-			expand_params = expand_params,
-			-- clear trigger-text.
-			clear_region = clear_region,
-		})
-	end
+	api_do(function()
+		local snip, expand_params =
+			match_snippet(util.get_current_line_to_cursor(), "autosnippets")
+		if snip then
+			local cursor = util.get_cursor_0ind()
+			local clear_region = expand_params.clear_region
+				or {
+					from = {
+						cursor[1],
+						cursor[2] - #expand_params.trigger,
+					},
+					to = cursor,
+				}
+			snip = _snip_expand(snip, {
+				expand_params = expand_params,
+				-- clear trigger-text.
+				clear_region = clear_region,
+			})
+		end
+	end)
 end
 
 local function expand_repeat()
-	-- prevent clearing text with repeated expand.
-	session.last_expand_opts.clear_region = nil
-	session.last_expand_opts.pos = nil
+	api_do(function()
+		-- prevent clearing text with repeated expand.
+		session.last_expand_opts.clear_region = nil
+		session.last_expand_opts.pos = nil
 
-	snip_expand(session.last_expand_snip, session.last_expand_opts)
+		_snip_expand(session.last_expand_snip, session.last_expand_opts)
+	end)
 end
 
 -- return true and expand snippet if expandable, return false if not.
 local function expand_or_jump()
-	if expand() then
-		return true
-	end
-	if jump(1) then
-		return true
-	end
-	return false
+	return api_do(function()
+		if _expand() then
+			return true
+		end
+		if _jump(1) then
+			return true
+		end
+		return false
+	end)
 end
 
 local function lsp_expand(body, opts)
 	-- expand snippet as-is.
-	snip_expand(
+	api_do(
+		_snip_expand,
 		ls.parser.parse_snippet(
 			"",
 			body,
@@ -435,36 +672,95 @@ local function safe_choice_action(snip, ...)
 		return session.current_nodes[vim.api.nvim_get_current_buf()]
 	end
 end
-local function change_choice(val)
+
+local function _change_choice(val, opts)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
-	assert(active_choice, "No active choiceNode")
-	local new_active = util.no_region_check_wrap(
-		safe_choice_action,
+
+	-- make sure we update completely, there may have been changes to the
+	-- buffer since the last update.
+	if not opts.skip_update then
+		assert(active_choice, "No active choiceNode")
+
+		_active_update_dependents({
+			cursor_restore_data = opts.cursor_restore_data,
+		})
+
+		active_choice =
+			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+		if not active_choice then
+			print("Active choice was removed while updating a dynamicNode.")
+			return
+		end
+	end
+
+	-- if the active choice exists current_node still does.
+	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
+
+	local new_active = safe_choice_action(
 		active_choice.parent.snippet,
 		active_choice.change_choice,
 		active_choice,
 		val,
-		session.current_nodes[vim.api.nvim_get_current_buf()]
+		session.current_nodes[vim.api.nvim_get_current_buf()],
+		opts.skip_update and opts.cursor_restore_data
+			or node_util.store_cursor_node_relative(
+				current_node,
+				{ place_cursor_mark = false }
+			)
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
+	_active_update_dependents()
 end
 
-local function set_choice(choice_indx)
+local function change_choice(val)
+	api_do(_change_choice, val, {})
+end
+
+local function _set_choice(choice_indx, opts)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
-	assert(active_choice, "No active choiceNode")
+
+	if not opts.skip_update then
+		assert(active_choice, "No active choiceNode")
+
+		_active_update_dependents({
+			cursor_restore_data = opts.cursor_restore_data,
+		})
+
+		active_choice =
+			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
+		if not active_choice then
+			print("Active choice was removed while updating a dynamicNode.")
+			return
+		end
+	end
+
+	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
+
 	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
-	local new_active = util.no_region_check_wrap(
-		safe_choice_action,
+
+	local new_active = safe_choice_action(
 		active_choice.parent.snippet,
 		active_choice.set_choice,
 		active_choice,
 		choice,
-		session.current_nodes[vim.api.nvim_get_current_buf()]
+		current_node,
+		-- if the update was skipped, we have to use the cursor_restore_data
+		-- here.
+		opts.skip_update and opts.cursor_restore_data
+			or node_util.store_cursor_node_relative(
+				current_node,
+				{ place_cursor_mark = false }
+			)
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
+	_active_update_dependents()
+end
+
+local function set_choice(choice_indx)
+	api_do(_set_choice, choice_indx, {})
 end
 
 local function get_current_choices()
@@ -480,57 +776,6 @@ local function get_current_choices()
 	end
 
 	return choice_lines
-end
-
-local function active_update_dependents()
-	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
-	-- special case for startNode, cannot focus on those (and they can't
-	-- have dependents)
-	-- don't update if a jump/change_choice is in progress.
-	if not session.jump_active and active and active.pos > 0 then
-		-- Save cursor-pos to restore later.
-		local cur = util.get_cursor_0ind()
-		local cur_mark = vim.api.nvim_buf_set_extmark(
-			0,
-			session.ns_id,
-			cur[1],
-			cur[2],
-			{ right_gravity = false }
-		)
-
-		local ok, err = pcall(active.update_dependents, active)
-		if not ok then
-			unlink_set_adjacent_as_current(
-				active.parent.snippet,
-				"Error while updating dependents for snippet %s due to error %s",
-				active.parent.snippet.trigger,
-				err
-			)
-			return
-		end
-
-		-- 'restore' orientation of extmarks, may have been changed by some set_text or similar.
-		ok, err = pcall(active.focus, active)
-		if not ok then
-			unlink_set_adjacent_as_current(
-				active.parent.snippet,
-				"Error while entering node in snippet %s: %s",
-				active.parent.snippet.trigger,
-				err
-			)
-
-			return
-		end
-
-		-- Don't account for utf, nvim_win_set_cursor doesn't either.
-		cur = vim.api.nvim_buf_get_extmark_by_id(
-			0,
-			session.ns_id,
-			cur_mark,
-			{ details = false }
-		)
-		util.set_cursor_0ind(cur)
-	end
 end
 
 local function store_snippet_docstrings(snippet_table)
@@ -904,11 +1149,13 @@ local ls_static = {
 	get_active_snip = get_active_snip,
 	choice_active = choice_active,
 	change_choice = change_choice,
+	_set_choice = _set_choice,
 	set_choice = set_choice,
 	get_current_choices = get_current_choices,
 	unlink_current = unlink_current,
 	lsp_expand = lsp_expand,
 	active_update_dependents = active_update_dependents,
+	_active_update_dependents = _active_update_dependents,
 	available = available,
 	exit_out_of_region = exit_out_of_region,
 	load_snippet_docstrings = load_snippet_docstrings,
@@ -932,6 +1179,9 @@ local ls_static = {
 	extend_decorator = extend_decorator,
 	log = require("luasnip.util.log"),
 	activate_node = activate_node,
+	_api_do = api_do,
+	_api_enter = api_enter,
+	_api_leave = api_leave,
 }
 
 ---@class LuaSnip: LuaSnip_static, LuaSnip_lazy

@@ -8,6 +8,8 @@ local mark = require("luasnip.util.mark").mark
 local session = require("luasnip.session")
 local sNode = require("luasnip.nodes.snippet").SN
 local extend_decorator = require("luasnip.util.extend_decorator")
+local feedkeys = require("luasnip.util.feedkeys")
+local log = require("luasnip.util.log").new("choice")
 
 function ChoiceNode:init_nodes()
 	for i, choice in ipairs(self.choices) do
@@ -17,24 +19,6 @@ function ChoiceNode:init_nodes()
 
 		-- forward values for unknown keys from choiceNode.
 		choice.choice = self
-		local node_mt = getmetatable(choice)
-		setmetatable(choice, {
-			__index = function(node, key)
-				return node_mt[key] or node.choice[key]
-			end,
-		})
-
-		-- replace nodes' original update_dependents with function that also
-		-- calls this choiceNodes' update_dependents.
-		--
-		-- cannot define as `function node:update_dependents()` as _this_
-		-- choiceNode would be `self`.
-		-- Also rely on node.choice, as using `self` there wouldn't be caught
-		-- by copy and the wrong node would be updated.
-		choice.update_dependents = function(node)
-			node:_update_dependents()
-			node.choice:update_dependents()
-		end
 
 		choice.next_choice = self.choices[i + 1]
 		choice.prev_choice = self.choices[i - 1]
@@ -77,6 +61,13 @@ end
 extend_decorator.register(C, { arg_indx = 3 })
 
 function ChoiceNode:subsnip_init()
+	for _, choice in ipairs(self.choices) do
+		choice.parent = self.parent
+		-- only insertNode needs this.
+		if choice.type == 2 or choice.type == 1 or choice.type == 3 then
+			choice.pos = self.pos
+		end
+	end
 	node_util.subsnip_init_children(self.parent, self.choices)
 end
 
@@ -146,6 +137,7 @@ function ChoiceNode:input_enter(_, dry_run)
 	session.active_choice_nodes[vim.api.nvim_get_current_buf()] = self
 	self.visited = true
 	self.active = true
+	self.input_active = true
 
 	self:event(events.enter)
 end
@@ -156,10 +148,12 @@ function ChoiceNode:input_leave(_, dry_run)
 		return
 	end
 
+	self.input_active = false
+
 	self:event(events.leave)
 
 	self.mark:update_opts(self:get_passive_ext_opts())
-	self:update_dependents()
+
 	session.active_choice_nodes[vim.api.nvim_get_current_buf()] =
 		self.prev_choice_node
 	self.active = false
@@ -175,10 +169,7 @@ function ChoiceNode:get_static_text()
 end
 
 function ChoiceNode:get_docstring()
-	return util.string_wrap(
-		self.choices[1]:get_docstring(),
-		rawget(self, "pos")
-	)
+	return util.string_wrap(self.choices[1]:get_docstring(), self.pos)
 end
 
 function ChoiceNode:jump_into(dir, no_move, dry_run)
@@ -219,12 +210,12 @@ end
 
 function ChoiceNode:setup_choice_jumps() end
 
-function ChoiceNode:find_node(predicate)
+function ChoiceNode:find_node(predicate, opts)
 	if self.active_choice then
 		if predicate(self.active_choice) then
 			return self.active_choice
 		else
-			return self.active_choice:find_node(predicate)
+			return self.active_choice:find_node(predicate, opts)
 		end
 	end
 	return nil
@@ -233,22 +224,18 @@ end
 -- used to uniquely identify this change-choice-action.
 local change_choice_id = 0
 
-function ChoiceNode:set_choice(choice, current_node)
+function ChoiceNode:set_choice(choice, current_node, cursor_restore_data)
 	change_choice_id = change_choice_id + 1
 	-- to uniquely identify this node later (storing the pointer isn't enough
 	-- because this is supposed to work with restoreNodes, which are copied).
 	current_node.change_choice_id = change_choice_id
 
-	local insert_pre_cc = vim.fn.mode() == "i"
-	-- is byte-indexed! Doesn't matter here, but important to be aware of.
-	local cursor_pos_pre_relative =
-		util.pos_sub(util.get_cursor_0ind(), current_node.mark:pos_begin_raw())
-
 	self.active_choice:store()
 
 	-- tear down current choice.
-	-- leave all so the choice (could be a snippet) is in the correct state for the next enter.
-	node_util.leave_nodes_between(self.active_choice, current_node)
+	-- leave all so the choice (could be a snippet) is in the correct state for
+	-- the next enter.
+	node_util.refocus(current_node, self.active_choice)
 
 	self.active_choice:exit()
 
@@ -256,9 +243,9 @@ function ChoiceNode:set_choice(choice, current_node)
 	--
 	-- active_choice has to be disabled (nilled?) to prevent reading from
 	-- cleared mark in set_mark_rgrav (which will be called in
-	-- self:set_text({""}) a few lines below).
+	-- self:set_text_raw({""}) a few lines below).
 	self.active_choice = nil
-	self:set_text({ "" })
+	self:set_text_raw({ "" })
 
 	self.active_choice = choice
 
@@ -279,35 +266,26 @@ function ChoiceNode:set_choice(choice, current_node)
 	self.active_choice:subtree_set_pos_rgrav(to, -1, true)
 
 	self.active_choice:update_restore()
-	self.active_choice:update_all_dependents()
-	self:update_dependents()
+	-- update outside dependents later, in init.lua:set_choice!
 
-	-- Another node may have been entered in update_dependents.
-	self:focus()
 	self:event(events.change_choice)
 
 	if self.restore_cursor then
 		local target_node = self:find_node(function(test_node)
 			return test_node.change_choice_id == change_choice_id
-		end)
+		end, { find_in_child_snippets = true })
 
 		if target_node then
-			-- the node that the cursor was in when changeChoice was called exists
-			-- in the active choice! Enter it and all nodes between it and this choiceNode,
-			-- then set the cursor.
-			-- Pass no_move=true, we will set the cursor ourselves.
-			node_util.enter_nodes_between(self, target_node, true)
+			-- the node that the cursor was in when changeChoice was called
+			-- exists in the active choice! Enter it and all nodes between it
+			-- and this choiceNode, then set the cursor.
 
-			if insert_pre_cc then
-				util.set_cursor_0ind(
-					util.pos_add(
-						target_node.mark:pos_begin_raw(),
-						cursor_pos_pre_relative
-					)
-				)
-			else
-				node_util.select_node(target_node)
-			end
+			node_util.refocus(self, target_node)
+			node_util.restore_cursor_pos_relative(
+				target_node,
+				cursor_restore_data[target_node.parent.snippet.node_store_id]
+			)
+
 			return target_node
 		end
 	end
@@ -315,12 +293,13 @@ function ChoiceNode:set_choice(choice, current_node)
 	return self.active_choice:jump_into(1)
 end
 
-function ChoiceNode:change_choice(dir, current_node)
+function ChoiceNode:change_choice(dir, current_node, cursor_restore_data)
 	-- stylua: ignore
 	return self:set_choice(
 		dir == 1 and self.active_choice.next_choice
 		          or self.active_choice.prev_choice,
-		current_node )
+		current_node,
+		cursor_restore_data)
 end
 
 function ChoiceNode:copy()
@@ -381,20 +360,6 @@ function ChoiceNode:set_argnodes(dict)
 	end
 end
 
-function ChoiceNode:update_all_dependents()
-	-- call the version that only updates this node.
-	self:_update_dependents()
-
-	self.active_choice:update_all_dependents()
-end
-
-function ChoiceNode:update_all_dependents_static()
-	-- call the version that only updates this node.
-	self:_update_dependents_static()
-
-	self.active_choice:update_all_dependents_static()
-end
-
 function ChoiceNode:resolve_position(position)
 	return self.choices[position]
 end
@@ -420,6 +385,19 @@ end
 
 function ChoiceNode:extmarks_valid()
 	return node_util.generic_extmarks_valid(self, self.active_choice)
+end
+
+function ChoiceNode:subtree_do(opts)
+	opts.pre(self)
+	self.active_choice:subtree_do(opts)
+	opts.post(self)
+end
+
+function ChoiceNode:subtree_leave_entered()
+	if self.input_active then
+		self.active_choice:subtree_leave_entered()
+		self:input_leave()
+	end
 end
 
 return {

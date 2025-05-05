@@ -6,6 +6,8 @@ local types = require("luasnip.util.types")
 local tNode = require("luasnip.nodes.textNode").textNode
 local extend_decorator = require("luasnip.util.extend_decorator")
 local key_indexer = require("luasnip.nodes.key_indexer")
+local opt_args = require("luasnip.nodes.optional_arg")
+local snippet_string = require("luasnip.nodes.util.snippet_string")
 
 local function F(fn, args, opts)
 	opts = opts or {}
@@ -35,7 +37,7 @@ end
 FunctionNode.get_docstring = FunctionNode.get_static_text
 
 function FunctionNode:update()
-	local args = self:get_args()
+	local args = node_util.str_args(self:get_args())
 	-- skip this update if
 	-- - not all nodes are available.
 	-- - the args haven't changed.
@@ -55,8 +57,12 @@ function FunctionNode:update()
 	end
 
 	-- don't expand tabs in parent.indentstr, use it as-is.
-	self:set_text(util.indent(text, self.parent.indentstr))
-	self:update_dependents()
+	self:set_text_raw(util.indent(text, self.parent.indentstr))
+	self.static_text = text
+
+	-- assume that functionNode can't have a parent as its dependent, there is
+	-- no use for that I think.
+	self:update_dependents({ own = true, parents = true })
 end
 
 local update_errorstring = [[
@@ -65,7 +71,8 @@ Error while evaluating functionNode@%d for snippet '%s':
  
 :h luasnip-docstring for more info]]
 function FunctionNode:update_static()
-	local args = self:get_static_args()
+	local args = node_util.str_args(self:get_static_args())
+
 	-- skip this update if
 	-- - not all nodes are available.
 	-- - the args haven't changed.
@@ -93,9 +100,10 @@ function FunctionNode:update_static()
 end
 
 function FunctionNode:update_restore()
+	local args = node_util.str_args(self:get_args())
 	-- only if args still match.
-	if self.static_text and vim.deep_equal(self:get_args(), self.last_args) then
-		self:set_text(self.static_text)
+	if self.static_text and vim.deep_equal(args, self.last_args) then
+		self:set_text_raw(self.static_text)
 	else
 		self:update()
 	end
@@ -122,6 +130,9 @@ function FunctionNode:set_dependents()
 	append_list[#append_list + 1] = "dependent"
 
 	for _, arg in ipairs(self.args_absolute) do
+		if opt_args.is_opt(arg) then
+			arg = arg.ref
+		end
 		-- if arg is a luasnip-node, just insert it as the key.
 		-- important!! rawget, because indexing absolute_indexer with some key
 		-- appends the key.

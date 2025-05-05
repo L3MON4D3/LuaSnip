@@ -202,6 +202,7 @@ function M.session_setup_luasnip(opts)
 			sp = require("luasnip.nodes.snippetProxy")
 			pf = require("luasnip.extras.postfix").postfix
 			k = require("luasnip.nodes.key_indexer").new_key
+			opt = require("luasnip.nodes.optional_arg").new_opt
 		]])
 	end
 
