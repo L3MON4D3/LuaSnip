@@ -113,6 +113,6 @@ test: nvim install_jsregexp
 
 test_nix: nvim install_jsregexp
 	set -e; \
-	if ${TEST_07}; then nix develop .#nvim_07 -c make test; fi; \
-	if ${TEST_09}; then nix develop .#nvim_09 -c make test; fi; \
-	if ${TEST_MASTER}; then nix develop .#nvim_master -c make test; fi;
+	if ${TEST_07}; then nix develop .#test_nvim_07 -c make test; fi; \
+	if ${TEST_09}; then nix develop .#test_nvim_09 -c make test; fi; \
+	if ${TEST_MASTER}; then nix develop .#test_nvim_master -c make test; fi;

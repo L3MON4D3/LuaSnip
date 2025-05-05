@@ -26,7 +26,7 @@
         true_bin = "${pkgs-treesitter.coreutils}/bin/true";
         false_bin = "${pkgs-treesitter.coreutils}/bin/false";
       in {
-        nvim_07 = nvim_07.outputs.devShell.${pkgs-treesitter.system}.overrideAttrs(attrs: {
+        test_nvim_07 = nvim_07.outputs.devShell.${pkgs-treesitter.system}.overrideAttrs(attrs: {
           TEST_07=true_bin;
           TEST_09=false_bin;
           TEST_MASTER=false_bin;
@@ -48,7 +48,7 @@
         });
 
         # override default tree-sitter, it has the wrong version (0.20.7 vs required 0.20.8).
-        nvim_09 = default_09_devshell.overrideAttrs(attrs: {
+        test_nvim_09 = default_09_devshell.overrideAttrs(attrs: {
           TEST_07=false_bin;
           TEST_09=true_bin;
           TEST_MASTER=false_bin;
@@ -74,7 +74,7 @@
           shellHook = "";
         });
 
-        nvim_master = nvim_master.outputs.devShells.${pkgs-treesitter.system}.default.overrideAttrs(attrs: {
+        test_nvim_master = nvim_master.outputs.devShells.${pkgs-treesitter.system}.default.overrideAttrs(attrs: {
           TEST_07=false_bin;
           TEST_09=false_bin;
           TEST_MASTER=true_bin;
