@@ -273,7 +273,7 @@ local function validate(name, value, validator, optional)
 	if vimversion.ge(0, 11, 0) then
 		return vim.validate(name, value, validator, optional)
 	else
-		return vim.validate({name = {value, validator, optional}})
+		return vim.validate({ name = { value, validator, optional } })
 	end
 end
 
