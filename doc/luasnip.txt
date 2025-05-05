@@ -1,4 +1,4 @@
-*luasnip.txt*             For NVIM v0.8.0             Last change: 2025 May 04
+*luasnip.txt*             For NVIM v0.8.0             Last change: 2025 May 05
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1519,7 +1519,7 @@ into `luasnip.extras.conditions.expand` and `luasnip.extras.conditions.show`:
 
 - `line_begin`: only expand if the cursor is at the beginning of the line.
 - `trigger_not_preceded_by(pattern)`: only expand if the character before the
-    trigger does not match `pattern`. This is a generalisation of `wordTrig`,
+    trigger does not match `pattern`. This is a generalization of `wordTrig`,
     which can be implemented as `trigger_not_preceded_by("[%w_]")`, and is
     available as `word_trig_condition`.
 
