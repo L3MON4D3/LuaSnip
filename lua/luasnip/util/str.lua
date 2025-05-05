@@ -199,8 +199,11 @@ function M.multiline_append(strmod, strappend)
 end
 
 -- turn a row+col-offset for a multiline-string (string[]) (where the column is
--- given in utf-codepoints and 0-based) into an offset (in bytes!, 1-based) for
+-- given in bytes and 0-based) into an offset (in bytes, 1-based) for
 -- the \n-concatenated version of that string.
+---
+---@param str string[], a multiline string
+---@param pos LuaSnip.ApiPosition, an api-position relative to the start of str.
 function M.multiline_to_byte_offset(str, pos)
 	if pos[1] < 0 or pos[1] + 1 > #str or pos[2] < 0 then
 		-- pos is trivially (row negative or beyond str, or col negative)
@@ -218,21 +221,21 @@ function M.multiline_to_byte_offset(str, pos)
 
 	-- allow positions one beyond the last character for all lines (even the
 	-- last line).
-	local pos_line_str = str[pos[1] + 1] .. "\n"
-
-	if pos[2] >= #pos_line_str then
+	if pos[2] >= #str[pos[1]+1] + 1 then
 		-- in this case, pos is outside of the multiline-region.
 		return nil
 	end
 
 	-- I think we can always assume utf-8?
-	byte_pos = byte_pos + vim.str_byteindex(pos_line_str, "utf-8", pos[2])
+	byte_pos = byte_pos + pos[2]
 
 	-- 0- to 1-based columns.
 	return byte_pos + 1
 end
 
--- inverse of multiline_to_byte_offset, 1-based byte to 0,0-based row,column, utf-aware.
+-- inverse of multiline_to_byte_offset, 1-based byte to 0,0-based row,column.
+---@param str string[], the multiline string
+---@param byte_pos number, a 1-based index into the \n-concatenated `str`.
 function M.byte_to_multiline_offset(str, byte_pos)
 	if byte_pos < 0 then
 		return nil
@@ -240,12 +243,11 @@ function M.byte_to_multiline_offset(str, byte_pos)
 
 	local byte_pos_so_far = 0
 	for i, line in ipairs(str) do
+		-- line-length + \n.
 		local line_i_end = byte_pos_so_far + #line + 1
 		if byte_pos <= line_i_end then
-			-- byte located in this line, find utf-index.
-			local utf16_index =
-				vim.str_utfindex(line .. "\n", byte_pos - byte_pos_so_far - 1)
-			return { i - 1, utf16_index }
+			-- byte is in this line, return it.
+			return { i - 1, byte_pos - byte_pos_so_far - 1 }
 		end
 		byte_pos_so_far = line_i_end
 	end
