@@ -60,7 +60,7 @@ describe("snippets_basic", function()
 			ls.expand({
 				jump_into_func = function(snip)
 					izero = snip.insert_nodes[0]
-					require("luasnip").no_region_check_wrap(izero.jump_into, izero, 1)
+					izero:jump_into(1)
 				end
 			})
 		]])

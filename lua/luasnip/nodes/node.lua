@@ -256,20 +256,6 @@ local function get_args(node, get_text_func_name, static)
 		--   visible (this second condition is to allow the docstring-generation
 		--   to be improved by data provided after the expansion)
 		if argnode and ((static and (argnode.static_visible or argnode.visible)) or (not static and argnode.visible)) then
-			if not static then
-				-- Don't store (aka call get_snippetstring) if this is a static
-				-- update (there will be no associated buffer-region!) and
-				-- don't store if the node is not visible. (Then there's
-				-- nothing to store anyway)
-
-				-- now, store traverses the whole tree, and if one argnode includes
-				-- another we'd duplicate some work.
-				-- But I don't think there's a really good reason for doing
-				-- something like this (we already have all the data by capturing
-				-- the outer argnode), and even if it happens, it should occur only
-				-- rarely.
-				argnode:store()
-			end
 			local argnode_text = argnode[get_text_func_name](argnode)
 			-- can only occur with `get_text`. If one returns nil, the argnode
 			-- isn't visible or some other error occured. Either way, return nil
@@ -291,7 +277,7 @@ local function get_args(node, get_text_func_name, static)
 end
 
 function Node:get_args()
-	return get_args(self, "get_snippetstring", false)
+	return get_args(self, "argnode_text", false)
 end
 function Node:get_static_args()
 	return get_args(self, "get_static_snippetstring", true)
@@ -639,6 +625,10 @@ end
 -- all nodes that can be entered have an override, only need to nop this for
 -- those that don't.
 function Node:subtree_leave_entered() end
+
+function Node:argnode_text()
+	return self:get_snippetstring()
+end
 
 return {
 	Node = Node,

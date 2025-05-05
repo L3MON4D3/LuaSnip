@@ -10,6 +10,7 @@ local feedkeys = require("luasnip.util.feedkeys")
 local snippet_string = require("luasnip.nodes.util.snippet_string")
 local str_util = require("luasnip.util.str")
 local log = require("luasnip.util.log").new("insertNode")
+local session = require("luasnip.session")
 
 local function I(pos, static_text, opts)
 	if not snippet_string.isinstance(static_text) then
@@ -340,12 +341,19 @@ function InsertNode:get_snippetstring()
 		return nil
 	end
 
+	-- in order to accurately capture all the nodes inside eventual snippets,
+	-- call :store(), so these are up-to-date in the snippetString.
+	for _, snip in ipairs(self:child_snippets()) do
+		snip:store()
+	end
+
+
 	local self_from, self_to = self.mark:pos_begin_end_raw()
 	-- only do one get_text, and establish relative offsets partition this
 	-- text.
 	local ok, text = pcall(vim.api.nvim_buf_get_text, 0, self_from[1], self_from[2], self_to[1], self_to[2], {})
 
-	local snippetstring = snippet_string.new()
+	local snippetstring = snippet_string.new(nil, {luasnip_changedtick = session.luasnip_changedtick})
 
 	if not ok then
 		log.warn("Failure while getting text of insertNode: " .. text)
@@ -379,12 +387,23 @@ function InsertNode:indent(indentstr)
 	self.static_text:indent(indentstr)
 end
 
+-- generate and cache text of this node when used as an argnode.
 function InsertNode:store()
-	for _, snip in ipairs(self:child_snippets()) do
-		snip:store()
+	if session.luasnip_changedtick and self.static_text.metadata and self.static_text.metadata.luasnip_changedtick == session.luasnip_changedtick then
+		-- stored data is up-to-date, just return the static text.
+		return
 	end
+
+	-- get_snippetstring calls store for all child-snippets.
 	self.static_text = self:get_snippetstring()
 end
+
+function InsertNode:argnode_text()
+	-- store caches its text, which is exactly what we want here!
+	self:store()
+	return self.static_text
+end
+
 
 function InsertNode:put_initial(pos)
 	self.static_text:put(pos)

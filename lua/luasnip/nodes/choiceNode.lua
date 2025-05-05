@@ -284,7 +284,7 @@ function ChoiceNode:set_choice(choice, current_node, cursor_restore_data)
 			-- and this choiceNode, then set the cursor.
 
 			node_util.refocus(self, target_node)
-			node_util.restore_cursor_pos_relative(target_node, cursor_restore_data[target_node.parent.snippet])
+			node_util.restore_cursor_pos_relative(target_node, cursor_restore_data[target_node.parent.snippet.node_store_id])
 
 			return target_node
 		end
