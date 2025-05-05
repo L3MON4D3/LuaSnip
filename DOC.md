@@ -1591,7 +1591,7 @@ a snippet's `condition` or `show_condition`. These are grouped accordingly into
 
 - `line_begin`: only expand if the cursor is at the beginning of the line.
 - `trigger_not_preceded_by(pattern)`: only expand if the character before the
-  trigger does not match `pattern`. This is a generalisation of `wordTrig`,
+  trigger does not match `pattern`. This is a generalization of `wordTrig`,
   which can be implemented as `trigger_not_preceded_by("[%w_]")`, and is
   available as `word_trig_condition`.
 

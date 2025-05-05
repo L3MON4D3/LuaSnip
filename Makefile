@@ -116,3 +116,8 @@ test_nix: nvim install_jsregexp
 	if ${TEST_07}; then nix develop .#test_nvim_07 -c make test; fi; \
 	if ${TEST_09}; then nix develop .#test_nvim_09 -c make test; fi; \
 	if ${TEST_MASTER}; then nix develop .#test_nvim_master -c make test; fi;
+
+spellcheck:
+	# grabbed from word-warden.
+	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check DOC.md
+	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check README.md

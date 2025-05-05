@@ -26,6 +26,13 @@
         true_bin = "${pkgs-treesitter.coreutils}/bin/true";
         false_bin = "${pkgs-treesitter.coreutils}/bin/false";
       in {
+        default = pkgs-treesitter.mkShell {
+          packages = with pkgs-treesitter; [
+            (aspellWithDicts (dicts: with dicts; [en]))
+            bashInteractive
+            gnumake
+          ];
+        };
         test_nvim_07 = nvim_07.outputs.devShell.${pkgs-treesitter.system}.overrideAttrs(attrs: {
           TEST_07=true_bin;
           TEST_09=false_bin;

@@ -1,4 +1,5 @@
-personal_ws-1.1 en 1000 utf-8
+personal_ws-1.1 en 109 utf-8
+AbsoluteIndexer
 Autosnippets
 Cfigure
 Cimg
@@ -81,6 +82,7 @@ namespace
 namespaces
 nilsnip
 nvim
+otf
 panvimdoc
 plaintext
 pos
@@ -89,6 +91,7 @@ postfix
 pre
 precompile
 predefining
+rafamadriz
 restoreNode
 restoreNodes
 runtime
