@@ -452,6 +452,13 @@ function DynamicNode:subtree_do(opts)
 	opts.post(self)
 end
 
+function DynamicNode:subtree_leave_entered()
+	if self.active then
+		self.snip:subtree_leave_entered()
+		self:input_leave()
+	end
+end
+
 return {
 	D = D,
 }

@@ -20,6 +20,8 @@ local function I(pos, static_text, opts)
 			type = types.exitNode,
 			-- will only be needed for 0-node, -1-node isn't set with this.
 			ext_gravities_active = { false, false },
+			inner_active = false,
+			input_active = false
 		}, opts)
 	else
 		return InsertNode:new({
@@ -29,6 +31,7 @@ local function I(pos, static_text, opts)
 			dependents = {},
 			type = types.insertNode,
 			inner_active = false,
+			input_active = false
 		}, opts)
 	end
 end
@@ -80,6 +83,8 @@ function ExitNode:input_leave(no_move, dry_run)
 		return
 	end
 
+	self.input_active = false
+
 	if self.pos == 0 then
 		InsertNode.input_leave(self, no_move, dry_run)
 	else
@@ -104,6 +109,7 @@ function InsertNode:input_enter(no_move, dry_run)
 	end
 
 	self.visited = true
+	self.input_active = true
 	self.mark:update_opts(self.ext_opts.active)
 
 	-- no_move only prevents moving the cursor, but the active node should
@@ -237,6 +243,7 @@ function InsertNode:input_leave(_, dry_run)
 		return
 	end
 
+	self.input_active = false
 	self:event(events.leave)
 
 	self:update_dependents()
@@ -248,10 +255,12 @@ function InsertNode:exit()
 		snip:remove_from_jumplist()
 	end
 
+	-- reset runtime-acquired values.
 	self.visible = false
 	self.inner_first = nil
 	self.inner_last = nil
 	self.inner_active = false
+	self.input_active = false
 	self.mark:clear()
 end
 
@@ -304,6 +313,23 @@ function InsertNode:subtree_set_rgrav(rgrav)
 
 	for _, child_snippet in ipairs(own_child_snippets) do
 		child_snippet:subtree_set_rgrav(rgrav)
+	end
+end
+
+function InsertNode:subtree_leave_entered()
+	if not self.input_active then
+		-- is not directly active, and does not contain an active child.
+		return
+	else
+		-- first leave children, if they're active, then self.
+		if self.inner_active then
+			local nested_snippets = self:child_snippets()
+			for _, snippet in ipairs(nested_snippets) do
+				snippet:subtree_leave_entered()
+			end
+			self:input_leave_children()
+		end
+		self:input_leave()
 	end
 end
 

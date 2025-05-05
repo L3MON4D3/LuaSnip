@@ -653,6 +653,10 @@ function Node:subtree_do(opts)
 	opts.post(self)
 end
 
+-- all nodes that can be entered have an override, only need to nop this for
+-- those that don't.
+function Node:subtree_leave_entered() end
+
 return {
 	Node = Node,
 	focus_node = focus_node,
