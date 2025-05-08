@@ -156,6 +156,7 @@ function M.match_snippet(line, fts, type)
 		for _, ft in ipairs(fts) do
 			for _, snip in ipairs(prio_by_ft[ft] or {}) do
 				expand_params = snip:matches(line)
+				require("luasnip.util.log").new("temp").error("Matching snippet with trigger %s against line %s gives expand_params %s", snip.trigger, line, vim.inspect(expand_params))
 				if expand_params then
 					-- return matching snippet and table with expand-parameters.
 					return snip, expand_params

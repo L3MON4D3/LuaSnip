@@ -320,19 +320,23 @@ end
 --- - `jump_into_func`: passed through to `snip_expand`.
 ---@return boolean: whether a snippet was expanded.
 local function expand(opts)
+	require("luasnip.util.log").new("temp").error("expand called")
 	local expand_params
 	local snip
 	-- find snip via next_expand (set from previous expandable()) or manual matching.
 	if next_expand ~= nil then
 		snip = next_expand
 		expand_params = next_expand_params
+		require("luasnip.util.log").new("temp").error("next_expand_params" .. vim.inspect({next_expand_params}))
 
 		next_expand = nil
 		next_expand_params = nil
 	else
 		snip, expand_params =
 			match_snippet(util.get_current_line_to_cursor(), "snippets")
+		require("luasnip.util.log").new("temp").error("expand_params" .. vim.inspect({expand_params}))
 	end
+
 	if snip then
 		local jump_into_func = opts and opts.jump_into_func
 
@@ -347,13 +351,15 @@ local function expand(opts)
 				to = cursor,
 			}
 
-		-- override snip with expanded copy.
-		snip = snip_expand(snip, {
+		local se_opts = {
 			expand_params = expand_params,
 			-- clear trigger-text.
 			clear_region = clear_region,
 			jump_into_func = jump_into_func,
-		})
+		}
+		require("luasnip.util.log").new("temp").error("se_opts" .. vim.inspect({se_opts}))
+		-- override snip with expanded copy.
+		snip = snip_expand(snip, se_opts)
 
 		return true
 	end
