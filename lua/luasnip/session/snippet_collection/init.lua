@@ -152,6 +152,8 @@ end
 function M.match_snippet(line, fts, type)
 	local expand_params
 
+	require("luasnip.util.log").new("temp").error("fts" .. vim.inspect({fts}))
+
 	for prio_by_ft in prio_iter(type) do
 		for _, ft in ipairs(fts) do
 			for _, snip in ipairs(prio_by_ft[ft] or {}) do
