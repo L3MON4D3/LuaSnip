@@ -33,6 +33,25 @@ nvim: | ${NVIM_PATH}
 	git -C ${NVIM_MASTER_PATH} fetch origin master --depth 1
 	git -C ${NVIM_MASTER_PATH} checkout FETCH_HEAD
 
+# Windows: when Git is installed but %GIT%/bin is not in PATH
+WIN_GIT_SHELL:=C:/Program Files/Git/bin/sh.exe
+WINDOWS_NT:=Windows_NT
+
+# Windows system variable
+ifeq ($(WINDOWS_NT),$(OS))
+LUASNIP_DETECTED_OS:=$(WINDOWS_NT)
+# If sh.exe is found in PATH, SHELL is set to `path_to/sh.exe`
+# otherwise SHELL is set to default value `sh.exe`
+ifeq (sh.exe,$(SHELL))
+# check path existence
+ifeq (,$(wildcard $(WIN_GIT_SHELL)))
+$(error SHELL is not set. You can specify SHELL=path_to_git/bin/sh.exe, or append path_to_git/bin to $$PATH)
+else
+SHELL:=$(WIN_GIT_SHELL)
+endif
+endif
+endif
+
 LUASNIP_DETECTED_OS?=$(shell uname;)
 
 ifneq (,$(findstring Darwin, $(LUASNIP_DETECTED_OS)))
@@ -40,7 +59,7 @@ ifneq (,$(findstring Darwin, $(LUASNIP_DETECTED_OS)))
 # (https://github.com/luarocks/luarocks/blob/9a3c5a879849f4f411a96cf1bdc0c4c7e26ade42/src/luarocks/core/cfg.lua#LL468C37-L468C80)
 # remove -bundle, should be equivalent to the -shared hardcoded by jsregexp.
 LUA_LDLIBS=-undefined dynamic_lookup -all_load
-else ifneq (,$(or $(findstring MINGW,$(LUASNIP_DETECTED_OS)), $(findstring MSYS,$(LUASNIP_DETECTED_OS)), $(findstring CYGWIN,$(LUASNIP_DETECTED_OS))))
+else ifneq (,$(or $(findstring $(WINDOWS_NT),$(LUASNIP_DETECTED_OS)), $(findstring MINGW,$(LUASNIP_DETECTED_OS)), $(findstring MSYS,$(LUASNIP_DETECTED_OS)), $(findstring CYGWIN,$(LUASNIP_DETECTED_OS))))
 # If neovim is installed by scoop, only scoop/shims is exposed. We need to find original nvim/bin that contains lua51.dll
 # If neovim is installed by winget or other methods, nvim/bin is already included in PATH.
 
@@ -81,7 +100,7 @@ install_jsregexp: jsregexp
 # there is some additional trickery to make this work with jsregexp-0.0.6 in
 # util/jsregexp.lua.
 	cp "$(JSREGEXP_PATH)/jsregexp.lua" "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua"
-# just move out of jsregexp-directory, so it is not accidentially deleted.
+# just move out of jsregexp-directory, so it is not accidentally deleted.
 	cp "$(JSREGEXP_PATH)/jsregexp.so" "$(PROJECT_ROOT)/deps/luasnip-jsregexp.so"
 
 uninstall_jsregexp:
