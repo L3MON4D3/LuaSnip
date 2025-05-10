@@ -108,3 +108,5 @@ there'd
 truthy
 varargs
 vsnip
+fmt
+lsp
