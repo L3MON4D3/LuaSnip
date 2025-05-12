@@ -17,6 +17,8 @@ local function modify_nodes(snip)
 	snip.nodes[1] = iNode.I(1)
 end
 
+-- when adding/removing entries here, be sure to keep the table in DOC.md up to
+-- date. (in the loaders @meta snip-env-section).
 local lazy_snip_env = {
 	s = function()
 		return require("luasnip.nodes.snippet").S

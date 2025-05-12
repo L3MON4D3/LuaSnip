@@ -1,10 +1,11 @@
-personal_ws-1.1 en 109 utf-8
+personal_ws-1.1 en 113 utf-8
 AbsoluteIndexer
 Autosnippets
 Cfigure
 Cimg
 DeVries
 ECMAscript
+Env
 GIFs
 IDEs
 IndentSnippetNode
@@ -62,6 +63,7 @@ extmark
 extmarks
 filetype
 filetypes
+fmt
 fn
 functionNode
 functionNodes
@@ -75,7 +77,9 @@ jsregexp
 jumpable
 jumplist
 keymaps
+lsp
 luasnip
+mistyped
 molleweide
 multiline
 namespace
@@ -108,5 +112,3 @@ there'd
 truthy
 varargs
 vsnip
-fmt
-lsp
