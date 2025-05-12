@@ -2934,6 +2934,7 @@ possible to customize them by setting `snip_env` in `setup`.
 
 [snip-env-src]: https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22-L48
 
+
 **Example**:
 
 `~/snippets/all.lua`:
@@ -2955,6 +2956,87 @@ Load via
 ```lua
 require("luasnip.loaders.from_lua").load({paths = "~/snippets"})
 ```
+
+
+### Snip-Env Diagnostics
+One side-effect of the injected globals is that language servers, for example
+`lua-language-server`, do not know about them, which means that snippet-files
+may have many diagnostics about missing symbols.
+
+There are a few ways to fix this
+* Add all variables in `snip_env` to `Lua.diagnostic.globals`:
+  ```lua
+  -- wherever your lua-language-server lsp settings are defined:
+  settings = {
+    Lua = {
+        ...
+        diagnostics = {
+            globals = {
+                "vim",
+                "s",
+                "c",
+                "t",
+                ...
+            }
+        }
+    }
+  }
+  ```
+  This will disable the warnings, but will do so in all files these lsp-settings
+  are used with.  
+  Similarly, adding `---@diagnostic disable: undefined-global` to the
+  snippet-files is also possible, but this affects not only the variables in
+  `snip_env`, but all variables, like local variable names that may be
+  mistyped.
+* A more complete, and only slightly more complicated solution is using
+  `lua-language-server`'s [definition
+  files](https://luals.github.io/wiki/definition-files/).  
+  Add a file with the line `---@meta`, followed by the variables defined by the
+  `snip_env` to any directory listed in the `workspace.library`-settings for
+  `lua-langue-server` (one likely directory is `vim.fn.stdpath("config")/lua`,
+  check `:checkhealth lsp` in a lua file to be sure).  
+  ```lua
+  ---@meta
+  
+  s = require("luasnip.nodes.snippet").S
+  sn = require("luasnip.nodes.snippet").SN
+  isn = require("luasnip.nodes.snippet").ISN
+  t = require("luasnip.nodes.textNode").T
+  i = require("luasnip.nodes.insertNode").I
+  f = require("luasnip.nodes.functionNode").F
+  c = require("luasnip.nodes.choiceNode").C
+  d = require("luasnip.nodes.dynamicNode").D
+  r = require("luasnip.nodes.restoreNode").R
+  events = require("luasnip.util.events")
+  k = require("luasnip.nodes.key_indexer").new_key
+  ai = require("luasnip.nodes.absolute_indexer")
+  extras = require("luasnip.extras")
+  l = require("luasnip.extras").lambda
+  rep = require("luasnip.extras").rep
+  p = require("luasnip.extras").partial
+  m = require("luasnip.extras").match
+  n = require("luasnip.extras").nonempty
+  dl = require("luasnip.extras").dynamic_lambda
+  fmt = require("luasnip.extras.fmt").fmt
+  fmta = require("luasnip.extras.fmt").fmta
+  conds = require("luasnip.extras.expand_conditions")
+  postfix = require("luasnip.extras.postfix").postfix
+  types = require("luasnip.util.types")
+  parse = require("luasnip.util.parser").parse_snippet
+  ms = require("luasnip.nodes.multiSnippet").new_multisnippet
+  ```
+
+  While that allows the `snip_env`-variables to resolve correctly in
+  snippet-files, it also resolves them in other lua files. This can be fixed by
+  putting the file in a directory that is _not_ in `workspace.library` (create,
+  for example, `vim.fn.stdpath("state")/luasnip-snip_env/`), and then adding its
+  path to `workspace.library` only for snippet files, for example by putting a
+  `.luarc.json` with the following content into all snippet-directories:
+  ```json
+  {
+	"workspace.library": ["<state-stdpath>/luasnip-snip_env"]
+  }
+  ```
 
 ### Reloading when editing `require`'d files
 While the `lua-snippet-files` will be reloaded on edit, this does not
@@ -3618,13 +3700,6 @@ These are the settings you can provide to `luasnip.setup()`:
     If this is `"extend"`, the variables defined in `snip_env` will complement (and
     override) the defaults. If this is not desired, `"set"` will not include the
     defaults, but only the variables set here.
-
-  One side-effect of this is that analysis-tools (most likely
-  `lua-language-server`) for Lua will generate diagnostics for the usage of
-  undefined symbols. If you mind the (probably) large number of generated
-  warnings, consider adding the undefined globals to the globals recognized by
-  `lua-language-server` or add `---@diagnostic disable: undefined-global`
-  somewhere in the affected files.
 
 - `loaders_store_source`, boolean, whether loaders should store the source of
   the loaded snippets.  
