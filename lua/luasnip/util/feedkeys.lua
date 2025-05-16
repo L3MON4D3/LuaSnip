@@ -25,6 +25,10 @@ local executing_id = nil
 local enqueued_actions = {}
 local enqueued_cursor_state
 
+---Inserts keys into the beginning of the typeahead buffer and add a `confirm`
+---after them.
+---@param id number Id from next_id()
+---@param keys string Keys to insert
 local function _feedkeys_insert(id, keys)
 	executing_id = id
 	vim.api.nvim_feedkeys(
@@ -188,6 +192,7 @@ end
 
 function M.confirm(id)
 	executing_id = nil
+	enqueued_actions[id] = nil
 
 	if enqueued_cursor_state and enqueued_cursor_state.id == id then
 		-- only clear state if set by this action.
@@ -196,7 +201,6 @@ function M.confirm(id)
 
 	if enqueued_actions[id + 1] then
 		enqueued_actions[id + 1](id + 1)
-		enqueued_actions[id + 1] = nil
 	end
 end
 
