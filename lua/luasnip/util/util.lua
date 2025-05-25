@@ -120,10 +120,13 @@ local function move_to_mark(id)
 	set_cursor_0ind(new_cur_pos)
 end
 
-local function bytecol_to_utfcol(pos)
-	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
-	-- line[1]: get_lines returns table.
-	return { pos[1], vim.str_utfindex(line[1] or "", pos[2]) }
+local function str_utf32index(s, index)
+	if vim.fn.has("nvim-0.11") == 1 then
+		return vim.str_utfindex(s, "utf-32", index)
+	else
+		local utf32_index, _ = vim.str_utfindex(s, index)
+		return utf32_index
+	end
 end
 
 local function multiline_equal(t1, t2)
@@ -432,7 +435,6 @@ return {
 	get_snippet_filetypes = get_snippet_filetypes,
 	json_decode = vim.json.decode,
 	json_encode = vim.json.encode,
-	bytecol_to_utfcol = bytecol_to_utfcol,
 	pos_sub = pos_sub,
 	pos_add = pos_add,
 	deduplicate = deduplicate,
@@ -448,4 +450,5 @@ return {
 	ternary = ternary,
 	pos_cmp = pos_cmp,
 	validate = validate,
+	str_utf32index = str_utf32index,
 }
