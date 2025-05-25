@@ -1,4 +1,5 @@
 local session = require("luasnip.session")
+local util = require("luasnip.util.util")
 
 local Mark = {}
 
@@ -32,9 +33,7 @@ end
 local function bytecol_to_utfcol(pos)
 	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
 	-- line[1]: get_lines returns table.
-	-- use utf16-index.
-	local utf16_indx, _ = vim.str_utfindex(line[1] or "", pos[2])
-	return { pos[1], utf16_indx }
+	return { pos[1], util.str_utf32index(line[1] or "", pos[2]) }
 end
 
 function Mark:pos_begin_end()
