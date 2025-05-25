@@ -122,8 +122,20 @@ end
 
 local function bytecol_to_utfcol(pos)
 	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
+
 	-- line[1]: get_lines returns table.
-	return { pos[1], vim.str_utfindex(line[1] or "", pos[2]) }
+	if vim.fn.has("nvim-0.11") == 1 then
+		-- Use the non-deprecated overload version if available.
+		return {
+			pos[1],
+			{
+				vim.str_utfindex(line[1] or "", "utf-32", pos[2]),
+				vim.str_utfindex(line[1] or "", "utf-16", pos[2]),
+			},
+		}
+	else
+		return { pos[1], vim.str_utfindex(line[1] or "", pos[2]) }
+	end
 end
 
 local function multiline_equal(t1, t2)

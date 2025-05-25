@@ -33,8 +33,13 @@ local function bytecol_to_utfcol(pos)
 	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
 	-- line[1]: get_lines returns table.
 	-- use utf16-index.
-	local utf16_indx, _ = vim.str_utfindex(line[1] or "", pos[2])
-	return { pos[1], utf16_indx }
+	if vim.fn.has("nvim-0.11") == 1 then
+		-- Use the non-deprecated overload if available.
+		return { pos[1], vim.str_utfindex(line[1] or "", "utf-16", pos[2]) }
+	else
+		local utf16_indx, _ = vim.str_utfindex(line[1] or "", pos[2])
+		return { pos[1], utf16_indx }
+	end
 end
 
 function Mark:pos_begin_end()
