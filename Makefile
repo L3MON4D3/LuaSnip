@@ -52,6 +52,24 @@ endif
 endif
 endif
 
+# NOTE: Adding semicolon `;` at the end of a command is needed on Windows
+# Calling `%COMMAND%` by either:
+# 1. shell function: `$(shell %COMMAND%)`
+# 2. directly call in a recipe:
+# ```make
+# hello:
+# 	%COMMAND%
+# ```
+# result in `CreateProcess(NULL,%COMMAND%,...)`
+#
+# Adding `;`:
+# `$(shell %COMMAND%;)`
+# Or,
+# ```make
+# hello:
+# 	%COMMAND%;
+# ```
+# runs `$SHELL` correctly: `CreateProcess(NULL,$(SHELL) $(.SHELLFLAGS) "%COMMAND%;",...)`
 LUASNIP_DETECTED_OS?=$(shell uname;)
 
 ifneq (,$(findstring Darwin, $(LUASNIP_DETECTED_OS)))
