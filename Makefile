@@ -96,7 +96,7 @@ NEOVIM_BIN_PATH:=$(or \
 	$(shell which nvim >/dev/null && dirname "$$(which nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//';) \
 )
 # Always double quote the absolute path as it may contain spaces
-LUA_LDLIBS?=$(if $(strip $(NEOVIM_BIN_PATH)),-L"$(NEOVIM_BIN_PATH)" -llua51,)
+LUA_LDLIBS?=$(if $(NEOVIM_BIN_PATH),-L'$(NEOVIM_BIN_PATH)' -llua51,)
 endif
 
 CC:=$(shell (which $(CC) || which gcc || which clang || (which zig >/dev/null && echo "$$(which zig) cc")) 2>/dev/null;)
@@ -109,8 +109,8 @@ JSREGEXP005_PATH=$(PROJECT_ROOT)/deps/jsregexp005
 jsregexp:
 	git submodule init; \
 	git submodule update; \
-	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" 'LDLIBS=$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"; \
-	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" 'LDLIBS=$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)";
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP_PATH)"; \
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP005_PATH)";
 
 install_jsregexp: jsregexp
 # remove old binary.
