@@ -112,3 +112,12 @@ there'd
 truthy
 varargs
 vsnip
+lua
+dl
+sn
+multisnippet
+isn
+ai
+ISN
+fmta
+conds
