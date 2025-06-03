@@ -1501,7 +1501,8 @@ function Snippet:extmarks_valid()
 		return false
 	end
 
-	-- below code does not work correctly if the snippet(Node) does not have any children.
+	-- the following code assumes that the snippet(Node) has at least one child,
+	-- if it doesn't, it's valid anyway.
 	if #self.nodes == 0 then
 		return true
 	end
@@ -1511,11 +1512,12 @@ function Snippet:extmarks_valid()
 			pcall(node.mark.pos_begin_end_raw, node.mark)
 		-- this snippet is invalid if:
 		-- - we can't get the position of some node
-		-- - the positions aren't contiguous or don't completely fill the parent, or
+		-- - the positions aren't contiguous, don't completely fill the parent, or the `to` is before the `from`, or
 		-- - any child of this node violates these rules.
 		if
 			not ok_
 			or util.pos_cmp(current_from, node_from) ~= 0
+			or util.pos_cmp(node_from, node_to) > 0
 			or not node:extmarks_valid()
 		then
 			return false

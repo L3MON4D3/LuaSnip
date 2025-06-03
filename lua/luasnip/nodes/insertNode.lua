@@ -373,22 +373,30 @@ function InsertNode:get_snippetstring()
 
 	local current = { 0, 0 }
 	for _, snip in ipairs(self:child_snippets()) do
-		local snip_from, snip_to = snip.mark:pos_begin_end_raw()
-		local snip_from_base_rel = util.pos_offset(self_from, snip_from)
-		local snip_to_base_rel = util.pos_offset(self_from, snip_to)
+		-- it's possible that we first encounter a snippet with broken extmarks
+		-- in this loop, and those may cause errors when passed to
+		-- multiline_substr.
+		-- For now, simply treat it like regular text (`current` does not
+		-- advance -> the next append_text will include the text of the
+		-- snippet).
+		if snip:extmarks_valid() then
+			local snip_from, snip_to = snip.mark:pos_begin_end_raw()
+			local snip_from_base_rel = util.pos_offset(self_from, snip_from)
+			local snip_to_base_rel = util.pos_offset(self_from, snip_to)
 
-		snippetstring:append_text(
-			str_util.multiline_substr(text, current, snip_from_base_rel)
-		)
-		snippetstring:append_snip(
-			snip,
-			str_util.multiline_substr(
-				text,
-				snip_from_base_rel,
-				snip_to_base_rel
+			snippetstring:append_text(
+				str_util.multiline_substr(text, current, snip_from_base_rel)
 			)
-		)
-		current = snip_to_base_rel
+			snippetstring:append_snip(
+				snip,
+				str_util.multiline_substr(
+					text,
+					snip_from_base_rel,
+					snip_to_base_rel
+				)
+			)
+			current = snip_to_base_rel
+		end
 	end
 	snippetstring:append_text(
 		str_util.multiline_substr(
