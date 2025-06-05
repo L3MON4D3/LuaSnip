@@ -66,8 +66,7 @@ end
 -- sometimes we don't want to resolve symlinks, but handle ~/ and ./
 function Path.expand_keep_symlink(filepath)
 	-- omit second return-value of :gsub
-	local res = filepath
-		:gsub("^[.][/\\]", MYCONFIG_ROOT .. sep)
+	local res = filepath:gsub("^[.][/\\]", MYCONFIG_ROOT .. sep)
 
 	-- HOME may not exist in stripped-down environments.
 	if vim.env.HOME then
