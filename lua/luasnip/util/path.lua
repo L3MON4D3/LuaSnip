@@ -67,8 +67,13 @@ end
 function Path.expand_keep_symlink(filepath)
 	-- omit second return-value of :gsub
 	local res = filepath
-		:gsub("^~", vim.env.HOME)
 		:gsub("^[.][/\\]", MYCONFIG_ROOT .. sep)
+
+	-- HOME may not exist in stripped-down environments.
+	if vim.env.HOME then
+		res = res:gsub("^~", vim.env.HOME)
+	end
+
 	return res
 end
 function Path.expand(filepath)
@@ -96,16 +101,7 @@ function Path.normalize_nonexisting(filepath, cwd)
 end
 
 function Path.expand_nonexisting(filepath, cwd)
-	filepath
-		-- replace ~ with home-directory.
-		:gsub("^~", vim.env.HOME)
-		-- replace ./ or .\ with config-directory (likely ~/.config/nvim)
-		:gsub(
-			"^[.][/\\]",
-			MYCONFIG_ROOT .. sep
-		)
-
-	return Path.normalize_nonexisting(filepath, cwd)
+	return Path.normalize_nonexisting(Path.expand_keep_symlink(filepath), cwd)
 end
 
 -- do our best at expanding a path that may or may not exist (ie. check if it

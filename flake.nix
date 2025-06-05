@@ -32,6 +32,7 @@
           packages = with pkgs-treesitter; [
             (aspellWithDicts (dicts: with dicts; [en]))
             gnumake
+            git
           ];
         };
         # clang stdenv does not build, and it's used by de.
