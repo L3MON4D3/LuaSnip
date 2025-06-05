@@ -18,22 +18,24 @@
       forEachSupportedSystem = f: nixpkgs-treesitter.lib.genAttrs supportedSystems (system: f {
         pkgs-treesitter = import nixpkgs-treesitter { inherit system; };
         pkgs-nvim_09 = import nvim_09.inputs.nixpkgs { inherit system; };
+        pkgs-nvim_07 = import nvim_07.inputs.nixpkgs { inherit system; };
       });
     in
     {
-      devShells = forEachSupportedSystem ({ pkgs-treesitter, pkgs-nvim_09 }: let
+      devShells = forEachSupportedSystem ({ pkgs-treesitter, pkgs-nvim_09, pkgs-nvim_07 }: let
         default_09_devshell = nvim_09.outputs.devShells.${pkgs-treesitter.system}.default;
         true_bin = "${pkgs-treesitter.coreutils}/bin/true";
         false_bin = "${pkgs-treesitter.coreutils}/bin/false";
       in {
         default = pkgs-treesitter.mkShell {
+          # use any nixpkgs here.
           packages = with pkgs-treesitter; [
             (aspellWithDicts (dicts: with dicts; [en]))
-            bashInteractive
             gnumake
           ];
         };
-        test_nvim_07 = nvim_07.outputs.devShell.${pkgs-treesitter.system}.overrideAttrs(attrs: {
+        # clang stdenv does not build, and it's used by de.
+        test_nvim_07 = (nvim_07.outputs.devShell.${pkgs-treesitter.system}.override { stdenv = pkgs-nvim_07.gccStdenv; }).overrideAttrs(attrs: {
           TEST_07=true_bin;
           TEST_09=false_bin;
           TEST_MASTER=false_bin;
@@ -45,13 +47,16 @@
           LUA_PATH="";
           LUA_CPATH="";
           PREVENT_LUA_PATH_LEAK=false_bin;
+          # ASAN does not work with gcc stdenv.
+          cmakeFlags =  builtins.filter (x: x != "-DCLANG_ASAN_UBSAN=ON") attrs.cmakeFlags;
 
           # adjust some paths.
           # We're not running the devshell from the directory it expects.
-          shellHook = builtins.replaceStrings
-            [" outputs" " runtime" " build"]
-            [" ./deps/nvim_multiversion/worktree_0.7/outputs" " ./deps/nvim_multiversion/worktree_0.7/runtime" " ./deps/nvim_multiversion/worktree_0.7/build"]
-            attrs.shellHook;
+          shellHook = ''
+            cd ./deps/nvim_multiversion/worktree_0.7
+            cmakeConfigurePhase
+            cd ../../../../
+          '';
         });
 
         # override default tree-sitter, it has the wrong version (0.20.7 vs required 0.20.8).

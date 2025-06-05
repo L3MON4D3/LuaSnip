@@ -75,15 +75,12 @@
       }
     },
     "flake-utils": {
-      "inputs": {
-        "systems": "systems"
-      },
       "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "lastModified": 1644229661,
+        "narHash": "sha256-1YdnJAsNy69bpcjuoKdOYQX0YxZBiCYZo4Twxerqv7k=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "rev": "3cecb5b042f7f209c56ffd8371b2711a290ec797",
         "type": "github"
       },
       "original": {
@@ -192,11 +189,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1649809588,
-        "narHash": "sha256-f6sgDj9A8FXTVyA2zkxA66YX+j6BftxE9VHTeIMhEKE=",
+        "lastModified": 1646254136,
+        "narHash": "sha256-8nQx02tTzgYO21BP/dy5BCRopE8OwE8Drsw98j+Qoaw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "ff9efb0724de5ae0f9db9df2debefced7eb1571d",
+        "rev": "3e072546ea98db00c2364b81491b893673267827",
         "type": "github"
       },
       "original": {
@@ -262,7 +259,7 @@
       "locked": {
         "dir": "contrib",
         "lastModified": 1650022724,
-        "narHash": "sha256-z4COQIb4oiCcfd4wcuU/MKg+UGxJ4jP3O8JeY3yu/dQ=",
+        "narHash": "sha256-eYYaHpfSaYYrLkcD81Y4rsAMYDP1IJ7fLJJepkACkA8=",
         "owner": "neovim",
         "repo": "neovim",
         "rev": "333ba6569d833e22c0d291547d740d4bbfa3fdab",
@@ -284,7 +281,7 @@
       "locked": {
         "dir": "contrib",
         "lastModified": 1680866789,
-        "narHash": "sha256-SBiJn85vKSXyjfNPq2Gxe7O7/rUNMcDZjsWzkEKFW3c=",
+        "narHash": "sha256-4uCPWnjSMU7ac6Q3LT+Em8lVk1MuSegxHMLGQRtFqAs=",
         "owner": "neovim",
         "repo": "neovim",
         "rev": "040f1459849ab05b04f6bb1e77b3def16b4c2f2b",
@@ -328,21 +325,6 @@
         "nvim_07": "nvim_07",
         "nvim_09": "nvim_09",
         "nvim_master": "nvim_master"
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
       }
     },
     "treefmt-nix": {
