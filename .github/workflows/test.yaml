@@ -10,35 +10,5 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
-      # only install required dependencies, make build uses bundled libraries, etc.
-      # from here: https://github.com/neovim/neovim/blob/3a5dddf24f9d4d8959194b0cd3c6a7dd0cbd73ae/.github/scripts/install_deps_ubuntu.sh
-      # gperf is needed for neovim 0.7, the bundled version does not seem to build.
-      - run: |
-          sudo add-apt-repository ppa:neovim-ppa/stable
-          sudo apt-get update
-          sudo apt-get install -y \
-          autoconf \
-          automake \
-          build-essential \
-          cmake \
-          cpanminus \
-          curl \
-          gettext \
-          libtool-bin \
-          locales-all \
-          ninja-build \
-          pkg-config \
-          unzip \
-          gperf
-
-          # install luajit+headers for jsregexp
-          sudo apt-get install -y libluajit-5.1-dev luajit
-
-          # libuv is installed by default, but the version is too old; remove it.
-          sudo apt-get remove libuv1-dev
-
-      # explicitly set LUAJIT-variable since nvim is not available when the
-      # makefile's variables are evaluated, but that's not a problem since we
-      # actually know that we'll build with luajit, and not lua, and can just
-      # set it manually.
-      - run: make test LUAJIT=LuaJIT
+      - uses: nixbuild/nix-quick-install-action@v30
+      - run: nix develop -i -c bash -c 'make test_nix'
