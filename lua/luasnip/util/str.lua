@@ -221,7 +221,7 @@ function M.multiline_to_byte_offset(str, pos)
 
 	-- allow positions one beyond the last character for all lines (even the
 	-- last line).
-	if pos[2] >= #str[pos[1]+1] + 1 then
+	if pos[2] >= #str[pos[1] + 1] + 1 then
 		-- in this case, pos is outside of the multiline-region.
 		return nil
 	end

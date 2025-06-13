@@ -316,15 +316,11 @@ local function update_dependents(node, opts)
 	-- don't update if a jump/change_choice is in progress, or if we don't have
 	-- an active node.
 	if active ~= nil then
-		local upd_res = node_update_dependents_preserve_position(
-			node,
-			active,
-			{
-				no_move = false,
-				restore_position = true,
-				cursor_restore_data = opts and opts.cursor_restore_data,
-			}
-		)
+		local upd_res = node_update_dependents_preserve_position(node, active, {
+			no_move = false,
+			restore_position = true,
+			cursor_restore_data = opts and opts.cursor_restore_data,
+		})
 		if upd_res.new_current then
 			upd_res.new_current:focus()
 			session.current_nodes[vim.api.nvim_get_current_buf()] =
