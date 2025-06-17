@@ -17,7 +17,10 @@ local luasnip_data_dir = vim.fn.stdpath("cache") .. "/luasnip"
 
 local log = require("luasnip.util.log").new("main")
 
-local function get_active_snip()
+---@class LuaSnip.API
+local API = {}
+
+function API.get_active_snip()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
 		return nil
@@ -50,7 +53,7 @@ end
 -- opts: optional args, can contain `type`, either "snippets" or "autosnippets".
 --
 -- return table, may be empty.
-local function get_snippets(ft, opts)
+function API.get_snippets(ft, opts)
 	opts = opts or {}
 
 	return snippet_collection.get_snippets(ft, opts.type or "snippets") or {}
@@ -66,19 +69,19 @@ local function default_snip_info(snip)
 	}
 end
 
-local function available(snip_info)
+function API.available(snip_info)
 	snip_info = snip_info or default_snip_info
 
 	local fts = util.get_snippet_filetypes()
 	local res = {}
 	for _, ft in ipairs(fts) do
 		res[ft] = {}
-		for _, snip in ipairs(get_snippets(ft)) do
+		for _, snip in ipairs(API.get_snippets(ft)) do
 			if not snip.invalidated then
 				table.insert(res[ft], snip_info(snip))
 			end
 		end
-		for _, snip in ipairs(get_snippets(ft, { type = "autosnippets" })) do
+		for _, snip in ipairs(API.get_snippets(ft, { type = "autosnippets" })) do
 			if not snip.invalidated then
 				table.insert(res[ft], snip_info(snip))
 			end
@@ -125,7 +128,7 @@ function unlink_set_adjacent_as_current(snippet, reason, ...)
 	unlink_set_adjacent_as_current_no_log(snippet)
 end
 
-local function unlink_current()
+function API.unlink_current()
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not current then
 		print("No active Snippet")
@@ -156,7 +159,7 @@ local function safe_jump_current(dir, no_move, dry_run)
 		return session.current_nodes[vim.api.nvim_get_current_buf()]
 	end
 end
-local function jump(dir)
+function API.jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
 		local next_node = util.no_region_check_wrap(safe_jump_current, dir)
@@ -176,28 +179,28 @@ local function jump(dir)
 		return false
 	end
 end
-local function jump_destination(dir)
+function API.jump_destination(dir)
 	-- dry run of jump (+no_move ofc.), only retrieves destination-node.
 	return safe_jump_current(dir, true, { active = {} })
 end
 
-local function jumpable(dir)
+function API.jumpable(dir)
 	-- node is jumpable if there is a destination.
-	return jump_destination(dir)
+	return API.jump_destination(dir)
 		~= session.current_nodes[vim.api.nvim_get_current_buf()]
 end
 
-local function expandable()
+function API.expandable()
 	next_expand, next_expand_params =
 		match_snippet(util.get_current_line_to_cursor(), "snippets")
 	return next_expand ~= nil
 end
 
-local function expand_or_jumpable()
-	return expandable() or jumpable(1)
+function API.expand_or_jumpable()
+	return API.expandable() or API.jumpable(1)
 end
 
-local function in_snippet()
+function API.in_snippet()
 	-- check if the cursor on a row inside a snippet.
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -223,12 +226,12 @@ local function in_snippet()
 	end
 end
 
-local function expand_or_locally_jumpable()
-	return expandable() or (in_snippet() and jumpable(1))
+function API.expand_or_locally_jumpable()
+	return API.expandable() or (API.in_snippet() and API.jumpable(1))
 end
 
-local function locally_jumpable(dir)
-	return in_snippet() and jumpable(dir)
+function API.locally_jumpable(dir)
+	return API.in_snippet() and API.jumpable(dir)
 end
 
 local function _jump_into_default(snippet)
@@ -236,7 +239,7 @@ local function _jump_into_default(snippet)
 end
 
 -- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
-local function snip_expand(snippet, opts)
+function API.snip_expand(snippet, opts)
 	local snip = snippet:copy()
 
 	opts = opts or {}
@@ -319,7 +322,7 @@ end
 ---@param opts table: may contain:
 --- - `jump_into_func`: passed through to `snip_expand`.
 ---@return boolean: whether a snippet was expanded.
-local function expand(opts)
+function API.expand(opts)
 	local expand_params
 	local snip
 	-- find snip via next_expand (set from previous expandable()) or manual matching.
@@ -348,7 +351,7 @@ local function expand(opts)
 			}
 
 		-- override snip with expanded copy.
-		snip = snip_expand(snip, {
+		snip = API.snip_expand(snip, {
 			expand_params = expand_params,
 			-- clear trigger-text.
 			clear_region = clear_region,
@@ -360,7 +363,7 @@ local function expand(opts)
 	return false
 end
 
-local function expand_auto()
+function API.expand_auto()
 	local snip, expand_params =
 		match_snippet(util.get_current_line_to_cursor(), "autosnippets")
 	if snip then
@@ -373,7 +376,7 @@ local function expand_auto()
 				},
 				to = cursor,
 			}
-		snip = snip_expand(snip, {
+		snip = API.snip_expand(snip, {
 			expand_params = expand_params,
 			-- clear trigger-text.
 			clear_region = clear_region,
@@ -381,28 +384,29 @@ local function expand_auto()
 	end
 end
 
-local function expand_repeat()
+function API.expand_repeat()
 	-- prevent clearing text with repeated expand.
 	session.last_expand_opts.clear_region = nil
 	session.last_expand_opts.pos = nil
 
-	snip_expand(session.last_expand_snip, session.last_expand_opts)
+	API.snip_expand(session.last_expand_snip, session.last_expand_opts)
 end
 
 -- return true and expand snippet if expandable, return false if not.
-local function expand_or_jump()
-	if expand() then
+
+function API.expand_or_jump()
+	if API.expand() then
 		return true
 	end
-	if jump(1) then
+	if API.jump(1) then
 		return true
 	end
 	return false
 end
 
-local function lsp_expand(body, opts)
+function API.lsp_expand(body, opts)
 	-- expand snippet as-is.
-	snip_expand(
+	API.snip_expand(
 		ls.parser.parse_snippet(
 			"",
 			body,
@@ -412,7 +416,7 @@ local function lsp_expand(body, opts)
 	)
 end
 
-local function choice_active()
+function API.choice_active()
 	return session.active_choice_nodes[vim.api.nvim_get_current_buf()] ~= nil
 end
 
@@ -435,7 +439,7 @@ local function safe_choice_action(snip, ...)
 		return session.current_nodes[vim.api.nvim_get_current_buf()]
 	end
 end
-local function change_choice(val)
+function API.change_choice(val)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
@@ -450,7 +454,7 @@ local function change_choice(val)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 end
 
-local function set_choice(choice_indx)
+function API.set_choice(choice_indx)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
@@ -467,7 +471,7 @@ local function set_choice(choice_indx)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 end
 
-local function get_current_choices()
+function API.get_current_choices()
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
@@ -482,7 +486,7 @@ local function get_current_choices()
 	return choice_lines
 end
 
-local function active_update_dependents()
+function API.active_update_dependents()
 	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
 	-- special case for startNode, cannot focus on those (and they can't
 	-- have dependents)
@@ -533,7 +537,7 @@ local function active_update_dependents()
 	end
 end
 
-local function store_snippet_docstrings(snippet_table)
+function API.store_snippet_docstrings(snippet_table)
 	-- ensure the directory exists.
 	-- 493 = 0755
 	vim.loop.fs_mkdir(luasnip_data_dir, 493)
@@ -567,7 +571,7 @@ local function store_snippet_docstrings(snippet_table)
 	vim.loop.fs_write(docstring_cache_fd, util.json_encode(docstrings))
 end
 
-local function load_snippet_docstrings(snippet_table)
+function API.load_snippet_docstrings(snippet_table)
 	-- ensure the directory exists.
 	-- 493 = 0755
 	vim.loop.fs_mkdir(luasnip_data_dir, 493)
@@ -604,7 +608,7 @@ local function load_snippet_docstrings(snippet_table)
 	end
 end
 
-local function unlink_current_if_deleted()
+function API.unlink_current_if_deleted()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
 		return
@@ -623,7 +627,7 @@ local function unlink_current_if_deleted()
 	end
 end
 
-local function exit_out_of_region(node)
+function API.exit_out_of_region(node)
 	-- if currently jumping via luasnip or no active node:
 	if session.jump_active or not node then
 		return
@@ -688,17 +692,17 @@ local function exit_out_of_region(node)
 end
 
 -- ft string, extend_ft table of strings.
-local function filetype_extend(ft, extend_ft)
+function API.filetype_extend(ft, extend_ft)
 	vim.list_extend(session.ft_redirect[ft], extend_ft)
 	session.ft_redirect[ft] = util.deduplicate(session.ft_redirect[ft])
 end
 
 -- ft string, fts table of strings.
-local function filetype_set(ft, fts)
+function API.filetype_set(ft, fts)
 	session.ft_redirect[ft] = util.deduplicate(fts)
 end
 
-local function cleanup()
+function API.cleanup()
 	-- Use this to reload luasnip
 	vim.api.nvim_exec_autocmds(
 		"User",
@@ -709,11 +713,11 @@ local function cleanup()
 	loader.cleanup()
 end
 
-local function refresh_notify(ft)
+function API.refresh_notify(ft)
 	snippet_collection.refresh_notify(ft)
 end
 
-local function setup_snip_env()
+function API.setup_snip_env()
 	local combined_table = vim.tbl_extend("force", _G, session.config.snip_env)
 	-- TODO: if desired, take into account _G's __index before looking into
 	-- snip_env's __index.
@@ -721,15 +725,15 @@ local function setup_snip_env()
 
 	setfenv(2, combined_table)
 end
-local function get_snip_env()
+function API.get_snip_env()
 	return session.get_snip_env()
 end
 
-local function get_id_snippet(id)
+function API.get_id_snippet(id)
 	return snippet_collection.get_id_snippet(id)
 end
 
-local function add_snippets(ft, snippets, opts)
+function API.add_snippets(ft, snippets, opts)
 	util.validate("filetype", ft, { "string", "nil" })
 	util.validate("snippets", snippets, { "table" })
 	util.validate("opts", opts, { "table", "nil" })
@@ -750,17 +754,21 @@ local function add_snippets(ft, snippets, opts)
 
 	if opts.refresh_notify then
 		for ft_, _ in pairs(snippets) do
-			refresh_notify(ft_)
+			API.refresh_notify(ft_)
 		end
 	end
 end
 
-local function clean_invalidated(opts)
+---Clean invalidated snippets from internal snippet storage.  
+---Invalidated snippets are still stored; it might be useful to actually remove
+---them as they still have to be iterated during expansion.
+---@param opts LuaSnip.Opts.CleanInvalidated
+function API.clean_invalidated(opts)
 	opts = opts or {}
 	snippet_collection.clean_invalidated(opts)
 end
 
-local function activate_node(opts)
+function API.activate_node(opts)
 	opts = opts or {}
 	local pos = opts.pos or util.get_cursor_0ind()
 	local strict = vim.F.if_nil(opts.strict, false)
@@ -851,7 +859,7 @@ local ls_lazy = {
 -- It is used to define the type annotation class for all lazy attributes by tricking LuaLS into
 -- exploring all targeted functions and use their documentation for the class methods.
 if false then
-	---@class LuaSnip_lazy
+	---@class LuaSnip.LazyAPI
 	_ = {
 		s = require("luasnip.nodes.snippet").S,
 		sn = require("luasnip.nodes.snippet").SN,
@@ -883,53 +891,13 @@ if false then
 	}
 end
 
----@class LuaSnip_static
-local ls_static = {
-	expand_or_jumpable = expand_or_jumpable,
-	expand_or_locally_jumpable = expand_or_locally_jumpable,
-	locally_jumpable = locally_jumpable,
-	jumpable = jumpable,
-	expandable = expandable,
-	in_snippet = in_snippet,
-	expand = expand,
-	snip_expand = snip_expand,
-	expand_repeat = expand_repeat,
-	expand_auto = expand_auto,
-	expand_or_jump = expand_or_jump,
-	jump = jump,
-	get_active_snip = get_active_snip,
-	choice_active = choice_active,
-	change_choice = change_choice,
-	set_choice = set_choice,
-	get_current_choices = get_current_choices,
-	unlink_current = unlink_current,
-	lsp_expand = lsp_expand,
-	active_update_dependents = active_update_dependents,
-	available = available,
-	exit_out_of_region = exit_out_of_region,
-	load_snippet_docstrings = load_snippet_docstrings,
-	store_snippet_docstrings = store_snippet_docstrings,
-	unlink_current_if_deleted = unlink_current_if_deleted,
-	filetype_extend = filetype_extend,
-	filetype_set = filetype_set,
-	add_snippets = add_snippets,
-	get_snippets = get_snippets,
-	get_id_snippet = get_id_snippet,
-	setup_snip_env = setup_snip_env,
-	get_snip_env = get_snip_env,
-	clean_invalidated = clean_invalidated,
-	get_snippet_filetypes = util.get_snippet_filetypes,
-	jump_destination = jump_destination,
-	session = session,
-	cleanup = cleanup,
-	refresh_notify = refresh_notify,
-	env_namespace = Environ.env_namespace,
-	setup = require("luasnip.config").setup,
-	extend_decorator = extend_decorator,
-	log = require("luasnip.util.log"),
-	activate_node = activate_node,
-}
+API.get_snippet_filetypes = util.get_snippet_filetypes
+API.session = session
+API.env_namespace = Environ.env_namespace
+API.setup = require("luasnip.config").setup
+API.extend_decorator = extend_decorator
+API.log = require("luasnip.util.log")
 
----@class LuaSnip: LuaSnip_static, LuaSnip_lazy
-ls = lazy_table(ls_static, ls_lazy)
+---@class LuaSnip: LuaSnip.API, LuaSnip.LazyAPI
+ls = lazy_table(API, ls_lazy)
 return ls
