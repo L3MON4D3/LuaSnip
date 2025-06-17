@@ -20,6 +20,9 @@ local log = require("luasnip.util.log").new("main")
 ---@class LuaSnip.API
 local API = {}
 
+---Get the currently active snippet.
+---@return LuaSnip.Snippet? active_snip The active snippet if one exists,
+---otherwise `nil`.
 function API.get_active_snip()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -53,6 +56,17 @@ end
 -- opts: optional args, can contain `type`, either "snippets" or "autosnippets".
 --
 -- return table, may be empty.
+
+---@class LuaSnip.Opts.GetSnippets
+---@field type? "snippets"|"autosnippets" Whether to get snippets or
+---autosnippets. Defaults to "snippets".
+
+---Retrieve snippets from luasnip.
+---@param ft string? Filetype, if not given returns snippets for all filetypes.
+---@param opts LuaSnip.Opts.GetSnippets? Optional arguments.
+---@return LuaSnip.Snippet[]|table<string, LuaSnip.Snippet[]> snippets Flat
+---array when `ft` is non-nil, otherwise a table mapping filetypes to
+---snippets.
 function API.get_snippets(ft, opts)
 	opts = opts or {}
 
@@ -69,6 +83,25 @@ local function default_snip_info(snip)
 	}
 end
 
+---Retrieve information about snippets available in the current file/at the
+---current position (in case treesitter-based filetypes are enabled).
+---@generic T
+---@param snip_info (fun(LuaSnip.Snippet): T)? Optionally pass a function that,
+---given a snippet, returns the data that is returned by this function in the
+---snippets' stead. By default, this function is
+---```lua
+---function(snip)
+---    return {
+---        name = snip.name,
+---        trigger = snip.trigger,
+---        description = snip.description,
+---        wordTrig = snip.wordTrig and true or false,
+---        regTrig = snip.regTrig and true or false,
+---    }
+--end
+---```
+---@return table<string, T[]> available_info Table mapping filetypes to list of
+---data returned by snip_info.
 function API.available(snip_info)
 	snip_info = snip_info or default_snip_info
 
@@ -128,6 +161,9 @@ function unlink_set_adjacent_as_current(snippet, reason, ...)
 	unlink_set_adjacent_as_current_no_log(snippet)
 end
 
+---Removes the current snippet from the jumplist (useful if LuaSnip fails to
+---automatically detect e.g. deletion of a snippet) and sets the current node
+---behind the snippet, or, if not possible, before it.
 function API.unlink_current()
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not current then
@@ -159,6 +195,9 @@ local function safe_jump_current(dir, no_move, dry_run)
 		return session.current_nodes[vim.api.nvim_get_current_buf()]
 	end
 end
+---Jump forwards or backwards
+---@param dir 1|-1 Jump forward for 1, backward for -1.
+---@return boolean jumped `true` if a jump was performed, `false` otherwise.
 function API.jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
@@ -179,27 +218,48 @@ function API.jump(dir)
 		return false
 	end
 end
+---Find the node the next jump will end up at. This will not work always,
+---because we will not update the node before jumping, so if the jump would eg.
+---insert a new node between this node and its pre-update jump target, this
+---would not be registered.  
+---Thus, it currently only works for simple cases.
+---@param dir 1|-1 `1`: find the next node, `-1`: find the previous node.
+---@return LuaSnip.Node target The destination.
 function API.jump_destination(dir)
 	-- dry run of jump (+no_move ofc.), only retrieves destination-node.
 	return safe_jump_current(dir, true, { active = {} })
 end
 
+---Determine whether jumping forwards or backwards will actually jump, or if
+---there is no node in that direction.
+---@param dir 1|-1 `1` forward, `-1` backward.
+---@return boolean is_jumpable
 function API.jumpable(dir)
 	-- node is jumpable if there is a destination.
 	return API.jump_destination(dir)
 		~= session.current_nodes[vim.api.nvim_get_current_buf()]
 end
 
+---Determine whether there is an expandable snippet at the current cursor
+---position. Does not consider autosnippets since those would already be
+---expanded at this point.
+---@return boolean is_expandable
 function API.expandable()
 	next_expand, next_expand_params =
 		match_snippet(util.get_current_line_to_cursor(), "snippets")
 	return next_expand ~= nil
 end
 
+---Determines if it's possible to expand a snippet at the current
+---cursor-position, or whether it's possible to jump forward from the current
+---node.
+---@return boolean is_expand_or_jumpable
 function API.expand_or_jumpable()
 	return API.expandable() or API.jumpable(1)
 end
 
+---Determine whether the cursor is within a snippet.
+---@return boolean is_inside
 function API.in_snippet()
 	-- check if the cursor on a row inside a snippet.
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
@@ -218,18 +278,26 @@ function API.in_snippet()
 			"Error while getting extmark-position: %s",
 			snip_begin_pos
 		)
-		return
+		return false
 	end
 	local pos = vim.api.nvim_win_get_cursor(0)
 	if pos[1] - 1 >= snip_begin_pos[1] and pos[1] - 1 <= snip_end_pos[1] then
 		return true -- cursor not on row inside snippet
 	end
+	return false
 end
 
+---Determine if a snippet can be expanded at the current cursor position, or
+---whether the cursor is inside a snippet and the current node can be jumped
+---forward from.
+---@return boolean is_expand_or_locally_jumpable
 function API.expand_or_locally_jumpable()
 	return API.expandable() or (API.in_snippet() and API.jumpable(1))
 end
 
+---Determine if whether the cursor is inside a snippet and the current node can
+---be jumped forward from.
+---@return boolean is_locally_jumpable
 function API.locally_jumpable(dir)
 	return API.in_snippet() and API.jumpable(dir)
 end
@@ -239,6 +307,45 @@ local function _jump_into_default(snippet)
 end
 
 -- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
+
+---@class LuaSnip.Opts.SnipExpandExpandParams
+---@field trigger string? What to set as the expanded snippets' trigger
+---(Defaults to `snip.trigger`).
+---@field captures string[]? Set as the expanded snippets' captures (Defaults to
+---`{}`).
+---@field env_override table<string, string>? Set or override environment
+---variables of the expanded snippet (Defaults to `{}`).
+
+---@class LuaSnip.Opts.SnipExpand
+---@field clear_region? LuaSnip.BufferRegion A region of text to clear after
+---populating env-variables, but before jumping into `snip`. If `nil`, no
+---clearing is performed.  
+---Being able to remove text at this point is useful as clearing before calling
+---this function would populate `TM_CURRENT_LINE` and `TM_CURRENT_WORD` with
+---wrong values (they would miss the snippet trigger).  
+---The actual values used for clearing are `region.from` and `region.to`, both
+---(0,0)-indexed byte-positions in the buffer.  
+---@field expand_params LuaSnip.Opts.SnipExpandExpandParams? Override various
+---fields of the expanded snippet. Don't override anything by default.  
+---This is useful for manually expanding snippets where the trigger passed
+---via `trig` is not the text triggering the snippet, or those which expect
+---`captures` (basically, snippets with a non-plaintext `trigEngine`).  
+---
+---One Example:
+---```lua
+---snip_expand(snip, {
+---    trigger = "override_trigger",
+---    captures = {"first capture", "second capture"},
+---    env_override = { this_key = "some value", other_key = {"multiple", "lines"}, TM_FILENAME = "some_other_filename.lua" }
+---})
+---```
+---@field pos [integer, integer]? Position at which the snippet should be
+---inserted. Pass as `(row,col)`, both 0-based, the `col` given in bytes.
+
+---Expand a snippet in the current buffer.
+---@param snippet LuaSnip.Snippet The snippet.
+---@param opts LuaSnip.Opts.SnipExpand? Optional additional arguments.
+---@return [TODO:return]
 function API.snip_expand(snippet, opts)
 	local snip = snippet:copy()
 
