@@ -11,18 +11,22 @@
   # this only has to be updated sporadically, basically whenever the source in
   # worktree_master no longer builds.
   inputs.nvim_master.url = "github:nix-community/neovim-nightly-overlay";
+  inputs.luals-mdgen.url = "github:L3MON4D3/luals-mdgen";
+  inputs.emmylua-analyzer-rust.url = "github:EmmyLuaLs/emmylua-analyzer-rust";
 
-  outputs = { self, nixpkgs-treesitter, nvim_07, nvim_09, nvim_master }:
+  outputs = { self, nixpkgs-treesitter, nvim_07, nvim_09, nvim_master, luals-mdgen, emmylua-analyzer-rust }:
     let
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
       forEachSupportedSystem = f: nixpkgs-treesitter.lib.genAttrs supportedSystems (system: f {
         pkgs-treesitter = import nixpkgs-treesitter { inherit system; };
         pkgs-nvim_09 = import nvim_09.inputs.nixpkgs { inherit system; };
         pkgs-nvim_07 = import nvim_07.inputs.nixpkgs { inherit system; };
+        pkg-luals-mdgen = luals-mdgen.outputs.packages.${system}.default;
+        pkg-emmylua-doc = emmylua-analyzer-rust.outputs.packages.${system}.emmylua_doc_cli;
       });
     in
     {
-      devShells = forEachSupportedSystem ({ pkgs-treesitter, pkgs-nvim_09, pkgs-nvim_07 }: let
+      devShells = forEachSupportedSystem ({ pkgs-treesitter, pkgs-nvim_09, pkgs-nvim_07, pkg-luals-mdgen, pkg-emmylua-doc }: let
         default_09_devshell = nvim_09.outputs.devShells.${pkgs-treesitter.system}.default;
         true_bin = "${pkgs-treesitter.coreutils}/bin/true";
         false_bin = "${pkgs-treesitter.coreutils}/bin/false";
@@ -38,6 +42,8 @@
             which
             gnugrep
             gcc
+            pkg-luals-mdgen
+            pkg-emmylua-doc
           ];
         };
         # clang stdenv does not build, and it's used by de.

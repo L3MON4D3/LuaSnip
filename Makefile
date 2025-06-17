@@ -140,3 +140,7 @@ spellcheck:
 	# grabbed from word-warden.
 	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check DOC.md
 	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check README.md
+
+doc_md:
+	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
+	luals-mdgen DOC-template.md DOC.md
