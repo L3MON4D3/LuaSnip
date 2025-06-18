@@ -6,7 +6,29 @@ local events = require("luasnip.util.events")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local types = require("luasnip.util.types")
 
+---@class LuaSnip.Node
 local Node = {}
+
+---@alias LuaSnip.NodeExtOpts table<"active"|"passive"|"visited"|"unvisited"|"snippet_passive", vim.api.keyset.set_extmark>
+
+---@class LuaSnip.Opts.Node
+---@field node_ext_opts LuaSnip.NodeExtOpts? Pass these opts through to the
+---underlying extmarks representing the node. Notably, this enables highlighting
+---the nodes, and allows the highlight to be different based on the state of the
+---node/snippet. See [ext_opts](../../../DOC.md#ext_opts)
+---@field merge_node_ext_opts boolean? Whether to use the parents' `ext_opts` to
+---compute this nodes' `ext_opts`.
+---@field key any? Some unique value (strings seem useful) to identify this
+---node.  
+---This is useful for [Key Indexer](../../../DOC.md#key-indexer) or for finding the node at
+---runtime (See [Snippets-API](../../../DOC.md#snippets-api)
+---These keys don't have to be unique across the entire lifetime of the snippet,
+---but every key should occur only once at the same time. This means it is fine
+---to return a keyed node from a dynamicNode, because even if it will be
+---generated multiple times, the same key not occur twice at the same time.
+---@field node_callbacks table<"enter"|"leave", fun(node:LuaSnip.Node)>
+---Specify functions to call after changing the choice, or entering or leaving
+---the node. The callback receives the `node` the callback was called on.
 
 function Node:new(o, opts)
 	o = o or {}
