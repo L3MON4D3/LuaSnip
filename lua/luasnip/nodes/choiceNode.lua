@@ -118,7 +118,7 @@ function ChoiceNode.C(pos, choices, opts)
 	c:init_nodes()
 	return c
 end
-extend_decorator.register(ChoiceNode.new, { arg_indx = 3 })
+extend_decorator.register(ChoiceNode.C, { arg_indx = 3 })
 
 function ChoiceNode:subsnip_init()
 	node_util.subsnip_init_children(self.parent, self.choices)
