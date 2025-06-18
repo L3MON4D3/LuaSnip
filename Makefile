@@ -141,6 +141,6 @@ spellcheck:
 	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check DOC.md
 	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check README.md
 
-doc_md:
+gen_md_doc:
 	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
 	luals-mdgen DOC-template.md DOC.md --width 100
