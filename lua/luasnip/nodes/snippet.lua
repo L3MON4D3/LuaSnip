@@ -66,7 +66,21 @@ local stored_mt = {
 	end,
 }
 
+---@class LuaSnip.Snippet: LuaSnip.Node
+---@field nodes LuaSnip.Node[]
 local Snippet = node_mod.Node:new()
+
+-- very approximate classes, for now.
+---@alias LuaSnip.SnippetID integer
+
+---@class LuaSnip.Addable
+---Anything that can be passed to ls.add_snippets().
+
+---@class LuaSnip.ExpandedSnippet
+---Represents an expanded snippet.
+
+---@class LuaSnip.Snippet: LuaSnip.Addable, LuaSnip.ExpandedSnippet
+---@class LuaSnip.SnippetNode: LuaSnip.Node
 
 local Parent_indexer = {}
 

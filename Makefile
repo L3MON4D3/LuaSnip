@@ -143,4 +143,4 @@ spellcheck:
 
 doc_md:
 	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
-	luals-mdgen DOC-template.md DOC.md
+	luals-mdgen DOC-template.md DOC.md --width 100

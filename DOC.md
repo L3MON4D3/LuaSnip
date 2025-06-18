@@ -747,22 +747,24 @@ ChoiceNodes allow choosing between multiple nodes.
 
 <!-- panvimdoc-ignore-end -->
 
-`c(jump_index, choices, node_opts)`
-
-- `jump_index`: `number`, since choiceNodes can be jumped to, they need a
-  jump-index (Info in [Basics-Jump-Index](#jump-index)).
-- `choices`: `node[]|node`, the choices. The first will be initially active.
-  A list of nodes will be turned into a `snippetNode`.
-- `node_opts`: `table`. `choiceNode` supports the keys common to all nodes
-  described in [Node](#node), and one additional key:
-  - `restore_cursor`: `false` by default. If it is set, and the node that was
-    being edited also appears in the switched to choice (can be the case if a
-    `restoreNode` is present in both choice) the cursor is restored relative to
-    that node.  
-    The default is `false` as enabling might lead to decreased performance. It's
-    possible to override the default by wrapping the `choiceNode` constructor
-    in another function that sets `opts.restore_cursor` to `true` and then using
-    that to construct `choiceNode`s:
+`c(pos, choices, opts): LuaSnip.ChoiceNode`: Create a new choiceNode.
+* `pos: integer` Jump-index of the node (See [Basics-Jump-Index](../../../DOC.md#jump-index)).
+* `choices: table<integer,(LuaSnip.Node|LuaSnip.Node[])>` A list of nodes that can be switched
+  between. If a list of nodes is passed as a choice, it will be turned into a snippetNode.  
+  Jumpable nodes that generally need a jump-index don't need one inside the choiceNode, they inherit
+  its jump-index. Additionally, one should make sure the cursor has a position to stop at inside
+  every choice, since changing the choice is generally only possible when inside the choiceNode.  
+  This means that in `sn(nil, {...nodes...})` `nodes` has to contain e.g. an `i(1)`, otherwise
+  LuaSnip will just "jump through" the nodes, making it impossible to change the choice after
+  switching to it.
+* `opts: LuaSnip.Opts.ChoiceNode?` Additional optional arguments.  
+  Valid keys are:
+  * `restore_cursor: boolean?` If set, the currently active node is looked up in the switched-to
+    choice, and the cursor restored to preserve the current position relative to that node. The node
+    may be found if a `restoreNode` is present in both choice.  
+    `false` by default, as enabling might lead to decreased performance. It's possible to override
+    the default by wrapping the `choiceNode` constructor in another function that sets
+    `opts.restore_cursor` to `true` and then using that to construct `choiceNode`s:
     ```lua
     local function restore_cursor_choice(pos, choices, opts)
         if opts then
@@ -773,17 +775,21 @@ ChoiceNodes allow choosing between multiple nodes.
         return c(pos, choices, opts)
     end
     ```
+    Consider passing this override into `snip_env`.
+  * `node_callbacks: table<("change_choice"|"enter"|"leave"),fun(node: LuaSnip.Node)>`
+  * `node_ext_opts: LuaSnip.NodeExtOpts?` Pass these opts through to the underlying extmarks
+    representing the node. Notably, this enables highlighting the nodes, and allows the highlight to
+    be different based on the state of the node/snippet. See [ext_opts](../../../DOC.md#ext_opts)
+  * `merge_node_ext_opts: boolean?` Whether to use the parents' `ext_opts` to compute this nodes'
+    `ext_opts`.
+  * `key: any` Some unique value (strings seem useful) to identify this node.  
+    This is useful for [Key Indexer](../../../DOC.md#key-indexer) or for finding the node at runtime
+    (See [Snippets-API](../../../DOC.md#snippets-api) These keys don't have to be unique across the
+    entire lifetime of the snippet, but every key should occur only once at the same time. This
+    means it is fine to return a keyed node from a dynamicNode, because even if it will be generated
+    multiple times, the same key not occur twice at the same time.
 
-Jumpable nodes that normally expect an index as their first parameter don't
-need one inside a `choiceNode`; their jump-index is the same as the choiceNodes'.
-
-As it is only possible (for now) to change choices from within the `choiceNode`,
-make sure that all of the choices have some place for the cursor to stop at! 
-
-This means that in `sn(nil, {...nodes...})` `nodes` has to contain e.g. an
-`i(1)`, otherwise LuaSnip will just "jump through" the nodes, making it
-impossible to change the choice.
-
+**Examples:**
 ```lua
 c(1, {
 	t"some text", -- textNodes are just stopped at.
@@ -3786,18 +3792,23 @@ These are the settings you can provide to `luasnip.setup()`:
   This function returns:
   * `active_snip: LuaSnip.Snippet?` The active snippet if one exists, otherwise `nil`.
 
-* `get_snippets(ft, opts): (LuaSnip.Snippet[]|table<string,LuaSnip.Snippet[]>)`: Retrieve snippets from luasnip.
+* `get_snippets(ft, opts): (LuaSnip.Snippet[]|table<string,LuaSnip.Snippet[]>)`: Retrieve snippets
+  from luasnip.
   * `ft: string?` Filetype, if not given returns snippets for all filetypes.
-  * `opts: LuaSnip.Opts.GetSnippets?` Optional arguments.
+  * `opts: LuaSnip.Opts.GetSnippets?` Optional arguments.  
+    Valid keys are:
+    * `type: ("snippets"|"autosnippets")?` Whether to get snippets or autosnippets. Defaults to
+      "snippets".
 
   This function returns:
-  * `snippets: (LuaSnip.Snippet[]|table<string,LuaSnip.Snippet[]>)` Flat array when `ft` is non-nil, otherwise a table
-    mapping filetypes to snippets.
+  * `snippets: (LuaSnip.Snippet[]|table<string,LuaSnip.Snippet[]>)` Flat array when `ft` is non-nil,
+    otherwise a table mapping filetypes to snippets.
 
-* `available(snip_info): table<string,T[]>`: Retrieve information about snippets available in the current file/at the
-  current position (in case treesitter-based filetypes are enabled).
-  * `snip_info: fun(LuaSnip.Snippet) -> T?` Optionally pass a function that, given a snippet, returns the data that is
-    returned by this function in the snippets' stead. By default, this function is
+* `available(snip_info): table<string,T[]>`: Retrieve information about snippets available in the
+  current file/at the current position (in case treesitter-based filetypes are enabled).
+  * `snip_info: fun(LuaSnip.Snippet) -> T?` Optionally pass a function that, given a snippet,
+    returns the data that is returned by this function in the snippets' stead. By default, this
+    function is
     ```lua
     function(snip)
         return {
@@ -3811,39 +3822,41 @@ These are the settings you can provide to `luasnip.setup()`:
     ```
 
   This function returns:
-  * `available_info: table<string,T[]>` Table mapping filetypes to list of data returned by snip_info.
+  * `available_info: table<string,T[]>` Table mapping filetypes to list of data returned by
+    snip_info.
 
-* `unlink_current()`: Removes the current snippet from the jumplist (useful if LuaSnip fails to automatically detect
-  e.g. deletion of a snippet) and sets the current node behind the snippet, or, if not possible, before it.
+* `unlink_current()`: Removes the current snippet from the jumplist (useful if LuaSnip fails to
+  automatically detect e.g. deletion of a snippet) and sets the current node behind the snippet, or,
+  if not possible, before it.
 * `jump(dir): boolean`: Jump forwards or backwards
   * `dir: (1|-1)` Jump forward for 1, backward for -1.
 
   This function returns:
   * `jumped: boolean` `true` if a jump was performed, `false` otherwise.
 
-* `jump_destination(dir): LuaSnip.Node`: Find the node the next jump will end up at. This will not work always, because
-  we will not update the node before jumping, so if the jump would eg. insert a new node between this node and its
-  pre-update jump target, this would not be registered.  
+* `jump_destination(dir): LuaSnip.Node`: Find the node the next jump will end up at. This will not
+  work always, because we will not update the node before jumping, so if the jump would eg. insert a
+  new node between this node and its pre-update jump target, this would not be registered.  
   Thus, it currently only works for simple cases.
   * `dir: (1|-1)` `1`: find the next node, `-1`: find the previous node.
 
   This function returns:
   * `target: LuaSnip.Node` The destination.
 
-* `jumpable(dir): boolean`: Determine whether jumping forwards or backwards will actually jump, or if there is no node
-  in that direction.
+* `jumpable(dir): boolean`: Determine whether jumping forwards or backwards will actually jump, or
+  if there is no node in that direction.
   * `dir: (1|-1)` `1` forward, `-1` backward.
 
   This function returns:
   * `is_jumpable: boolean`
 
-* `expandable(): boolean`: Determine whether there is an expandable snippet at the current cursor position. Does not
-  consider autosnippets since those would already be expanded at this point.  
+* `expandable(): boolean`: Determine whether there is an expandable snippet at the current cursor
+  position. Does not consider autosnippets since those would already be expanded at this point.  
   This function returns:
   * `is_expandable: boolean`
 
-* `expand_or_jumpable(): boolean`: Determines if it's possible to expand a snippet at the current cursor-position, or
-  whether it's possible to jump forward from the current node.  
+* `expand_or_jumpable(): boolean`: Determines if it's possible to expand a snippet at the current
+  cursor-position, or whether it's possible to jump forward from the current node.  
   This function returns:
   * `is_expand_or_jumpable: boolean`
 
@@ -3851,30 +3864,33 @@ These are the settings you can provide to `luasnip.setup()`:
   This function returns:
   * `is_inside: boolean`
 
-* `expand_or_locally_jumpable(): boolean`: Determine if a snippet can be expanded at the current cursor position, or
-  whether the cursor is inside a snippet and the current node can be jumped forward from.  
+* `expand_or_locally_jumpable(): boolean`: Determine if a snippet can be expanded at the current
+  cursor position, or whether the cursor is inside a snippet and the current node can be jumped
+  forward from.  
   This function returns:
   * `is_expand_or_locally_jumpable: boolean`
 
-* `locally_jumpable(dir): boolean`: Determine if whether the cursor is inside a snippet and the current node can be
-  jumped forward from.  
+* `locally_jumpable(dir): boolean`: Determine if whether the cursor is inside a snippet and the
+  current node can be jumped forward from.  
   This function returns:
   * `is_locally_jumpable: boolean`
 
-* `snip_expand(snippet, opts): (TODO)`: Expand a snippet in the current buffer.
+* `snip_expand(snippet, opts): LuaSnip.ExpandedSnippet`: Expand a snippet in the current buffer.
   * `snippet: LuaSnip.Snippet` The snippet.
   * `opts: LuaSnip.Opts.SnipExpand?` Optional additional arguments.  
     Valid keys are:
-    * `clear_region: LuaSnip.BufferRegion?` A region of text to clear after populating env-variables, but before jumping
-      into `snip`. If `nil`, no clearing is performed.  
-      Being able to remove text at this point is useful as clearing before calling this function would populate
-      `TM_CURRENT_LINE` and `TM_CURRENT_WORD` with wrong values (they would miss the snippet trigger).  
-      The actual values used for clearing are `region.from` and `region.to`, both (0,0)-indexed byte-positions in the
-      buffer.
-    * `expand_params: LuaSnip.Opts.SnipExpandExpandParams?` Override various fields of the expanded snippet. Don't
-      override anything by default.  
-      This is useful for manually expanding snippets where the trigger passed via `trig` is not the text triggering the
-      snippet, or those which expect `captures` (basically, snippets with a non-plaintext `trigEngine`). One Example:
+    * `clear_region: LuaSnip.BufferRegion?` A region of text to clear after populating
+      env-variables, but before jumping into `snip`. If `nil`, no clearing is performed.  
+      Being able to remove text at this point is useful as clearing before calling this function
+      would populate `TM_CURRENT_LINE` and `TM_CURRENT_WORD` with wrong values (they would miss the
+      snippet trigger).  
+      The actual values used for clearing are `region.from` and `region.to`, both (0,0)-indexed
+      byte-positions in the buffer.
+    * `expand_params: LuaSnip.Opts.SnipExpandExpandParams?` Override various fields of the expanded
+      snippet. Don't override anything by default.  
+      This is useful for manually expanding snippets where the trigger passed via `trig` is not the
+      text triggering the snippet, or those which expect `captures` (basically, snippets with a
+      non-plaintext `trigEngine`). One Example:
       ```lua
       snip_expand(snip, {
           trigger = "override_trigger",
@@ -3884,291 +3900,132 @@ These are the settings you can provide to `luasnip.setup()`:
       ```
 
       Valid keys are:
-      * `trigger: string?` What to set as the expanded snippets' trigger (Defaults to `snip.trigger`).
+      * `trigger: string?` What to set as the expanded snippets' trigger (Defaults to
+        `snip.trigger`).
       * `captures: string[]?` Set as the expanded snippets' captures (Defaults to `{}`).
-      * `env_override: table<string,string>?` Set or override environment variables of the expanded snippet (Defaults to
-        `{}`).
-    * `pos: (integer,integer)?` Position at which the snippet should be inserted. Pass as `(row,col)`, both 0-based, the
-      `col` given in bytes.
-
-* `expand(opts): boolean`: Find a snippet matching the current cursor-position.
-  * `opts: table` : may contain:
-    * `jump_into_func`: passed through to `snip_expand`.
+      * `env_override: table<string,string>?` Set or override environment variables of the expanded
+        snippet (Defaults to `{}`).
+    * `pos: (integer,integer)?` Position at which the snippet should be inserted. Pass as
+      `(row,col)`, both 0-based, the `col` given in bytes.
+    * `indent: boolean?` Whether to prepend the current lines' indent to all lines of the snippet.
+      `true` by default.  
+      Turning this off is a good idea when a LSP server already takes indents into consideration. In
+      such cases, LuaSnip should not add additional indents. If you are using `nvim-cmp`, this could
+      be used as follows:
+      ```lua
+      require("cmp").setup {
+          snippet = {
+              expand = function(args)
+                  local indent_nodes = true
+                  if vim.api.nvim_get_option_value("filetype", { buf = 0 }) == "dart" then
+                      indent_nodes = false
+                  end
+                  require("luasnip").lsp_expand(args.body, {
+                      indent = indent_nodes,
+                  })
+              end,
+          },
+      }
+      ```
+    * `jump_into_func: fun(snip: LuaSnip.Snippet) -> LuaSnip.Node?`
 
   This function returns:
-  * `boolean` : whether a snippet was expanded.
+  * `expanded_snip: LuaSnip.ExpandedSnippet` The snippet that was inserted into the buffer.
 
-* `expand_auto()`
-* `expand_repeat()`
-* `expand_or_jump(): boolean`
-* `lsp_expand(body, opts)`
-* `choice_active()`
-* `change_choice(val)`
-* `set_choice(choice_indx)`
-* `get_current_choices(): table`
-* `active_update_dependents()`
+* `expand(opts): boolean`: Find a snippet whose trigger matches the text before the cursor and
+  expand it.
+  * `opts: LuaSnip.Opts.Expand?` Subset of opts accepted by `snip_expand`.  
+    Valid keys are:
+    * `jump_into_func: fun(snip: LuaSnip.Snippet) -> LuaSnip.Node?`
+
+  This function returns:
+  * `did_expand_snip: boolean` Whether a snippet was expanded.
+
+* `expand_auto()`: Find an autosnippet matching the text at the cursor-position and expand it.
+* `expand_repeat()`: Repeat the last performed `snip_expand`. Useful for dot-repeat.
+* `expand_or_jump(): boolean`: Expand at the cursor, or jump forward.  
+  This function returns:
+  * `did_jump_or_expand: boolean` Whether an action was performed.
+
+* `lsp_expand(body, opts)`: Expand a snippet specified in lsp-style.
+  * `body: string` A string specifying a lsp-snippet, eg. `"[${1:text}](${2:url})"`
+  * `opts: LuaSnip.Opts.SnipExpand?` Optional args passed through to `snip_expand`.
+
+* `choice_active(): boolean`: Determine whether the current node is inside a choiceNode.  
+  This function returns:
+  * `in_choice_node: boolean` Whether a choiceNode is active.
+
+* `change_choice(val)`: Change the currently active choice.
+  * `val: (1|-1)` Move one choice forward or backward.
+
+* `set_choice(choice_indx)`: Set the currently active choice.
+  * `choice_indx: integer` Index of the choice to switch to.
+
+* `get_current_choices(): string[]`: Get a string-representation of all the current choiceNode's
+  choices.  
+  This function returns:
+  * `choices: string[]` \n-concatenated lines of every choice.
+
+* `active_update_dependents()`: Update all nodes that depend on the currently-active node.
 * `store_snippet_docstrings(snippet_table)`
 * `load_snippet_docstrings(snippet_table)`
 * `unlink_current_if_deleted()`
 * `exit_out_of_region(node)`
 * `filetype_extend(ft, extend_ft)`: ft string, extend_ft table of strings.
 * `filetype_set(ft, fts)`: ft string, fts table of strings.
-* `cleanup()`
-* `refresh_notify(ft)`
-* `setup_snip_env()`
-* `get_snip_env(): { __index = fun(t: any, k: any) -> any }`
-* `get_id_snippet(id): any`
-* `add_snippets(ft, snippets, opts)`
-* `clean_invalidated(opts)`: Clean invalidated snippets from internal snippet storage.  
-  Invalidated snippets are still stored; it might be useful to actually remove them as they still have to be iterated
-  during expansion.
-  * `opts: LuaSnip.Opts.CleanInvalidated`
+* `cleanup()`: Clear all loaded snippets. Also sends the `"User LuasnipCleanup"` autocommand, so
+  plugins that depend on luasnip's snippet-state can clean up their now-outdated state.
+* `refresh_notify(ft)`: Trigger the `"User LuasnipSnippetsAdded"` autocommand that signifies to
+  other plugins that a filetype has received new snippets.
+  * `ft: string` The filetype that has new snippets. Code that listens to this event can retrieve
+    this filetype from `require("luasnip").session.latest_load_ft`.
 
-* `activate_node(opts)`
-* `env_namespace(name, opts)`
-* `setup(user_config)`
+* `setup_snip_env()`: Injects the fields defined in `snip_env`, in `setup`, into the callers global
+  environment. This means that variables like `s`, `sn`, `i`, `t`, ... (by default) work, and is
+  useful for quickly testing snippets in a buffer:
+  ```lua
+  local ls = require("luasnip")
+  ls.setup_snip_env()
 
-
-- `add_snippets(ft:string or nil, snippets:list or table, opts:table or nil)`:
-  Makes `snippets` (list of snippets) available in `ft`.  
-  If `ft` is `nil`, `snippets` should be a table containing lists of snippets,
-  the keys are corresponding filetypes.  
-  `opts` may contain the following keys:
-  - `type`: type of `snippets`, `"snippets"` or `"autosnippets"` (ATTENTION:
-	plural form used here). This serves as default value for the `snippetType`
-	key of each snippet added by this call see [Snippets](#snippets).
-  - `key`: Key that identifies snippets added via this call.  
-	If `add_snippets` is called with a key that was already used, the snippets
-	from that previous call will be removed.  
-	This can be used to reload snippets: pass an unique key to each
-	`add_snippets` and just redo the `add_snippets`-call when the snippets have
-	changed.
-  - `override_priority`: set priority for all snippets.
-  - `default_priority`: set priority only for snippets without snippet priority.
-
-- `clean_invalidated(opts: table or nil) -> bool`: clean invalidated snippets
-  from internal snippet storage.  
-  Invalidated snippets are still stored; it might be useful to actually remove
-  them as they still have to be iterated during expansion.
-
-  `opts` may contain:
-
-  - `inv_limit`: how many invalidated snippets are allowed. If the number of
-  	invalid snippets doesn't exceed this threshold, they are not yet cleaned up.
-
-	A small number of invalidated snippets (<100) probably doesn't affect
-	runtime at all, whereas recreating the internal snippet storage might.
-
-- `get_id_snippet(id)`: returns snippet corresponding to id.
-
-- `in_snippet()`: returns true if the cursor is inside the current snippet.
-
-- `jumpable(direction)`: returns true if the current node has a
-  next(`direction` = 1) or previous(`direction` = -1), e.g. whether it's
-  possible to jump forward or backward to another node.
-
-- `jump(direction)`: returns true if the jump was successful.
-
-- `expandable()`: true if a snippet can be expanded at the current cursor position.
-
-- `expand(opts)`: expands the snippet at(before) the cursor.
-  `opts` may contain:
-  - `jump_into_func` passed through to `ls.snip_expand`, check its' doc for a
-  	description.
-
-- `expand_or_jumpable()`: returns `expandable() or jumpable(1)` (exists only
-  because commonly, one key is used to both jump forward and expand).
-
-- `expand_or_locally_jumpable()`: same as `expand_or_jumpable()` except jumpable
-  is ignored if the cursor is not inside the current snippet.
-
-- `locally_jumpable(direction)`: same as `jumpable()` except it is ignored if the cursor
-  is not inside the current snippet.
-
-- `expand_or_jump()`: returns true if jump/expand was successful.
-
-- `expand_auto()`: expands the autosnippets before the cursor (not necessary
-  to call manually, will be called via `autocmd` if `enable_autosnippets` is set
-  in the config).
-
-- `snip_expand(snip, opts)`: expand `snip` at the current cursor position.
-  `opts` may contain the following keys:
-    - `clear_region`: A region of text to clear after expanding (but before
-      jumping into) snip. It has to be at this point (and therefore passed to
-      this function) as clearing before expansion will populate `TM_CURRENT_LINE`
-      and `TM_CURRENT_WORD` with wrong values (they would miss the snippet trigger)
-      and clearing after expansion may move the text currently under the cursor
-      and have it end up not at the `i(1)`, but a `#trigger` chars to its right.
-      The actual values used for clearing are `from` and `to`, both (0,0)-indexed
-      byte-positions.
-      If the variables don't have to be populated with the correct values, it's
-      safe to remove the text manually.
-    - `expand_params`: table, override `trigger`, `captures` or environment of
-      the snippet.  
-      This is useful for manually expanding snippets where the trigger passed
-      via `trig` is not the text triggering the snippet, or those which expect
-      `captures` (basically, snippets with a non-plaintext `trigEngine`).  
-
-      One example:
-      ```lua
-      snip_expand(snip, {
-      	trigger = "override_trigger",
-      	captures = {"first capture", "second capture"},
-      	env_override = { this_key = "some value", other_key = {"multiple", "lines"}, TM_FILENAME = "some_other_filename.lua" }
+  ls.add_snippets("all", {
+      s("choicetest", {
+          t":", c(1, {
+              t("asdf", {node_ext_opts = {active = { virt_text = {{"asdf", "Comment"}} }}}),
+              t("qwer", {node_ext_opts = {active = { virt_text = {{"qwer", "Comment"}} }}}),
+          })
       })
-      ```
-    - `pos`: position (`{line, col}`), (0,0)-indexed (in bytes, as returned by
-      `nvim_win_get_cursor()`), where the snippet should be expanded. The
-      snippet will be put between `(line,col-1)` and `(line,col)`. The snippet
-      will be expanded at the current cursor if `pos` is nil.
-    - `jump_into_func`: fn(snippet) -> node:
-      Callback responsible for jumping into the snippet. The returned node is
-      set as the new active node, i.e. it is the origin of the next jump.
-      The default is basically this:
-      ```lua
-      function(snip)
-      	-- jump_into set the placeholder of the snippet, 1
-      	-- to jump forwards.
-      	return snip:jump_into(1)
-      ```
-      while this can be used to only insert the snippet:
-      ```lua
-      function(snip)
-      	return snip.insert_nodes[0]
-      end
-      ```
-    - `indent`: `bool?`, defaults to `true`. Whether LuaSnip will try to add
-      additional indents to fit current indent level in snippet expanding. This
-      option is useful when some LSP server already take indents into
-      consideration. In such cases, LuaSnip should not try to add additional
-      indents. If you are using `nvim-cmp`, sample config:
+  }, { key = "3d9cd211-c8df-4270-915e-bf48a0be8a79" })
+  ```
+  where the `key` makes it easy to reload the snippets on changes, since the previously registered
+  snippets will be replaced when the buffer is resourced.
+* `get_snip_env(): { __index = fun(t: any, k: any) -> any }`: Return the currently active snip_env.
+* `get_id_snippet(id): LuaSnip.Snippet`: Get the snippet corresponding to some id.
+  * `id: LuaSnip.SnippetID`
 
-      ```lua
-      require("cmp").setup {
-        snippet = {
-          expand = function(args)
-            local indent_nodes = true
-            if vim.api.nvim_get_option_value("filetype", { buf = 0 }) == "dart" then
-              indent_nodes = false
-            end
-            require("luasnip").lsp_expand(args.body, {
-              indent = indent_nodes,
-            })
-          end,
-        },
-      }
-      ```
+  This function returns:
+  * `id_snip: LuaSnip.Snippet`
 
-  `opts` and any of its parameters may be nil.
+* `add_snippets(ft, snippets, opts)`: Add snippets to luasnip's snippet-collection.  
+  This also calls `refresh_notify`.
+  * `ft: string?` The filetype to add the snippets to, or nil if the filetype is specified in
+    `snippets`.
+  * `snippets: (LuaSnip.Addable[]|table<string,LuaSnip.Addable[]>)` If `ft` is nil a table mapping a
+    filetype to a list of snippets, otherwise a flat table of snippets.
+  * `opts: LuaSnip.Opts.AddSnippets?` Optionals arguments.
 
-- `get_active_snip()`: returns the currently active snippet (not node!).
+* `clean_invalidated(opts)`: Clean invalidated snippets from internal snippet storage.  
+  Invalidated snippets are still stored; it might be useful to actually remove them as they still
+  have to be iterated during expansion.
+  * `opts: LuaSnip.Opts.CleanInvalidated?` Additional, optional arguments.
 
-- `choice_active()`: true if inside a `choiceNode`.
-
-- `change_choice(direction)`: changes the choice in the innermost currently
-  active `choiceNode` forward (`direction` = 1) or backward (`direction` = -1).
-
-- `unlink_current()`: removes the current snippet from the jumplist (useful
-  if LuaSnip fails to automatically detect e.g. deletion of a snippet) and
-  sets the current node behind the snippet, or, if not possible, before it.
-
-- `lsp_expand(snip_string, opts)`: expands the LSP snippet defined via
-  `snip_string` at the cursor.
-  `opts` can have the same options as `opts` in `snip_expand`.
-
-- `active_update_dependents()`: update all function/dynamicNodes that have the
-  current node as an argnode (will actually only update them if the text in any
-  of the argnodes changed).
-
-- `available(snip_info)`: returns a table of all snippets defined for the
-  current filetypes(s) (`{ft1={snip1, snip2}, ft2={snip3, snip4}}`).
-  The structure of the snippet is defined by `snip_info` which is a function
-  (`snip_info(snip)`) that takes in a snippet (`snip`), finds the desired
-  information on it, and returns it.
-  `snip_info` is an optional argument as a default has already been defined.
-  You can use it for more granular control over the table of snippets that is
-  returned.
-
-- `exit_out_of_region(node)`: checks whether the cursor is still within the
-  range of the root-snippet `node` belongs to. If yes, no change occurs; if no, the
-  root-snippet is exited and its `$0` will be the new active node.  
-  If a jump causes an error (happens mostly because the text of a snippet was
-  deleted), the snippet is removed from the jumplist and the current node set to
-  the end/beginning of the next/previous snippet.
-
-- `store_snippet_docstrings(snippet_table)`: Stores the docstrings of all
-  snippets in `snippet_table` to a file
-  (`stdpath("cache")/luasnip/docstrings.json`).
-  Calling `store_snippet_docstrings(snippet_table)` after adding/modifying
-  snippets and `load_snippet_docstrings(snippet_table)` on startup after all
-  snippets have been added to `snippet_table` is a way to avoid regenerating
-  the (unchanged) docstrings on each startup.
-  (Depending on when the docstrings are required and how LuaSnip is loaded,
-  it may be more sensible to let them load lazily, e.g. just before they are
-  required).
-  `snippet_table` should be laid out just like `luasnip.snippets` (it will
-  most likely always _be_ `luasnip.snippets`).
-
-- `load_snippet_docstrings(snippet_table)`: Load docstrings for all snippets
-  in `snippet_table` from `stdpath("cache")/luasnip/docstrings.json`.
-  The docstrings are stored and restored via trigger, meaning if two
-  snippets for one filetype have the same (very unlikely to happen in actual
-  usage), bugs could occur.
-  `snippet_table` should be laid out as described in `store_snippet_docstrings`.
-
-- `unlink_current_if_deleted()`: Checks if the current snippet was deleted;
-  if so, it is removed from the jumplist. This is not 100% reliable as
-  LuaSnip only sees the extmarks and their beginning/end may not be on the same
-  position, even if all the text between them was deleted.
-
-- `filetype_extend(filetype:string, extend_filetypes:table of string)`: Tells
-  LuaSnip that for a buffer with `ft=filetype`, snippets from
-  `extend_filetypes` should be searched as well. `extend_filetypes` is a
-  Lua array (`{ft1, ft2, ft3}`).
-  `luasnip.filetype_extend("lua", {"c", "cpp"})` would search and expand C and
-  C++ snippets for Lua files.
-
-- `filetype_set(filetype:string, replace_filetypes:table of string)`: Similar
-  to `filetype_extend`, but where _append_ appended filetypes, _set_ sets them:
-  `filetype_set("lua", {"c"})` causes only c snippets to be expanded in
-  Lua files; Lua snippets aren't even searched.
-
-- `cleanup()`: clears all snippets. Not useful for regular usage, only when
-  authoring and testing snippets.
-
-- `refresh_notify(ft:string)`: Triggers an `autocmd` that other plugins can hook
-  into to perform various cleanup for the refreshed filetype.
-  Useful for signaling that new snippets were added for the filetype `ft`.
-
-- `set_choice(indx:number)`: Changes to the `indx`th choice.
-  If no `choiceNode` is active, an error is thrown.
-  If the active `choiceNode` doesn't have an `indx`th choice, an error is
-  thrown.
-
-- `get_current_choices() -> string[]`: Returns a list of multiline-strings
-  (themselves lists, even if they have only one line), the `i`th string
-  corresponding to the `i`th choice of the currently active `choiceNode`.
-  If no `choiceNode` is active, an error is thrown.
-
-- `setup_snip_env()`: Adds the variables defined (during `setup`) in `snip_env`
-  to the callers environment.
-
-- `get_snip_env()`: Returns `snip_env`.
-
-- `jump_destination(direction)`: Returns the node the next jump in `direction`
-  (either -1 or 1, for backwards, forwards respectively) leads to, or `nil` if
-  the destination could not be determined (most likely because there is no node
-  that can be jumped to in the given direction, or there is no active node).
-
-- `activate_node(opts)`: Activate a node in any snippet.
-  `opts` contains the following options:
-  * `pos`, `{[1]: row, [2]: byte-column}?`: The position at which a node should
-    be activated. Defaults to the position of the cursor.
-  * `strict`, `bool?`: If set, throw an error if the node under the cursor can't
-    be jumped into. If not set, fall back to any node of the snippet and enter
-    that instead.
-  * `select`, `bool?`: Whether the text inside the node should be selected.
-    Defaults to true.
+* `activate_node(opts)`: Lookup a node by position and activate (ie. jump into) it.
+  * `opts: LuaSnip.Opts.ActivateNode?` Additional, optional arguments.  
+    Valid keys are:
+    * `strict: boolean?` Only activate nodes one could usually jump to. Defaults to false.
+    * `select: boolean?` Whether to select the entire node, or leave the cursor at the position it
+      is currently at. Defaults to true.
+    * `pos: LuaSnip.BytecolBufferPosition?` Where to look for the node. Defaults to the position of
+      the cursor.
 
 Not covered in this section are the various node-constructors exposed by
 the module, their usage is shown either previously in this file or in
