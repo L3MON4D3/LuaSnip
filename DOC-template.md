@@ -752,6 +752,7 @@ fn_doc({
     typename = "LuaSnip.ChoiceNode",
     funcname = "C",
     display_fname = "c",
+    pre_list_linebreak = true,
     opts_expand = {
         ["LuaSnip.Opts.ChoiceNode?"] = {explain_type = "LuaSnip.Opts.ChoiceNode"}
     }})
@@ -3756,6 +3757,7 @@ These are the settings you can provide to `luasnip.setup()`:
 # API
 
 `require("luasnip")`:
+
 ```lua render_region
 local api_fieldnames_static = fnames("LuaSnip.API")
 local static_doc = {}
@@ -3787,7 +3789,12 @@ for _, name in ipairs(api_fieldnames_static) do
     -- don't render private functions. Those have a leading newline, luckily
     -- :).
     if not no_doc_functions[name] and name:sub(1,1) ~= "_" then
-        local doc_tokens = fn_doc_tokens(vim.tbl_extend("force", {typename = "LuaSnip.API", funcname = name, display_fname = name}, opts_table[name] or {}))
+        local doc_tokens = fn_doc_tokens(vim.tbl_extend("force", {
+            typename = "LuaSnip.API",
+            funcname = name,
+            display_fname = name,
+            pre_list_linebreak = true
+        }, opts_table[name] or {}))
         table.insert(doc_tokens, tokens.combinable_linebreak(1))
 
         table.insert(static_doc, doc_tokens)
