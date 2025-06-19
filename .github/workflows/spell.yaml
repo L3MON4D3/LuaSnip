@@ -9,4 +9,5 @@ jobs:
   spellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: gevhaz/word-warden@v1.0.0
+      - uses: nixbuild/nix-quick-install-action@v30
+      - run: nix develop -i -c bash -c 'make spellcheck'
