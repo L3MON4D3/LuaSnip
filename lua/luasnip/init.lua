@@ -45,18 +45,6 @@ local function match_snippet(line, type)
 	)
 end
 
--- ft:
--- * string: interpreted as filetype, return corresponding snippets.
--- * nil: return snippets for all filetypes:
--- {
--- 	lua = {...},
--- 	cpp = {...},
--- 	...
--- }
--- opts: optional args, can contain `type`, either "snippets" or "autosnippets".
---
--- return table, may be empty.
-
 ---@class LuaSnip.Opts.GetSnippets
 ---@field type? "snippets"|"autosnippets" Whether to get snippets or
 ---autosnippets. Defaults to "snippets".
