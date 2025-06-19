@@ -137,9 +137,14 @@ test_nix: nvim install_jsregexp
 	if ${TEST_MASTER}; then nix develop .#test_nvim_master -c make test; fi;
 
 spellcheck:
-	# grabbed from word-warden.
-	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check DOC.md
-	aspell --home-dir . --mode markdown --lang en --personal ./.github/data/project-dictionary.txt check README.md
+# grabbed from word-warden.
+	# Misspelled words will appear inside the following tests:
+	if [ -n "$(shell aspell --home-dir . --mode markdown --lang en_US --personal .data/project-dictionary.txt list < README.md)" ]; then exit 1; fi;
+	if [ -n "$(shell aspell --home-dir . --mode markdown --lang en_US --personal .data/project-dictionary.txt list < DOC.md)" ]; then exit 1; fi;
+
+spellcheck_interactive:
+	aspell -a --home-dir . --mode markdown --lang en_US --personal ./.github/data/project-dictionary.txt check DOC.md
+	aspell -a --home-dir . --mode markdown --lang en_US --personal ./.github/data/project-dictionary.txt check README.md
 
 gen_md_doc:
 	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
