@@ -148,4 +148,4 @@ spellcheck_interactive:
 
 gen_md_doc:
 	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
-	luals-mdgen DOC-template.md DOC.md --width 100
+	luals-mdgen data/DOC-template.md DOC.md --width 100
