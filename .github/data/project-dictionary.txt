@@ -1,4 +1,4 @@
-personal_ws-1.1 en 113 utf-8
+personal_ws-1.1 en 123 utf-8
 AbsoluteIndexer
 Autosnippets
 Cfigure
@@ -34,13 +34,16 @@ amongst
 anytext
 argnode
 argnodes
+args
 autocommand
 autocommands
+autosnippet
 autosnippets
 autotriggered
 backtick
 boolean
 choiceNode
+choiceNode's
 choiceNodes
 cmp
 compe
@@ -57,7 +60,9 @@ docstrings
 dynamicNode
 dynamicNode's
 dynamicNodes
+eg
 ejmastnak
+env
 evesdropper
 extmark
 extmarks
@@ -65,11 +70,13 @@ filetype
 filetypes
 fmt
 fn
+fts
 functionNode
 functionNodes
 get's
 globals
 honza
+ie
 ing
 insertNode
 insertNodes
@@ -78,7 +85,9 @@ jumpable
 jumplist
 keymaps
 lsp
+lua
 luasnip
+luasnip's
 mistyped
 molleweide
 multiline
@@ -109,6 +118,7 @@ textNode
 textNodes
 th
 there'd
+treesitter
 truthy
 varargs
 vsnip
