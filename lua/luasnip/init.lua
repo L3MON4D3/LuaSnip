@@ -942,7 +942,7 @@ end
 ---@param snippets LuaSnip.Addable[]|table<string, LuaSnip.Addable[]> If `ft` is
 ---nil a table mapping a filetype to a list of snippets, otherwise a flat table
 ---of snippets.
----@param opts LuaSnip.Opts.AddSnippets? Optionals arguments.
+---@param opts LuaSnip.Opts.AddSnippets? Optional arguments.
 function API.add_snippets(ft, snippets, opts)
 	util.validate("filetype", ft, { "string", "nil" })
 	util.validate("snippets", snippets, { "table" })
