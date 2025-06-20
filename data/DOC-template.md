@@ -753,7 +753,7 @@ fn_doc({
     funcname = "C",
     display_fname = "c",
     pre_list_linebreak = true,
-    opts_expand = {
+    type_expand = {
         ["LuaSnip.Opts.ChoiceNode?"] = {explain_type = "LuaSnip.Opts.ChoiceNode"}
     }})
 ```
@@ -3762,23 +3762,23 @@ These are the settings you can provide to `luasnip.setup()`:
 local api_fieldnames_static = fnames("LuaSnip.API")
 local static_doc = {}
 local opts_table = {
-    get_snippets = {opts_expand = {
+    get_snippets = {type_expand = {
         ["LuaSnip.Opts.GetSnippets?"] = {explain_type = "LuaSnip.Opts.GetSnippets"},
     }},
-    snip_expand = {opts_expand = {
+    snip_expand = {type_expand = {
         ["LuaSnip.Opts.SnipExpand?"] = {explain_type = "LuaSnip.Opts.SnipExpand"},
         ["LuaSnip.Opts.SnipExpandExpandParams?"] = {explain_type = "LuaSnip.Opts.SnipExpandExpandParams"},
     }},
-    expand = {opts_expand = {
+    expand = {type_expand = {
         ["LuaSnip.Opts.Expand?"] = {explain_type = "LuaSnip.Opts.Expand"},
     }},
-    add_snippets = {opts_expand = {
+    add_snippets = {type_expand = {
         ["LuaSnip.Opts.AddSnippets?"] = {explain_type = "LuaSnip.Opts.AddSnippets"},
     }},
-    add_snippets = {opts_expand = {
+    add_snippets = {type_expand = {
         ["LuaSnip.Opts.CleanInvalidated?"] = {explain_type = "LuaSnip.Opts.CleanInvalidated"},
     }},
-    activate_node = {opts_expand = {
+    activate_node = {type_expand = {
         ["LuaSnip.Opts.ActivateNode?"] = {explain_type = "LuaSnip.Opts.ActivateNode"},
     }},
 }
