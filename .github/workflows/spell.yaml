@@ -1,4 +1,3 @@
----
 name: Check spelling
 
 on:
@@ -9,5 +8,9 @@ jobs:
   spellcheck:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
       - uses: nixbuild/nix-quick-install-action@v30
       - run: nix develop -i -c bash -c 'make spellcheck'
