@@ -209,7 +209,7 @@ end
 ---Find the node the next jump will end up at. This will not work always,
 ---because we will not update the node before jumping, so if the jump would eg.
 ---insert a new node between this node and its pre-update jump target, this
----would not be registered.  
+---would not be registered.
 ---Thus, it currently only works for simple cases.
 ---@param dir 1|-1 `1`: find the next node, `-1`: find the previous node.
 ---@return LuaSnip.Node target The destination.
@@ -305,7 +305,7 @@ end
 ---variables of the expanded snippet (Defaults to `{}`).
 
 ---@class LuaSnip.Opts.Expand
----@field jump_into_func (fun(snip: LuaSnip.Snippet): LuaSnip.Node)? 
+---@field jump_into_func (fun(snip: LuaSnip.Snippet): LuaSnip.Node)?
 ---Callback responsible for jumping into the snippet. The returned node is
 ---set as the new active node, i.e. it is the origin of the next jump.
 ---The default is basically this:
@@ -324,22 +324,21 @@ end
 ---end
 ---```
 
-
 --This can also use `jump_into_func`.
 ---@class LuaSnip.Opts.SnipExpand: LuaSnip.Opts.Expand
 ---@field clear_region? LuaSnip.BufferRegion A region of text to clear after
 ---populating env-variables, but before jumping into `snip`. If `nil`, no
----clearing is performed.  
+---clearing is performed.
 ---Being able to remove text at this point is useful as clearing before calling
 ---this function would populate `TM_CURRENT_LINE` and `TM_CURRENT_WORD` with
----wrong values (they would miss the snippet trigger).  
+---wrong values (they would miss the snippet trigger).
 ---The actual values used for clearing are `region.from` and `region.to`, both
----(0,0)-indexed byte-positions in the buffer.  
+---(0,0)-indexed byte-positions in the buffer.
 ---@field expand_params LuaSnip.Opts.SnipExpandExpandParams? Override various
----fields of the expanded snippet. Don't override anything by default.  
+---fields of the expanded snippet. Don't override anything by default.
 ---This is useful for manually expanding snippets where the trigger passed
 ---via `trig` is not the text triggering the snippet, or those which expect
----`captures` (basically, snippets with a non-plaintext `trigEngine`).  
+---`captures` (basically, snippets with a non-plaintext `trigEngine`).
 ---
 ---One Example:
 ---```lua
@@ -352,7 +351,7 @@ end
 ---@field pos [integer, integer]? Position at which the snippet should be
 ---inserted. Pass as `(row,col)`, both 0-based, the `col` given in bytes.
 ---@field indent boolean? Whether to prepend the current lines' indent to all
----lines of the snippet. `true` by default.  
+---lines of the snippet. `true` by default.
 ---Turning this off is a good idea when a LSP server already takes indents into
 ---consideration. In such cases, LuaSnip should not add additional indents. If
 ---you are using `nvim-cmp`, this could be used as follows:
@@ -913,7 +912,6 @@ function API.get_snip_env()
 	return session.get_snip_env()
 end
 
-
 ---Get the snippet corresponding to some id.
 ---@param id LuaSnip.SnippetID
 ---@return LuaSnip.Snippet id_snip
@@ -926,7 +924,7 @@ end
 ---not defined for an individual snippet. Defaults to `"snippets"`.
 ---@field key? string This key uniquely identifies this call to `add_snippets`.
 ---If another call has the same `key`, the snippets added in this call will be
----removed.  
+---removed.
 ---This is useful for reloading snippets once they are updated.
 ---@field override_priority integer Override the priority of individual
 ---snippets.
@@ -935,7 +933,7 @@ end
 ---@field refresh_notify boolean? Whether to call `refresh_notify` once the
 ---snippets are added. Defaults to true.
 
----Add snippets to luasnip's snippet-collection.  
+---Add snippets to luasnip's snippet-collection.
 ---This also calls `refresh_notify`.
 ---@param ft string? The filetype to add the snippets to, or nil if the filetype
 ---is specified in `snippets`.
@@ -975,7 +973,7 @@ end
 ---@field inv_limit integer? If set, invalidated snippets are only cleared if
 ---their number exceeds `inv_limit`.
 
----Clean invalidated snippets from internal snippet storage.  
+---Clean invalidated snippets from internal snippet storage.
 ---Invalidated snippets are still stored; it might be useful to actually remove
 ---them as they still have to be iterated during expansion.
 ---@param opts LuaSnip.Opts.CleanInvalidated? Additional, optional arguments.

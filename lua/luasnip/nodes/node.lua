@@ -19,7 +19,7 @@ local Node = {}
 ---@field merge_node_ext_opts boolean? Whether to use the parents' `ext_opts` to
 ---compute this nodes' `ext_opts`.
 ---@field key any? Some unique value (strings seem useful) to identify this
----node.  
+---node.
 ---This is useful for [Key Indexer](../../../DOC.md#key-indexer) or for finding the node at
 ---runtime (See [Snippets-API](../../../DOC.md#snippets-api)
 ---These keys don't have to be unique across the entire lifetime of the snippet,

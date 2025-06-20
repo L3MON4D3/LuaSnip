@@ -53,8 +53,8 @@ end
 ---@field restore_cursor boolean? If set, the currently active node is looked up
 ---in the switched-to choice, and the cursor restored to  preserve the current
 ---position relative to that node. The node may be found if a `restoreNode` is
----present in both choice.  
----`false` by default, as enabling might lead to decreased performance.  
+---present in both choice.
+---`false` by default, as enabling might lead to decreased performance.
 ---
 ---It's possible to override the default by wrapping the `choiceNode`
 ---constructor in another function that sets `opts.restore_cursor` to `true` and
@@ -79,11 +79,11 @@ end
 ---[Basics-Jump-Index](../../../DOC.md#jump-index)).
 ---@param choices table<integer, LuaSnip.Node|LuaSnip.Node[]> A list of nodes
 ---that can be switched between. If a list of nodes is passed as a choice, it
----will be turned into a snippetNode.  
+---will be turned into a snippetNode.
 ---Jumpable nodes that generally need a jump-index don't need one when used as a
 ---choice, they inherit the choiceNode's jump-index. Additionally, one should
 ---make sure the cursor has a position to stop at inside every choice, since
----changing the choice is generally only possible when inside the choiceNode.  
+---changing the choice is generally only possible when inside the choiceNode.
 ---This means that in `sn(nil, {...nodes...})` `nodes` has to contain an
 ---`i(1)`, otherwise LuaSnip will just "jump through" the nodes, making it
 ---impossible to change the choice after switching to it. Using an `insertNode`
