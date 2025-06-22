@@ -5,4 +5,4 @@
 --- @field exclude string[]? Exclude these filetypes, even if they are set in include.
 --- @field override_priority number? load all snippets with this priority.
 --- @field default_priority number? snippet-priority, unless the snippet sets its own priority.
---- @field fs_event_providers table<LuaSnip.FSWatcher.FSEventProviders, boolean>? How to monitor the filesystem
+--- @field fs_event_providers {[LuaSnip.FSWatcher.FSEventProviders]: boolean}? How to monitor the filesystem

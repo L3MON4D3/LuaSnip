@@ -44,7 +44,7 @@ local callback_mt = {
 --- @field lazy boolean?
 --- If set, the watcher will be initialized even if the root/watched path does
 --- not yet exist, and start notifications once it is created.
---- @field fs_event_providers table<LuaSnip.FSWatcher.FSEventProviders, boolean>?
+--- @field fs_event_providers {[LuaSnip.FSWatcher.FSEventProviders]: boolean}?
 --- Which providers to use for receiving file-changes.
 
 local function get_opts(opts)
@@ -118,13 +118,13 @@ end
 --- @class LuaSnip.FSWatcher.Tree
 --- @field root string
 --- @field fs_event userdata
---- @field files table<string, boolean>
---- @field dir_watchers table<string, LuaSnip.FSWatcher.Tree>
+--- @field files {[string]: boolean}
+--- @field dir_watchers {[string]: LuaSnip.FSWatcher.Tree}
 --- @field removed boolean
 --- @field stopped boolean
 --- @field callbacks LuaSnip.FSWatcher.TreeCallbacks
 --- @field depth number How deep the root should be monitored.
---- @field fs_event_providers table<LuaSnip.FSWatcher.FSEventProviders, boolean>
+--- @field fs_event_providers {[LuaSnip.FSWatcher.FSEventProviders]: boolean}
 --- @field root_realpath string? Set as soon as the watcher is started.
 local TreeWatcher = {}
 local TreeWatcher_mt = {
@@ -507,7 +507,7 @@ end
 --- @field private stopped boolean
 --- @field private send_notifications boolean
 --- @field private callbacks LuaSnip.FSWatcher.TreeCallbacks
---- @field private fs_event_providers table<LuaSnip.FSWatcher.FSEventProviders, boolean>
+--- @field private fs_event_providers {[LuaSnip.FSWatcher.FSEventProviders]: boolean}
 --- @field private realpath string? Set as soon as the watcher is started.
 local PathWatcher = {}
 

@@ -25,4 +25,4 @@
 
 ---@alias LuaSnip.extra.MatchTSNodeFunc fun(parser: LuaSnip.extra.TSParser, cursor: LuaSnip.Cursor): LuaSnip.extra.NamedTSMatch?,TSNode?
 
----@alias LuaSnip.extra.NamedTSMatch table<string,TSNode>
+---@alias LuaSnip.extra.NamedTSMatch {[string]: TSNode}

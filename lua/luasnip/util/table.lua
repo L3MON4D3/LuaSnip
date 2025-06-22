@@ -1,7 +1,7 @@
 ---Convert set of values to a list of those values.
 ---@generic T
----@param tbl T|T[]|table<T, boolean>
----@return table<T, boolean>
+---@param tbl T|T[]|{[T]: boolean}
+---@return {[T]: boolean}
 local function set_to_list(tbl)
 	local ls = {}
 
@@ -14,8 +14,8 @@ end
 
 ---Convert value or list of values to a table of booleans for fast lookup.
 ---@generic T
----@param values T|T[]|table<T, boolean>
----@return table<T, boolean>
+---@param values T|T[]|{[T]: boolean}
+---@return {[T]: boolean}
 local function list_to_set(values)
 	if values == nil then
 		return {}

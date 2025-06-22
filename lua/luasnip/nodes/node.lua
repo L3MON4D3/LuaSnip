@@ -9,7 +9,7 @@ local types = require("luasnip.util.types")
 ---@class LuaSnip.Node
 local Node = {}
 
----@alias LuaSnip.NodeExtOpts table<"active"|"passive"|"visited"|"unvisited"|"snippet_passive", vim.api.keyset.set_extmark>
+---@alias LuaSnip.NodeExtOpts {["active"|"passive"|"visited"|"unvisited"|"snippet_passive"]: vim.api.keyset.set_extmark}
 
 ---@class LuaSnip.Opts.Node
 ---@field node_ext_opts LuaSnip.NodeExtOpts? Pass these opts through to the
@@ -26,7 +26,7 @@ local Node = {}
 ---but every key should occur only once at the same time. This means it is fine
 ---to return a keyed node from a dynamicNode, because even if it will be
 ---generated multiple times, the same key not occur twice at the same time.
----@field node_callbacks table<"enter"|"leave", fun(node:LuaSnip.Node)>
+---@field node_callbacks {["enter"|"leave"]: fun(node:LuaSnip.Node)}
 ---Specify functions to call after changing the choice, or entering or leaving
 ---the node. The callback receives the `node` the callback was called on.
 

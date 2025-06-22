@@ -151,7 +151,7 @@ Data.vscode_cache =
 --- Parse package.json(c), determine all files that contribute snippets, and
 --- which filetype is associated with them.
 --- @param manifest string
---- @return table<string, table<string, true|nil>>
+--- @return {[string]: {[string]: true|nil}}
 local function get_snippet_files(manifest)
 	-- if root doesn't contain a package.json, or it contributes no snippets,
 	-- return no snippets.
