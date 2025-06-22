@@ -218,36 +218,36 @@ function API.jump_destination(dir)
 	return safe_jump_current(dir, true, { active = {} })
 end
 
----Determine whether jumping forwards or backwards will actually jump, or if
+---Return whether jumping forwards or backwards will actually jump, or if
 ---there is no node in that direction.
 ---@param dir 1|-1 `1` forward, `-1` backward.
----@return boolean is_jumpable
+---@return boolean
 function API.jumpable(dir)
 	-- node is jumpable if there is a destination.
 	return API.jump_destination(dir)
 		~= session.current_nodes[vim.api.nvim_get_current_buf()]
 end
 
----Determine whether there is an expandable snippet at the current cursor
+---Return if there is an expandable snippet at the current cursor
 ---position. Does not consider autosnippets since those would already be
 ---expanded at this point.
----@return boolean is_expandable
+---@return boolean
 function API.expandable()
 	next_expand, next_expand_params =
 		match_snippet(util.get_current_line_to_cursor(), "snippets")
 	return next_expand ~= nil
 end
 
----Determines if it's possible to expand a snippet at the current
+---Return whether it's possible to expand a snippet at the current
 ---cursor-position, or whether it's possible to jump forward from the current
 ---node.
----@return boolean is_expand_or_jumpable
+---@return boolean
 function API.expand_or_jumpable()
 	return API.expandable() or API.jumpable(1)
 end
 
 ---Determine whether the cursor is within a snippet.
----@return boolean is_inside
+---@return boolean
 function API.in_snippet()
 	-- check if the cursor on a row inside a snippet.
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
@@ -275,17 +275,17 @@ function API.in_snippet()
 	return false
 end
 
----Determine if a snippet can be expanded at the current cursor position, or
+---Return whether a snippet can be expanded at the current cursor position, or
 ---whether the cursor is inside a snippet and the current node can be jumped
 ---forward from.
----@return boolean is_expand_or_locally_jumpable
+---@return boolean
 function API.expand_or_locally_jumpable()
 	return API.expandable() or (API.in_snippet() and API.jumpable(1))
 end
 
----Determine if whether the cursor is inside a snippet and the current node can
----be jumped forward from.
----@return boolean is_locally_jumpable
+---Return whether the cursor is inside a snippet and the current node can be
+---jumped forward from.
+---@return boolean
 function API.locally_jumpable(dir)
 	return API.in_snippet() and API.jumpable(dir)
 end
@@ -562,8 +562,8 @@ function API.lsp_expand(body, opts)
 	)
 end
 
----Determine whether the current node is inside a choiceNode.
----@return boolean in_choice_node Whether a choiceNode is active.
+---Return whether the current node is inside a choiceNode.
+---@return boolean
 function API.choice_active()
 	return session.active_choice_nodes[vim.api.nvim_get_current_buf()] ~= nil
 end
