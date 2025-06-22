@@ -290,11 +290,11 @@
         "nlua": "nlua"
       },
       "locked": {
-        "lastModified": 1750406688,
-        "narHash": "sha256-g2ud1pyh3Suq/2gw6dNXR8pyYv47jueyhfKCBU9Js3k=",
+        "lastModified": 1750621251,
+        "narHash": "sha256-DlHHk4UpJaGnOsFwILAx/6bRXBJtZkdNXPTBbgyp6N4=",
         "owner": "L3MON4D3",
         "repo": "luals-mdgen",
-        "rev": "94cd4cb613f19bf036741c2b880622792c864ed0",
+        "rev": "a0126a6a07e74f10e74a469c657b250921463ca4",
         "type": "github"
       },
       "original": {
@@ -549,11 +549,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "lastModified": 1750617108,
-        "narHash": "sha256-QjNDGMEPYuq4ym1jT/DwapCJc/U6yuhsnpTwX83ku3E=",
+        "lastModified": 1750620506,
+        "narHash": "sha256-vTkIP0Qiayi+/oLKEE+Ek8dPimx9+wL/Tktn0qxDPm4=",
         "owner": "L3MON4D3",
         "repo": "panvimdoc",
-        "rev": "0f6d57dda4be3753aa8d27eaa5375c5c105549be",
+        "rev": "2ef09eaaee7a93f0d5a3c1aa265a9ff75a559399",
         "type": "github"
       },
       "original": {
