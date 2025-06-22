@@ -367,6 +367,22 @@
     },
     "nixpkgs_4": {
       "locked": {
+        "lastModified": 1750386251,
+        "narHash": "sha256-1ovgdmuDYVo5OUC5NzdF+V4zx2uT8RtsgZahxidBTyw=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "076e8c6678d8c54204abcb4b1b14c366835a58bb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_5": {
+      "locked": {
         "lastModified": 1646254136,
         "narHash": "sha256-8nQx02tTzgYO21BP/dy5BCRopE8OwE8Drsw98j+Qoaw=",
         "owner": "nixos",
@@ -381,7 +397,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_5": {
+    "nixpkgs_6": {
       "locked": {
         "lastModified": 1671983799,
         "narHash": "sha256-Z2Ro6hFPZHkBqkVXY5/aBUzxi5xizQGvuHQ9+T5B/ks=",
@@ -397,7 +413,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_6": {
+    "nixpkgs_7": {
       "locked": {
         "lastModified": 1745377448,
         "narHash": "sha256-jhZDfXVKdD7TSEGgzFJQvEEZ2K65UMiqW5YJ2aIqxMA=",
@@ -428,7 +444,7 @@
     "nvim_07": {
       "inputs": {
         "flake-utils": "flake-utils_4",
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": "nixpkgs_5"
       },
       "locked": {
         "dir": "contrib",
@@ -450,7 +466,7 @@
     "nvim_09": {
       "inputs": {
         "flake-utils": "flake-utils_5",
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_6"
       },
       "locked": {
         "dir": "contrib",
@@ -476,7 +492,7 @@
         "git-hooks": "git-hooks",
         "hercules-ci-effects": "hercules-ci-effects",
         "neovim-src": "neovim-src",
-        "nixpkgs": "nixpkgs_6",
+        "nixpkgs": "nixpkgs_7",
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
@@ -497,6 +513,7 @@
       "inputs": {
         "emmylua-analyzer-rust": "emmylua-analyzer-rust",
         "luals-mdgen": "luals-mdgen",
+        "nixpkgs": "nixpkgs_4",
         "nixpkgs-treesitter": "nixpkgs-treesitter",
         "nvim_07": "nvim_07",
         "nvim_09": "nvim_09",
