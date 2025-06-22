@@ -3582,6 +3582,7 @@ before expanding.
 
 By default, this is disabled (as to not pollute keybindings which may be used
 for something else), so one has to
+
 * either set `cut_selection_keys` in `setup` (see
   [Config-Options](#config-options)).
 * or map `ls.cut_keys` as the right-hand-side of a mapping
