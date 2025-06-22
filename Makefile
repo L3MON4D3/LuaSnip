@@ -146,10 +146,15 @@ spellcheck_interactive:
 	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check DOC.md
 	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check README.md
 
-md_doc:
-	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
-	luals-mdgen data/DOC-template.md DOC.md --width 100
-
-vimdoc: md_doc
+.PHONY: doc
+doc:
+# Have to generate this (temporarily) into DOC.md.
+# This is because all links in annotations refer to that
+# file, and luals-mdgen will produce links like [xxx](DOC.md#some-section),
+# which panvimdoc cannot deal with, it only knows [xxx](#some-section).
+	luals-mdgen data/DOC-template.md DOC.md --width 100 --mode vimdoc
 	panvimdoc --project-name luasnip --input-file DOC.md --vim-version "NeoVim 0.7-0.11" --doc-mapping true
 	nvim --clean -es +"helptags doc | exit"
+# again, this time without vimdoc, overwrite previous DOC.md.
+	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
+	luals-mdgen data/DOC-template.md DOC.md --width 100

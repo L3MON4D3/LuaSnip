@@ -3793,14 +3793,14 @@ These are the settings you can provide to `luasnip.setup()`:
 
 `require("luasnip")`:
 
-#### `get_active_snip(): LuaSnip.Snippet?` {doc=luasnip-api-get_active_snip}
+#### `get_active_snip(): LuaSnip.Snippet?`
 
 Get the currently active snippet.  
 This function returns:
 
 * `active_snip: LuaSnip.Snippet?` The active snippet if one exists, otherwise `nil`.
 
-#### `get_snippets(ft, opts): (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })` {doc=luasnip-api-get_snippets}
+#### `get_snippets(ft, opts): (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })`
 
 Retrieve snippets from luasnip.
 
@@ -3816,7 +3816,7 @@ This function returns:
 * `snippets: (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })` Flat array when `ft` is non-nil,
   otherwise a table mapping filetypes to snippets.
 
-#### `available(snip_info): { [string]: T[] }` {doc=luasnip-api-available}
+#### `available(snip_info): { [string]: T[] }`
 
 Retrieve information about snippets available in the current file/at the current position (in case
 treesitter-based filetypes are enabled).
@@ -3839,12 +3839,12 @@ This function returns:
 
 * `available_info: { [string]: T[] }` Table mapping filetypes to list of data returned by snip_info.
 
-#### `unlink_current()` {doc=luasnip-api-unlink_current}
+#### `unlink_current()`
 
 Removes the current snippet from the jumplist (useful if LuaSnip fails to automatically detect e.g.
 deletion of a snippet) and sets the current node behind the snippet, or, if not possible, before it.
 
-#### `jump(dir): boolean` {doc=luasnip-api-jump}
+#### `jump(dir): boolean`
 
 Jump forwards or backwards
 
@@ -3854,7 +3854,7 @@ This function returns:
 
 * `jumped: boolean` `true` if a jump was performed, `false` otherwise.
 
-#### `jump_destination(dir): LuaSnip.Node` {doc=luasnip-api-jump_destination}
+#### `jump_destination(dir): LuaSnip.Node`
 
 Find the node the next jump will end up at. This will not work always, because we will not update
 the node before jumping, so if the jump would eg. insert a new node between this node and its
@@ -3867,37 +3867,37 @@ This function returns:
 
 * `target: LuaSnip.Node` The destination.
 
-#### `jumpable(dir): boolean` {doc=luasnip-api-jumpable}
+#### `jumpable(dir): boolean`
 
 Return whether jumping forwards or backwards will actually jump, or if there is no node in that
 direction.
 
 * `dir: (1|-1)` `1` forward, `-1` backward.
 
-#### `expandable(): boolean` {doc=luasnip-api-expandable}
+#### `expandable(): boolean`
 
 Return if there is an expandable snippet at the current cursor position. Does not consider
 autosnippets since those would already be expanded at this point.
 
-#### `expand_or_jumpable(): boolean` {doc=luasnip-api-expand_or_jumpable}
+#### `expand_or_jumpable(): boolean`
 
 Return whether it's possible to expand a snippet at the current cursor-position, or whether it's
 possible to jump forward from the current node.
 
-#### `in_snippet(): boolean` {doc=luasnip-api-in_snippet}
+#### `in_snippet(): boolean`
 
 Determine whether the cursor is within a snippet.
 
-#### `expand_or_locally_jumpable(): boolean` {doc=luasnip-api-expand_or_locally_jumpable}
+#### `expand_or_locally_jumpable(): boolean`
 
 Return whether a snippet can be expanded at the current cursor position, or whether the cursor is
 inside a snippet and the current node can be jumped forward from.
 
-#### `locally_jumpable(dir): boolean` {doc=luasnip-api-locally_jumpable}
+#### `locally_jumpable(dir): boolean`
 
 Return whether the cursor is inside a snippet and the current node can be jumped forward from.
 
-#### `snip_expand(snippet, opts): LuaSnip.ExpandedSnippet` {doc=luasnip-api-snip_expand}
+#### `snip_expand(snippet, opts): LuaSnip.ExpandedSnippet`
 
 Expand a snippet in the current buffer.
 
@@ -3955,7 +3955,7 @@ This function returns:
 
 * `expanded_snip: LuaSnip.ExpandedSnippet` The snippet that was inserted into the buffer.
 
-#### `expand(opts): boolean` {doc=luasnip-api-expand}
+#### `expand(opts): boolean`
 
 Find a snippet whose trigger matches the text before the cursor and expand it.
 
@@ -3968,77 +3968,77 @@ This function returns:
 
 * `did_expand_snip: boolean` Whether a snippet was expanded.
 
-#### `expand_auto()` {doc=luasnip-api-expand_auto}
+#### `expand_auto()`
 
 Find an autosnippet matching the text at the cursor-position and expand it.
 
-#### `expand_repeat()` {doc=luasnip-api-expand_repeat}
+#### `expand_repeat()`
 
 Repeat the last performed `snip_expand`. Useful for dot-repeat.
 
-#### `expand_or_jump(): boolean` {doc=luasnip-api-expand_or_jump}
+#### `expand_or_jump(): boolean`
 
 Expand at the cursor, or jump forward.  
 This function returns:
 
 * `did_jump_or_expand: boolean` Whether an action was performed.
 
-#### `lsp_expand(body, opts)` {doc=luasnip-api-lsp_expand}
+#### `lsp_expand(body, opts)`
 
 Expand a snippet specified in lsp-style.
 
 * `body: string` A string specifying a lsp-snippet, eg. `"[${1:text}](${2:url})"`
 * `opts: LuaSnip.Opts.SnipExpand?` Optional args passed through to `snip_expand`.
 
-#### `choice_active(): boolean` {doc=luasnip-api-choice_active}
+#### `choice_active(): boolean`
 
 Return whether the current node is inside a choiceNode.
 
-#### `change_choice(val)` {doc=luasnip-api-change_choice}
+#### `change_choice(val)`
 
 Change the currently active choice.
 
 * `val: (1|-1)` Move one choice forward or backward.
 
-#### `set_choice(choice_indx)` {doc=luasnip-api-set_choice}
+#### `set_choice(choice_indx)`
 
 Set the currently active choice.
 
 * `choice_indx: integer` Index of the choice to switch to.
 
-#### `get_current_choices(): string[]` {doc=luasnip-api-get_current_choices}
+#### `get_current_choices(): string[]`
 
 Get a string-representation of all the current choiceNode's choices.  
 This function returns:
 
 * `choices: string[]` \n-concatenated lines of every choice.
 
-#### `active_update_dependents()` {doc=luasnip-api-active_update_dependents}
+#### `active_update_dependents()`
 
 Update all nodes that depend on the currently-active node.
 
-#### `store_snippet_docstrings(snippet_table)` {doc=luasnip-api-store_snippet_docstrings}
+#### `store_snippet_docstrings(snippet_table)`
 
-#### `load_snippet_docstrings(snippet_table)` {doc=luasnip-api-load_snippet_docstrings}
+#### `load_snippet_docstrings(snippet_table)`
 
-#### `unlink_current_if_deleted()` {doc=luasnip-api-unlink_current_if_deleted}
+#### `unlink_current_if_deleted()`
 
-#### `exit_out_of_region(node)` {doc=luasnip-api-exit_out_of_region}
+#### `exit_out_of_region(node)`
 
-#### `filetype_extend(ft, extend_ft)` {doc=luasnip-api-filetype_extend}
+#### `filetype_extend(ft, extend_ft)`
 
 ft string, extend_ft table of strings.
 
-#### `filetype_set(ft, fts)` {doc=luasnip-api-filetype_set}
+#### `filetype_set(ft, fts)`
 
 ft string, fts table of strings.
 
-#### `cleanup()` {doc=luasnip-api-cleanup}
+#### `cleanup()`
 
 Clear all loaded snippets. Also sends the `"User LuasnipCleanup"` autocommand, so plugins that
 depend on luasnip's snippet-state can clean up their now-outdated state.
 
-#### `refresh_notify(ft)` {doc=luasnip-api-refresh_notify}
+#### `refresh_notify(ft)`
 
 Trigger the `"User LuasnipSnippetsAdded"` autocommand that signifies to other plugins that a
 filetype has received new snippets.
@@ -4046,7 +4046,7 @@ filetype has received new snippets.
 * `ft: string` The filetype that has new snippets. Code that listens to this event can retrieve this
   filetype from `require("luasnip").session.latest_load_ft`.
 
-#### `setup_snip_env()` {doc=luasnip-api-setup_snip_env}
+#### `setup_snip_env()`
 
 Injects the fields defined in `snip_env`, in `setup`, into the callers global environment. This
 means that variables like `s`, `sn`, `i`, `t`, ... (by default) work, and is useful for quickly
@@ -4067,11 +4067,11 @@ ls.add_snippets("all", {
 where the `key` makes it easy to reload the snippets on changes, since the previously registered
 snippets will be replaced when the buffer is resourced.
 
-#### `get_snip_env(): table` {doc=luasnip-api-get_snip_env}
+#### `get_snip_env(): table`
 
 Return the currently active snip_env.
 
-#### `get_id_snippet(id): LuaSnip.Snippet` {doc=luasnip-api-get_id_snippet}
+#### `get_id_snippet(id): LuaSnip.Snippet`
 
 Get the snippet corresponding to some id.
 
@@ -4081,7 +4081,7 @@ This function returns:
 
 * `id_snip: LuaSnip.Snippet`
 
-#### `add_snippets(ft, snippets, opts)` {doc=luasnip-api-add_snippets}
+#### `add_snippets(ft, snippets, opts)`
 
 Add snippets to luasnip's snippet-collection. This also calls `refresh_notify`.
 
@@ -4091,14 +4091,14 @@ Add snippets to luasnip's snippet-collection. This also calls `refresh_notify`.
   filetype to a list of snippets, otherwise a flat table of snippets.
 * `opts: LuaSnip.Opts.AddSnippets?` Optional arguments.
 
-#### `clean_invalidated(opts)` {doc=luasnip-api-clean_invalidated}
+#### `clean_invalidated(opts)`
 
 Clean invalidated snippets from internal snippet storage. Invalidated snippets are still stored; it
 might be useful to actually remove them as they still have to be iterated during expansion.
 
 * `opts: LuaSnip.Opts.CleanInvalidated?` Additional, optional arguments.
 
-#### `activate_node(opts)` {doc=luasnip-api-activate_node}
+#### `activate_node(opts)`
 
 Lookup a node by position and activate (ie. jump into) it.
 
