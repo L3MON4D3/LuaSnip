@@ -334,6 +334,7 @@ end
 ---wrong values (they would miss the snippet trigger).
 ---The actual values used for clearing are `region.from` and `region.to`, both
 ---(0,0)-indexed byte-positions in the buffer.
+---
 ---@field expand_params LuaSnip.Opts.SnipExpandExpandParams? Override various
 ---fields of the expanded snippet. Don't override anything by default.
 ---This is useful for manually expanding snippets where the trigger passed
@@ -348,8 +349,10 @@ end
 ---    env_override = { this_key = "some value", other_key = {"multiple", "lines"}, TM_FILENAME = "some_other_filename.lua" }
 ---})
 ---```
+---
 ---@field pos [integer, integer]? Position at which the snippet should be
 ---inserted. Pass as `(row,col)`, both 0-based, the `col` given in bytes.
+---
 ---@field indent boolean? Whether to prepend the current lines' indent to all
 ---lines of the snippet. `true` by default.
 ---Turning this off is a good idea when a LSP server already takes indents into
