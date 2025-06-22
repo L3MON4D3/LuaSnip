@@ -16,11 +16,6 @@ jobs:
           ref: ${{ github.head_ref }}
       - uses: nixbuild/nix-quick-install-action@v30
       - run: nix develop -i -c bash -c 'make vimdoc'
-      - run: |
-          sudo add-apt-repository ppa:neovim-ppa/stable
-          sudo apt-get update
-          sudo apt-get install -y neovim
-          nvim +"helptags doc | exit"
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
