@@ -151,5 +151,5 @@ md_doc:
 	luals-mdgen data/DOC-template.md DOC.md --width 100
 
 vimdoc: md_doc
-	panvimdoc --project-name luasnip --input-file DOC.md --vim-version "NeoVim 0.7-0.11" --doc-mapping true --doc-mapping-project-name true
+	panvimdoc --project-name luasnip --input-file DOC.md --vim-version "NeoVim 0.7-0.11" --doc-mapping true
 	nvim --clean -es +"helptags doc | exit"
