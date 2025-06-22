@@ -3802,7 +3802,7 @@ for _, name in ipairs(api_fieldnames_static) do
             tokens.combinable_linebreak(2),
                 "#### " ..
                 prototype_string(opts) ..
-                (" {doc=luasnip-api-%s}"):format(opts.funcname),
+                (mode == "vimdoc" and (" {doc=luasnip-api-%s}"):format(opts.funcname) or ""),
             tokens.combinable_linebreak(2) })
         func_info(opts)
     end

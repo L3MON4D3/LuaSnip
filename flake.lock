@@ -290,11 +290,11 @@
         "nlua": "nlua"
       },
       "locked": {
-        "lastModified": 1750621251,
-        "narHash": "sha256-DlHHk4UpJaGnOsFwILAx/6bRXBJtZkdNXPTBbgyp6N4=",
+        "lastModified": 1750621951,
+        "narHash": "sha256-nKIcuJTfb0DNTxts19Un1AWcp31m4g4cohdz1k3hsZc=",
         "owner": "L3MON4D3",
         "repo": "luals-mdgen",
-        "rev": "a0126a6a07e74f10e74a469c657b250921463ca4",
+        "rev": "ff653fb849b9a9074c770aa7fd64f963fe263b02",
         "type": "github"
       },
       "original": {
