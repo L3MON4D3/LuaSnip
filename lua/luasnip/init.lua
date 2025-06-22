@@ -86,7 +86,7 @@ end
 ---        wordTrig = snip.wordTrig and true or false,
 ---        regTrig = snip.regTrig and true or false,
 ---    }
---end
+---end
 ---```
 ---@return table<string, T[]> available_info Table mapping filetypes to list of
 ---data returned by snip_info.
