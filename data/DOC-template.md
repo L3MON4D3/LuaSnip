@@ -3790,18 +3790,23 @@ for _, name in ipairs(api_fieldnames_static) do
     -- don't render private functions. Those have a leading newline, luckily
     -- :).
     if not no_doc_functions[name] and name:sub(1,1) ~= "_" then
-        local doc_tokens = fn_doc_tokens(vim.tbl_extend("force", {
+        local opts = vim.tbl_extend("force", {
             typename = "LuaSnip.API",
             funcname = name,
             display_fname = name,
             pre_list_linebreak = true
-        }, opts_table[name] or {}))
-        table.insert(doc_tokens, tokens.combinable_linebreak(1))
+        }, opts_table[name] or {})
 
-        table.insert(static_doc, doc_tokens)
+        -- put these all in a single line!
+        append_tokens({
+            tokens.combinable_linebreak(2),
+                "#### " ..
+                prototype_string(opts) ..
+                (" {doc=luasnip-api-%s}"):format(opts.funcname),
+            tokens.combinable_linebreak(2) })
+        func_info(opts)
     end
 end
-list({list_type = "bulleted", items = static_doc})
 ```
 
 Not covered in this section are the various node-constructors exposed by
