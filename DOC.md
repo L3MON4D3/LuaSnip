@@ -750,11 +750,11 @@ ChoiceNodes allow choosing between multiple nodes.
 `c(pos, choices, opts): LuaSnip.ChoiceNode`: Create a new choiceNode.
 
 * `pos: integer` Jump-index of the node (See [Basics-Jump-Index](#jump-index)).
-* `choices: table<integer,(LuaSnip.Node|LuaSnip.Node[])>` A list of nodes that can be switched
-  between. If a list of nodes is passed as a choice, it will be turned into a snippetNode. Jumpable
-  nodes that generally need a jump-index don't need one when used as a choice, they inherit the
-  choiceNode's jump-index. Additionally, one should make sure the cursor has a position to stop at
-  inside every choice, since changing the choice is generally only possible when inside the
+* `choices: (LuaSnip.Node|LuaSnip.Node[])[]` A list of nodes that can be switched between. If a list
+  of nodes is passed as a choice, it will be turned into a snippetNode.  
+  Jumpable nodes that generally need a jump-index don't need one when used as a choice, they inherit
+  the choiceNode's jump-index. Additionally, one should make sure the cursor has a position to stop
+  at inside every choice, since changing the choice is generally only possible when inside the
   choiceNode. This means that in `sn(nil, {...nodes...})` `nodes` has to contain an `i(1)`,
   otherwise LuaSnip will just "jump through" the nodes, making it impossible to change the choice
   after switching to it. Using an `insertNode` or `textNode` directly as the choice is also fine,
@@ -779,7 +779,7 @@ ChoiceNodes allow choosing between multiple nodes.
     end
     ```
     Consider passing this override into `snip_env`.
-  * `node_callbacks: table<("change_choice"|"enter"|"leave"),fun(node: LuaSnip.Node)>`
+  * `node_callbacks: { [("change_choice"|"enter"|"leave")]: fun(node: LuaSnip.Node) }`
   * `node_ext_opts: LuaSnip.NodeExtOpts?` Pass these opts through to the underlying extmarks
     representing the node. Notably, this enables highlighting the nodes, and allows the highlight to
     be different based on the state of the node/snippet. See [ext_opts](#ext_opts)
@@ -3797,7 +3797,7 @@ These are the settings you can provide to `luasnip.setup()`:
 
   * `active_snip: LuaSnip.Snippet?` The active snippet if one exists, otherwise `nil`.
 
-* `get_snippets(ft, opts): (LuaSnip.Snippet[]|table<string,LuaSnip.Snippet[]>)`: Retrieve snippets
+* `get_snippets(ft, opts): (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })`: Retrieve snippets
   from luasnip.
 
   * `ft: string?` Filetype, if not given returns snippets for all filetypes.
@@ -3809,10 +3809,10 @@ These are the settings you can provide to `luasnip.setup()`:
 
   This function returns:
 
-  * `snippets: (LuaSnip.Snippet[]|table<string,LuaSnip.Snippet[]>)` Flat array when `ft` is non-nil,
+  * `snippets: (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })` Flat array when `ft` is non-nil,
     otherwise a table mapping filetypes to snippets.
 
-* `available(snip_info): table<string,T[]>`: Retrieve information about snippets available in the
+* `available(snip_info): { [string]: T[] }`: Retrieve information about snippets available in the
   current file/at the current position (in case treesitter-based filetypes are enabled).
 
   * `snip_info: fun(LuaSnip.Snippet) -> T?` Optionally pass a function that, given a snippet,
@@ -3832,7 +3832,7 @@ These are the settings you can provide to `luasnip.setup()`:
 
   This function returns:
 
-  * `available_info: table<string,T[]>` Table mapping filetypes to list of data returned by
+  * `available_info: { [string]: T[] }` Table mapping filetypes to list of data returned by
     snip_info.
 
 * `unlink_current()`: Removes the current snippet from the jumplist (useful if LuaSnip fails to
@@ -3857,45 +3857,21 @@ These are the settings you can provide to `luasnip.setup()`:
 
   * `target: LuaSnip.Node` The destination.
 
-* `jumpable(dir): boolean`: Determine whether jumping forwards or backwards will actually jump, or
-  if there is no node in that direction.
+* `jumpable(dir): boolean`: Return whether jumping forwards or backwards will actually jump, or if
+  there is no node in that direction.
 
   * `dir: (1|-1)` `1` forward, `-1` backward.
 
-  This function returns:
-
-  * `is_jumpable: boolean`
-
-* `expandable(): boolean`: Determine whether there is an expandable snippet at the current cursor
-  position. Does not consider autosnippets since those would already be expanded at this point.  
-  This function returns:
-
-  * `is_expandable: boolean`
-
-* `expand_or_jumpable(): boolean`: Determines if it's possible to expand a snippet at the current
-  cursor-position, or whether it's possible to jump forward from the current node.  
-  This function returns:
-
-  * `is_expand_or_jumpable: boolean`
-
-* `in_snippet(): boolean`: Determine whether the cursor is within a snippet.  
-  This function returns:
-
-  * `is_inside: boolean`
-
-* `expand_or_locally_jumpable(): boolean`: Determine if a snippet can be expanded at the current
+* `expandable(): boolean`: Return if there is an expandable snippet at the current cursor position.
+  Does not consider autosnippets since those would already be expanded at this point.
+* `expand_or_jumpable(): boolean`: Return whether it's possible to expand a snippet at the current
+  cursor-position, or whether it's possible to jump forward from the current node.
+* `in_snippet(): boolean`: Determine whether the cursor is within a snippet.
+* `expand_or_locally_jumpable(): boolean`: Return whether a snippet can be expanded at the current
   cursor position, or whether the cursor is inside a snippet and the current node can be jumped
-  forward from.  
-  This function returns:
-
-  * `is_expand_or_locally_jumpable: boolean`
-
-* `locally_jumpable(dir): boolean`: Determine if whether the cursor is inside a snippet and the
-  current node can be jumped forward from.  
-  This function returns:
-
-  * `is_locally_jumpable: boolean`
-
+  forward from.
+* `locally_jumpable(dir): boolean`: Return whether the cursor is inside a snippet and the current
+  node can be jumped forward from.
 * `snip_expand(snippet, opts): LuaSnip.ExpandedSnippet`: Expand a snippet in the current buffer.
 
   * `snippet: LuaSnip.Snippet` The snippet.
@@ -3924,7 +3900,7 @@ These are the settings you can provide to `luasnip.setup()`:
       * `trigger: string?` What to set as the expanded snippets' trigger (Defaults to
         `snip.trigger`).
       * `captures: string[]?` Set as the expanded snippets' captures (Defaults to `{}`).
-      * `env_override: table<string,string>?` Set or override environment variables of the expanded
+      * `env_override: { [string]: string }?` Set or override environment variables of the expanded
         snippet (Defaults to `{}`).
     * `pos: (integer,integer)?` Position at which the snippet should be inserted. Pass as
       `(row,col)`, both 0-based, the `col` given in bytes.
@@ -3977,11 +3953,7 @@ These are the settings you can provide to `luasnip.setup()`:
   * `body: string` A string specifying a lsp-snippet, eg. `"[${1:text}](${2:url})"`
   * `opts: LuaSnip.Opts.SnipExpand?` Optional args passed through to `snip_expand`.
 
-* `choice_active(): boolean`: Determine whether the current node is inside a choiceNode.  
-  This function returns:
-
-  * `in_choice_node: boolean` Whether a choiceNode is active.
-
+* `choice_active(): boolean`: Return whether the current node is inside a choiceNode.
 * `change_choice(val)`: Change the currently active choice.
 
   * `val: (1|-1)` Move one choice forward or backward.
@@ -4043,7 +4015,7 @@ These are the settings you can provide to `luasnip.setup()`:
 
   * `ft: string?` The filetype to add the snippets to, or nil if the filetype is specified in
     `snippets`.
-  * `snippets: (LuaSnip.Addable[]|table<string,LuaSnip.Addable[]>)` If `ft` is nil a table mapping a
+  * `snippets: (LuaSnip.Addable[]|{ [string]: LuaSnip.Addable[] })` If `ft` is nil a table mapping a
     filetype to a list of snippets, otherwise a flat table of snippets.
   * `opts: LuaSnip.Opts.AddSnippets?` Optional arguments.
 
