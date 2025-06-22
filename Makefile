@@ -146,6 +146,9 @@ spellcheck_interactive:
 	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check DOC.md
 	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check README.md
 
-gen_md_doc:
+md_doc:
 	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
 	luals-mdgen data/DOC-template.md DOC.md --width 100
+
+vimdoc: md_doc
+	panvimdoc --project-name luasnip --input-file DOC.md --vim-version "NeoVim 0.7-0.11"

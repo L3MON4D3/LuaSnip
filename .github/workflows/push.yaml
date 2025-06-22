@@ -15,12 +15,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
       - uses: nixbuild/nix-quick-install-action@v30
-      - run: nix develop -i -c bash -c 'make gen_md_doc'
-      - name: panvimdoc
-        uses: kdheepak/panvimdoc@main
-        with:
-          vimdoc: luasnip
-          pandoc: DOC.md
+      - run: nix develop -i -c bash -c 'make vimdoc'
       - run: |
           sudo add-apt-repository ppa:neovim-ppa/stable
           sudo apt-get update
