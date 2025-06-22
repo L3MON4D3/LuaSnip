@@ -52,7 +52,7 @@ end
 ---Retrieve snippets from luasnip.
 ---@param ft string? Filetype, if not given returns snippets for all filetypes.
 ---@param opts LuaSnip.Opts.GetSnippets? Optional arguments.
----@return LuaSnip.Snippet[]|table<string, LuaSnip.Snippet[]> snippets Flat
+---@return LuaSnip.Snippet[]|{[string]: LuaSnip.Snippet[]} snippets Flat
 ---array when `ft` is non-nil, otherwise a table mapping filetypes to
 ---snippets.
 function API.get_snippets(ft, opts)
@@ -88,7 +88,7 @@ end
 ---    }
 ---end
 ---```
----@return table<string, T[]> available_info Table mapping filetypes to list of
+---@return {[string]: T[]} available_info Table mapping filetypes to list of
 ---data returned by snip_info.
 function API.available(snip_info)
 	snip_info = snip_info or default_snip_info
@@ -301,7 +301,7 @@ end
 ---(Defaults to `snip.trigger`).
 ---@field captures string[]? Set as the expanded snippets' captures (Defaults to
 ---`{}`).
----@field env_override table<string, string>? Set or override environment
+---@field env_override {[string]: string}? Set or override environment
 ---variables of the expanded snippet (Defaults to `{}`).
 
 ---@class LuaSnip.Opts.Expand
@@ -940,7 +940,7 @@ end
 ---This also calls `refresh_notify`.
 ---@param ft string? The filetype to add the snippets to, or nil if the filetype
 ---is specified in `snippets`.
----@param snippets LuaSnip.Addable[]|table<string, LuaSnip.Addable[]> If `ft` is
+---@param snippets LuaSnip.Addable[]|{[string]: LuaSnip.Addable[]} If `ft` is
 ---nil a table mapping a filetype to a list of snippets, otherwise a flat table
 ---of snippets.
 ---@param opts LuaSnip.Opts.AddSnippets? Optional arguments.

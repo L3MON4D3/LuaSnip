@@ -71,14 +71,15 @@ end
 ---```
 ---Consider passing this override into `snip_env`.
 ---
----@field node_callbacks table<"change_choice"|"enter"|"leave", fun(node:LuaSnip.Node)>
+---@field node_callbacks {["change_choice"|"enter"|"leave"]: fun(node:LuaSnip.Node)}
 ---Specify functions to call after changing the choice, or entering or leaving
 ---the node. The callback receives the `node` the callback was called on.
 
 ---Create a new choiceNode.
 ---@param pos integer Jump-index of the node (See
 ---[Basics-Jump-Index](../../../DOC.md#jump-index)).
----@param choices table<integer, LuaSnip.Node|LuaSnip.Node[]> A list of nodes
+---
+---@param choices {[integer]: LuaSnip.Node|LuaSnip.Node[]} A list of nodes
 ---that can be switched between. If a list of nodes is passed as a choice, it
 ---will be turned into a snippetNode.
 ---Jumpable nodes that generally need a jump-index don't need one when used as a
@@ -90,6 +91,7 @@ end
 ---impossible to change the choice after switching to it. Using an `insertNode`
 ---or `textNode` directly as the choice is also fine, the latter are
 ---special-cased to have a jump-point at the beginning of their text.
+---
 ---@param opts LuaSnip.Opts.ChoiceNode? Additional optional arguments.
 ---@return LuaSnip.ChoiceNode
 function ChoiceNode.C(pos, choices, opts)
