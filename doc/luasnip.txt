@@ -65,7 +65,6 @@ Table of Contents                                  *luasnip-table-of-contents*
 31. Troubleshooting                                  |luasnip-troubleshooting|
   - Adding Snippets                  |luasnip-troubleshooting-adding-snippets|
 32. API                                                          |luasnip-api|
-33. Links                                                      |luasnip-links|
 >
                 __                       ____
                /\ \                     /\  _`\           __
@@ -141,11 +140,11 @@ In LuaSnip, snippets are made up of `nodes`. These can contain either
     - `restoreNode`: store and restore input to nodes
 - or nodes that can be generated based on input (`dynamicNode`).
 
-Snippets are always created using the `s(trigger:string,
-nodes:table)`-function. It is explained in more detail in |luasnip-snippets|,
-but the gist is that it creates a snippet that contains the nodes specified in
-`nodes`, which will be inserted into a buffer if the text before the cursor
-matches `trigger` when `ls.expand` is called.
+Snippets are always created using the
+`s(trigger:string, nodes:table)`-function. It is explained in more detail in
+|luasnip-snippets|, but the gist is that it creates a snippet that contains the
+nodes specified in `nodes`, which will be inserted into a buffer if the text
+before the cursor matches `trigger` when `ls.expand` is called.
 
 
 JUMP-INDEX                                         *luasnip-basics-jump-index*
@@ -327,12 +326,12 @@ The most direct way to define snippets is `s`:
             corresponding `snippet.capture[i]` will be `nil` (this will most likely
             change, don’t rely on this behavior).
         Besides these predefined engines, it is also possible to create new ones:
-        Instead of a string, pass a function which satisfies `trigEngine(trigger, opts)
-        -> (matcher(line_to_cursor, trigger) -> whole_match, captures)` (i.e. the
-        function receives `trig` and `trigEngineOpts` can, for example, precompile a
-        regex, and then returns a function responsible for determining whether the
-        current cursor-position (represented by the line up to the cursor) matches the
-        trigger (it is passed again here so engines which don’t do any
+        Instead of a string, pass a function which satisfies
+        `trigEngine(trigger, opts) -> (matcher(line_to_cursor, trigger) -> whole_match, captures)`
+        (i.e. the function receives `trig` and `trigEngineOpts` can, for example,
+        precompile a regex, and then returns a function responsible for determining
+        whether the current cursor-position (represented by the line up to the cursor)
+        matches the trigger (it is passed again here so engines which don’t do any
         trigger-specific work (like compilation) can just return a static `matcher`),
         and what the capture-groups are). The `lua`-engine, for example, can be
         implemented like this:
@@ -394,8 +393,8 @@ The most direct way to define snippets is `s`:
         `ls.config.setup({ enable_autosnippets = true })` if you want to use this
         feature). If unset it depends on how the snippet is added of which type the
         snippet will be.
-    - `resolveExpandParams`: `fn(snippet, line_to_cursor, matched_trigger, captures)
-        -> table|nil`, where
+    - `resolveExpandParams`:
+        `fn(snippet, line_to_cursor, matched_trigger, captures) -> table|nil`, where
         - `snippet`: `Snippet`, the expanding snippet object
         - `line_to_cursor`: `string`, the line up to the cursor.
         - `matched_trigger`: `string`, the fully matched trigger (can be retrieved
@@ -478,9 +477,9 @@ Snippets contain some interesting tables during runtime:
 
 These variables/tables primarily come in handy in `dynamic/functionNodes`,
 where the snippet can be accessed through the immediate parent
-(`parent.snippet`), which is passed to the function. (in most cases `parent ==
-parent.snippet`, but the `parent` of the dynamicNode is not always the
-surrounding snippet, it could be a `snippetNode`).
+(`parent.snippet`), which is passed to the function. (in most cases
+`parent == parent.snippet`, but the `parent` of the dynamicNode is not always
+the surrounding snippet, it could be a `snippetNode`).
 
 ## API
 
@@ -631,10 +630,11 @@ user-defined function:
     })
 <
 
-`f(fn, argnode_references, node_opts)`: - `fn`: `function(argnode_text, parent,
-user_args1,...,user_argsn) -> text` - `argnode_text`: `string[][]`, the text
-currently contained in the argnodes (e.g. `{{line1}, {line1, line2}}`). The
-snippet indent will be removed from all lines following the first.
+`f(fn, argnode_references, node_opts)`: - `fn`:
+`function(argnode_text, parent, user_args1,...,user_argsn) -> text` -
+`argnode_text`: `string[][]`, the text currently contained in the argnodes
+(e.g. `{{line1}, {line1, line2}}`). The snippet indent will be removed from
+all lines following the first.
 
 - `parent`: The immediate parent of the `functionNode`. It is included here as it
     allows easy access to some information that could be useful in functionNodes
@@ -789,8 +789,7 @@ ChoiceNodes allow choosing between multiple nodes.
             end
         <
         Consider passing this override into `snip_env`.
-    - `node_callbacks: { [("change_choice"|"enter"|"leave")]: fun(node: LuaSnip.Node)
-        }`
+    - `node_callbacks: { [("change_choice"|"enter"|"leave")]: fun(node: LuaSnip.Node) }`
     - `node_ext_opts: LuaSnip.NodeExtOpts?` Pass these opts through to the underlying
         extmarks representing the node. Notably, this enables highlighting the nodes,
         and allows the highlight to be different based on the state of the
@@ -1940,10 +1939,10 @@ have to be generated without any runtime-information, we just have to provide
 dummy-data in `env`, which will be some kind of string related to the name of
 the environment variable. Since the structure of `LS_TSDATA` obviously does not
 fit that model, we can’t really handle it in a nice way (at least yet). So,
-for now, best include a check like `local static_evaluation =
-type(env.LS_TSDATA) == "string"`, and behave accordingly if `static_evaluation`
-is true (for example, return some value tailored for displaying it in a
-docstring).
+for now, best include a check like
+`local static_evaluation = type(env.LS_TSDATA) == "string"`, and behave
+accordingly if `static_evaluation` is true (for example, return some value
+tailored for displaying it in a docstring).
 
 One more example, which actually uses a few captures:
 
@@ -2308,8 +2307,8 @@ To apply Variable/Placeholder-transformations
 LuaSnip needs to apply ECMAScript regular expressions. This is implemented by
 relying on jsregexp <https://github.com/kmarius/jsregexp>.
 
-The easiest (but potentially error-prone) way to install it is by calling `make
-install_jsregexp` in the repository root.
+The easiest (but potentially error-prone) way to install it is by calling
+`make install_jsregexp` in the repository root.
 
 This process can be automated by `packer.nvim`:
 
@@ -2867,47 +2866,78 @@ One side-effect of the injected globals is that language servers, for example
 `lua-language-server`, do not know about them, which means that snippet-files
 may have many diagnostics about missing symbols.
 
-There are a few ways to fix this * Add all variables in `snip_env` to
-`Lua.diagnostic.globals`: `lua -- wherever your lua-language-server lsp
-settings are defined: settings = { Lua = { ... diagnostics = { globals = {
-"vim", "s", "c", "t", ... } } } }` This will disable the warnings, but will do
-so in all files these lsp-settings are used with. Similarly, adding
-`---@diagnostic disable: undefined-global` to the snippet-files is also
-possible, but this affects not only the variables in `snip_env`, but all
-variables, like local variable names that may be mistyped. * A more complete,
-and only slightly more complicated solution is using `lua-language-server`’s
-definition files <https://luals.github.io/wiki/definition-files/>. Add a file
-with the line `---@meta`, followed by the variables defined by the `snip_env`
-to any directory listed in the `workspace.library`-settings for
-`lua-langue-server` (one likely directory is `vim.fn.stdpath("config")/lua`,
-check `:checkhealth lsp` in a lua file to be sure). ```lua —@meta
+There are a few ways to fix this
 
-s = require("luasnip.nodes.snippet").S sn = require("luasnip.nodes.snippet").SN
-isn = require("luasnip.nodes.snippet").ISN t =
-require("luasnip.nodes.textNode").T i = require("luasnip.nodes.insertNode").I f
-= require("luasnip.nodes.functionNode").F c =
-require("luasnip.nodes.choiceNode").C d =
-require("luasnip.nodes.dynamicNode").D r =
-require("luasnip.nodes.restoreNode").R events = require("luasnip.util.events")
-k = require("luasnip.nodes.key_indexer").new_key ai =
-require("luasnip.nodes.absolute_indexer") extras = require("luasnip.extras") l
-= require("luasnip.extras").lambda rep = require("luasnip.extras").rep p =
-require("luasnip.extras").partial m = require("luasnip.extras").match n =
-require("luasnip.extras").nonempty dl =
-require("luasnip.extras").dynamic_lambda fmt =
-require("luasnip.extras.fmt").fmt fmta = require("luasnip.extras.fmt").fmta
-conds = require("luasnip.extras.expand_conditions") postfix =
-require("luasnip.extras.postfix").postfix types = require("luasnip.util.types")
-parse = require("luasnip.util.parser").parse_snippet ms =
-require("luasnip.nodes.multiSnippet").new_multisnippet ```
-
-While that allows the `snip_env`-variables to resolve correctly in
-snippet-files, it also resolves them in other lua files. This can be fixed by
-putting the file in a directory that is _not_ in `workspace.library` (create,
-for example, `vim.fn.stdpath("state")/luasnip-snip_env/`), and then adding its
-path to `workspace.library` only for snippet files, for example by putting a
-`.luarc.json` with the following content into all snippet-directories: `json {
-"workspace.library": ["<state-stdpath>/luasnip-snip_env"] }`
+- Add all variables in `snip_env` to `Lua.diagnostic.globals`:
+    >lua
+        -- wherever your lua-language-server lsp settings are defined:
+        settings = {
+          Lua = {
+              ...
+              diagnostics = {
+                  globals = {
+                      "vim",
+                      "s",
+                      "c",
+                      "t",
+                      ...
+                  }
+              }
+          }
+        }
+    <
+    This will disable the warnings, but will do so in all files these lsp-settings
+    are used with. Similarly, adding `---@diagnostic disable: undefined-global` to
+    the snippet-files is also possible, but this affects not only the variables in
+    `snip_env`, but all variables, like local variable names that may be mistyped.
+- A more complete, and only slightly more complicated solution is using
+    `lua-language-server`’s definition files
+    <https://luals.github.io/wiki/definition-files/>. Add a file with the line
+    `---@meta`, followed by the variables defined by the `snip_env` to any
+    directory listed in the `workspace.library`-settings for `lua-langue-server`
+    (one likely directory is `vim.fn.stdpath("config")/lua`, check
+    `:checkhealth lsp` in a lua file to be sure).
+    >lua
+        ---@meta
+        
+        s = require("luasnip.nodes.snippet").S
+        sn = require("luasnip.nodes.snippet").SN
+        isn = require("luasnip.nodes.snippet").ISN
+        t = require("luasnip.nodes.textNode").T
+        i = require("luasnip.nodes.insertNode").I
+        f = require("luasnip.nodes.functionNode").F
+        c = require("luasnip.nodes.choiceNode").C
+        d = require("luasnip.nodes.dynamicNode").D
+        r = require("luasnip.nodes.restoreNode").R
+        events = require("luasnip.util.events")
+        k = require("luasnip.nodes.key_indexer").new_key
+        ai = require("luasnip.nodes.absolute_indexer")
+        extras = require("luasnip.extras")
+        l = require("luasnip.extras").lambda
+        rep = require("luasnip.extras").rep
+        p = require("luasnip.extras").partial
+        m = require("luasnip.extras").match
+        n = require("luasnip.extras").nonempty
+        dl = require("luasnip.extras").dynamic_lambda
+        fmt = require("luasnip.extras.fmt").fmt
+        fmta = require("luasnip.extras.fmt").fmta
+        conds = require("luasnip.extras.expand_conditions")
+        postfix = require("luasnip.extras.postfix").postfix
+        types = require("luasnip.util.types")
+        parse = require("luasnip.util.parser").parse_snippet
+        ms = require("luasnip.nodes.multiSnippet").new_multisnippet
+    <
+    While that allows the `snip_env`-variables to resolve correctly in
+    snippet-files, it also resolves them in other lua files. This can be fixed by
+    putting the file in a directory that is _not_ in `workspace.library` (create,
+    for example, `vim.fn.stdpath("state")/luasnip-snip_env/`), and then adding its
+    path to `workspace.library` only for snippet files, for example by putting a
+    `.luarc.json` with the following content into all snippet-directories:
+    >json
+        {
+          "workspace.library": ["<state-stdpath>/luasnip-snip_env"]
+        }
+    <
 
 
 RELOADING WHEN EDITING REQUIRE’D FILES ~
@@ -3475,14 +3505,12 @@ keybinding that 1. `<Esc>`es to NORMAL (to populate the `<` and `>`-markers) 2.
 calls `luasnip.pre_yank(<namedreg>)` 3. yanks text to some named register
 `<namedreg>` 4. calls `luasnip.post_yank(<namedreg>)` Take care that the
 yanking actually takes place between the two calls. One way to ensure this is
-to call the two functions via `<cmd>lua ...<Cr>`: `lua vim.keymap.set("v",
-"<Tab>", [[<Esc><cmd>lua
-require("luasnip.util.select").pre_yank("z")<Cr>gv"zs<cmd>lua
-require('luasnip.util.select').post_yank("z")<Cr>]])` The reason for this
-specific order is to allow us to take a snapshot of registers (in the
-pre-callback), and then restore them (in the post-callback) (so that we may get
-the visual selection directly from the register, which seems to be the most
-foolproof way of doing this).
+to call the two functions via `<cmd>lua ...<Cr>`:
+`lua   vim.keymap.set("v", "<Tab>", [[<Esc><cmd>lua require("luasnip.util.select").pre_yank("z")<Cr>gv"zs<cmd>lua require('luasnip.util.select').post_yank("z")<Cr>]])`
+The reason for this specific order is to allow us to take a snapshot of
+registers (in the pre-callback), and then restore them (in the post-callback)
+(so that we may get the visual selection directly from the register, which
+seems to be the most foolproof way of doing this).
 
 
 ==============================================================================
@@ -3585,11 +3613,11 @@ LOADERS ~
     <
     In general, if some snippets don’t show up when loading a collection, a good
     first step is checking the filetype LuaSnip is actually looking into (print
-    them for the current buffer via `:lua
-    print(vim.inspect(require("luasnip").get_snippet_filetypes()))`), against the
-    one the missing snippet is provided for (in the collection). If there is indeed
-    a mismatch, `filetype_extend` can be used to also search the collection’s
-    filetype:
+    them for the current buffer via
+    `:lua print(vim.inspect(require("luasnip").get_snippet_filetypes()))`), against
+    the one the missing snippet is provided for (in the collection). If there is
+    indeed a mismatch, `filetype_extend` can be used to also search the
+    collection’s filetype:
     >lua
         ls.filetype_extend("<luasnip-filetype>", { "<collection-filetype>" })
     <
@@ -3848,11 +3876,6 @@ GENERAL ~
 Not covered in this section are the various node-constructors exposed by the
 module, their usage is shown either previously in this file or in
 `Examples/snippets.lua` (in the repository).
-
-==============================================================================
-33. Links                                                      *luasnip-links*
-
-1. *@meta*: 
 
 Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
 

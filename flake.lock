@@ -197,6 +197,24 @@
         "type": "github"
       }
     },
+    "flake-utils_6": {
+      "inputs": {
+        "systems": "systems_4"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "git-hooks": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -330,6 +348,22 @@
         "owner": "nixos",
         "repo": "nixpkgs",
         "rev": "7a339d87931bba829f68e94621536cad9132971a",
+        "type": "github"
+      }
+    },
+    "nixpkgs-unstable": {
+      "locked": {
+        "lastModified": 1750386251,
+        "narHash": "sha256-1ovgdmuDYVo5OUC5NzdF+V4zx2uT8RtsgZahxidBTyw=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "076e8c6678d8c54204abcb4b1b14c366835a58bb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
         "type": "github"
       }
     },
@@ -509,6 +543,25 @@
         "type": "github"
       }
     },
+    "panvimdoc": {
+      "inputs": {
+        "flake-utils": "flake-utils_6",
+        "nixpkgs-unstable": "nixpkgs-unstable"
+      },
+      "locked": {
+        "lastModified": 1750617108,
+        "narHash": "sha256-QjNDGMEPYuq4ym1jT/DwapCJc/U6yuhsnpTwX83ku3E=",
+        "owner": "L3MON4D3",
+        "repo": "panvimdoc",
+        "rev": "0f6d57dda4be3753aa8d27eaa5375c5c105549be",
+        "type": "github"
+      },
+      "original": {
+        "owner": "L3MON4D3",
+        "repo": "panvimdoc",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "emmylua-analyzer-rust": "emmylua-analyzer-rust",
@@ -517,7 +570,8 @@
         "nixpkgs-treesitter": "nixpkgs-treesitter",
         "nvim_07": "nvim_07",
         "nvim_09": "nvim_09",
-        "nvim_master": "nvim_master"
+        "nvim_master": "nvim_master",
+        "panvimdoc": "panvimdoc"
       }
     },
     "rust-overlay": {
@@ -594,6 +648,21 @@
       }
     },
     "systems_3": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_4": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",

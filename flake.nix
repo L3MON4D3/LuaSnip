@@ -15,8 +15,19 @@
   inputs.nvim_master.url = "github:nix-community/neovim-nightly-overlay";
   inputs.luals-mdgen.url = "github:L3MON4D3/luals-mdgen";
   inputs.emmylua-analyzer-rust.url = "github:EmmyLuaLs/emmylua-analyzer-rust";
+  inputs.panvimdoc.url = "github:L3MON4D3/panvimdoc";
 
-  outputs = { self, nixpkgs, nixpkgs-treesitter, nvim_07, nvim_09, nvim_master, luals-mdgen, emmylua-analyzer-rust }:
+  outputs = {
+    self,
+    nixpkgs,
+    nixpkgs-treesitter,
+    nvim_07,
+    nvim_09,
+    nvim_master,
+    luals-mdgen,
+    emmylua-analyzer-rust,
+    panvimdoc
+  }:
     let
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
       forEachSupportedSystem = f: nixpkgs-treesitter.lib.genAttrs supportedSystems (system: f {
@@ -26,10 +37,19 @@
         pkgs-nvim_07 = import nvim_07.inputs.nixpkgs { inherit system; };
         pkg-luals-mdgen = luals-mdgen.outputs.packages.${system}.default;
         pkg-emmylua-doc = emmylua-analyzer-rust.outputs.packages.${system}.emmylua_doc_cli;
+        pkg-panvimdoc = panvimdoc.outputs.packages.${system}.default;
       });
     in
     {
-      devShells = forEachSupportedSystem ({ pkgs, pkgs-treesitter, pkgs-nvim_09, pkgs-nvim_07, pkg-luals-mdgen, pkg-emmylua-doc }: let
+      devShells = forEachSupportedSystem ({
+        pkgs,
+        pkgs-treesitter,
+        pkgs-nvim_09,
+        pkgs-nvim_07,
+        pkg-luals-mdgen,
+        pkg-emmylua-doc,
+        pkg-panvimdoc
+      }: let
         default_09_devshell = nvim_09.outputs.devShells.${pkgs.system}.default;
         true_bin = "${pkgs.coreutils}/bin/true";
         false_bin = "${pkgs.coreutils}/bin/false";
@@ -47,7 +67,7 @@
             pkgs.gcc
             pkg-luals-mdgen
             pkg-emmylua-doc
-            panvimdoc
+            pkg-panvimdoc
             pkgs.neovim
           ];
         };

@@ -2973,6 +2973,7 @@ One side-effect of the injected globals is that language servers, for example
 may have many diagnostics about missing symbols.
 
 There are a few ways to fix this
+
 * Add all variables in `snip_env` to `Lua.diagnostic.globals`:
   ```lua
   -- wherever your lua-language-server lsp settings are defined:
