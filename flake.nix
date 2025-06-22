@@ -36,18 +36,19 @@
       in {
         default = pkgs.mkShell {
           # use any nixpkgs here.
-          packages = with pkgs; [
-            (aspellWithDicts (dicts: with dicts; [en]))
-            gnumake
+          packages = [
+            (pkgs.aspellWithDicts (dicts: with dicts; [en]))
+            pkgs.gnumake
 
-            git
-            nix
-            which
-            gnugrep
-            gcc
+            pkgs.git
+            pkgs.nix
+            pkgs.which
+            pkgs.gnugrep
+            pkgs.gcc
             pkg-luals-mdgen
             pkg-emmylua-doc
             panvimdoc
+            pkgs.neovim
           ];
         };
         # clang stdenv does not build, and it's used by de.
