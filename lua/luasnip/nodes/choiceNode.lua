@@ -79,9 +79,9 @@ end
 ---@param pos integer Jump-index of the node (See
 ---[Basics-Jump-Index](../../../DOC.md#jump-index)).
 ---
----@param choices {[integer]: LuaSnip.Node|LuaSnip.Node[]} A list of nodes
----that can be switched between. If a list of nodes is passed as a choice, it
----will be turned into a snippetNode.
+---@param choices (LuaSnip.Node|LuaSnip.Node[])[] A list of nodes that can be
+---switched between. If a list of nodes is passed as a choice, it will be turned
+---into a snippetNode.  
 ---Jumpable nodes that generally need a jump-index don't need one when used as a
 ---choice, they inherit the choiceNode's jump-index. Additionally, one should
 ---make sure the cursor has a position to stop at inside every choice, since
