@@ -1,10 +1,10 @@
 local uv = vim.uv or vim.loop
 local duplicate = require("luasnip.nodes.duplicate")
 
+--- Stores modified time for a file.
 --- @class LuaSnip.Loaders.SnippetCache.Mtime
 --- @field sec number
 --- @field nsec number
---- Stores modified time for a file.
 
 --- @class LuaSnip.Loaders.SnippetCache.TimeCacheEntry
 --- @field mtime LuaSnip.Loaders.SnippetCache.Mtime?
@@ -12,8 +12,8 @@ local duplicate = require("luasnip.nodes.duplicate")
 --- mtime is nil if the file does not currently exist. Since `get_fn` may still
 --- return data, there's no need to treat this differently.
 
---- @class LuaSnip.Loaders.SnippetCache
 --- SnippetCache stores snippets and other data loaded by files.
+--- @class LuaSnip.Loaders.SnippetCache
 --- @field private get_fn fun(file: string): LuaSnip.Loaders.SnippetFileData
 --- @field private cache table<string, LuaSnip.Loaders.SnippetCache.TimeCacheEntry>
 local SnippetCache = {}

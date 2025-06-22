@@ -1,5 +1,6 @@
----@class LuaSnip.extra.MatchTSNodeOpts Passed in by the user, describes how to
----select a node from the tree via a query and captures.
+---Passed in by the user, describes how to select a node from the tree via a
+---query and captures.
+---@class LuaSnip.extra.MatchTSNodeOpts
 ---@field query? string A query, as text
 ---@field query_name? string The name of a query (passed to `vim.treesitter.query.get`).
 ---@field query_lang string The language of the query.
@@ -15,7 +16,8 @@
 ---| '"shortest"' # Selects the shortest match, return all captures too
 ---| '"longest"' # Selects the longest match, return all captures too
 
----Call record repeatedly to record all matches/nodes, retrieve once there are no more matches
+---Call record repeatedly to record all matches/nodes, retrieve once there are
+---no more matches
 ---@class LuaSnip.extra.MatchSelector
 ---@field record fun(ts_match: TSMatch?, node: TSNode): boolean return true if recording can be aborted
 ---                                                             (because the best match has been found)

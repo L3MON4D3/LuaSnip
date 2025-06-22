@@ -20,6 +20,9 @@ local callback_mt = {
 
 --- @alias LuaSnip.FSWatcher.Callback fun(full_path: string)
 
+--- The callbacks are called with the full path to the file/directory that is
+--- affected.
+--- Callbacks that are not set will be replaced by a nop.
 --- @class LuaSnip.FSWatcher.TreeCallbacks
 --- @field new_file LuaSnip.FSWatcher.Callback?
 --- @field new_dir LuaSnip.FSWatcher.Callback?
@@ -28,17 +31,14 @@ local callback_mt = {
 --- @field remove_root LuaSnip.FSWatcher.Callback?
 --- @field change_file LuaSnip.FSWatcher.Callback?
 --- @field change_dir LuaSnip.FSWatcher.Callback?
---- The callbacks are called with the full path to the file/directory that is
---- affected.
---- Callbacks that are not set will be replaced by a nop.
 
+--- The callbacks are called with the full path to the file that path-watcher
+--- is registered on.
+--- Callbacks that are not set will be replaced by a nop.
 --- @class LuaSnip.FSWatcher.PathCallbacks
 --- @field add LuaSnip.FSWatcher.Callback?
 --- @field remove LuaSnip.FSWatcher.Callback?
 --- @field change LuaSnip.FSWatcher.Callback?
---- The callbacks are called with the full path to the file that path-watcher
---- is registered on.
---- Callbacks that are not set will be replaced by a nop.
 
 --- @class LuaSnip.FSWatcher.Options
 --- @field lazy boolean?
