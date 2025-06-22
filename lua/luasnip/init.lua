@@ -910,7 +910,9 @@ function API.setup_snip_env()
 
 	setfenv(2, combined_table)
 end
+
 ---Return the currently active snip_env.
+---@return table
 function API.get_snip_env()
 	return session.get_snip_env()
 end
