@@ -52,43 +52,47 @@ end
 
 ---@class LuaSnip.Opts.ChoiceNode: LuaSnip.Opts.Node
 ---@field restore_cursor? boolean If set, the currently active node is looked up
----in the switched-to choice, and the cursor restored to  preserve the current
----position relative to that node. The node may be found if a `restoreNode` is
----present in both choice.
----`false` by default, as enabling might lead to decreased performance.
+---  in the switched-to choice, and the cursor restored to  preserve the current
+---  position relative to that node. The node may be found if a `restoreNode` is
+---  present in both choice.
+---  Defaults to `false`, as enabling might lead to decreased performance.
 ---
----It's possible to override the default by wrapping the `choiceNode`
----constructor in another function that sets `opts.restore_cursor` to `true` and
----then using that to construct `choiceNode`s:
----```lua
----local function restore_cursor_choice(pos, choices, opts)
----    opts = opts or {}
----    opts.restore_cursor = true
----    return c(pos, choices, opts)
----end
----```
----Consider passing this override into `snip_env`.
+---  It's possible to override the default by wrapping the `choiceNode`
+---  constructor in another function that sets `opts.restore_cursor` to `true` and
+---  then using that to construct `choiceNode`s:
+---  ```lua
+---  local function restore_cursor_choice(pos, choices, opts)
+---      opts = opts or {}
+---      opts.restore_cursor = true
+---      return c(pos, choices, opts)
+---  end
+---  ```
+---  Consider passing this override into `snip_env`.
 ---
 ---@field node_callbacks? {["change_choice"|"enter"|"leave"]: fun(node:LuaSnip.Node)}
----Specify functions to call after changing the choice, or entering or leaving
----the node. The callback receives the `node` the callback was called on.
+---  Specify functions to call after changing the choice, or entering or leaving
+---  the node. The callback receives the `node` the callback was called on.
 
----Create a new choiceNode.
----@param pos integer Jump-index of the node (See
----[Basics-Jump-Index](../../../DOC.md#jump-index)).
+--- Create a new choiceNode.
+---
+---@param pos integer Jump-index of the node.
+---  (See [Basics-Jump-Index](../../../DOC.md#jump-index))
 ---
 ---@param choices (LuaSnip.Node|LuaSnip.Node[])[] A list of nodes that can be
----switched between. If a list of nodes is passed as a choice, it will be turned
----into a snippetNode.  
----Jumpable nodes that generally need a jump-index don't need one when used as a
----choice, they inherit the choiceNode's jump-index. Additionally, one should
----make sure the cursor has a position to stop at inside every choice, since
----changing the choice is generally only possible when inside the choiceNode.
----This means that in `sn(nil, {...nodes...})` the given `nodes` have to contain an
----`insertNode` (e.g. `i(1)`), otherwise LuaSnip will just "jump through" the nodes
----making it impossible to change the current choice after switching to it.
----Using an `insertNode` or `textNode` directly as the choice is also fine, the latter
----is special-cased to have a jump-point at the beginning of its text.
+---  switched between interactively. If a list of nodes is passed as a choice,
+---  it will be turned into a snippetNode.  
+---  Jumpable nodes that generally need a jump-index don't need one when used as
+---  a choice, they inherit the choiceNode's jump-index.
+---  Additionally, one should make sure the cursor has a position to stop at
+---  inside every choice, since changing the choice is generally only possible
+---  when inside the choiceNode.  
+---  This means that for a choice like `sn(nil, {...nodes...})` the given
+---  `nodes` have to contain an `insertNode` (e.g. `i(1)`), otherwise LuaSnip
+---  will just "jump through" the nodes making it impossible to change the
+---  current choice after switching to it.  
+---  Using an `insertNode` or `textNode` directly as the choice is also fine,
+---  the latter is special-cased to have a jump-point at the beginning of its
+---  text.
 ---
 ---@param opts? LuaSnip.Opts.ChoiceNode Additional optional arguments.
 ---@return LuaSnip.ChoiceNode

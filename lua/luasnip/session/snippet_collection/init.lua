@@ -225,21 +225,21 @@ end
 ---@class LuaSnip.Opts.SessionAddSnippets
 ---
 ---@field type "snippets"|"autosnippets" What to set `snippetType` to if it is
----not defined for an individual snippet.
+---  not defined for an individual snippet.
 ---
 ---@field key? string This key uniquely identifies this call to `add_snippets`.
----If another call has the same `key`, the snippets added in this call will be
----removed.
----This is useful for reloading snippets once they are updated.
+---  If another call has the same `key`, the snippets added in this call will be
+---  removed.
+---  This is useful for reloading snippets once they are updated.
 ---
 ---@field override_priority? integer Override the priority of individual
----snippets.
+---  snippets.
 ---
----@field default_priority? integer Default snippets priority. Defaults to 1000.
+---@field default_priority? integer Default snippets priority.
+---  (Defaults to 1000)
 
 local current_id = 0
 --- Add snippets to the collection of snippets.
---- NOTE: calls `refresh_notify` as needed.
 ---
 ---@param snippets {[string]: LuaSnip.Addable[]}
 ---@param opts LuaSnip.Opts.SessionAddSnippets
