@@ -1,4 +1,4 @@
-*luasnip.txt*           For NeoVim 0.7-0.11          Last change: 2025 June 22
+*luasnip.txt*           For NeoVim 0.7-0.11          Last change: 2025 June 23
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -756,7 +756,7 @@ ChoiceNodes allow choosing between multiple nodes.
      }))
 <
 
-`c(pos, choices, opts): LuaSnip.ChoiceNode`: Create a new choiceNode.
+`c(pos, choices, opts?): LuaSnip.ChoiceNode`: Create a new choiceNode.
 
 - `pos: integer` Jump-index of the node (See |luasnip-basics-jump-index|).
 - `choices: (LuaSnip.Node|LuaSnip.Node[])[]` A list of nodes that can be switched
@@ -3683,7 +3683,7 @@ Get the currently active snippet. This function returns:
 - `active_snip: LuaSnip.Snippet?` The active snippet if one exists, otherwise `nil`.
 
 
-get_snippets(ft, opts): (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] }) *luasnip-api-get_snippets*
+get_snippets(ft?, opts?): (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] }) *luasnip-api-get_snippets*
 
 Retrieve snippets from luasnip.
 
@@ -3698,7 +3698,7 @@ This function returns:
     otherwise a table mapping filetypes to snippets.
 
 
-available(snip_info): { [string]: T[] }                *luasnip-api-available*
+available(snip_info?): { [string]: T[] }               *luasnip-api-available*
 
 Retrieve information about snippets available in the current file/at the
 current position (in case treesitter-based filetypes are enabled).
@@ -3794,7 +3794,7 @@ Return whether the cursor is inside a snippet and the current node can be
 jumped forward from.
 
 
-snip_expand(snippet, opts): LuaSnip.ExpandedSnippet  *luasnip-api-snip_expand*
+snip_expand(snippet, opts?): LuaSnip.ExpandedSnippet *luasnip-api-snip_expand*
 
 Expand a snippet in the current buffer.
 
@@ -3853,7 +3853,7 @@ This function returns:
 - `expanded_snip: LuaSnip.ExpandedSnippet` The snippet that was inserted into the buffer.
 
 
-expand(opts): boolean                                     *luasnip-api-expand*
+expand(opts?): boolean                                    *luasnip-api-expand*
 
 Find a snippet whose trigger matches the text before the cursor and expand it.
 
@@ -3883,7 +3883,7 @@ Expand at the cursor, or jump forward. This function returns:
 - `did_jump_or_expand: boolean` Whether an action was performed.
 
 
-lsp_expand(body, opts)                                *luasnip-api-lsp_expand*
+lsp_expand(body, opts?)                               *luasnip-api-lsp_expand*
 
 Expand a snippet specified in lsp-style.
 
@@ -4001,7 +4001,7 @@ This function returns:
 - `id_snip: LuaSnip.Snippet`
 
 
-add_snippets(ft, snippets, opts)                    *luasnip-api-add_snippets*
+add_snippets(ft?, snippets, opts?)                  *luasnip-api-add_snippets*
 
 Add snippets to luasnip’s snippet-collection. This also calls
 `refresh_notify`.
@@ -4013,7 +4013,7 @@ Add snippets to luasnip’s snippet-collection. This also calls
 - `opts: LuaSnip.Opts.AddSnippets?` Optional arguments.
 
 
-clean_invalidated(opts)                        *luasnip-api-clean_invalidated*
+clean_invalidated(opts?)                       *luasnip-api-clean_invalidated*
 
 Clean invalidated snippets from internal snippet storage. Invalidated snippets
 are still stored; it might be useful to actually remove them as they still have
@@ -4022,7 +4022,7 @@ to be iterated during expansion.
 - `opts: LuaSnip.Opts.CleanInvalidated?` Additional, optional arguments.
 
 
-activate_node(opts)                                *luasnip-api-activate_node*
+activate_node(opts?)                               *luasnip-api-activate_node*
 
 Lookup a node by position and activate (ie. jump into) it.
 
