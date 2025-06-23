@@ -3792,6 +3792,8 @@ locally_jumpable(dir): boolean                  *luasnip-api-locally_jumpable*
 Return whether the cursor is inside a snippet and the current node can be
 jumped forward from.
 
+- `dir: (1|-1)` Test jumping forwards/backwards.
+
 
 snip_expand(snippet, opts?): LuaSnip.ExpandedSnippet *luasnip-api-snip_expand*
 
