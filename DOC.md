@@ -747,7 +747,7 @@ ChoiceNodes allow choosing between multiple nodes.
 
 <!-- panvimdoc-ignore-end -->
 
-`c(pos, choices, opts): LuaSnip.ChoiceNode`: Create a new choiceNode.
+`c(pos, choices, opts?): LuaSnip.ChoiceNode`: Create a new choiceNode.
 
 * `pos: integer` Jump-index of the node (See [Basics-Jump-Index](#jump-index)).
 * `choices: (LuaSnip.Node|LuaSnip.Node[])[]` A list of nodes that can be switched between. If a list
@@ -3801,7 +3801,7 @@ This function returns:
 
 * `active_snip: LuaSnip.Snippet?` The active snippet if one exists, otherwise `nil`.
 
-#### `get_snippets(ft, opts): (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })`
+#### `get_snippets(ft?, opts?): (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })`
 
 Retrieve snippets from luasnip.
 
@@ -3817,7 +3817,7 @@ This function returns:
 * `snippets: (LuaSnip.Snippet[]|{ [string]: LuaSnip.Snippet[] })` Flat array when `ft` is non-nil,
   otherwise a table mapping filetypes to snippets.
 
-#### `available(snip_info): { [string]: T[] }`
+#### `available(snip_info?): { [string]: T[] }`
 
 Retrieve information about snippets available in the current file/at the current position (in case
 treesitter-based filetypes are enabled).
@@ -3898,7 +3898,7 @@ inside a snippet and the current node can be jumped forward from.
 
 Return whether the cursor is inside a snippet and the current node can be jumped forward from.
 
-#### `snip_expand(snippet, opts): LuaSnip.ExpandedSnippet`
+#### `snip_expand(snippet, opts?): LuaSnip.ExpandedSnippet`
 
 Expand a snippet in the current buffer.
 
@@ -3956,7 +3956,7 @@ This function returns:
 
 * `expanded_snip: LuaSnip.ExpandedSnippet` The snippet that was inserted into the buffer.
 
-#### `expand(opts): boolean`
+#### `expand(opts?): boolean`
 
 Find a snippet whose trigger matches the text before the cursor and expand it.
 
@@ -3984,7 +3984,7 @@ This function returns:
 
 * `did_jump_or_expand: boolean` Whether an action was performed.
 
-#### `lsp_expand(body, opts)`
+#### `lsp_expand(body, opts?)`
 
 Expand a snippet specified in lsp-style.
 
@@ -4082,7 +4082,7 @@ This function returns:
 
 * `id_snip: LuaSnip.Snippet`
 
-#### `add_snippets(ft, snippets, opts)`
+#### `add_snippets(ft?, snippets, opts?)`
 
 Add snippets to luasnip's snippet-collection. This also calls `refresh_notify`.
 
@@ -4092,14 +4092,14 @@ Add snippets to luasnip's snippet-collection. This also calls `refresh_notify`.
   filetype to a list of snippets, otherwise a flat table of snippets.
 * `opts: LuaSnip.Opts.AddSnippets?` Optional arguments.
 
-#### `clean_invalidated(opts)`
+#### `clean_invalidated(opts?)`
 
 Clean invalidated snippets from internal snippet storage. Invalidated snippets are still stored; it
 might be useful to actually remove them as they still have to be iterated during expansion.
 
 * `opts: LuaSnip.Opts.CleanInvalidated?` Additional, optional arguments.
 
-#### `activate_node(opts)`
+#### `activate_node(opts?)`
 
 Lookup a node by position and activate (ie. jump into) it.
 
