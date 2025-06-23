@@ -8,9 +8,10 @@ local session = require("luasnip.session")
 local sNode = require("luasnip.nodes.snippet").SN
 local extend_decorator = require("luasnip.util.extend_decorator")
 
----@class LuaSnip.Choice: LuaSnip.Node
+---@class LuaSnip.ChoiceNode.ItemNode: LuaSnip.Node
 
 ---@class LuaSnip.ChoiceNode: LuaSnip.Node
+---@field choices LuaSnip.ChoiceNode.ItemNode[]
 local ChoiceNode = Node:new()
 
 function ChoiceNode:init_nodes()
