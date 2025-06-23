@@ -21,8 +21,7 @@ local log = require("luasnip.util.log").new("main")
 local API = {}
 
 ---Get the currently active snippet.
----@return LuaSnip.Snippet? The active snippet if one exists,
----otherwise `nil`.
+---@return LuaSnip.Snippet? _ The active snippet if one exists, or `nil`.
 function API.get_active_snip()
 	local node = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if not node then
@@ -52,7 +51,7 @@ end
 ---Retrieve snippets from luasnip.
 ---@param ft? string Filetype, if not given returns snippets for all filetypes.
 ---@param opts? LuaSnip.Opts.GetSnippets Optional arguments.
----@return LuaSnip.Snippet[]|{[string]: LuaSnip.Snippet[]} Flat array when `ft`
+---@return LuaSnip.Snippet[]|{[string]: LuaSnip.Snippet[]} _ Flat array when `ft`
 ---is non-nil, otherwise a table mapping filetypes to snippets.
 function API.get_snippets(ft, opts)
 	opts = opts or {}
@@ -87,7 +86,7 @@ end
 ---    }
 ---end
 ---```
----@return {[string]: T[]} Table mapping filetypes to list of data returned by
+---@return {[string]: T[]} _ Table mapping filetypes to list of data returned by
 ---snip_info function.
 function API.available(snip_info)
 	snip_info = snip_info or default_snip_info
@@ -184,7 +183,7 @@ local function safe_jump_current(dir, no_move, dry_run)
 end
 ---Jump forwards or backwards
 ---@param dir 1|-1 Jump forward for 1, backward for -1.
----@return boolean `true` if a jump was performed, `false` otherwise.
+---@return boolean _ `true` if a jump was performed, `false` otherwise.
 function API.jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
@@ -211,7 +210,7 @@ end
 ---would not be registered.
 ---Thus, it currently only works for simple cases.
 ---@param dir 1|-1 `1`: find the next node, `-1`: find the previous node.
----@return LuaSnip.Node The destination node.
+---@return LuaSnip.Node _ The destination node.
 function API.jump_destination(dir)
 	-- dry run of jump (+no_move ofc.), only retrieves destination-node.
 	return safe_jump_current(dir, true, { active = {} })
@@ -377,7 +376,7 @@ end
 ---Expand a snippet in the current buffer.
 ---@param snippet LuaSnip.Snippet The snippet.
 ---@param opts? LuaSnip.Opts.SnipExpand Optional additional arguments.
----@return LuaSnip.ExpandedSnippet The snippet that was inserted into the
+---@return LuaSnip.ExpandedSnippet _ The snippet that was inserted into the
 ---buffer.
 function API.snip_expand(snippet, opts)
 	local snip = snippet:copy()
@@ -461,7 +460,7 @@ end
 ---Find a snippet whose trigger matches the text before the cursor and expand
 ---it.
 ---@param opts? LuaSnip.Opts.Expand Subset of opts accepted by `snip_expand`.
----@return boolean Whether a snippet was expanded.
+---@return boolean _ Whether a snippet was expanded.
 function API.expand(opts)
 	local expand_params
 	local snip
@@ -539,7 +538,7 @@ end
 -- return true and expand snippet if expandable, return false if not.
 
 ---Expand at the cursor, or jump forward.
----@return boolean Whether an action was performed.
+---@return boolean _ Whether an action was performed.
 function API.expand_or_jump()
 	if API.expand() then
 		return true
@@ -630,7 +629,7 @@ function API.set_choice(choice_indx)
 end
 
 ---Get a string-representation of all the current choiceNode's choices.
----@return string[] \n-concatenated lines of every choice.
+---@return string[] _ \n-concatenated lines of every choice.
 function API.get_current_choices()
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
@@ -983,8 +982,6 @@ function API.add_snippets(ft, snippets, opts)
 
 	opts = opts or {}
 	opts.refresh_notify = opts.refresh_notify or true
-	-- alternatively, "autosnippets"
-	opts.type = opts.type or "snippets"
 
 	-- when ft is nil, snippets already use this format.
 	if ft then
@@ -995,7 +992,12 @@ function API.add_snippets(ft, snippets, opts)
 	-- update type.
 	snippets = snippets --[[@as {[string]: LuaSnip.Snippet[]}]]
 
-	snippet_collection.add_snippets(snippets, opts)
+	snippet_collection.add_snippets(snippets, {
+		type = opts.type or "snippets",
+		key = opts.key,
+		override_priority = opts.override_priority,
+		default_priority = opts.default_priority,
+	})
 
 	if opts.refresh_notify then
 		for ft_, _ in pairs(snippets) do
