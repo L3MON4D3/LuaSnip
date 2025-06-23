@@ -225,6 +225,8 @@ end
 local current_id = 0
 -- snippets like {ft1={<snippets>}, ft2={<snippets>}}, opts should be properly
 -- initialized with default values.
+---@param snippets {[string]: LuaSnip.Addable[]}
+---@param opts LuaSnip.Opts.AddSnippets
 function M.add_snippets(snippets, opts)
 	for ft, ft_snippets in pairs(snippets) do
 		for _, addable in ipairs(ft_snippets) do

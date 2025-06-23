@@ -293,6 +293,9 @@ local function deduplicate(list)
 	return ret
 end
 
+---Returns the list of filetypes that are considered for the current buffer, in
+---order of priority.
+---@return string[]
 local function get_snippet_filetypes()
 	local config = require("luasnip.session").config
 	local fts = config.ft_func()
