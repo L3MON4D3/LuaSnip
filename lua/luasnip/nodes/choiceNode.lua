@@ -51,7 +51,7 @@ function ChoiceNode:init_nodes()
 end
 
 ---@class LuaSnip.Opts.ChoiceNode: LuaSnip.Opts.Node
----@field restore_cursor boolean? If set, the currently active node is looked up
+---@field restore_cursor? boolean If set, the currently active node is looked up
 ---in the switched-to choice, and the cursor restored to  preserve the current
 ---position relative to that node. The node may be found if a `restoreNode` is
 ---present in both choice.
@@ -72,7 +72,7 @@ end
 ---```
 ---Consider passing this override into `snip_env`.
 ---
----@field node_callbacks {["change_choice"|"enter"|"leave"]: fun(node:LuaSnip.Node)}
+---@field node_callbacks? {["change_choice"|"enter"|"leave"]: fun(node:LuaSnip.Node)}
 ---Specify functions to call after changing the choice, or entering or leaving
 ---the node. The callback receives the `node` the callback was called on.
 
@@ -93,7 +93,7 @@ end
 ---or `textNode` directly as the choice is also fine, the latter are
 ---special-cased to have a jump-point at the beginning of their text.
 ---
----@param opts LuaSnip.Opts.ChoiceNode? Additional optional arguments.
+---@param opts? LuaSnip.Opts.ChoiceNode Additional optional arguments.
 ---@return LuaSnip.ChoiceNode
 function ChoiceNode.C(pos, choices, opts)
 	opts = opts or {}

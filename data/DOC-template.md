@@ -3754,7 +3754,7 @@ These are the settings you can provide to `luasnip.setup()`:
   was defined after the normal snippet `s`, then adding `priority=1001` to the
   `postfix` snippet will cause it to expand as if it were defined before
   the normal snippet `s`. Snippet `priority` is discussed in the
-   [Snippets section](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#snippets) of the documentation.
+   [Snippets section](#snippets) of the documentation.
 
 # API
 
