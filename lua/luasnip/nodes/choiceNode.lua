@@ -62,11 +62,8 @@ end
 ---then using that to construct `choiceNode`s:
 ---```lua
 ---local function restore_cursor_choice(pos, choices, opts)
----    if opts then
----        opts.restore_cursor = true
----    else
----        opts = {restore_cursor = true}
----    end
+---    opts = opts or {}
+---    opts.restore_cursor = true
 ---    return c(pos, choices, opts)
 ---end
 ---```
@@ -82,16 +79,16 @@ end
 ---
 ---@param choices (LuaSnip.Node|LuaSnip.Node[])[] A list of nodes that can be
 ---switched between. If a list of nodes is passed as a choice, it will be turned
----into a snippetNode.  
+---into a snippetNode.
 ---Jumpable nodes that generally need a jump-index don't need one when used as a
 ---choice, they inherit the choiceNode's jump-index. Additionally, one should
 ---make sure the cursor has a position to stop at inside every choice, since
 ---changing the choice is generally only possible when inside the choiceNode.
----This means that in `sn(nil, {...nodes...})` `nodes` has to contain an
----`i(1)`, otherwise LuaSnip will just "jump through" the nodes, making it
----impossible to change the choice after switching to it. Using an `insertNode`
----or `textNode` directly as the choice is also fine, the latter are
----special-cased to have a jump-point at the beginning of their text.
+---This means that in `sn(nil, {...nodes...})` the given `nodes` have to contain an
+---`insertNode` (e.g. `i(1)`), otherwise LuaSnip will just "jump through" the nodes
+---making it impossible to change the current choice after switching to it.
+---Using an `insertNode` or `textNode` directly as the choice is also fine, the latter
+---is special-cased to have a jump-point at the beginning of its text.
 ---
 ---@param opts? LuaSnip.Opts.ChoiceNode Additional optional arguments.
 ---@return LuaSnip.ChoiceNode
