@@ -4075,7 +4075,7 @@ Example:
 ls.filetype_extend("sh", {"zsh"})
 ls.filetype_extend("sh", {"bash"})
 ```
-This makes all `sh` snippets available in `sh`/`zsh`/`bash` `zsh`/`bash` `bash` buffers.
+This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
 
 * `ft: string`
 * `extend_ft: string[]`
@@ -4088,7 +4088,7 @@ Example:
 ```lua
 ls.filetype_set("sh", {"sh", "zsh", "bash"})
 ```
-This makes all `sh` snippets available in `sh`/`zsh`/`bash` `zsh`/`bash` `bash` buffers.
+This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
 
 * `ft: string`
 * `fts: string[]`
