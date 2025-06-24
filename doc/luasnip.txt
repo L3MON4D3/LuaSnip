@@ -770,11 +770,12 @@ ChoiceNodes allow choosing between multiple nodes.
 list of choices.
 The first item in this list is the initial choice, and it can be changed while
 any node of a choice is active. So, if all choices should be reachable, every
-choice has to have a place for the cursor to stop at. If the choice is a
-snippetNode like `sn(nil, {...nodes...})` the given `nodes` have to contain an
-`insertNode` (e.g. `i(1)`). Using an `insertNode` or `textNode` directly as a
-choice is also fine, the latter is special-cased to have a jump-point at the
-beginning of its text.
+choice has to have a place for the cursor to stop at.
+
+If the choice is a snippetNode like `sn(nil, {...nodes...})` the given `nodes`
+have to contain an `insertNode` (e.g. `i(1)`). Using an `insertNode` or
+`textNode` directly as a choice is also fine, the latter is special-cased to
+have a jump-point at the beginning of its text.
 
 - `pos: integer` Jump-index of the node. (See |luasnip-basics-jump-index|)
 - `choices: (LuaSnip.Node|LuaSnip.Node[])[]` A list of nodes that can be switched
@@ -788,9 +789,10 @@ beginning of its text.
         the switched-to choice, and the cursor restored to preserve the current
         position relative to that node. The node may be found if a `restoreNode` is
         present in both choice. Defaults to `false`, as enabling might lead to
-        decreased performance. It’s possible to override the default by wrapping the
-        `choiceNode` constructor in another function that sets `opts.restore_cursor` to
-        `true` and then using that to construct `choiceNode`s:
+        decreased performance.
+        It’s possible to override the default by wrapping the `choiceNode`
+        constructor in another function that sets `opts.restore_cursor` to `true` and
+        then using that to construct `choiceNode`s:
         >lua
             local function restore_cursor_choice(pos, choices, opts)
                 opts = opts or {}
@@ -3843,7 +3845,8 @@ Expand a snippet in the current buffer.
         of the expanded snippet. Don’t override anything by default. This is useful
         for manually expanding snippets where the trigger passed via `trig` is not the
         text triggering the snippet, or those which expect `captures` (basically,
-        snippets with a non-plaintext `trigEngine`). One Example:
+        snippets with a non-plaintext `trigEngine`).
+        One Example:
         >lua
             snip_expand(snip, {
                 trigger = "override_trigger",
@@ -4006,7 +4009,9 @@ the end/beginning of the next/previous snippet.
 
 filetype_extend(ft, extend_ft)                   *luasnip-api-filetype_extend*
 
-Add `extend_ft` filetype to inherit its snippets from `ft`. Example:
+Add `extend_ft` filetype to inherit its snippets from `ft`.
+
+Example:
 
 >lua
     ls.filetype_extend("sh", {"zsh"})
@@ -4022,7 +4027,9 @@ buffers.
 
 filetype_set(ft, fts)                               *luasnip-api-filetype_set*
 
-Set `fts` filetypes as inheriting their snippets from `ft`. Example:
+Set `fts` filetypes as inheriting their snippets from `ft`.
+
+Example:
 
 >lua
     ls.filetype_set("sh", {"sh", "zsh", "bash"})
@@ -4054,8 +4061,10 @@ plugins that a filetype has received new snippets.
 setup_snip_env()                                  *luasnip-api-setup_snip_env*
 
 Injects the fields defined in `snip_env`, in `setup`, into the callers global
-environment. This means that variables like `s`, `sn`, `i`, `t`, … (by
-default) work, and are useful for quickly testing snippets in a buffer:
+environment.
+
+This means that variables like `s`, `sn`, `i`, `t`, … (by default) work, and
+are useful for quickly testing snippets in a buffer:
 
 >lua
     local ls = require("luasnip")
@@ -4089,8 +4098,9 @@ Get the snippet corresponding to some id.
 
 add_snippets(ft?, snippets, opts?)                  *luasnip-api-add_snippets*
 
-Add snippets to luasnip’s snippet-collection. NOTE: Calls `refresh_notify` as
-needed if enabled via `opts.refresh_notify`.
+Add snippets to luasnip’s snippet-collection.
+
+NOTE: Calls `refresh_notify` as needed if enabled via `opts.refresh_notify`.
 
 - `ft?: string?` The filetype to add the snippets to, or nil if the filetype is specified in
     `snippets`.
