@@ -549,11 +549,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "lastModified": 1750620506,
-        "narHash": "sha256-vTkIP0Qiayi+/oLKEE+Ek8dPimx9+wL/Tktn0qxDPm4=",
+        "lastModified": 1750795049,
+        "narHash": "sha256-nJX5PbEQ53sk/bnjthk+R9mjij9atVInkkIQ1hzG5o4=",
         "owner": "L3MON4D3",
         "repo": "panvimdoc",
-        "rev": "2ef09eaaee7a93f0d5a3c1aa265a9ff75a559399",
+        "rev": "11a1c9f271eea3ba386b326caf9c304dba0a8418",
         "type": "github"
       },
       "original": {
