@@ -3676,7 +3676,9 @@ GENERAL ~
 
 get_active_snip(): LuaSnip.Snippet?              *luasnip-api-get_active_snip*
 
-Get the currently active snippet. This function returns:
+Get the currently active snippet.
+
+This function returns:
 
 - `LuaSnip.Snippet?` The active snippet if one exists, or `nil`.
 
@@ -3881,7 +3883,9 @@ Repeat the last performed `snip_expand`. Useful for dot-repeat.
 
 expand_or_jump(): boolean                         *luasnip-api-expand_or_jump*
 
-Expand at the cursor, or jump forward. This function returns:
+Expand at the cursor, or jump forward.
+
+This function returns:
 
 - `boolean` Whether an action was performed.
 
@@ -3915,8 +3919,9 @@ Set the currently active choice.
 
 get_current_choices(): string[]              *luasnip-api-get_current_choices*
 
-Get a string-representation of all the current choiceNode’s choices. This
-function returns:
+Get a string-representation of all the current choiceNode’s choices.
+
+This function returns:
 
 - `string[]` -concatenated lines of every choice.
 

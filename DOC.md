@@ -3794,6 +3794,7 @@ These are the settings you can provide to `luasnip.setup()`:
 #### `get_active_snip(): LuaSnip.Snippet?`
 
 Get the currently active snippet.  
+
 This function returns:
 
 * `LuaSnip.Snippet?` The active snippet if one exists, or `nil`.
@@ -3982,6 +3983,7 @@ Repeat the last performed `snip_expand`. Useful for dot-repeat.
 #### `expand_or_jump(): boolean`
 
 Expand at the cursor, or jump forward.  
+
 This function returns:
 
 * `boolean` Whether an action was performed.
@@ -4012,6 +4014,7 @@ Set the currently active choice.
 #### `get_current_choices(): string[]`
 
 Get a string-representation of all the current choiceNode's choices.  
+
 This function returns:
 
 * `string[]` \n-concatenated lines of every choice.
