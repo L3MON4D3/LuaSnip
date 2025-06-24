@@ -165,8 +165,8 @@ Common opts:
 
 * `node_ext_opts` and `merge_node_ext_opts`: Control `ext_opts` (most likely
   highlighting) of the node. Described in detail in [ext_opts](#ext_opts)
-* `key`: The node can be referred to by this key. Useful for either [Key
-  Indexer](#key-indexer) or for finding the node at runtime (See
+* `key`: The node can be referred to by this key. Useful for either
+  [Key Indexer](#key-indexer) or for finding the node at runtime (See
   [Snippets-API](#snippets-api)), for example inside a `dynamicNode`. The keys
   do not have to be unique across the entire lifetime of the snippet, but at any
   point in time, the snippet may contain each key only once. This means it is
@@ -1142,12 +1142,12 @@ s("trig", {
 # Absolute Indexer
 
 `absolute_indexer` allows accessing nodes by their unique jump-index path from
-the snippet-root. This makes it almost as powerful as [Key
-Indexer](#key-indexer), but again removes the possibility of referring to
-non-jumpable nodes and makes it all a bit more error-prone since the jump-index
-paths are hard to follow, and (unfortunately) have to be a bit verbose (see the
-long example of `absolute_indexer`-positions below). Consider just using [Key
-Indexer](#key-indexer) instead.  
+the snippet-root. This makes it almost as powerful as [Key Indexer](#key-indexer),
+but again removes the possibility of referring to non-jumpable nodes and makes
+it all a bit more error-prone since the jump-index paths are hard to follow, and
+(unfortunately) have to be a bit verbose (see the long example of
+`absolute_indexer`-positions below). Consider just using [Key Indexer](#key-indexer)
+instead.  
 
 (The solution-snippet from [Key Indexer](#key-indexer), but using `ai` instead.)
 ```lua
@@ -2674,8 +2674,8 @@ the `luasnip`-table:
 }
 ```
 
-Files with the extension `jsonc` will be parsed as `jsonc`, [`json` with
-comments](https://code.visualstudio.com/docs/languages/json#_json-with-comments),
+Files with the extension `jsonc` will be parsed as `jsonc`,
+[`json` with comments](https://code.visualstudio.com/docs/languages/json#_json-with-comments),
 while `*.json` are parsed with a regular `json` parser, where comments are
 disallowed. (the `json` parser is a bit faster, so don't default to `jsonc` if
 it's not necessary).
@@ -2965,8 +2965,8 @@ There are a few ways to fix this
   `snip_env`, but all variables, like local variable names that may be
   mistyped.
 * A more complete, and only slightly more complicated solution is using
-  `lua-language-server`'s [definition
-  files](https://luals.github.io/wiki/definition-files/).  
+  `lua-language-server`'s
+  [definition files](https://luals.github.io/wiki/definition-files/).  
   Add a file with the line `---@meta`, followed by the variables defined by the
   `snip_env` to any directory listed in the `workspace.library`-settings for
   `lua-langue-server` (one likely directory is `vim.fn.stdpath("config")/lua`,
