@@ -73,8 +73,15 @@ end
 ---  Specify functions to call after changing the choice, or entering or leaving
 ---  the node. The callback receives the `node` the callback was called on.
 
---- Create a new choiceNode.
+--- Create a new choiceNode from a list of choices.  
+--- The first item in this list is the initial choice, and it can be changed
+--- while any node of a choice is active. So, if all choices should be
+--- reachable, every choice has to have a place for the cursor to stop at.  
 ---
+--- If the choice is a snippetNode like `sn(nil, {...nodes...})` the given
+--- `nodes` have to contain an `insertNode` (e.g. `i(1)`). Using an `insertNode`
+--- or `textNode` directly as a choice is also fine, the latter is special-cased
+--- to have a jump-point at the beginning of its text.
 ---@param pos integer Jump-index of the node.
 ---  (See [Basics-Jump-Index](../../../DOC.md#jump-index))
 ---
@@ -82,17 +89,7 @@ end
 ---  switched between interactively. If a list of nodes is passed as a choice,
 ---  it will be turned into a snippetNode.  
 ---  Jumpable nodes that generally need a jump-index don't need one when used as
----  a choice, they inherit the choiceNode's jump-index.
----  Additionally, one should make sure the cursor has a position to stop at
----  inside every choice, since changing the choice is generally only possible
----  when inside the choiceNode.  
----  This means that for a choice like `sn(nil, {...nodes...})` the given
----  `nodes` have to contain an `insertNode` (e.g. `i(1)`), otherwise LuaSnip
----  will just "jump through" the nodes making it impossible to change the
----  current choice after switching to it.  
----  Using an `insertNode` or `textNode` directly as the choice is also fine,
----  the latter is special-cased to have a jump-point at the beginning of its
----  text.
+---  a choice since they inherit the choiceNode's jump-index anyway.
 ---
 ---@param opts? LuaSnip.Opts.ChoiceNode Additional optional arguments.
 ---@return LuaSnip.ChoiceNode

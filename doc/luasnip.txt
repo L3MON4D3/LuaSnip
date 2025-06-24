@@ -1,4 +1,4 @@
-*luasnip.txt*           For NeoVim 0.7-0.11          Last change: 2025 June 23
+*luasnip.txt*           For NeoVim 0.7-0.11          Last change: 2025 June 24
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -756,21 +756,21 @@ ChoiceNodes allow choosing between multiple nodes.
      }))
 <
 
-`c(pos, choices, opts?): LuaSnip.ChoiceNode`: Create a new choiceNode.
+`c(pos, choices, opts?): LuaSnip.ChoiceNode`: Create a new choiceNode from a
+list of choices. The first item in this list is the initial choice, and it can
+be changed while any node of a choice is active. So, if all choices should be
+reachable, every choice has to have a place for the cursor to stop at. If the
+choice is a snippetNode like `sn(nil, {...nodes...})` the given `nodes` have to
+contain an `insertNode` (e.g. `i(1)`). Using an `insertNode` or `textNode`
+directly as a choice is also fine, the latter is special-cased to have a
+jump-point at the beginning of its text.
 
 - `pos: integer` Jump-index of the node. (See |luasnip-basics-jump-index|)
 - `choices: (LuaSnip.Node|LuaSnip.Node[])[]` A list of nodes that can be switched
     between interactively. If a list of nodes is passed as a choice, it will be
     turned into a snippetNode. Jumpable nodes that generally need a jump-index
-    don’t need one when used as a choice, they inherit the choiceNode’s
-    jump-index. Additionally, one should make sure the cursor has a position to
-    stop at inside every choice, since changing the choice is generally only
-    possible when inside the choiceNode. This means that for a choice like
-    `sn(nil, {...nodes...})` the given `nodes` have to contain an `insertNode`
-    (e.g. `i(1)`), otherwise LuaSnip will just "jump through" the nodes making it
-    impossible to change the current choice after switching to it. Using an
-    `insertNode` or `textNode` directly as the choice is also fine, the latter is
-    special-cased to have a jump-point at the beginning of its text.
+    don’t need one when used as a choice since they inherit the choiceNode’s
+    jump-index anyway.
 - `opts?: LuaSnip.Opts.ChoiceNode?` Additional optional arguments. Valid keys
     are:
     - `restore_cursor?: boolean?` If set, the currently active node is looked up in
