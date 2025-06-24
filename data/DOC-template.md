@@ -578,6 +578,7 @@ s("trig", {
 <!-- panvimdoc-ignore-end -->
 
 `f(fn, argnode_references, node_opts)`:
+
 - `fn`: `function(argnode_text, parent, user_args1,...,user_argsn) -> text`  
   - `argnode_text`: `string[][]`, the text currently contained in the argnodes
     (e.g. `{{line1}, {line1, line2}}`). The snippet indent will be removed from
