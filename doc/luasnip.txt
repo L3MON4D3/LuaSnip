@@ -119,7 +119,7 @@ As noted in the |luasnip-loaders-lua|-section:
 
 
   By default, the names from
-  `luasnip.config.snip_env` <https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22-L48>
+  [`luasnip.config.snip_env`](https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22-L48)
   will be used, but it’s possible to customize them by setting `snip_env` in
   `setup`.
 Furthermore, note that while this document assumes you have defined `ls` to be
@@ -370,7 +370,7 @@ The most direct way to define snippets is `s`:
             end
         <
         The predefined engines are defined in
-        `trig_engines.lua` <https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/nodes/util/trig_engines.lua>,
+        [`trig_engines.lua`](https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/nodes/util/trig_engines.lua),
         read it for more examples.
     - `trigEngineOpts`: `table<string, any>`, options for the used `trigEngine`.
         The valid options are:
@@ -425,7 +425,7 @@ The most direct way to define snippets is `s`:
         deleted, no overridden environment-variables).
         A good example for the usage of `resolveExpandParams` can be found in the
         implementation of
-        `postfix` <https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/extras/postfix.lua>.
+        [`postfix`](https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/extras/postfix.lua).
     - `condition`: `fn(line_to_cursor, matched_trigger, captures) -> bool`, where
         - `line_to_cursor`: `string`, the line up to the cursor.
         - `matched_trigger`: `string`, the fully matched trigger (can be retrieved
@@ -1064,7 +1064,7 @@ defined for a key, it defaults to the empty `insertNode`.
 
 An important-to-know limitation of `restoreNode` is that, for a given key, only
 one may be visible at a time. See
-this issue <https://github.com/L3MON4D3/LuaSnip/issues/234> for details.
+[this issue](https://github.com/L3MON4D3/LuaSnip/issues/234) for details.
 
 The `restoreNode` is especially useful for storing input across updates of a
 `dynamicNode`. Consider this:
@@ -1442,7 +1442,7 @@ complicated nodes.
 `fmt` can be used to define snippets in a much more readable way. This is
 achieved by borrowing (as the name implies) from `format`-functionality (our
 syntax is very similar to
-python’s <https://docs.python.org/3/library/stdtypes.html#str.format>).
+[python’s](https://docs.python.org/3/library/stdtypes.html#str.format)).
 
 `fmt` accepts a string and a table of nodes. Each occurrence of a delimiter
 pair in the string is replaced by one node from the table, while text outside
@@ -1578,7 +1578,7 @@ combined with each other into logical expressions:
 - `c1 % c2 -> c1 xnor(==) c2`: This decision may seem weird, considering how
     there is an overload for the `==`-operator. Unfortunately, it’s not possible
     to use this for our purposes (some info
-    here <https://github.com/L3MON4D3/LuaSnip/pull/612#issuecomment-1264487743>),
+    [here](https://github.com/L3MON4D3/LuaSnip/pull/612#issuecomment-1264487743)),
     so we decided to make use of a more obscure symbol (which will hopefully avoid
     false assumptions about its meaning).
 
@@ -1704,7 +1704,7 @@ Contains some utility functions that can be passed to the `ft_func` or
 POSTFIX-SNIPPET                               *luasnip-extras-postfix-snippet*
 
 Postfix snippets, famously used in
-rust analyzer <https://rust-analyzer.github.io/> and various IDEs, are a type
+[rust analyzer](https://rust-analyzer.github.io/) and various IDEs, are a type
 of snippet which alters text before the snippet’s trigger. While these can be
 implemented using `regTrig` snippets, this helper makes the process easier in
 most cases.
@@ -2322,9 +2322,9 @@ snippet body is parsed differently.
 TRANSFORMATIONS                         *luasnip-lsp-snippets-transformations*
 
 To apply
-Variable/Placeholder-transformations <https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms>,
+[Variable/Placeholder-transformations](https://code.visualstudio.com/docs/editor/userdefinedsnippets#_variable-transforms),
 LuaSnip needs to apply ECMAScript regular expressions. This is implemented by
-relying on jsregexp <https://github.com/kmarius/jsregexp>.
+relying on [jsregexp](https://github.com/kmarius/jsregexp).
 
 The easiest (but potentially error-prone) way to install it is by calling
 `make install_jsregexp` in the repository root.
@@ -2338,8 +2338,8 @@ This process can be automated by `packer.nvim`:
 If this fails, first open an issue :P, and then try installing the
 `jsregexp`-LuaRock. This is also possible via `packer.nvim`, although actual
 usage may require a small workaround, see
-here <https://github.com/wbthomason/packer.nvim/issues/593> or
-here <https://github.com/wbthomason/packer.nvim/issues/358>.
+[here](https://github.com/wbthomason/packer.nvim/issues/593) or
+[here](https://github.com/wbthomason/packer.nvim/issues/358).
 
 Alternatively, `jsregexp` can be cloned locally, `make`d, and the resulting
 `jsregexp.so` placed in some place where Neovim can find it (probably
@@ -2399,7 +2399,7 @@ where:
     - `multiline_vars`: `(fn(name:string)->bool)|map[string, bool]|bool|string[]` Says if certain vars are a table or just a string,
         can be a function that get’s the name of the var and returns true if the var is a key,
         a list of vars that are tables or a boolean for the full namespace, it’s false by default. Refer to
-        issue#510 <https://github.com/L3MON4D3/LuaSnip/issues/510#issuecomment-1209333698> for more information.
+        [issue#510](https://github.com/L3MON4D3/LuaSnip/issues/510#issuecomment-1209333698) for more information.
 
 The four fields of `opts` are optional but you need to provide either `init` or
 `vars`, and `eager` can’t be without `vars`. Also, you can’t use namespaces
@@ -2583,7 +2583,7 @@ having issues adding snippets via loaders.
 VS-CODE                                              *luasnip-loaders-vs-code*
 
 As a reference on the structure of these snippet libraries, see
-friendly-snippets <https://github.com/rafamadriz/friendly-snippets>.
+[friendly-snippets](https://github.com/rafamadriz/friendly-snippets).
 
 We support a small extension: snippets can contain LuaSnip-specific options in
 the `luasnip`-table:
@@ -2603,7 +2603,7 @@ the `luasnip`-table:
 <
 
 Files with the extension `jsonc` will be parsed as `jsonc`,
-`json` with comments <https://code.visualstudio.com/docs/languages/json#_json-with-comments>,
+[`json` with comments](https://code.visualstudio.com/docs/languages/json#_json-with-comments),
 while `*.json` are parsed with a regular `json` parser, where comments are
 disallowed. (the `json` parser is a bit faster, so don’t default to `jsonc`
 if it’s not necessary).
@@ -2755,7 +2755,7 @@ SNIPMATE                                            *luasnip-loaders-snipmate*
 
 Luasnip does not support the full SnipMate format: Only `./{ft}.snippets` and
 `./{ft}/*.snippets` will be loaded. See
-honza/vim-snippets <https://github.com/honza/vim-snippets> for lots of
+[honza/vim-snippets](https://github.com/honza/vim-snippets) for lots of
 examples.
 
 Like VSCode, the SnipMate format is also extended to make use of some of
@@ -2849,7 +2849,7 @@ There are two ways to add snippets:
 As defining all of the snippet constructors (`s`, `c`, `t`, …) in every file
 is rather cumbersome, LuaSnip will bring some globals into scope for executing
 these files. By default, the names from
-`luasnip.config.snip_env` <https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22-L48>
+[`luasnip.config.snip_env`](https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22-L48)
 will be used, but it’s possible to customize them by setting `snip_env` in
 `setup`.
 
@@ -2913,7 +2913,7 @@ There are a few ways to fix this
     `snip_env`, but all variables, like local variable names that may be mistyped.
 - A more complete, and only slightly more complicated solution is using
     `lua-language-server`’s
-    definition files <https://luals.github.io/wiki/definition-files/>.
+    [definition files](https://luals.github.io/wiki/definition-files/).
     Add a file with the line `---@meta`, followed by the variables defined by the
     `snip_env` to any directory listed in the `workspace.library`-settings for
     `lua-langue-server` (one likely directory is `vim.fn.stdpath("config")/lua`,
@@ -3330,7 +3330,7 @@ Other issues will have to be handled manually by checking the contents of e.g.
     })
 <
 
-Refer to #515 <https://github.com/L3MON4D3/LuaSnip/pull/515> for a better
+Refer to [#515](https://github.com/L3MON4D3/LuaSnip/pull/515) for a better
 example to understand `docTrig` and `docstring`.
 
 
@@ -3592,15 +3592,15 @@ These are the settings you can provide to `luasnip.setup()`:
     `choiceNode` containing the nested snippet and an empty `insertNode` for nested
     placeholders (`"${1: ${2: this is nested}}"`). For an example (behavior more
     similar to VSCode), check
-    here <https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#imitate-vscodes-behaviour-for-nested-placeholders>
+    [here](https://github.com/L3MON4D3/LuaSnip/wiki/Nice-Configs#imitate-vscodes-behaviour-for-nested-placeholders)
 - `ft_func`: Source of possible filetypes for snippets. Defaults to a function,
     which returns `vim.split(vim.bo.filetype, ".", true)`, but check
-    filetype_functions <lua/luasnip/extras/filetype_functions.lua> or the
+    [filetype_functions](lua/luasnip/extras/filetype_functions.lua) or the
     |luasnip-extras-filetype-functions|-section for more options.
 - `load_ft_func`: Function to determine which filetypes belong to a given buffer
     (used for `lazy_loading`). `fn(bufnr) -> filetypes (string[])`. Again, there
     are some examples in
-    filetype_functions <lua/luasnip/extras/filetype_functions.lua>.
+    [filetype_functions](lua/luasnip/extras/filetype_functions.lua).
 - `snip_env`: The best way to author snippets in Lua involves the `lua-loader`
     (see |luasnip-loaders-lua|). Unfortunately, this requires that snippets are
     defined in separate files, which means that common definitions like `s`, `i`,
