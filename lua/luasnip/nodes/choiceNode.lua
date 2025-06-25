@@ -73,10 +73,10 @@ end
 ---  Specify functions to call after changing the choice, or entering or leaving
 ---  the node. The callback receives the `node` the callback was called on.
 
---- Create a new choiceNode from a list of choices.  
+--- Create a new choiceNode from a list of choices.
 --- The first item in this list is the initial choice, and it can be changed
 --- while any node of a choice is active. So, if all choices should be
---- reachable, every choice has to have a place for the cursor to stop at.  
+--- reachable, every choice has to have a place for the cursor to stop at.
 ---
 --- If the choice is a snippetNode like `sn(nil, {...nodes...})` the given
 --- `nodes` have to contain an `insertNode` (e.g. `i(1)`). Using an `insertNode`
@@ -87,7 +87,7 @@ end
 ---
 ---@param choices (LuaSnip.Node|LuaSnip.Node[])[] A list of nodes that can be
 ---  switched between interactively. If a list of nodes is passed as a choice,
----  it will be turned into a snippetNode.  
+---  it will be turned into a snippetNode.
 ---  Jumpable nodes that generally need a jump-index don't need one when used as
 ---  a choice since they inherit the choiceNode's jump-index anyway.
 ---
