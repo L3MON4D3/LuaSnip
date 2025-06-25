@@ -4156,7 +4156,11 @@ NOTE: Calls `refresh_notify` as needed if enabled via `opts.refresh_notify`.
 Clean invalidated snippets from internal snippet storage. Invalidated snippets are still stored; it
 might be useful to actually remove them as they still have to be iterated during expansion.
 
-* `opts?: LuaSnip.Opts.CleanInvalidated?` Additional, optional arguments.
+* `opts?: LuaSnip.Opts.CleanInvalidated?` Additional, optional arguments.  
+  Valid keys are:
+
+  * `inv_limit?: integer?` If set, invalidated snippets are only cleared if their number exceeds
+    `inv_limit`.
 
 #### `activate_node(opts?)`
 

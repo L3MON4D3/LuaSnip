@@ -3784,6 +3784,9 @@ local opts_table = {
     activate_node = {type_expand = {
         ["LuaSnip.Opts.ActivateNode?"] = {explain_type = "LuaSnip.Opts.ActivateNode"},
     }},
+    clean_invalidated = {type_expand = {
+        ["LuaSnip.Opts.CleanInvalidated?"] = {explain_type = "LuaSnip.Opts.CleanInvalidated"},
+    }},
 }
 
 local no_doc_functions = {env_namespace = true, setup = true}

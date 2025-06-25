@@ -4115,6 +4115,9 @@ are still stored; it might be useful to actually remove them as they still have
 to be iterated during expansion.
 
 - `opts?: LuaSnip.Opts.CleanInvalidated?` Additional, optional arguments.
+    Valid keys are:
+    - `inv_limit?: integer?` If set, invalidated snippets are only cleared if their number exceeds
+        `inv_limit`.
 
 
 activate_node(opts?)                               *luasnip-api-activate_node*
