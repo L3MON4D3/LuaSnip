@@ -152,8 +152,12 @@ doc:
 # This is because all links in annotations refer to that
 # file, and luals-mdgen will produce links like [xxx](DOC.md#some-section),
 # which panvimdoc cannot deal with, it only knows [xxx](#some-section).
+# Use 80 as width, panvimdoc has some weird behaviour when rendering lists,
+# where sometimes the textwidth-limit is not applied, and the text from the
+# markdown is used verbatim. Rendering the markdown with width 80 is a good
+# solution because indentation is identical for lists.
 	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
-	luals-mdgen data/DOC-template.md DOC.md --width 100 --mode vimdoc
+	luals-mdgen data/DOC-template.md DOC.md --width 80 --mode vimdoc
 	panvimdoc --project-name luasnip --input-file DOC.md --vim-version "NeoVim 0.7-0.11" --doc-mapping true
 	nvim --clean -es +"helptags doc | exit"
 # again, this time without vimdoc, overwrite previous DOC.md.
