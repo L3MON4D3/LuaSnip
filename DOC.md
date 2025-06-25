@@ -4147,7 +4147,8 @@ NOTE: Calls `refresh_notify` as needed if enabled via `opts.refresh_notify`.
 * `ft?: string?` The filetype to add the snippets to, or nil if the filetype is specified in
   `snippets`.
 * `snippets: (LuaSnip.Addable[]|{ [string]: LuaSnip.Addable[] })` If `ft` is nil a table mapping a
-  filetype to a list of snippets, otherwise a flat table of snippets.
+  filetype to a list of snippets, otherwise a flat table of snippets.  
+  `LuaSnip.Addable` are objects created by e.g. the functions `s`, `ms`, or `sp`.
 * `opts?: LuaSnip.Opts.AddSnippets?` Optional arguments.
 
 #### `clean_invalidated(opts?)`

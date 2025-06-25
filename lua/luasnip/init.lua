@@ -1008,7 +1008,9 @@ end
 ---
 ---@param snippets LuaSnip.Addable[]|{[string]: LuaSnip.Addable[]} If `ft` is
 ---  nil a table mapping a filetype to a list of snippets, otherwise a flat
----  table of snippets.
+---  table of snippets.  
+---  `LuaSnip.Addable` are objects created by e.g. the functions `s`, `ms`, or
+---  `sp`.
 ---
 ---@param opts LuaSnip.Opts.AddSnippets? Optional arguments.
 function API.add_snippets(ft, snippets, opts)
