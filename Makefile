@@ -13,9 +13,9 @@ NVIM_0.9_PATH=${NVIM_PATH}/${NVIM_0.9_PATH_REL}
 ${NVIM_PATH}:
 # fetch current master and 0.7.0 (the minimum version we support) and 0.9.0
 # (the minimum version for treesitter-postfix to work).
-	git clone --bare --depth 1 https://github.com/neovim/neovim ${NVIM_PATH}
-	git -C ${NVIM_PATH} fetch --depth 1 origin tag v0.7.0
-	git -C ${NVIM_PATH} fetch --depth 1 origin tag v0.9.0
+	git clone --bare --depth 1 https://github.com/neovim/neovim ${NVIM_PATH};
+	git -C ${NVIM_PATH} fetch --depth 1 origin tag v0.7.0;
+	git -C ${NVIM_PATH} fetch --depth 1 origin tag v0.9.0;
 # create one worktree for master, and one for 0.7.
 # The rationale behind this is that switching from 0.7 to master (and
 # vice-versa) requires a `make distclean`, and full clean build, which takes
@@ -23,18 +23,18 @@ ${NVIM_PATH}:
 # The most straightforward solution seems to be too keep two worktrees, one
 # for master, one for 0.7, and one for 0.9 which are used for the
 # respective builds/tests.
-	git -C ${NVIM_PATH} worktree add ${NVIM_MASTER_PATH_REL} master
-	git -C ${NVIM_PATH} worktree add ${NVIM_0.7_PATH_REL} v0.7.0
-	git -C ${NVIM_PATH} worktree add ${NVIM_0.9_PATH_REL} v0.9.0
+	git -C ${NVIM_PATH} worktree add ${NVIM_MASTER_PATH_REL} master;
+	git -C ${NVIM_PATH} worktree add ${NVIM_0.7_PATH_REL} v0.7.0;
+	git -C ${NVIM_PATH} worktree add ${NVIM_0.9_PATH_REL} v0.9.0;
 
 # |: don't update `nvim` if `${NVIM_PATH}` is changed.
 nvim: | ${NVIM_PATH}
 # only update master
-	git -C ${NVIM_MASTER_PATH} fetch origin master --depth 1
-	git -C ${NVIM_MASTER_PATH} checkout FETCH_HEAD
+	git -C ${NVIM_MASTER_PATH} fetch origin master --depth 1;
+	git -C ${NVIM_MASTER_PATH} checkout FETCH_HEAD;
 
 # Windows: when Git is installed but %GIT%/bin is not in PATH
-WIN_GIT_SHELL:=C:/Program Files/Git/bin/sh.exe
+WIN_GIT_SHELL:=C:/Program\ Files/Git/bin/sh.exe
 WINDOWS_NT:=Windows_NT
 
 # Windows system variable
@@ -47,11 +47,29 @@ ifeq (sh.exe,$(SHELL))
 ifeq (,$(wildcard $(WIN_GIT_SHELL)))
 $(error SHELL is not set. You can specify SHELL=path_to_git/bin/sh.exe, or append path_to_git/bin to $$PATH)
 else
-SHELL:=$(WIN_GIT_SHELL)
+SHELL:=$(wildcard $(WIN_GIT_SHELL))
 endif
 endif
 endif
 
+# NOTE: Adding semicolon `;` at the end of a command is needed on Windows
+# Calling `%COMMAND%` by either:
+# 1. shell function: `$(shell %COMMAND%)`
+# 2. directly call in a recipe:
+# ```make
+# hello:
+# 	%COMMAND%
+# ```
+# result in `CreateProcess(NULL,%COMMAND%,...)`
+#
+# Adding `;`:
+# `$(shell %COMMAND%;)`
+# Or,
+# ```make
+# hello:
+# 	%COMMAND%;
+# ```
+# runs `$SHELL` correctly: `CreateProcess(NULL,$(SHELL) $(.SHELLFLAGS) "%COMMAND%;",...)`
 LUASNIP_DETECTED_OS?=$(shell uname;)
 
 ifneq (,$(findstring Darwin, $(LUASNIP_DETECTED_OS)))
@@ -78,7 +96,7 @@ NEOVIM_BIN_PATH:=$(or \
 	$(shell which nvim >/dev/null && dirname "$$(which nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//';) \
 )
 # Always double quote the absolute path as it may contain spaces
-LUA_LDLIBS?=$(if $(strip $(NEOVIM_BIN_PATH)),-L"$(NEOVIM_BIN_PATH)" -llua51,)
+LUA_LDLIBS?=$(if $(NEOVIM_BIN_PATH),-L'$(NEOVIM_BIN_PATH)' -llua51,)
 endif
 
 CC:=$(shell (which $(CC) || which gcc || which clang || (which zig >/dev/null && echo "$$(which zig) cc")) 2>/dev/null;)
@@ -89,25 +107,25 @@ PROJECT_ROOT:=$(CURDIR)
 JSREGEXP_PATH=$(PROJECT_ROOT)/deps/jsregexp
 JSREGEXP005_PATH=$(PROJECT_ROOT)/deps/jsregexp005
 jsregexp:
-	git submodule init
-	git submodule update
-	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" 'LDLIBS=$(LUA_LDLIBS)' -C "$(JSREGEXP_PATH)"
-	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" 'LDLIBS=$(LUA_LDLIBS)' -C "$(JSREGEXP005_PATH)"
+	git submodule init;
+	git submodule update;
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP_PATH)";
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP005_PATH)";
 
 install_jsregexp: jsregexp
 # remove old binary.
-	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.so"
+	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.so";
 # there is some additional trickery to make this work with jsregexp-0.0.6 in
 # util/jsregexp.lua.
-	cp "$(JSREGEXP_PATH)/jsregexp.lua" "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua"
+	cp "$(JSREGEXP_PATH)/jsregexp.lua" "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua";
 # just move out of jsregexp-directory, so it is not accidentally deleted.
-	cp "$(JSREGEXP_PATH)/jsregexp.so" "$(PROJECT_ROOT)/deps/luasnip-jsregexp.so"
+	cp "$(JSREGEXP_PATH)/jsregexp.so" "$(PROJECT_ROOT)/deps/luasnip-jsregexp.so";
 
 uninstall_jsregexp:
 # also remove binaries of older version.
-	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.so"
-	rm -f "$(PROJECT_ROOT)/deps/luasnip-jsregexp.so"
-	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua"
+	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.so";
+	rm -f "$(PROJECT_ROOT)/deps/luasnip-jsregexp.so";
+	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua";
 
 TEST_07?=true
 TEST_09?=true
@@ -143,8 +161,8 @@ spellcheck:
 	if [ -n "$(shell aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt list < DOC.md)" ]; then exit 1; fi;
 
 spellcheck_interactive:
-	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check DOC.md
-	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check README.md
+	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check DOC.md;
+	aspell --home-dir . --encoding=utf-8 --mode markdown --lang en_US --personal ./data/project-dictionary.txt check README.md;
 
 .PHONY: doc
 doc:
@@ -156,9 +174,9 @@ doc:
 # where sometimes the textwidth-limit is not applied, and the text from the
 # markdown is used verbatim. Rendering the markdown with width 80 is a good
 # solution because indentation is identical for lists.
-	emmylua_doc_cli -f json -i lua/luasnip/ -o ./
-	luals-mdgen data/DOC-template.md DOC.md --width 80 --mode vimdoc
-	panvimdoc --project-name luasnip --input-file DOC.md --vim-version "NeoVim 0.7-0.11" --doc-mapping true
-	nvim --clean -es +"helptags doc | exit"
+	emmylua_doc_cli -f json -i lua/luasnip/ -o ./;
+	luals-mdgen data/DOC-template.md DOC.md --width 80 --mode vimdoc;
+	panvimdoc --project-name luasnip --input-file DOC.md --vim-version "NeoVim 0.7-0.11" --doc-mapping true;
+	nvim --clean -es +"helptags doc | exit";
 # again, this time without vimdoc, overwrite previous DOC.md.
-	luals-mdgen data/DOC-template.md DOC.md --width 100
+	luals-mdgen data/DOC-template.md DOC.md --width 100;
