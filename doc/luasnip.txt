@@ -1,4 +1,4 @@
-*luasnip.txt*           For NeoVim 0.7-0.11          Last change: 2025 June 25
+*luasnip.txt*           For NeoVim 0.7-0.11          Last change: 2025 July 03
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -345,7 +345,7 @@ The most direct way to define snippets is `s`:
             -- look for match which ends at the cursor.
             -- put all results into a list, there might be many capture-groups.
             local find_res = { line_to_cursor:find(trigger .. "$") }
-
+        
             if #find_res > 0 then
                 -- if there is a match, determine matching string, and the
                 -- capture-groups.
@@ -363,7 +363,7 @@ The most direct way to define snippets is `s`:
                 return nil
             end
         end
-
+        
         local function engine(trigger)
             -- don't do any special work here, can't precompile lua-pattern.
             return matcher
@@ -624,11 +624,11 @@ user-defined function:
     local function fn(
       args,     -- text from i(2) in this example i.e. { { "456" } }
       parent,   -- parent snippet or parent node
-      user_args -- user_args from opts.user_args
+      user_args -- user_args from opts.user_args 
     )
        return '[' .. args[1][1] .. user_args .. ']'
     end
-
+    
     s("trig", {
       i(1), t '<-i(1) ',
       f(fn,  -- callback (args, parent, user_args) -> string
@@ -670,7 +670,7 @@ user-defined function:
         local function reused_func(_,_, user_arg1)
             return user_arg1
         end
-
+        
         s("trig", {
             f(reused_func, {}, {
                 user_args = {"text"}
@@ -767,10 +767,9 @@ ChoiceNodes allow choosing between multiple nodes.
 <
 
 `c(pos, choices, opts?): LuaSnip.ChoiceNode`: Create a new choiceNode from a
-list of choices.
-The first item in this list is the initial choice, and it can be changed while
-any node of a choice is active. So, if all choices should be reachable, every
-choice has to have a place for the cursor to stop at.
+list of choices. The first item in this list is the initial choice, and it can
+be changed while any node of a choice is active. So, if all choices should be
+reachable, every choice has to have a place for the cursor to stop at.
 
 If the choice is a snippetNode like `sn(nil, {...nodes...})` the given `nodes`
 have to contain an `insertNode` (e.g. `i(1)`). Using an `insertNode` or
@@ -780,9 +779,9 @@ have a jump-point at the beginning of its text.
 - `pos: integer` Jump-index of the node. (See |luasnip-basics-jump-index|)
 - `choices: (LuaSnip.Node|LuaSnip.Node[])[]` A list of nodes that can be switched
   between interactively. If a list of nodes is passed as a choice, it will be
-  turned into a snippetNode.
-  Jumpable nodes that generally need a jump-index don’t need one when used as a
-  choice since they inherit the choiceNode’s jump-index anyway.
+  turned into a snippetNode. Jumpable nodes that generally need a jump-index
+  don’t need one when used as a choice since they inherit the choiceNode’s
+  jump-index anyway.
 - `opts?: LuaSnip.Opts.ChoiceNode?` Additional optional arguments.
   Valid keys are:
   - `restore_cursor?: boolean?` If set, the currently active node is looked up in
@@ -996,17 +995,17 @@ instead of `old_state`.
         old_state = old_state or {
             updates = 0
         }
-
+    
         old_state.updates = old_state.updates + 1
-
+    
         local snip = sn(nil, {
             t(tostring(old_state.updates))
         })
-
+    
         snip.old_state = old_state
         return snip
     end
-
+    
     ls.add_snippets("all",
         s("trig", {
             i(1, "change to update"),
@@ -1073,7 +1072,7 @@ The `restoreNode` is especially useful for storing input across updates of a
     local function simple_restore(args, _)
         return sn(nil, {i(1, args[1]), i(2, "user_text")})
     end
-
+    
     s("rest", {
         i(1, "preset"), t{"",""},
         d(2, simple_restore, 1)
@@ -1088,7 +1087,7 @@ Every time the `i(1)` in the outer snippet is changed, the text inside the
     local function simple_restore(args, _)
         return sn(nil, {i(1, args[1]), r(2, "dyn", i(nil, "user_text"))})
     end
-
+    
     s("rest", {
         i(1, "preset"), t{"",""},
         d(2, simple_restore, 1)
@@ -1483,7 +1482,7 @@ Simple example:
       }))
       s("example5", fmt([[
         line1: no indent
-
+    
           line3: 2 space -> 1 indent ('\t')
             line4: 4 space -> 2 indent ('\t\t')
       ]], {}, {
@@ -1492,7 +1491,7 @@ Simple example:
       -- NOTE: [[\t]] means '\\t'
       s("example6", fmt([[
         line1: no indent
-
+    
         \tline3: '\\t' -> 1 indent ('\t')
         \t\tline4: '\\t\\t' -> 2 indent ('\t\t')
       ]], {}, {
@@ -1644,8 +1643,8 @@ same time by retrieving snippets from multiple registers:
     " For register a
     vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
-
-
+    
+    
     " For register b
     vnoremap <c-f>a  "bc<cmd>:lua require('luasnip.extras.otf').on_the_fly()<cr>
     inoremap <c-f>b  <cmd>lua require('luasnip.extras.otf').on_the_fly("b")<cr>
@@ -1810,7 +1809,7 @@ A simple example, which surrounds the previous node’s text preceding the
 
 >lua
     local treesitter_postfix = require("luasnip.extras.treesitter_postfix").treesitter_postfix
-
+    
     treesitter_postfix({
         trig = ".mv",
         matchTSNode = {
@@ -2005,7 +2004,7 @@ efficiently (without needing a whole query):
 
 >lua
     local postfix_builtin = require("luasnip.extras.treesitter_postfix").builtin
-
+    
     ls.add_snippets("all", {
         ts_post({
             matchTSNode = postfix_builtin.tsnode_matcher.find_topmost_types({
@@ -2055,7 +2054,7 @@ Customization Examples:
     local function snip_info(snippet)
         return { name = snippet.name }
     end
-
+    
     -- using it
     sl.open({snip_info = snip_info})
 <
@@ -2064,7 +2063,7 @@ Customization Examples:
     -- making our own printer
     local function printer(snippets)
         local res = ""
-
+    
         for ft, snips in pairs(snippets) do
             res = res .. ft .. "\n"
             for _, snip in pairs(snips) do
@@ -2074,11 +2073,11 @@ Customization Examples:
                 res = res .. "    ----" .. "\n"
             end
         end
-
+    
         return res
     end
-
-
+    
+    
     -- using it
     sl.open({printer = printer})
 <
@@ -2088,26 +2087,26 @@ Customization Examples:
     local function display(printer_result)
         -- right vertical split
         vim.cmd("botright vnew")
-
+    
         -- get buf and win handle
         local buf = vim.api.nvim_get_current_buf()
         local win = vim.api.nvim_get_current_win()
-
+    
         -- setting window and buffer options
         vim.api.nvim_win_set_option(win, "foldmethod", "manual")
         vim.api.nvim_buf_set_option(buf, "filetype", "javascript")
-
+    
         vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
         vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
         vim.api.nvim_buf_set_option(buf, "buflisted", false)
-
+    
         vim.api.nvim_buf_set_name(buf, "Custom Display buf " .. buf)
-
+    
         -- dump snippets
         local replacement = vim.split(printer_result)
         vim.api.nvim_buf_set_lines(buf, 0, 0, false, replacement)
     end
-
+    
     -- using it
     sl.open({display = display})
 <
@@ -2151,7 +2150,7 @@ Let’s recreate the custom display example above:
             win_opts = {foldmethod = "manual"},
             get_name = function(buf) return "Custom Display buf " .. buf end
         })
-
+    
     -- using it
     sl.open({display = modified_default_display})
 <
@@ -2200,21 +2199,21 @@ An example:
 
 >lua
     local fmt = require("luasnip.extras.fmt").fmt
-
+    
     fmt("{}", {i(1)}) -- -> list of nodes, containing just the i(1).
-
+    
     -- when authoring snippets for some filetype where `{` and `}` are common, they
     -- would always have to be escaped in the format-string. It might be preferable
     -- to use other delimiters, like `<` and `>`.
-
+    
     fmt("<>", {i(1)}, {delimiters = "<>"}) -- -> same as above.
-
+    
     -- but it's quite annoying to always pass the `{delimiters = "<>"}`.
-
+    
     -- with extend_decorator:
     local fmt_angle = ls.extend_decorator.apply(fmt, {delimiters = "<>"})
     fmt_angle("<>", {i(1)}) -- -> same as above.
-
+    
     -- the same also works with other functions provided by luasnip, for example all
     -- node/snippet-constructors and `parse_snippet`.
 <
@@ -2250,7 +2249,7 @@ One more example for registering a new function:
     local function somefn(arg1, arg2, opts1, opts2)
         -- not important
     end
-
+    
     -- note the reversed arg_indx!!
     extend_decorator.register(somefn, {arg_indx=4}, {arg_indx=3})
     local extended = extend_decorator.apply(somefn,
@@ -2411,19 +2410,19 @@ A simple example to make it more clear:
     local function random_lang()
         return ({"LUA", "VIML", "VIML9"})[math.floor(math.random()/2 + 1.5)]
     end
-
+    
     ls.env_namespace("MY", {vars={ NAME="LuaSnip",  LANG=random_lang }})
-
+    
     -- then you can use  $MY_NAME and $MY_LANG in your snippets
-
+    
     ls.env_namespace("SYS", {vars=os.getenv, eager={"HOME"}})
-
+    
     -- then you can use  $SYS_HOME which was eagerly initialized but also $SYS_USER (or any other system environment var) in your snippets
-
+    
     lsp.env_namespace("POS", {init=function(info) return {VAL=vim.inspect(info.pos)} end})
-
+    
     -- then you can use  $POS_VAL in your snippets
-
+    
     s("custom_env", d(1, function(args, parent)
       local env = parent.snippet.env
       return sn(nil, t {
@@ -2781,7 +2780,7 @@ LuaSnip’s more advanced capabilities:
 
 >snippets
     extends c
-
+    
     snippet cpp cpp-snippet
         cpp!
 <
@@ -2920,7 +2919,7 @@ There are a few ways to fix this
   check `:checkhealth lsp` in a lua file to be sure).
   >lua
       ---@meta
-
+      
       s = require("luasnip.nodes.snippet").S
       sn = require("luasnip.nodes.snippet").SN
       isn = require("luasnip.nodes.snippet").ISN
@@ -3037,7 +3036,7 @@ and then (if there are multiple) the associated file to edit.
               string.format("%s/%s.snippets", <PERSONAL_SNIPPETS_FOLDER>, ft) }
           }
         end
-
+      
         return {}
       end
       }
@@ -3097,7 +3096,7 @@ nodes:
     local ext_opts = {
         -- these ext_opts are applied when the node is active (e.g. it has been
         -- jumped into, and not out yet).
-        active =
+        active = 
         -- this is the table actually passed to `nvim_buf_set_extmark`.
         {
             -- highlight the text inside the node red.
@@ -3119,7 +3118,7 @@ nodes:
         -- and these are applied when both the node and the snippet are inactive.
         snippet_passive = {}
     }
-
+    
     s("trig", {
         i(1, "text1", {
             node_ext_opts = ext_opts
@@ -3152,7 +3151,7 @@ given set of `ext_opts` should be applied to:
 
 >lua
     local types = require("luasnip.util.types")
-
+    
     ls.setup({
         ext_opts = {
             [types.insertNode] = {
@@ -3177,7 +3176,7 @@ snippets.
 
 >lua
     local types = require("luasnip.util.types")
-
+    
     s("trig", { i(1, "text1"), i(2, "text2") }, {
         child_ext_opts = {
             [types.insertNode] = {
@@ -3209,7 +3208,7 @@ It’s possible to prevent both of these merges by passing
             }
         }
     })
-
+    
     s("trig", {
         i(1, "text1", {
             node_ext_opts = {
@@ -3235,7 +3234,7 @@ groups:
 >lua
     vim.cmd("hi link LuasnipInsertNodePassive GruvboxRed")
     vim.cmd("hi link LuasnipSnippetPassive GruvboxBlue")
-
+    
     -- needs to be called for resolving the effective ext_opts.
     ls.setup({})
 <
@@ -3433,7 +3432,7 @@ or some information about expansions:
             local snippet = require("luasnip").session.event_node
             local expand_position =
                 require("luasnip").session.event_args.expand_pos
-
+    
             print(string.format("expanding snippet %s at %s:%s",
                 table.concat(snippet:get_docstring(), "\n"),
                 expand_position[1],
@@ -3734,8 +3733,7 @@ current position (in case treesitter-based filetypes are enabled).
 
 - `snip_info?: fun(LuaSnip.Snippet) -> T?` Optionally pass a function that, given
   a snippet, returns the data that is returned by this function in the
-  snippets’ stead.
-  By default, this function is
+  snippets’ stead. By default, this function is
   >lua
       function(snip)
           return {
@@ -3865,10 +3863,10 @@ Expand a snippet in the current buffer.
   - `pos?: (integer,integer)?` Position at which the snippet should be inserted.
     Pass as `(row,col)`, both 0-based, the `col` given in bytes.
   - `indent?: boolean?` Whether to prepend the current lines’ indent to all lines
-    of the snippet. (Defaults to `true`)
-    Turning this off is a good idea when a LSP server already takes indents into
-    consideration. In such cases, LuaSnip should not add additional indents. If you
-    are using `nvim-cmp`, this could be used as follows:
+    of the snippet. (Defaults to `true`) Turning this off is a good idea when a LSP
+    server already takes indents into consideration. In such cases, LuaSnip should
+    not add additional indents. If you are using `nvim-cmp`, this could be used as
+    follows:
     >lua
         require("cmp").setup {
             snippet = {
@@ -3969,9 +3967,9 @@ Update all nodes that depend on the currently-active node.
 `store_snippet_docstrings(snippet_table)` *luasnip-api-store_snippet_docstrings*
 
 Generate and store the docstrings for a list of snippets as generated by
-`get_snippets()`.
-The docstrings are stored at `stdpath("cache") .. "/luasnip/docstrings.json"`,
-are indexed by their trigger, and should be updated once any snippet changes.
+`get_snippets()`. The docstrings are stored at
+`stdpath("cache") .. "/luasnip/docstrings.json"`, are indexed by their trigger,
+and should be updated once any snippet changes.
 
 - `snippet_table: { [string]: LuaSnip.Snippet[] }` A table mapping some keys to
   lists of snippets (keys are most likely filetypes).
@@ -3983,8 +3981,7 @@ Provide all passed snippets with a previously-stored (via
 `store_snippet_docstrings`) docstring. This prevents a somewhat costly
 computation which is performed whenever a snippets’ docstring is first
 retrieved, but may cause larger delays when `snippet_table` contains many of
-snippets.
-Utilize this function by calling
+snippets. Utilize this function by calling
 `ls.store_snippet_docstrings(ls.get_snippets())` whenever snippets are
 modified, and `ls.load_snippet_docstrings(ls.get_snippets())` on startup.
 
@@ -4003,10 +4000,10 @@ it from the jumplist if it was (it cannot be jumped back into).
 
 Checks whether the cursor is still within the range of the root-snippet `node`
 belongs to. If yes, no change occurs; if no, the root-snippet is exited and its
-`i(0)` will be the new active node.
-If a jump causes an error (happens mostly because the text of a snippet was
-deleted), the snippet is removed from the jumplist and the current node set to
-the end/beginning of the next/previous snippet.
+`i(0)` will be the new active node. If a jump causes an error (happens mostly
+because the text of a snippet was deleted), the snippet is removed from the
+jumplist and the current node set to the end/beginning of the next/previous
+snippet.
 
 - `node: LuaSnip.Node`
 
@@ -4072,7 +4069,7 @@ are useful for quickly testing snippets in a buffer:
 >lua
     local ls = require("luasnip")
     ls.setup_snip_env()
-
+    
     ls.add_snippets("all", {
         s("choicetest", {
             t":", c(1, {
@@ -4109,9 +4106,8 @@ NOTE: Calls `refresh_notify` as needed if enabled via `opts.refresh_notify`.
   specified in `snippets`.
 - `snippets: (LuaSnip.Addable[]|{ [string]: LuaSnip.Addable[] })` If `ft` is nil
   a table mapping a filetype to a list of snippets, otherwise a flat table of
-  snippets.
-  `LuaSnip.Addable` are objects created by e.g. the functions `s`, `ms`, or
-  `sp`.
+  snippets. `LuaSnip.Addable` are objects created by e.g. the functions `s`,
+  `ms`, or `sp`.
 - `opts?: LuaSnip.Opts.AddSnippets?` Optional arguments.
 
 
