@@ -3,6 +3,7 @@
 		"prefix": "vscode_lua1",
 		"body": [
 			"vscode$1lualualua"
-		]
+		],
+		"scope": "some.made.up.filetypes.to.make.sure.they.dont.override.the.one.set.in.package.json"
 	}
 }

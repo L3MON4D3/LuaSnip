@@ -32,5 +32,19 @@
 			"autotrigger": true
 		},
 		"scope": "all"
+	},
+	"snip3": {
+		"prefix": "vscode_lua3",
+		"body": [
+			"snip333"
+		],
+		"scope": "c, cpp"
+	},
+	"snip4": {
+		"prefix": "vscode_lua4",
+		"body": [
+			"snip444"
+		],
+		"scope": "c.cpp"
 	}
 }

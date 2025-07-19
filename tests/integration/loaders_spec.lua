@@ -667,55 +667,50 @@ describe("loaders:", function()
 		})
 	end)
 
-	it("Respects `scope` (vscode)", function()
-		ls_helpers.loaders["vscode(rtp)"]()
-
-		feed("icc")
-		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
-			cc^                                                |
-			{0:~                                                 }|
-			{0:~                                                 }|
-			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
-		})
+	it("Respects `scope` (vscode-standalone)", function()
+		ls_helpers.loaders["vscode(standalone)"]()
 
 		exec("set ft=c")
-		feed("<Cr>cc")
+		feed("ivscode_lua3")
 		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
-			cc                                                |
-			3^                                                 |
+		screen:expect([[
+			snip333^                                           |
 			{0:~                                                 }|
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
-		})
-		-- check if invalidation affects the duplicated snippet.
-		exec_lua([[ls.get_snippets("c")[1]:invalidate()]])
-		feed("<Cr>cc")
-		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
-			cc                                                |
-			3                                                 |
-			cc^                                                |
 			{0:~                                                 }|
-			{2:-- INSERT --}                                      |]],
-		})
+			{2:-- INSERT --}                                      |]])
 
 		exec("set ft=cpp")
-		feed("<Cr>cc")
+		feed("<Cr>vscode_lua4")
 		exec_lua("ls.expand()")
-		screen:expect({
-			grid = [[
-			cc                                                |
-			3                                                 |
-			cc                                                |
-			3^                                                 |
-			{2:-- INSERT --}                                      |]],
-		})
+		screen:expect([[
+			snip333                                           |
+			snip444^                                           |
+			{0:~                                                 }|
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]])
+
+		-- check if invalidation affects the duplicated snippet.
+		exec_lua([[ls.get_snippets("c")[1]:invalidate()]])
+		exec_lua([[ls.get_snippets("c")[2]:invalidate()]])
+		feed("<Cr>vscode_lua3")
+		exec_lua("ls.expand()")
+		screen:expect([[
+			snip333                                           |
+			snip444                                           |
+			snip333^                                           |
+			{0:~                                                 }|
+			{2:-- INSERT --}                                      |]])
+
+		exec("set ft=c")
+		feed("<Cr>vscode_lua3")
+		exec_lua("ls.expand()")
+		screen:expect([[
+			snip333                                           |
+			snip444                                           |
+			snip333                                           |
+			vscode_lua3^                                       |
+			{2:-- INSERT --}                                      |]])
 	end)
 
 	it("lazy registration works for lua.", function()
