@@ -108,7 +108,8 @@ local function get_file_snippets(file, opts)
 
 		-- vscode documents `,`, but `.` also works.
 		-- an entry `false` in this list will cause a `ft=nil` for the snippet.
-		local filetypes = respect_scope and parts.scope
+		local filetypes = respect_scope
+				and parts.scope
 				and loader_util.scopestring_to_filetypes(parts.scope)
 			or { false }
 
@@ -154,15 +155,15 @@ end
 -- ("luasnip.loaders.from_vscode" and "luasnip/loaders/from_vscode") are
 -- different entries in the package-table, and if the call to `load` is made
 -- with one, and we, internally, use another, we will see different data.
-Data.vscode_cache =
-	require("luasnip.loaders.snippet_cache").new(function(fname)
-		return get_file_snippets(fname, {respect_scope = false})
-	end)
+Data.vscode_cache = require("luasnip.loaders.snippet_cache").new(function(fname)
+	return get_file_snippets(fname, { respect_scope = false })
+end)
 -- use two caches, one respects `scope`, the other doesn't.
-Data.vscodesnippets_cache =
-	require("luasnip.loaders.snippet_cache").new(function(fname)
-		return get_file_snippets(fname, {respect_scope = true})
-	end)
+Data.vscodesnippets_cache = require("luasnip.loaders.snippet_cache").new(
+	function(fname)
+		return get_file_snippets(fname, { respect_scope = true })
+	end
+)
 
 --- Parse package.json(c), determine all files that contribute snippets, and
 --- which filetype is associated with them.

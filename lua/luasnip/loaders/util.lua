@@ -230,20 +230,20 @@ local function get_load_fts(bufnr)
 end
 
 local function add_file_snippets(ft, filename, snippets, autosnippets, add_opts)
-	local snip_key ="__snippets__" .. ft .. "__" .. filename
-	local autosnip_key ="__autosnippets__" .. ft .. "__" .. filename
+	local snip_key = "__snippets__" .. ft .. "__" .. filename
+	local autosnip_key = "__autosnippets__" .. ft .. "__" .. filename
 	snippet_collection.add_snippets(
 		{ [ft] = snippets },
 		vim.tbl_extend("keep", {
 			type = "snippets",
-			key = snip_key
+			key = snip_key,
 		}, add_opts)
 	)
 	snippet_collection.add_snippets(
 		{ [ft] = autosnippets },
 		vim.tbl_extend("keep", {
 			type = "autosnippets",
-			key = autosnip_key
+			key = autosnip_key,
 		}, add_opts)
 	)
 	log.info(
