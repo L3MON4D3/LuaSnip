@@ -359,6 +359,9 @@ s({trig="trigger"}, {})
       - `captures`: if the trigger is pattern, this list contains the
       	capture-groups. Again, could be computed from `line_to_cursor`, but we
       	already did so.
+
+      This function can prevent manual snippet expansion via `ls.expand()`.  
+      Return `true` to allow expansion, and `false` to prevent it.
   - `show_condition`: `f(line_to_cursor) -> bool`.  
     - `line_to_cursor`: `string`, the line up to the cursor.  
 
