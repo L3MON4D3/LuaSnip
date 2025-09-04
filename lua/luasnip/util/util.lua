@@ -464,5 +464,5 @@ return {
 	pos_cmp = pos_cmp,
 	validate = validate,
 	str_utf32index = str_utf32index,
-	default_tbl_get = default_tbl_get
+	default_tbl_get = default_tbl_get,
 }
