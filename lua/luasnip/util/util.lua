@@ -412,6 +412,16 @@ local function pos_cmp(pos1, pos2)
 	return 2 * cmp(pos1[1], pos2[1]) + cmp(pos1[2], pos2[2])
 end
 
+local function default_tbl_get(default, t, ...)
+	if t ~= nil then
+		local tbl_val = vim.tbl_get(t, ...)
+		if tbl_val ~= nil then
+			return tbl_val
+		end
+	end
+	return default
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -454,4 +464,5 @@ return {
 	pos_cmp = pos_cmp,
 	validate = validate,
 	str_utf32index = str_utf32index,
+	default_tbl_get = default_tbl_get
 }

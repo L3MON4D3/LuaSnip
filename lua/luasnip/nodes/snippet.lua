@@ -818,8 +818,20 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 end
 
 -- returns copy of snip if it matches, nil if not.
-function Snippet:matches(line_to_cursor)
+-- fallback_match can be used to proceed even if the text before the cursor does
+-- not match the snippets' trigger. This is useful for completion engines, where
+-- the text does usually not match, but resolveExpandParams may still give
+-- useful data (e.g. when the snippet is a treesitter_postfix, see
+-- https://github.com/L3MON4D3/LuaSnip/issues/1374)
+function Snippet:matches(line_to_cursor, opts)
+	local fallback_match = util.default_tbl_get(nil, opts, "fallback_match")
+
 	local match, captures = self.trig_matcher(line_to_cursor, self.trigger)
+
+	if not match and fallback_match ~= nil then
+		match = fallback_match
+		captures = {}
+	end
 
 	-- Trigger or regex didn't match.
 	if not match then
