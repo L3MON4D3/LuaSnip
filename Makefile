@@ -99,7 +99,7 @@ NEOVIM_BIN_PATH:=$(or \
 LUA_LDLIBS?=$(if $(NEOVIM_BIN_PATH),-L'$(NEOVIM_BIN_PATH)' -llua51,)
 endif
 
-CC:=$(shell (which $(CC) || which gcc || which clang || (which zig >/dev/null && echo "$$(which zig) cc")) 2>/dev/null;)
+CC:=$(shell (test -n "$(CC)" && command -v $(CC) || command -v gcc || command -v clang || (test -n "$$(command -v zig)" && echo "$$(command -v zig) cc") 2>/dev/null))
 ifeq (,$(CC))
 $(error No compiler is provided in this environment. Please install a C compiler (gcc, clang, or zig).)
 endif
