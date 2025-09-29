@@ -1,4 +1,4 @@
-*luasnip.txt*        For NeoVim 0.7-0.11        Last change: 2025 September 15
+*luasnip.txt*        For NeoVim 0.7-0.11        Last change: 2025 September 29
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -4010,9 +4010,10 @@ snippet.
 - `node: LuaSnip.Node`
 
 
-`filetype_extend(ft, extend_ft)`                 *luasnip-api-filetype_extend*
+`filetype_extend(ft, extend_fts)`                *luasnip-api-filetype_extend*
 
-Add `extend_ft` filetype to inherit its snippets from `ft`.
+Make all snippets that belong to one of the filetypes in `extend_fts` available
+to the filetype `ft`.
 
 Example:
 
@@ -4021,26 +4022,20 @@ Example:
     ls.filetype_extend("sh", {"bash"})
 <
 
-This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
+This makes all `zsh`- and `bash`-snippets available in `sh`-buffers.
 
 - `ft: string`
-- `extend_ft: string[]`
+- `extend_fts: string[]`
 
 
-`filetype_set(ft, fts)`                             *luasnip-api-filetype_set*
+`filetype_set(ft, extend_fts)`                      *luasnip-api-filetype_set*
 
-Set `fts` filetypes as inheriting their snippets from `ft`.
-
-Example:
-
->lua
-    ls.filetype_set("sh", {"sh", "zsh", "bash"})
-<
-
-This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
+Make all snippets that belong to one of the filetypes in `extend_fts` available
+to the filetype `ft` and remove all previous extension-filetypes added by
+`filetype_extend` or `filetype_set`.
 
 - `ft: string`
-- `fts: string[]`
+- `extend_fts: string[]`
 
 
 `cleanup()`                                              *luasnip-api-cleanup*

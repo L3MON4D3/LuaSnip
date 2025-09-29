@@ -4067,32 +4067,28 @@ snippet.
 
 * `node: LuaSnip.Node`
 
-#### `filetype_extend(ft, extend_ft)`
+#### `filetype_extend(ft, extend_fts)`
 
-Add `extend_ft` filetype to inherit its snippets from `ft`.
+Make all snippets that belong to one of the filetypes in `extend_fts` available to the filetype
+`ft`.
 
 Example:
 ```lua
 ls.filetype_extend("sh", {"zsh"})
 ls.filetype_extend("sh", {"bash"})
 ```
-This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
+This makes all `zsh`- and `bash`-snippets available in `sh`-buffers.
 
 * `ft: string`
-* `extend_ft: string[]`
+* `extend_fts: string[]`
 
-#### `filetype_set(ft, fts)`
+#### `filetype_set(ft, extend_fts)`
 
-Set `fts` filetypes as inheriting their snippets from `ft`.
-
-Example:
-```lua
-ls.filetype_set("sh", {"sh", "zsh", "bash"})
-```
-This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
+Make all snippets that belong to one of the filetypes in `extend_fts` available to the filetype `ft`
+and remove all previous extension-filetypes added by `filetype_extend` or `filetype_set`.
 
 * `ft: string`
-* `fts: string[]`
+* `extend_fts: string[]`
 
 #### `cleanup()`
 
