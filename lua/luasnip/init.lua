@@ -884,34 +884,32 @@ function API.exit_out_of_region(node)
 	end
 end
 
---- Add `extend_ft` filetype to inherit its snippets from `ft`.
+--- Make all snippets that belong to one of the filetypes in `extend_fts`
+--- available to the filetype `ft`.
 ---
 --- Example:
 --- ```lua
 --- ls.filetype_extend("sh", {"zsh"})
 --- ls.filetype_extend("sh", {"bash"})
 --- ```
---- This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
+--- This makes all `zsh`- and `bash`-snippets available in `sh`-buffers.
 ---
 ---@param ft string
----@param extend_ft string[]
-function API.filetype_extend(ft, extend_ft)
-	vim.list_extend(session.ft_redirect[ft], extend_ft)
+---@param extend_fts string[]
+function API.filetype_extend(ft, extend_fts)
+	vim.list_extend(session.ft_redirect[ft], extend_fts)
 	session.ft_redirect[ft] = util.deduplicate(session.ft_redirect[ft])
 end
 
---- Set `fts` filetypes as inheriting their snippets from `ft`.
----
---- Example:
---- ```lua
---- ls.filetype_set("sh", {"sh", "zsh", "bash"})
---- ```
---- This makes all `sh` snippets available in `sh`/`zsh`/`bash` buffers.
+--- 
+--- Make all snippets that belong to one of the filetypes in `extend_fts`
+--- available to the filetype `ft` and remove all previous extension-filetypes
+--- added by `filetype_extend` or `filetype_set`.
 ---
 ---@param ft string
----@param fts string[]
-function API.filetype_set(ft, fts)
-	session.ft_redirect[ft] = util.deduplicate(fts)
+---@param extend_fts string[]
+function API.filetype_set(ft, extend_fts)
+	session.ft_redirect[ft] = util.deduplicate(extend_fts)
 end
 
 --- Clear all loaded snippets. Also sends the `User LuasnipCleanup`
