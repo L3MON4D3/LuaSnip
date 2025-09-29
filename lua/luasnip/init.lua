@@ -901,7 +901,7 @@ function API.filetype_extend(ft, extend_fts)
 	session.ft_redirect[ft] = util.deduplicate(session.ft_redirect[ft])
 end
 
---- 
+---
 --- Make all snippets that belong to one of the filetypes in `extend_fts`
 --- available to the filetype `ft` and remove all previous extension-filetypes
 --- added by `filetype_extend` or `filetype_set`.
