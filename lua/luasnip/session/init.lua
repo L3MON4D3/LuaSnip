@@ -32,11 +32,17 @@ M.latest_load_ft = nil
 M.last_expand_snip = nil
 M.last_expand_opts = nil
 
--- jump_active is set while luasnip moves the cursor, prevents
--- (for example) updating dependents or deleting a snippet via
--- exit_out_of_region while jumping.
--- init with false, it will be set by (eg.) ls.jump().
+-- jump_active is set while luasnip moves the cursor (or is just generally
+-- currently modifying the buffer), and prevents (for example) updating
+-- dependents or deleting a snippet via exit_out_of_region while jumping (or
+-- while any other state-modifying operation is being executed, and other
+-- should therefore be prevented). init with false, it will be set by (eg.)
+-- ls.jump().
 M.jump_active = false
+
+-- this is non-nil while a luasnip-api-call is active, and allows us to reuse
+-- certain data that we just set without resorting to querying the buffer.
+M.luasnip_changedtick = nil
 
 -- initial value, might be overwritten immediately.
 -- No danger of overwriting user-config, since this has to be loaded to allow
