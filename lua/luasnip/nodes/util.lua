@@ -1,4 +1,5 @@
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
 local tbl_util = require("luasnip.util.table")
 local ext_util = require("luasnip.util.ext_opts")
 local types = require("luasnip.util.types")
@@ -863,12 +864,13 @@ local function str_args(args)
 end
 
 local store_id = 0
-local function store_cursor_node_relative(node)
+local function store_cursor_node_relative(node, opts)
 	local data = {}
 
 	local snippet_current_node = node
 
 	local cursor_state = feedkeys.last_state()
+	local store_ids = {}
 
 	-- store for each snippet!
 	-- the innermost snippet may be destroyed, and we would have to restore the
@@ -878,40 +880,113 @@ local function store_cursor_node_relative(node)
 
 		local snip_data = {}
 
-		snip_data.key = node.key
-		node.store_id = store_id
+		snip_data.key = snippet_current_node.key
+		snippet_current_node.store_id = store_id
+		snip.node_store_id = store_id
+
 		snip_data.store_id = store_id
+
 		snip_data.node = snippet_current_node
 
-		store_id = store_id + 1
+		-- from low to high
+		table.insert(store_ids, store_id)
 
 		snip_data.cursor_start_relative =
-			util.pos_offset(node.mark:get_endpoint(-1), cursor_state.pos)
+			util.pos_offset(snippet_current_node.mark:get_endpoint(-1), cursor_state.pos)
 
 		snip_data.mode = cursor_state.mode
 
 		if cursor_state.pos_v then
-			snip_data.selection_end_start_relative = util.pos_offset(node.mark:get_endpoint(-1), cursor_state.pos_v)
+			snip_data.selection_end_start_relative = util.pos_offset(snippet_current_node.mark:get_endpoint(-1), cursor_state.pos_v)
 		end
 
-		data[snip] = snip_data
+		if snippet_current_node.type == types.insertNode and opts.place_cursor_mark then
+			-- if the snippet_current_node is not an insertNode, the cursor
+			-- should always be exactly at the beginning if the node is entered
+			-- (which, btw, can only happen if a text or functionNode is
+			-- immediately nested inside a choiceNode), which means that
+			-- storing the cursor-position relative to the beginning of the
+			-- node is sufficient for restoring it in all usecases (now, a user
+			-- may have triggered the update while not in this position, but I
+			-- think it's fine to not restore the cursor 100% correctly in that
+			-- case.
+			--
+			-- When the node is an insertNode, the cursor may be somewhere
+			-- inside the node, and while it will be restored correctly if the
+			-- text does not change, if the update inserts some characters or a
+			-- line at the beginning of the node (but still reaches
+			-- equilibrium), the cursor will have moved relative to the
+			-- immediately surrounding text.
+			--
+			-- A solution to this is to simply place some kind if extmark (but
+			-- for regular strings, not for nvim-buffers) in the node (in the
+			-- text that is passed to some dynamicNode, to be precise), which
+			-- we then recover in the restore-function, and use to set the
+			-- cursor correctly :)
+			snippet_current_node:store()
 
-		snippet_current_node = snip:get_snippet().parent_node
+			if snip_data.cursor_start_relative[1] >= 0 and snip_data.cursor_start_relative[2] >= 0 then
+				-- we also have this in static_text, but recomputing the text
+				-- exactly is rather expensive -> text is still in buffer, yank
+				-- it.
+				local str = snippet_current_node:get_text()
+				local pos_byte_offset = str_util.multiline_to_byte_offset(str, snip_data.cursor_start_relative)
+				if pos_byte_offset then
+					snippet_current_node.static_text:add_mark(store_id .. "pos", pos_byte_offset, false)
+					if snip_data.selection_end_start_relative and
+					   snip_data.selection_end_start_relative[1] >= 0 and
+					   snip_data.selection_end_start_relative[2] >= 0 then
+						local pos_v_byte_offset = str_util.multiline_to_byte_offset(str, snip_data.selection_end_start_relative)
+						if pos_v_byte_offset then
+							-- set rgrav of endpoint of selection true.
+							-- This means if the selection is replaced, it would still
+							-- be selected, which seems like a nice property.
+							snippet_current_node.static_text:add_mark(store_id .. "pos_v", pos_v_byte_offset, true)
+						end
+					end
+				end
+			end
+		end
+
+		data[snip] = snippet_current_node
+		data[store_id] = snip_data
+
+		snippet_current_node = snip.parent_node
+
+		store_id = store_id + 1
 	end
+	data.store_ids = store_ids
 
 	return data
 end
 
 local function restore_cursor_pos_relative(node, data)
+	local cursor_pos = data.cursor_start_relative
+	local cursor_pos_v = data.selection_end_start_relative
+	if node.type == types.insertNode then
+		local mark_pos = node.static_text:get_mark_pos(data.store_id .. "pos")
+		if mark_pos then
+			local str = node:get_text()
+			local mark_pos_offset = str_util.byte_to_multiline_offset(str, mark_pos)
+			cursor_pos = mark_pos_offset and mark_pos_offset or cursor_pos
+
+			local mark_pos_v = node.static_text:get_mark_pos(data.store_id .. "pos_v")
+			if mark_pos_v then
+				local mark_pos_v_offset = str_util.byte_to_multiline_offset(str, mark_pos_v)
+				cursor_pos_v = mark_pos_v_offset
+			end
+		end
+	end
+
 	if data.mode == "i" then
-		feedkeys.insert_at(util.pos_from_offset(node.mark:get_endpoint(-1), data.cursor_start_relative))
+		feedkeys.insert_at(util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos))
 	elseif data.mode == "s" then
 		-- is a selection => restore it.
-		local selection_from = util.pos_from_offset(node.mark:get_endpoint(-1), data.cursor_start_relative)
-		local selection_to = util.pos_from_offset(node.mark:get_endpoint(-1), data.selection_end_start_relative)
+		local selection_from = util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
+		local selection_to = util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos_v)
 		feedkeys.select_range(selection_from, selection_to)
 	else
-		feedkeys.move_to_normal(util.pos_from_offset(node.mark:get_endpoint(-1), data.cursor_start_relative))
+		feedkeys.move_to_normal(util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos))
 	end
 end
 
