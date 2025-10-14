@@ -610,10 +610,7 @@ function API.snip_expand(snippet, opts)
 	-- -1 to disable count.
 	vim.cmd([[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]])
 
-	-- schedule update of active node.
-	-- Not really happy with this, but for some reason I don't have time to
-	-- investigate, nvim_buf_get_text does not return the updated text :/
-	vim.schedule(API.active_update_dependents)
+	API.active_update_dependents()
 
 	return snip
 end
@@ -809,7 +806,7 @@ function API.active_update_dependents()
 	local active = session.current_nodes[vim.api.nvim_get_current_buf()]
 	-- don't update if a jump/change_choice is in progress, or if we don't have
 	-- an active node.
-	if not session.jump_active and active ~= nil then
+	if active ~= nil then
 		local upd_res = node_update_dependents_preserve_position(
 			active,
 			{ no_move = false, restore_position = true }
