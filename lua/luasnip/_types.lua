@@ -1,7 +1,6 @@
 ---@alias LuaSnip.Cursor {[1]: number, [2]: number}
 
---- 0-based region within a single line
----@class LuaSnip.MatchRegion
+---@class LuaSnip.MatchRegion 0-based region within a single line
 ---@field row integer 0-based row
 ---@field col_range { [1]: integer, [2]: integer } 0-based column range, from-in, to-exclusive
 
