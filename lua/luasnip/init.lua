@@ -34,6 +34,18 @@ function API.get_active_snip()
 	return node
 end
 
+local function no_region_check_wrap(fn, ...)
+	session.jump_active = true
+	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
+	vim.schedule(function()
+		session.jump_active = false
+	end)
+
+	local fn_res = fn(...)
+	return fn_res
+end
+
+
 -- returns matching snippet (needs to be copied before usage!) and its expand-
 -- parameters(trigger and captures). params are returned here because there's
 -- no need to recalculate them.
@@ -357,7 +369,7 @@ end
 function API.jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
-		local next_node = util.no_region_check_wrap(safe_jump_current, dir)
+		local next_node = no_region_check_wrap(safe_jump_current, dir)
 		if next_node == nil then
 			session.current_nodes[vim.api.nvim_get_current_buf()] = nil
 			return true
@@ -461,7 +473,7 @@ function API.locally_jumpable(dir)
 end
 
 local function _jump_into_default(snippet)
-	return util.no_region_check_wrap(snippet.jump_into, snippet, 1)
+	return no_region_check_wrap(snippet.jump_into, snippet, 1)
 end
 
 -- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
@@ -770,7 +782,7 @@ function API.change_choice(val)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
-	local new_active = util.no_region_check_wrap(
+	local new_active = no_region_check_wrap(
 		safe_choice_action,
 		active_choice.parent.snippet,
 		active_choice.change_choice,
@@ -790,7 +802,7 @@ function API.set_choice(choice_indx)
 	assert(active_choice, "No active choiceNode")
 	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
-	local new_active = util.no_region_check_wrap(
+	local new_active = no_region_check_wrap(
 		safe_choice_action,
 		active_choice.parent.snippet,
 		active_choice.set_choice,
@@ -1319,4 +1331,8 @@ API.log = require("luasnip.util.log")
 
 ---@class LuaSnip: LuaSnip.API, LuaSnip.LazyAPI
 ls = lazy_table(API, ls_lazy)
+
+-- internal stuff, e.g. for tests.
+ls.no_region_check_wrap = no_region_check_wrap
+
 return ls
