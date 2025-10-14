@@ -502,4 +502,34 @@ screen:expect({
   ]]
 })
 	end)
+
+	it("select_choice works.", function()
+		exec_lua[=[
+			ls.snip_expand(s("for", {
+				t"for ", c(1, {
+					sn(nil, {i(1, "k"), t", ", i(2, "v"), t" in ", c(3, {{t"pairs(",i(1),t")"}, {t"ipairs(",i(1),t")"}, i(nil)}, {restore_cursor = true}) }),
+					sn(nil, {i(1, "val"), t" in ", i(2) }),
+					sn(nil, {i(1, "i"), t" = ", i(2), t", ", i(3) }),
+					fmt([[{} in vim.gsplit({})]], {i(1, "str"), i(2)})
+				}, {restore_cursor = true}), t{" do", "\t"}, isn(2, {dl(1, l.LS_SELECT_DEDENT)}, "$PARENT_INDENT\t"), t{"", "end"}
+			}))
+		]=]
+		feed("<cmd>lua require('luasnip.extras.select_choice')()<Cr>2<Cr>")
+screen:expect({
+  grid = [[
+    for ^v{3:al} in  do                                    |
+                                                      |
+    {2:-- SELECT --}                                      |
+  ]]
+})
+		-- re-selecting correctly highlights text again (test by editing so the test does not pass immediately, without any changes!)
+		feed("<cmd>lua require('luasnip.extras.select_choice')()<Cr>2<Cr>val")
+screen:expect({
+  grid = [[
+    for val^ in  do                                    |
+                                                      |
+    {2:-- INSERT --}                                      |
+  ]]
+})
+	end)
 end)
