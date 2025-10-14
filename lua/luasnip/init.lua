@@ -582,6 +582,11 @@ function API.snip_expand(snippet, opts)
 	-- -1 to disable count.
 	vim.cmd([[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]])
 
+	-- schedule update of active node.
+	-- Not really happy with this, but for some reason I don't have time to
+	-- investigate, nvim_buf_get_text does not return the updated text :/
+	vim.schedule(API.active_update_dependents)
+
 	return snip
 end
 
