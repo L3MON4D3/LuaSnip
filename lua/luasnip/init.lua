@@ -39,12 +39,14 @@ local luasnip_changedtick = 0
 local function api_enter()
 	session.jump_active = true
 	if session.luasnip_changedtick ~= nil then
-		log.error([[
+		log.error(
+			[[
 api_enter called while luasnip_changedtick was non-nil. This
 may be to a previous error, or due to unexpected control-flow. Check the
 traceback and consider reporting this. Traceback: %s
-]], debug.traceback())
-
+]],
+			debug.traceback()
+		)
 	end
 	session.luasnip_changedtick = luasnip_changedtick
 	luasnip_changedtick = luasnip_changedtick + 1
@@ -67,7 +69,6 @@ local function api_do(fn, ...)
 
 	return fn_res
 end
-
 
 -- returns matching snippet (needs to be copied before usage!) and its expand-
 -- parameters(trigger and captures). params are returned here because there's
@@ -201,7 +202,11 @@ end
 
 local function node_update_dependents_preserve_position(node, current, opts)
 	-- set luasnip_changedtick so that static_text is preserved when possible.
-	local restore_data = opts.cursor_restore_data or node_util.store_cursor_node_relative(current, {place_cursor_mark = true})
+	local restore_data = opts.cursor_restore_data
+		or node_util.store_cursor_node_relative(
+			current,
+			{ place_cursor_mark = true }
+		)
 
 	-- update all nodes that depend on this one.
 	local ok, res =
@@ -227,7 +232,10 @@ local function node_update_dependents_preserve_position(node, current, opts)
 		if not opts.no_move and opts.restore_position then
 			-- node is visible: restore position.
 			local active_snippet = current:get_snippet()
-			node_util.restore_cursor_pos_relative(current, restore_data[active_snippet.node_store_id])
+			node_util.restore_cursor_pos_relative(
+				current,
+				restore_data[active_snippet.node_store_id]
+			)
 		end
 
 		return { jump_done = false, new_current = current }
@@ -247,7 +255,8 @@ local function node_update_dependents_preserve_position(node, current, opts)
 
 		-- have found first visible snippet => look for visible dynamicNode,
 		-- starting from which we can try to find a new active node.
-		local node_parent = restore_data[active_snippet.node_store_id].node.parent
+		local node_parent =
+			restore_data[active_snippet.node_store_id].node.parent
 
 		-- find visible dynamicNode that contained the (now-inactive) insertNode.
 		-- since the node was no longer visible after an update, it must have
@@ -272,22 +281,32 @@ local function node_update_dependents_preserve_position(node, current, opts)
 					-- any snippet we encounter here was generated before, and
 					-- if sd_node has the correct key, its snippet has a
 					-- node_store_id that corresponds to it.
-					local snip_node_store_id = sd_node.parent.snippet.node_store_id
+					local snip_node_store_id =
+						sd_node.parent.snippet.node_store_id
 					-- make sure that the key we found belongs to this
 					-- snippets' active node.
 					-- Also use the first valid node, and not the second one.
 					-- Doesn't really matter (ambiguous keys -> undefined
 					-- behaviour), but we should just use the first one, as
 					-- that seems more like what would be expected.
-					if snip_node_store_id and restore_data[snip_node_store_id] and sd_node.key == restore_data[snip_node_store_id].key and not found_nodes[snip_node_store_id] then
+					if
+						snip_node_store_id
+						and restore_data[snip_node_store_id]
+						and sd_node.key == restore_data[snip_node_store_id].key
+						and not found_nodes[snip_node_store_id]
+					then
 						found_nodes[snip_node_store_id] = sd_node
 					end
-				elseif sd_node.store_id and restore_data[sd_node.store_id] and not found_nodes[sd_node.store_id] then
+				elseif
+					sd_node.store_id
+					and restore_data[sd_node.store_id]
+					and not found_nodes[sd_node.store_id]
+				then
 					found_nodes[sd_node.store_id] = sd_node
 				end
 			end,
-			post=util.nop,
-			do_child_snippets=true
+			post = util.nop,
+			do_child_snippets = true,
 		})
 
 		local new_current
@@ -303,7 +322,10 @@ local function node_update_dependents_preserve_position(node, current, opts)
 
 			if not opts.no_move and opts.restore_position then
 				-- node is visible: restore position
-				node_util.restore_cursor_pos_relative(new_current, restore_data[new_current.parent.snippet.node_store_id])
+				node_util.restore_cursor_pos_relative(
+					new_current,
+					restore_data[new_current.parent.snippet.node_store_id]
+				)
 			end
 
 			return { jump_done = false, new_current = new_current }
@@ -326,17 +348,25 @@ local function update_dependents(node, opts)
 		local upd_res = node_update_dependents_preserve_position(
 			node,
 			active,
-			{ no_move = false, restore_position = true, cursor_restore_data = opts and opts.cursor_restore_data }
+			{
+				no_move = false,
+				restore_position = true,
+				cursor_restore_data = opts and opts.cursor_restore_data,
+			}
 		)
 		if upd_res.new_current then
 			upd_res.new_current:focus()
-			session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_current
+			session.current_nodes[vim.api.nvim_get_current_buf()] =
+				upd_res.new_current
 		end
 	end
 end
 
 local function _active_update_dependents(opts)
-	update_dependents(session.current_nodes[vim.api.nvim_get_current_buf()], opts)
+	update_dependents(
+		session.current_nodes[vim.api.nvim_get_current_buf()],
+		opts
+	)
 end
 
 -- return next active node.
@@ -765,7 +795,8 @@ end
 ---  `snip_expand`.
 function API.lsp_expand(body, opts)
 	-- expand snippet as-is.
-	api_do(_snip_expand,
+	api_do(
+		_snip_expand,
 		ls.parser.parse_snippet(
 			"",
 			body,
@@ -810,7 +841,9 @@ local function _change_choice(val, opts)
 	if not opts.skip_update then
 		assert(active_choice, "No active choiceNode")
 
-		_active_update_dependents({ cursor_restore_data = opts.cursor_restore_data })
+		_active_update_dependents({
+			cursor_restore_data = opts.cursor_restore_data,
+		})
 
 		active_choice =
 			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
@@ -829,7 +862,11 @@ local function _change_choice(val, opts)
 		active_choice,
 		val,
 		session.current_nodes[vim.api.nvim_get_current_buf()],
-		opts.skip_update and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
+		opts.skip_update and opts.cursor_restore_data
+			or node_util.store_cursor_node_relative(
+				current_node,
+				{ place_cursor_mark = false }
+			)
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 	_active_update_dependents()
@@ -848,7 +885,9 @@ local function _set_choice(choice_indx, opts)
 	if not opts.skip_update then
 		assert(active_choice, "No active choiceNode")
 
-		_active_update_dependents({ cursor_restore_data = opts.cursor_restore_data })
+		_active_update_dependents({
+			cursor_restore_data = opts.cursor_restore_data,
+		})
 
 		active_choice =
 			session.active_choice_nodes[vim.api.nvim_get_current_buf()]
@@ -871,7 +910,11 @@ local function _set_choice(choice_indx, opts)
 		current_node,
 		-- if the update was skipped, we have to use the cursor_restore_data
 		-- here.
-		opts.skip_update and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
+		opts.skip_update and opts.cursor_restore_data
+			or node_util.store_cursor_node_relative(
+				current_node,
+				{ place_cursor_mark = false }
+			)
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
 	_active_update_dependents()
