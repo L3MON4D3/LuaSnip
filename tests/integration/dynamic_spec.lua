@@ -382,26 +382,29 @@ describe("DynamicNode", function()
 				end, {opt(k("ins"))})
 			}))
 		]])
-screen:expect({
-  grid = [[
+		screen:expect({
+			grid = [[
     ^e{3:sdf}                                              |
     {0:~                                                 }|
     {2:-- SELECT --}                                      |
-  ]]
-})
+  ]],
+		})
 		feed("aaaaa")
-screen:expect({
-  grid = [[
+		screen:expect({
+			grid = [[
     eeeee^                                             |
     {0:~                                                 }|
     {2:-- INSERT --}                                      |
-  ]]
-})
+  ]],
+		})
 	end)
 
-	it("selected text is selected again after updating (when possible).", function()
-
-		assert.are.same({"${1:${1:esdf}}$0"}, exec_lua[[
+	it(
+		"selected text is selected again after updating (when possible).",
+		function()
+			assert.are.same(
+				{ "${1:${1:esdf}}$0" },
+				exec_lua([[
 			snip = s("trig", {
 				d(1, function(args)
 					if not args[1] then
@@ -413,22 +416,24 @@ screen:expect({
 			})
 			return snip:get_docstring()
 		]])
-		exec_lua[[
+			)
+			exec_lua([[
 			ls.snip_expand(snip)
-		]]
-		feed("<Esc>a")
-		exec_lua("ls.lsp_expand('${1:asdf}')")
-screen:expect({
-  grid = [[
+		]])
+			feed("<Esc>a")
+			exec_lua("ls.lsp_expand('${1:asdf}')")
+			screen:expect({
+				grid = [[
     e^e{3:sdf}sdf                                          |
     {0:~                                                 }|
     {2:-- SELECT --}                                      |
-  ]]
-})
-	end)
+  ]],
+			})
+		end
+	)
 
 	it("cursor-position is moved with text-manipulations.", function()
-		exec_lua[[
+		exec_lua([[
 			ls.snip_expand(s("trig", {
 				d(1, function(args)
 					if not args[1] then
@@ -438,23 +443,23 @@ screen:expect({
 					end
 				end, {opt(k("ins"))}, {snippetstring_args = true})
 			}))
-		]]
+		]])
 
-screen:expect({
-  grid = [[
+		screen:expect({
+			grid = [[
     ^e{3:esdf}                                             |
     {0:~                                                 }|
     {2:-- SELECT --}                                      |
-  ]]
-})
+  ]],
+		})
 		feed("aaaaaa<Left><Left><Esc>")
-screen:expect({
-  grid = [[
+		screen:expect({
+			grid = [[
     eeeeee^eeeeee                                      |
     {0:~                                                 }|
                                                       |
-  ]]
-})
+  ]],
+		})
 	end)
 
 	it("")

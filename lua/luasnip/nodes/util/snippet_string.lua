@@ -15,7 +15,11 @@ local M = {}
 ---@param initial_str string[]?, optional initial multiline string.
 ---@return SnippetString
 function M.new(initial_str, metadata)
-	local o = {initial_str and table.concat(initial_str, "\n"), marks = {}, metadata = metadata}
+	local o = {
+		initial_str and table.concat(initial_str, "\n"),
+		marks = {},
+		metadata = metadata,
+	}
 	return setmetatable(o, SnippetString_mt)
 end
 
@@ -24,7 +28,7 @@ function M.isinstance(o)
 end
 
 function SnippetString:append_snip(snip)
-	table.insert(self, {snip = snip})
+	table.insert(self, { snip = snip })
 end
 function SnippetString:append_text(str)
 	table.insert(self, table.concat(str, "\n"))
@@ -47,14 +51,19 @@ local function gen_snipstr_map(self, map, from_offset)
 				pre = function(node)
 					if node.static_text then
 						if M.isinstance(node.static_text) then
-							local nested_str = gen_snipstr_map(node.static_text, map, from_offset + #str + #snip_str)
+							local nested_str = gen_snipstr_map(
+								node.static_text,
+								map,
+								from_offset + #str + #snip_str
+							)
 							snip_str = snip_str .. nested_str
 						else
-							snip_str = snip_str .. table.concat(node.static_text, "\n")
+							snip_str = snip_str
+								.. table.concat(node.static_text, "\n")
 						end
 					end
 				end,
-				post = util.nop
+				post = util.nop,
 			})
 			map[v.snip] = snip_str
 			str = str .. snip_str
@@ -101,11 +110,11 @@ function SnippetString:iter_snippets()
 	local i = 1
 	return function()
 		-- find the next snippet.
-		while self[i] and (not self[i].snip) do
-			i = i+1
+		while self[i] and not self[i].snip do
+			i = i + 1
 		end
 		local res = self[i] and self[i].snip
-		i = i+1
+		i = i + 1
 		return res
 	end
 end
@@ -123,47 +132,49 @@ end
 
 function SnippetString:copy()
 	-- on 0.7 vim.deepcopy does not behave correctly on snippets => have to manually copy.
-	return setmetatable(vim.tbl_map(function(snipstr_or_str)
-		if snipstr_or_str.snip then
-			local snip = snipstr_or_str.snip
+	return setmetatable(
+		vim.tbl_map(function(snipstr_or_str)
+			if snipstr_or_str.snip then
+				local snip = snipstr_or_str.snip
 
-			-- remove associations with objects beyond this snippet.
-			-- This is so we can easily deepcopy it without copying too much data.
-			-- We could also do this copy in 
-			local prevprev = snip.prev.prev
-			local i0next = snip.insert_nodes[0].next
-			local parentnode = snip.parent_node
+				-- remove associations with objects beyond this snippet.
+				-- This is so we can easily deepcopy it without copying too much data.
+				-- We could also do this copy in
+				local prevprev = snip.prev.prev
+				local i0next = snip.insert_nodes[0].next
+				local parentnode = snip.parent_node
 
-			snip.prev.prev = nil
-			snip.insert_nodes[0].next = nil
-			snip.parent_node = nil
+				snip.prev.prev = nil
+				snip.insert_nodes[0].next = nil
+				snip.parent_node = nil
 
-			local snipcop = snip:copy()
+				local snipcop = snip:copy()
 
-			snip.prev.prev = prevprev
-			snip.insert_nodes[0].next = i0next
-			snip.parent_node = parentnode
+				snip.prev.prev = prevprev
+				snip.insert_nodes[0].next = i0next
+				snip.parent_node = parentnode
 
+				-- bring into inactive mode, so that we will jump into it correctly when it
+				-- is expanded again.
+				snipcop:subtree_do({
+					pre = function(node)
+						node.mark:invalidate()
+					end,
+					post = util.nop,
+					do_child_snippets = true,
+				})
+				-- snippet may have been active (for example if captured as an
+				-- argnode), so finally exit here (so we can put_initial it again!)
+				snipcop:exit()
 
-			-- bring into inactive mode, so that we will jump into it correctly when it
-			-- is expanded again.
-			snipcop:subtree_do({
-				pre = function(node)
-					node.mark:invalidate()
-				end,
-				post = util.nop,
-				do_child_snippets = true
-			})
-			-- snippet may have been active (for example if captured as an
-			-- argnode), so finally exit here (so we can put_initial it again!)
-			snipcop:exit()
-
-			return {snip = snipcop}
-		else
-			-- handles raw strings and marks and metadata
-			return vim.deepcopy(snipstr_or_str)
-		end
-	end, self), SnippetString_mt)
+				return { snip = snipcop }
+			else
+				-- handles raw strings and marks and metadata
+				return vim.deepcopy(snipstr_or_str)
+			end
+		end, self),
+		SnippetString_mt
+	)
 end
 
 -- copy without copying snippets.
@@ -181,7 +192,7 @@ end
 -- where o is string, string[] or SnippetString.
 local function to_snippetstring(o)
 	if type(o) == "string" then
-		return M.new({o})
+		return M.new({ o })
 	elseif getmetatable(o) == SnippetString_mt then
 		return o
 	else
@@ -247,7 +258,7 @@ local function find(self, start_i, i_inc, char_i, snipstr_map)
 			v_str = v
 		end
 
-		local current_str_to = current_str_from + #v_str-1
+		local current_str_to = current_str_from + #v_str - 1
 		if char_i >= current_str_from and char_i <= current_str_to then
 			return i
 		end
@@ -265,7 +276,7 @@ local function nodetext_len(node, snipstr_map)
 		return #snipstr_map[node.static_text].str
 	else
 		-- +1 for each newline.
-		local len = #node.static_text-1
+		local len = #node.static_text - 1
 		for _, v in ipairs(node.static_text) do
 			len = len + #v
 		end
@@ -281,7 +292,7 @@ local function _replace(self, replacements, snipstr_map)
 	for i = #replacements, 1, -1 do
 		local repl = replacements[i]
 
-		local v_i_to = find(self, v_i_search_from, -1 , repl.to, snipstr_map)
+		local v_i_to = find(self, v_i_search_from, -1, repl.to, snipstr_map)
 		local v_i_from = find(self, v_i_to, -1, repl.from, snipstr_map)
 
 		-- next range may begin in v_i_from, before the currently inserted
@@ -303,10 +314,15 @@ local function _replace(self, replacements, snipstr_map)
 				pre = function(node)
 					local node_len = nodetext_len(node, snipstr_map)
 					if node_len > 0 then
-						local node_relative_repl_from = repl.from - node_from+1
-						local node_relative_repl_to = repl.to - node_from+1
+						local node_relative_repl_from = repl.from
+							- node_from
+							+ 1
+						local node_relative_repl_to = repl.to - node_from + 1
 
-						if node_relative_repl_from >= 1 and node_relative_repl_from <= node_len then
+						if
+							node_relative_repl_from >= 1
+							and node_relative_repl_from <= node_len
+						then
 							if node_relative_repl_to <= node_len then
 								if M.isinstance(node.static_text) then
 									-- node contains a snippetString, recurse!
@@ -314,7 +330,11 @@ local function _replace(self, replacements, snipstr_map)
 									-- snipstr_map, we don't even have to
 									-- modify repl to be defined based on the
 									-- other snippetString. (ie. shift from and to)
-									_replace(node.static_text, {repl}, snipstr_map)
+									_replace(
+										node.static_text,
+										{ repl },
+										snipstr_map
+									)
 								else
 									-- simply manipulate the node-static-text
 									-- manually.
@@ -325,12 +345,24 @@ local function _replace(self, replacements, snipstr_map)
 									-- the only data in snipstr_map we may
 									-- access that is inaccurate), the queries
 									-- will still be answered correctly.
-									local str = table.concat(node.static_text, "\n")
+									local str =
+										table.concat(node.static_text, "\n")
 									node.static_text = vim.split(
-										str:sub(1, node_relative_repl_from-1) .. repl.str .. str:sub(node_relative_repl_to+1), "\n")
+										str:sub(1, node_relative_repl_from - 1)
+											.. repl.str
+											.. str:sub(
+												node_relative_repl_to + 1
+											),
+										"\n"
+									)
 								end
 								-- update string in snipstr_map.
-								snipstr_map[snip] = snipstr_map[snip]:sub(1, repl.from - v_from_from-1) .. repl.str .. snipstr_map[snip]:sub(repl.to - v_to_from+1)
+								snipstr_map[snip] = snipstr_map[snip]:sub(
+									1,
+									repl.from - v_from_from - 1
+								) .. repl.str .. snipstr_map[snip]:sub(
+									repl.to - v_to_from + 1
+								)
 								error(true)
 							else
 								-- range begins in, but ends outside this node
@@ -343,16 +375,21 @@ local function _replace(self, replacements, snipstr_map)
 						node_from = node_from + node_len
 					end
 				end,
-				post = util.nop
+				post = util.nop,
 			})
 		end
 		-- in lieu of `continue`, we need this bool to check whether we did a replacement yet.
 		if not repl_in_node then
-			local from_str = self[v_i_from].snip and snipstr_map[self[v_i_from].snip] or self[v_i_from]
-			local to_str = self[v_i_to].snip and snipstr_map[self[v_i_to].snip] or self[v_i_to]
+			local from_str = self[v_i_from].snip
+					and snipstr_map[self[v_i_from].snip]
+				or self[v_i_from]
+			local to_str = self[v_i_to].snip and snipstr_map[self[v_i_to].snip]
+				or self[v_i_to]
 
 			-- +1 to get the char of to, +1 to start beyond it.
-			self[v_i_from] = from_str:sub(1, repl.from - v_from_from) .. repl.str .. to_str:sub(repl.to - v_to_from+1+1)
+			self[v_i_from] = from_str:sub(1, repl.from - v_from_from)
+				.. repl.str
+				.. to_str:sub(repl.to - v_to_from + 1 + 1)
 			-- start-position of string has to be updated.
 			snipstr_map[self][v_i_from] = v_from_from
 		end
@@ -361,11 +398,11 @@ local function _replace(self, replacements, snipstr_map)
 		-- take note that repl_from and repl_to are given wrt. the outermost
 		-- snippet_string, and mark.pos is relative to self.
 		-- So, these have to be converted to and from.
-		local self_offset = snipstr_map[self][1]-1
+		local self_offset = snipstr_map[self][1] - 1
 		for _, mark in ipairs(self.marks) do
 			if repl.to < mark.pos + self_offset then
 				-- mark shifted to the right.
-				mark.pos = mark.pos - (repl.to - repl.from+1) + #repl.str
+				mark.pos = mark.pos - (repl.to - repl.from + 1) + #repl.str
 			elseif repl.from < mark.pos + self_offset then
 				-- we already know that repl.to >= mark.pos.
 				-- This means that the marker is inside the deleted region, and
@@ -373,7 +410,8 @@ local function _replace(self, replacements, snipstr_map)
 
 				-- For now, shift the mark to the beginning or end of the newly
 				-- inserted text, depending on rgrav.
-				mark.pos = (mark.rgrav and repl.to+1 or repl.from) - self_offset
+				mark.pos = (mark.rgrav and repl.to + 1 or repl.from)
+					- self_offset
 			end
 			-- in this case the replacement is completely behind the marks
 			-- position, don't have to change it.
@@ -401,7 +439,7 @@ local function upper(self)
 						end
 					end
 				end,
-				post = util.nop
+				post = util.nop,
 			})
 		else
 			self[i] = v:upper()
@@ -422,7 +460,7 @@ local function lower(self)
 						end
 					end
 				end,
-				post = util.nop
+				post = util.nop,
 			})
 		else
 			self[i] = v:lower()
@@ -466,7 +504,7 @@ function SnippetString:gsub(pattern, repl)
 			table.insert(replacements, {
 				from = match_from,
 				to = match_to,
-				str = str:sub(match_from, match_to):gsub(pattern, repl)
+				str = str:sub(match_from, match_to):gsub(pattern, repl),
 			})
 		end
 		find_from = match_to + 1
@@ -494,7 +532,7 @@ function SnippetString:sub(from, to)
 
 	-- empty range => return empty snippetString.
 	if from > #str or to < from or to < 1 then
-		return M.new({""})
+		return M.new({ "" })
 	end
 
 	from = math.max(from, 1)
@@ -503,17 +541,16 @@ function SnippetString:sub(from, to)
 	local replacements = {}
 	-- from <= 1 => don't need to remove from beginning.
 	if from > 1 then
-		table.insert(replacements, { from=1, to=from-1, str = "" })
+		table.insert(replacements, { from = 1, to = from - 1, str = "" })
 	end
 	-- to >= #str => don't need to remove from end.
 	if to < #str then
-		table.insert(replacements, { from=to+1, to=#str, str = "" })
+		table.insert(replacements, { from = to + 1, to = #str, str = "" })
 	end
 
 	_replace(self, replacements, snipstr_map)
 	return self
 end
-
 
 -- add a kind-of extmark to the text in this buffer. It moves with inserted
 -- text, and has a gravity to control into which direction it shifts.
@@ -537,7 +574,8 @@ function SnippetString:add_mark(id, pos, rgrav)
 	table.insert(self.marks, {
 		id = id,
 		pos = pos + (rgrav and 1 or 0),
-		rgrav = rgrav})
+		rgrav = rgrav,
+	})
 end
 
 function SnippetString:get_mark_pos(id)

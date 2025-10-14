@@ -166,7 +166,7 @@ function M.multiline_substr(str, from, to)
 
 	-- include all rows
 	for i = from[1], to[1] do
-		table.insert(res, str[i+1])
+		table.insert(res, str[i + 1])
 	end
 
 	-- trim text before from and after to.
@@ -174,7 +174,7 @@ function M.multiline_substr(str, from, to)
 	-- on the same line. If res[1] was trimmed first, we'd have to adjust the
 	-- trim-point of `to`.
 	res[#res] = res[#res]:sub(1, to[2])
-	res[1] = res[1]:sub(from[2]+1)
+	res[1] = res[1]:sub(from[2] + 1)
 
 	return res
 end
@@ -202,7 +202,7 @@ end
 -- given in utf-codepoints and 0-based) into an offset (in bytes!, 1-based) for
 -- the \n-concatenated version of that string.
 function M.multiline_to_byte_offset(str, pos)
-	if pos[1] < 0 or pos[1]+1 > #str or pos[2] < 0 then
+	if pos[1] < 0 or pos[1] + 1 > #str or pos[2] < 0 then
 		-- pos is trivially (row negative or beyond str, or col negative)
 		-- outside of str, can't represent position in str.
 		-- col-wise outside will be determined later, but we want this
@@ -213,12 +213,12 @@ function M.multiline_to_byte_offset(str, pos)
 	local byte_pos = 0
 	for i = 1, pos[1] do
 		-- increase index by full lines, don't forget +1 for \n.
-		byte_pos = byte_pos + #str[i]+1
+		byte_pos = byte_pos + #str[i] + 1
 	end
 
 	-- allow positions one beyond the last character for all lines (even the
 	-- last line).
-	local pos_line_str = str[pos[1]+1] .. "\n"
+	local pos_line_str = str[pos[1] + 1] .. "\n"
 
 	if pos[2] >= #pos_line_str then
 		-- in this case, pos is outside of the multiline-region.
@@ -227,7 +227,7 @@ function M.multiline_to_byte_offset(str, pos)
 	byte_pos = byte_pos + vim.str_byteindex(pos_line_str, pos[2])
 
 	-- 0- to 1-based columns
-	return byte_pos+1
+	return byte_pos + 1
 end
 
 -- inverse of multiline_to_byte_offset, 1-based byte to 0,0-based row,column, utf-aware.
@@ -238,11 +238,12 @@ function M.byte_to_multiline_offset(str, byte_pos)
 
 	local byte_pos_so_far = 0
 	for i, line in ipairs(str) do
-		local line_i_end = byte_pos_so_far + #line+1
+		local line_i_end = byte_pos_so_far + #line + 1
 		if byte_pos <= line_i_end then
 			-- byte located in this line, find utf-index.
-			local utf16_index = vim.str_utfindex(line .. "\n", byte_pos - byte_pos_so_far-1)
-			return {i-1, utf16_index}
+			local utf16_index =
+				vim.str_utfindex(line .. "\n", byte_pos - byte_pos_so_far - 1)
+			return { i - 1, utf16_index }
 		end
 		byte_pos_so_far = line_i_end
 	end

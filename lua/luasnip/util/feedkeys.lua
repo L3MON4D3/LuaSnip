@@ -75,7 +75,8 @@ end
 local function cursor_set_keys(pos, before)
 	if before then
 		if pos[2] == 0 then
-			local prev_line_str = vim.api.nvim_buf_get_lines(0, pos[1]-1, pos[1], false)[1]
+			local prev_line_str =
+				vim.api.nvim_buf_get_lines(0, pos[1] - 1, pos[1], false)[1]
 			if prev_line_str then
 				-- set onto last column of previous line, if possible.
 				pos[1] = pos[1] - 1
@@ -116,7 +117,8 @@ end
 
 function M.select_range(b, e)
 	local id = next_id()
-	enqueued_cursor_state = {pos = vim.deepcopy(b), pos_v = vim.deepcopy(e), mode = "s", id = id}
+	enqueued_cursor_state =
+		{ pos = vim.deepcopy(b), pos_v = vim.deepcopy(e), mode = "s", id = id }
 	enqueue_action(function()
 		-- stylua: ignore
 		_feedkeys_insert(id,
@@ -149,7 +151,7 @@ end
 -- move the cursor to a position and enter insert-mode (or stay in it).
 function M.insert_at(pos)
 	local id = next_id()
-	enqueued_cursor_state = {pos = pos, mode = "i", id = id}
+	enqueued_cursor_state = { pos = pos, mode = "i", id = id }
 
 	enqueue_action(function()
 		-- if current and target mode is INSERT, there's no reason to leave it.
@@ -172,10 +174,10 @@ end
 function M.move_to_normal(pos)
 	local id = next_id()
 	-- preserve mode.
-	enqueued_cursor_state = {pos = pos, mode = "n", id = id}
+	enqueued_cursor_state = { pos = pos, mode = "n", id = id }
 
 	enqueue_action(function()
-		if vim.fn.mode():sub(1,1) == "n" then
+		if vim.fn.mode():sub(1, 1) == "n" then
 			util.set_cursor_0ind(pos)
 			M.confirm(id)
 		else
@@ -211,16 +213,16 @@ function M.last_state()
 	local state = {}
 
 	local getposdot = vim.fn.getpos(".")
-	state.pos = {getposdot[2]-1, getposdot[3]-1}
+	state.pos = { getposdot[2] - 1, getposdot[3] - 1 }
 
 	local getposv = vim.fn.getpos("v")
 	-- store selection-range with end-position one column after the cursor
 	-- at the end (so -1 to make getpos-position 0-based, +1 to move it one
 	-- beyond the last character of the range)
-	state.pos_v = {getposv[2]-1, getposv[3]}
+	state.pos_v = { getposv[2] - 1, getposv[3] }
 
 	-- only store first component.
-	state.mode = vim.fn.mode():sub(1,1)
+	state.mode = vim.fn.mode():sub(1, 1)
 
 	return state
 end
