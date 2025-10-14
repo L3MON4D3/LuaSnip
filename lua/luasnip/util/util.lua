@@ -431,6 +431,17 @@ local function pos_offset(base_pos, pos)
 	return {row_offset, row_offset == 0 and pos[2] - base_pos[2] or pos[2]}
 end
 
+local function shallow_copy(t)
+	if type(t) == "table" then
+		local res = {}
+		for k, v in pairs(t) do
+			res[k] = v
+		end
+		return res
+	end
+	return t
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -474,5 +485,6 @@ return {
 	validate = validate,
 	str_utf32index = str_utf32index,
 	default_tbl_get = default_tbl_get,
-	pos_offset = pos_offset
+	pos_offset = pos_offset,
+	shallow_copy = shallow_copy
 }

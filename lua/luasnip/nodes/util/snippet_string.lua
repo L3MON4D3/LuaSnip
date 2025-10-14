@@ -5,7 +5,6 @@ local util = require("luasnip.util.util")
 local SnippetString = {}
 local SnippetString_mt = {
 	__index = SnippetString,
-	__tostring = SnippetString.str
 }
 
 local M = {}
@@ -14,7 +13,7 @@ local M = {}
 ---@param initial_str string[]?, optional initial multiline string.
 ---@return SnippetString
 function M.new(initial_str)
-	local o = {initial_str}
+	local o = {initial_str and table.concat(initial_str, "\n")}
 	return setmetatable(o, SnippetString_mt)
 end
 
@@ -22,38 +21,57 @@ function M.isinstance(o)
 	return getmetatable(o) == SnippetString_mt
 end
 
-function SnippetString:append_snip(snip, str)
-	table.insert(self, {snip = snip, str = str})
+function SnippetString:append_snip(snip)
+	table.insert(self, {snip = snip})
 end
 function SnippetString:append_text(str)
-	table.insert(self, str)
+	table.insert(self, table.concat(str, "\n"))
 end
+
 function SnippetString:str()
-	local str = {""}
+	local str = ""
 	for _, snipstr_or_str in ipairs(self) do
-		str_util.multiline_append(str, snipstr_or_str.str and snipstr_or_str.str or snipstr_or_str)
+		if snipstr_or_str.snip then
+			snipstr_or_str.snip:subtree_do({
+				pre = function(node)
+					if node.static_text then
+						if M.isinstance(node.static_text) then
+							str = str .. node.static_text:str()
+						else
+							str = str .. table.concat(node.static_text, "\n")
+						end
+					end
+				end,
+				post = util.nop
+			})
+		else
+			str = str .. snipstr_or_str
+		end
 	end
 	return str
 end
+SnippetString_mt.__tostring = SnippetString.str
 
 function SnippetString:indent(indentstr)
-	for _, snipstr_or_str in ipairs(self) do
+	for k, snipstr_or_str in ipairs(self) do
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:indent(indentstr)
-			util.indent(snipstr_or_str.str, indentstr)
 		else
-			util.indent(snipstr_or_str, indentstr)
+			local str_tmp = vim.split(snipstr_or_str, "\n")
+			util.indent(str_tmp, indentstr)
+			self[k] = table.concat(str_tmp, "\n")
 		end
 	end
 end
 
 function SnippetString:expand_tabs(tabwidth, indenstrlen)
-	for _, snipstr_or_str in ipairs(self) do
+	for k, snipstr_or_str in ipairs(self) do
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:expand_tabs(tabwidth, indenstrlen)
-			util.expand_tabs(snipstr_or_str.str, tabwidth, indenstrlen)
 		else
-			util.expand_tabs(snipstr_or_str, tabwidth, indenstrlen)
+			local str_tmp = vim.split(snipstr_or_str, "\n")
+			util.expand_tabs(str_tmp, tabwidth, indenstrlen)
+			self[k] = table.concat(str_tmp, "\n")
 		end
 	end
 end
@@ -77,7 +95,7 @@ function SnippetString:put(pos)
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:put(pos)
 		else
-			util.put(snipstr_or_str, pos)
+			util.put(vim.split(snipstr_or_str, "\n"), pos)
 		end
 	end
 end
@@ -119,9 +137,9 @@ function SnippetString:reown(new_parent)
 			-- set correct parent_node.
 			snipcop.parent_node = new_parent
 
-			return {snip = snipcop, str = vim.deepcopy(snipstr_or_str.str)}
+			return {snip = snipcop}
 		else
-			return vim.deepcopy(snipstr_or_str)
+			return snipstr_or_str
 		end
 	end, self), SnippetString_mt)
 end
