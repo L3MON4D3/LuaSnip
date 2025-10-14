@@ -60,7 +60,7 @@ function FunctionNode:update()
 
 	-- assume that functionNode can't have a parent as its dependent, there is
 	-- no use for that I think.
-	self:update_dependents({own=true, parents=true})
+	self:update_dependents({ own = true, parents = true })
 end
 
 local update_errorstring = [[

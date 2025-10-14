@@ -209,7 +209,7 @@ function DynamicNode:update()
 	-- (and thus have changed text after this update), and all of the
 	-- children's depedents (since they may have dependents outside this
 	-- dynamicNode, who have not yet been updated)
-	self:update_dependents({own=true, children=true, parents=true})
+	self:update_dependents({ own = true, children = true, parents = true })
 end
 
 local update_errorstring = [[
@@ -298,7 +298,7 @@ function DynamicNode:update_static()
 
 	tmp:update_static()
 	-- updates own dependents.
-	self:update_dependents_static({own=true, parents=true, children=true})
+	self:update_dependents_static({ own = true, parents = true, children = true })
 end
 
 function DynamicNode:exit()

@@ -2035,7 +2035,9 @@ describe("session", function()
 			-- issue with it.
 			-- => when the dynamicNode is left during `refocus`, the deletion
 			-- will be detected, and snippet removed from the jumplist.
-			exec_lua([[vim.api.nvim_buf_del_extmark(0, ls.session.ns_id, ls.session.current_nodes[1].mark.id)]])
+			exec_lua(
+				[[vim.api.nvim_buf_del_extmark(0, ls.session.ns_id, ls.session.current_nodes[1].mark.id)]]
+			)
 
 			feed("Gofn")
 			expand()
