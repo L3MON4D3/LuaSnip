@@ -195,3 +195,24 @@ describe("str.convert_indent", function()
 		assert.are.same(expected, result)
 	end)
 end)
+
+describe("str.multiline_substr", function()
+	-- apparently clear() needs to run before anything else...
+	ls_helpers.clear()
+	ls_helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
+	local function check(dscr, str, from, to, expected)
+		it(dscr, function()
+			assert.are.same(expected, exec_lua([[
+				local str, from, to = ...
+				return require("luasnip.util.str").multiline_substr(str, from, to)
+			]], str, from, to))
+		end)
+	end
+
+	check("entire range", {"asdf", "qwer"}, {0,0}, {1,4}, {"asdf", "qwer"})
+	check("partial range", {"asdf", "qwer"}, {0,3}, {1,2}, {"f", "qw"})
+	check("another partial range", {"asdf", "qwer"}, {1,2}, {1,3}, {"e"})
+	check("one last partial range", {"asdf", "qwer", "zxcv"}, {0,2}, {2,4}, {"df", "qwer", "zxcv"})
+	check("empty range", {"asdf", "qwer", "zxcv"}, {0,2}, {0,2}, {""})
+end)

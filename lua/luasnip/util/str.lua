@@ -157,6 +157,36 @@ function M.sanitize(str)
 	return str:gsub("%\r", "")
 end
 
+-- requires that from and to are within the region of str.
+-- str is treated as a 0,0-indexed, and the character at `to` is excluded from
+-- the result.
+-- `from` may not be before `to`.
+function M.multiline_substr(str, from, to)
+	local res = {}
+
+	-- include all rows
+	for i = from[1], to[1] do
+		table.insert(res, str[i+1])
+	end
+
+	-- trim text before from and after to.
+	-- First trim from behind, that way this works correctly if from and to are
+	-- on the same line. If res[1] was trimmed first, we'd have to adjust the
+	-- trim-point of `to`.
+	res[#res] = res[#res]:sub(1, to[2])
+	res[1] = res[1]:sub(from[2]+1)
+
+	return res
+end
+
+-- modifies strmod
+function M.multiline_append(strmod, strappend)
+	strmod[#strmod] = strmod[#strmod] .. strappend[1]
+	for i = 2, #strappend do
+		table.insert(strmod, strappend[i])
+	end
+end
+
 -- string-operations implemented according to
 -- https://github.com/microsoft/vscode/blob/71c221c532996c9976405f62bb888283c0cf6545/src/vs/editor/contrib/snippet/browser/snippetParser.ts#L372-L415
 -- such that they can be used for snippet-transformations in vscode-snippets.
@@ -171,6 +201,7 @@ local function pascalcase(str)
 	end
 	return pascalcased
 end
+
 M.vscode_string_modifiers = {
 	upcase = string.upper,
 	downcase = string.lower,
