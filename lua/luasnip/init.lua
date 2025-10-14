@@ -2,6 +2,7 @@ local util = require("luasnip.util.util")
 local lazy_table = require("luasnip.util.lazy_table")
 local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
+local tbl_util = require("luasnip.util.table")
 local feedkeys = require("luasnip.util.feedkeys")
 
 local session = require("luasnip.session")
@@ -34,15 +35,28 @@ function API.get_active_snip()
 	return node
 end
 
-local function no_region_check_wrap(fn, ...)
+local luasnip_changedtick = 0
+local function api_enter()
 	session.jump_active = true
-	local fn_res = fn(...)
+	assert(session.luasnip_changedtick == nil)
+	session.luasnip_changedtick = luasnip_changedtick
+	luasnip_changedtick = luasnip_changedtick + 1
+end
+local function api_leave()
 	-- once all movements and text-modifications (and autocommands triggered by
 	-- these) are done, we can set jump_active false, and allow the various
 	-- autocommands to change luasnip-state again.
 	feedkeys.enqueue_action(function()
 		session.jump_active = false
 	end)
+	session.luasnip_changedtick = nil
+end
+
+local function api_do(fn, ...)
+	api_enter()
+
+	local fn_res = fn(...)
+	api_leave()
 
 	return fn_res
 end
@@ -178,19 +192,14 @@ function API.unlink_current()
 	unlink_set_adjacent_as_current_no_log(current.parent.snippet)
 end
 
-local function get_corresponding_node(parent, data)
-	return parent:find_node(function(test_node)
-		return (test_node.store_id == data.store_id)
-			or (data.key ~= nil and test_node.key == data.key)
-	end, {find_in_child_snippets = true})
-end
-
 local function node_update_dependents_preserve_position(node, current, opts)
-	local restore_data = node_util.store_cursor_node_relative(current)
+	-- set luasnip_changedtick so that static_text is preserved when possible.
+	local restore_data = node_util.store_cursor_node_relative(current, {place_cursor_mark = true})
 
 	-- update all nodes that depend on this one.
 	local ok, res =
 		pcall(node.update_dependents, node, { own = true, parents = true })
+
 	if not ok then
 		local snip = node:get_snippet()
 
@@ -211,7 +220,7 @@ local function node_update_dependents_preserve_position(node, current, opts)
 		if not opts.no_move and opts.restore_position then
 			-- node is visible: restore position.
 			local active_snippet = current:get_snippet()
-			node_util.restore_cursor_pos_relative(current, restore_data[active_snippet])
+			node_util.restore_cursor_pos_relative(current, restore_data[active_snippet.node_store_id])
 		end
 
 		return { jump_done = false, new_current = current }
@@ -229,9 +238,9 @@ local function node_update_dependents_preserve_position(node, current, opts)
 			active_snippet = parent_node:get_snippet()
 		end
 
-		-- have found first visible snippet => look for dynamicNode.
-		local snip_restore_data = restore_data[active_snippet]
-		local node_parent = snip_restore_data.node.parent
+		-- have found first visible snippet => look for visible dynamicNode,
+		-- starting from which we can try to find a new active node.
+		local node_parent = restore_data[active_snippet.node_store_id].node.parent
 
 		-- find visible dynamicNode that contained the (now-inactive) insertNode.
 		-- since the node was no longer visible after an update, it must have
@@ -249,14 +258,45 @@ local function node_update_dependents_preserve_position(node, current, opts)
 			"Visible dynamicNode that was a parent of the current node is not active after the update!! If you get this message, please open an issue with LuaSnip!"
 		)
 
-		local new_current = get_corresponding_node(d, snip_restore_data)
+		local found_nodes = {}
+		d:subtree_do({
+			pre = function(sd_node)
+				if sd_node.key then
+					-- any snippet we encounter here was generated before, and
+					-- if sd_node has the correct key, its snippet has a
+					-- node_store_id that corresponds to it.
+					local snip_node_store_id = sd_node.parent.snippet.node_store_id
+					-- make sure that the key we found belongs to this
+					-- snippets' active node.
+					-- Also use the first valid node, and not the second one.
+					-- Doesn't really matter (ambiguous keys -> undefined
+					-- behaviour), but we should just use the first one, as
+					-- that seems more like what would be expected.
+					if snip_node_store_id and restore_data[snip_node_store_id] and sd_node.key == restore_data[snip_node_store_id].key and not found_nodes[snip_node_store_id] then
+						found_nodes[snip_node_store_id] = sd_node
+					end
+				elseif sd_node.store_id and restore_data[sd_node.store_id] and not found_nodes[sd_node.store_id] then
+					found_nodes[sd_node.store_id] = sd_node
+				end
+			end,
+			post=util.nop,
+			do_child_snippets=true
+		})
+
+		local new_current
+		for _, store_id in ipairs(restore_data.store_ids) do
+			if found_nodes[store_id] then
+				new_current = found_nodes[store_id]
+				break
+			end
+		end
 
 		if new_current then
 			node_util.refocus(d, new_current)
 
 			if not opts.no_move and opts.restore_position then
 				-- node is visible: restore position
-				node_util.restore_cursor_pos_relative(new_current, snip_restore_data)
+				node_util.restore_cursor_pos_relative(new_current, restore_data[new_current.parent.snippet.node_store_id])
 			end
 
 			return { jump_done = false, new_current = new_current }
@@ -281,9 +321,15 @@ local function update_dependents(node)
 			active,
 			{ no_move = false, restore_position = true }
 		)
-		upd_res.new_current:focus()
-		session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_current
+		if upd_res.new_current then
+			upd_res.new_current:focus()
+			session.current_nodes[vim.api.nvim_get_current_buf()] = upd_res.new_current
+		end
 	end
+end
+
+local function _active_update_dependents()
+	update_dependents(session.current_nodes[vim.api.nvim_get_current_buf()])
 end
 
 -- return next active node.
@@ -315,13 +361,10 @@ local function safe_jump_current(dir, no_move, dry_run)
 	end
 end
 
---- Jump forwards or backwards
----@param dir 1|-1 Jump forward for 1, backward for -1.
----@return boolean _ `true` if a jump was performed, `false` otherwise.
-function API.jump(dir)
+local function _jump(dir)
 	local current = session.current_nodes[vim.api.nvim_get_current_buf()]
 	if current then
-		local next_node = no_region_check_wrap(safe_jump_current, dir)
+		local next_node = safe_jump_current(dir)
 		if next_node == nil then
 			session.current_nodes[vim.api.nvim_get_current_buf()] = nil
 			return true
@@ -337,6 +380,13 @@ function API.jump(dir)
 	else
 		return false
 	end
+end
+
+--- Jump forwards or backwards
+---@param dir 1|-1 Jump forward for 1, backward for -1.
+---@return boolean _ `true` if a jump was performed, `false` otherwise.
+function API.jump(dir)
+	return api_do(_jump, dir)
 end
 
 --- Find the node the next jump will end up at. This will not work always,
@@ -425,10 +475,8 @@ function API.locally_jumpable(dir)
 end
 
 local function _jump_into_default(snippet)
-	return no_region_check_wrap(snippet.jump_into, snippet, 1)
+	return snippet:jump_into(1)
 end
-
--- opts.clear_region: table, keys `from` and `to`, both (0,0)-indexed.
 
 ---@class LuaSnip.Opts.SnipExpandExpandParams
 ---@field trigger? string What to set as the expanded snippets' trigger
@@ -509,12 +557,7 @@ end
 ---  }
 ---  ```
 
---- Expand a snippet in the current buffer.
----@param snippet LuaSnip.Snippet The snippet.
----@param opts? LuaSnip.Opts.SnipExpand Optional additional arguments.
----@return LuaSnip.ExpandedSnippet _ The snippet that was inserted into the
----  buffer.
-function API.snip_expand(snippet, opts)
+local function _snip_expand(snippet, opts)
 	local snip = snippet:copy()
 
 	opts = opts or {}
@@ -590,16 +633,26 @@ function API.snip_expand(snippet, opts)
 	-- -1 to disable count.
 	vim.cmd([[silent! call repeat#set("\<Plug>luasnip-expand-repeat", -1)]])
 
-	API.active_update_dependents()
+	_active_update_dependents()
 
 	return snip
 end
 
---- Find a snippet whose trigger matches the text before the cursor and expand
---- it.
----@param opts? LuaSnip.Opts.Expand Subset of opts accepted by `snip_expand`.
----@return boolean _ Whether a snippet was expanded.
-function API.expand(opts)
+--- Expand a snippet in the current buffer.
+---@param snippet LuaSnip.Snippet The snippet.
+---@param opts? LuaSnip.Opts.SnipExpand Optional additional arguments.
+---@return LuaSnip.ExpandedSnippet _ The snippet that was inserted into the
+---  buffer.
+function API.snip_expand(snippet, opts)
+	return api_do(_snip_expand, snippet, opts)
+end
+
+
+---Find a snippet matching the current cursor-position.
+---@param opts table: may contain:
+--- - `jump_into_func`: passed through to `snip_expand`.
+---@return boolean: whether a snippet was expanded.
+local function _expand(opts)
 	local expand_params
 	local snip
 	-- find snip via next_expand (set from previous expandable()) or manual matching.
@@ -629,7 +682,7 @@ function API.expand(opts)
 			}
 
 		-- override snip with expanded copy.
-		snip = API.snip_expand(snip, {
+		snip = _snip_expand(snip, {
 			expand_params = expand_params,
 			-- clear trigger-text.
 			clear_region = clear_region,
@@ -641,48 +694,61 @@ function API.expand(opts)
 	return false
 end
 
+--- Find a snippet whose trigger matches the text before the cursor and expand
+--- it.
+---@param opts? LuaSnip.Opts.Expand Subset of opts accepted by `snip_expand`.
+---@return boolean _ Whether a snippet was expanded.
+function API.expand(opts)
+	return api_do(_expand, opts)
+end
+
 --- Find an autosnippet matching the text at the cursor-position and expand it.
 function API.expand_auto()
-	local snip, expand_params =
-		match_snippet(util.get_current_line_to_cursor(), "autosnippets")
-	if snip then
-		assert(expand_params) -- hint lsp type checker
-		local cursor = util.get_cursor_0ind()
-		local clear_region = expand_params.clear_region
-			or {
-				from = {
-					cursor[1],
-					cursor[2] - #expand_params.trigger,
-				},
-				to = cursor,
-			}
-		snip = API.snip_expand(snip, {
-			expand_params = expand_params,
-			-- clear trigger-text.
-			clear_region = clear_region,
-		})
-	end
+	api_do(function()
+		local snip, expand_params =
+			match_snippet(util.get_current_line_to_cursor(), "autosnippets")
+		if snip then
+			local cursor = util.get_cursor_0ind()
+			local clear_region = expand_params.clear_region
+				or {
+					from = {
+						cursor[1],
+						cursor[2] - #expand_params.trigger,
+					},
+					to = cursor,
+				}
+			snip = _snip_expand(snip, {
+				expand_params = expand_params,
+				-- clear trigger-text.
+				clear_region = clear_region,
+			})
+		end
+	end)
 end
 
 --- Repeat the last performed `snip_expand`. Useful for dot-repeat.
 function API.expand_repeat()
-	-- prevent clearing text with repeated expand.
-	session.last_expand_opts.clear_region = nil
-	session.last_expand_opts.pos = nil
+	api_do(function()
+		-- prevent clearing text with repeated expand.
+		session.last_expand_opts.clear_region = nil
+		session.last_expand_opts.pos = nil
 
-	API.snip_expand(session.last_expand_snip, session.last_expand_opts)
+		_snip_expand(session.last_expand_snip, session.last_expand_opts)
+	end)
 end
 
 --- Expand at the cursor, or jump forward.
 ---@return boolean _ Whether an action was performed.
 function API.expand_or_jump()
-	if API.expand() then
-		return true
-	end
-	if API.jump(1) then
-		return true
-	end
-	return false
+	return api_do(function()
+		if _expand() then
+			return true
+		end
+		if _jump(1) then
+			return true
+		end
+		return false
+	end)
 end
 
 --- Expand a snippet specified in lsp-style.
@@ -692,7 +758,7 @@ end
 ---  `snip_expand`.
 function API.lsp_expand(body, opts)
 	-- expand snippet as-is.
-	API.snip_expand(
+	api_do(_snip_expand,
 		ls.parser.parse_snippet(
 			"",
 			body,
@@ -728,20 +794,17 @@ local function safe_choice_action(snip, ...)
 	end
 end
 
---- Change the currently active choice.
----@param val 1|-1 Move one choice forward or backward.
-function API.change_choice(val, opts)
+local function _change_choice(val, opts)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
-
 	assert(active_choice, "No active choiceNode")
 
 	-- if the active choice exists current_node still does.
 	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
-	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node)
 
-	local new_active = no_region_check_wrap(
-		safe_choice_action,
+	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
+
+	local new_active = safe_choice_action(
 		active_choice.parent.snippet,
 		active_choice.change_choice,
 		active_choice,
@@ -750,22 +813,28 @@ function API.change_choice(val, opts)
 		restore_data
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
-	active_update_dependents()
+	_active_update_dependents()
 end
 
---- Set the currently active choice.
----@param choice_indx integer Index of the choice to switch to.
-function API.set_choice(choice_indx, opts)
-	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
-	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node)
+--- Change the currently active choice.
+---@param val 1|-1 Move one choice forward or backward.
+function API.change_choice(val, opts)
+	api_do(_change_choice, val, opts)
+end
 
+local function _set_choice(choice_indx, opts)
 	local active_choice =
 		session.active_choice_nodes[vim.api.nvim_get_current_buf()]
 	assert(active_choice, "No active choiceNode")
+
+	local current_node = session.current_nodes[vim.api.nvim_get_current_buf()]
+
+	local restore_data = opts and opts.cursor_restore_data or node_util.store_cursor_node_relative(current_node, {place_cursor_mark = false})
+
 	local choice = active_choice.choices[choice_indx]
 	assert(choice, "Invalid Choice")
-	local new_active = no_region_check_wrap(
-		safe_choice_action,
+
+	local new_active = safe_choice_action(
 		active_choice.parent.snippet,
 		active_choice.set_choice,
 		active_choice,
@@ -774,7 +843,13 @@ function API.set_choice(choice_indx, opts)
 		restore_data
 	)
 	session.current_nodes[vim.api.nvim_get_current_buf()] = new_active
-	active_update_dependents()
+	_active_update_dependents()
+end
+
+--- Set the currently active choice.
+---@param choice_indx integer Index of the choice to switch to.
+function API.set_choice(choice_indx, opts)
+	api_do(_set_choice, choice_indx, opts)
 end
 
 --- Get a string-representation of all the current choiceNode's choices.
@@ -796,7 +871,7 @@ end
 
 --- Update all nodes that depend on the currently-active node.
 function API.active_update_dependents()
-	update_dependents(session.current_nodes[vim.api.nvim_get_current_buf()])
+	api_do(_active_update_dependents)
 end
 
 --- Generate and store the docstrings for a list of snippets as generated by
@@ -1295,7 +1370,10 @@ API.log = require("luasnip.util.log")
 ---@class LuaSnip: LuaSnip.API, LuaSnip.LazyAPI
 ls = lazy_table(API, ls_lazy)
 
--- internal stuff, e.g. for tests.
-ls.no_region_check_wrap = no_region_check_wrap
+-- undocumented, internally-used, exported functions.
+ls._api_do = api_do
+ls._api_enter = api_enter
+ls._api_leave = api_leave
+ls._set_choice = _set_choice
 
 return ls

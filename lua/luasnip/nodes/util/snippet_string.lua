@@ -370,9 +370,9 @@ local function _replace(self, replacements, snipstr_map)
 				-- we already know that repl.to >= mark.pos.
 				-- This means that the marker is inside the deleted region, and
 				-- we have to somehow find a sensible new position.
-				-- For now, simply preserve the marks position if the new str
-				-- still covers the region, otherwise shift it to the beginning
-				-- or end of the newly inserted text, depending on rgrav.
+
+				-- For now, shift the mark to the beginning or end of the newly
+				-- inserted text, depending on rgrav.
 				mark.pos = (mark.rgrav and repl.to+1 or repl.from) - self_offset
 			end
 			-- in this case the replacement is completely behind the marks
