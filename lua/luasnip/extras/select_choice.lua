@@ -12,7 +12,7 @@ local function set_choice_callback(data)
 			return
 		end
 		-- set_choice restores cursor from before.
-		ls._set_choice(indx, {cursor_restore_data = data, skip_update = true})
+		ls._set_choice(indx, { cursor_restore_data = data, skip_update = true })
 		ls._api_leave()
 	end
 end
@@ -33,7 +33,10 @@ local function select_choice()
 		return
 	end
 
-	local restore_data = node_util.store_cursor_node_relative(active, {place_cursor_mark = true})
+	local restore_data = node_util.store_cursor_node_relative(
+		active,
+		{ place_cursor_mark = true }
+	)
 
 	-- make sure all movements are done, otherwise the movements may be put into
 	-- the select-dialog.

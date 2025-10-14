@@ -203,18 +203,50 @@ describe("str.multiline_substr", function()
 
 	local function check(dscr, str, from, to, expected)
 		it(dscr, function()
-			assert.are.same(expected, exec_lua([[
+			assert.are.same(
+				expected,
+				exec_lua(
+					[[
 				local str, from, to = ...
 				return require("luasnip.util.str").multiline_substr(str, from, to)
-			]], str, from, to))
+			]],
+					str,
+					from,
+					to
+				)
+			)
 		end)
 	end
 
-	check("entire range", {"asdf", "qwer"}, {0,0}, {1,4}, {"asdf", "qwer"})
-	check("partial range", {"asdf", "qwer"}, {0,3}, {1,2}, {"f", "qw"})
-	check("another partial range", {"asdf", "qwer"}, {1,2}, {1,3}, {"e"})
-	check("one last partial range", {"asdf", "qwer", "zxcv"}, {0,2}, {2,4}, {"df", "qwer", "zxcv"})
-	check("empty range", {"asdf", "qwer", "zxcv"}, {0,2}, {0,2}, {""})
+	check(
+		"entire range",
+		{ "asdf", "qwer" },
+		{ 0, 0 },
+		{ 1, 4 },
+		{ "asdf", "qwer" }
+	)
+	check(
+		"partial range",
+		{ "asdf", "qwer" },
+		{ 0, 3 },
+		{ 1, 2 },
+		{ "f", "qw" }
+	)
+	check(
+		"another partial range",
+		{ "asdf", "qwer" },
+		{ 1, 2 },
+		{ 1, 3 },
+		{ "e" }
+	)
+	check(
+		"one last partial range",
+		{ "asdf", "qwer", "zxcv" },
+		{ 0, 2 },
+		{ 2, 4 },
+		{ "df", "qwer", "zxcv" }
+	)
+	check("empty range", { "asdf", "qwer", "zxcv" }, { 0, 2 }, { 0, 2 }, { "" })
 end)
 
 describe("str.multiline_to_byte_offset", function()
@@ -224,33 +256,48 @@ describe("str.multiline_to_byte_offset", function()
 
 	local function check(dscr, str, multiline_pos, byte_pos)
 		it(dscr, function()
-			assert.are.same(byte_pos, exec_lua([[
+			assert.are.same(
+				byte_pos,
+				exec_lua(
+					[[
 				local str, multiline_pos = ...
 				return require("luasnip.util.str").multiline_to_byte_offset(str, multiline_pos)
-			]], str, multiline_pos))
+			]],
+					str,
+					multiline_pos
+				)
+			)
 		end)
 	end
 	local function check_is_nil(dscr, str, multiline_pos, byte_pos)
 		it(dscr, function()
-			assert(exec_lua([[
+			assert(exec_lua(
+				[[
 				local str, multiline_pos = ...
 				return require("luasnip.util.str").multiline_to_byte_offset(str, multiline_pos) == nil
-			]], str, multiline_pos))
+			]],
+				str,
+				multiline_pos
+			))
 		end)
 	end
 
-	check("single line begin", {"asdf"}, {0,0}, 1)
-	check("single line middle", {"asdf"}, {0,2}, 3)
-	check("single line end", {"asdf"}, {0,3}, 4)
-	check("single line, on \n", {"asdf"}, {0,4}, 5)
-	check_is_nil("single line, outside of range", {"asdf"}, {0,5})
-	check("multiple lines", {"asdf", "qwer"}, {1,0}, 6)
-	check("multiple lines middle", {"asdf", "qwer"}, {1,3}, 9)
-	check_is_nil("multiple lines outside of range row", {"asdf", "qwer"}, {2,0})
-	check("on linebreak", {"asdf", "qwer"}, {0,4}, 5)
-	check("on linebreak of last line", {"asdf", "qwer"}, {1,4}, 10)
-	check_is_nil("negative row", {"asdf", "qwer"}, {-1,0})
-	check_is_nil("negative col", {"asdf", "qwer"}, {0,-2})
+	check("single line begin", { "asdf" }, { 0, 0 }, 1)
+	check("single line middle", { "asdf" }, { 0, 2 }, 3)
+	check("single line end", { "asdf" }, { 0, 3 }, 4)
+	check("single line, on \n", { "asdf" }, { 0, 4 }, 5)
+	check_is_nil("single line, outside of range", { "asdf" }, { 0, 5 })
+	check("multiple lines", { "asdf", "qwer" }, { 1, 0 }, 6)
+	check("multiple lines middle", { "asdf", "qwer" }, { 1, 3 }, 9)
+	check_is_nil(
+		"multiple lines outside of range row",
+		{ "asdf", "qwer" },
+		{ 2, 0 }
+	)
+	check("on linebreak", { "asdf", "qwer" }, { 0, 4 }, 5)
+	check("on linebreak of last line", { "asdf", "qwer" }, { 1, 4 }, 10)
+	check_is_nil("negative row", { "asdf", "qwer" }, { -1, 0 })
+	check_is_nil("negative col", { "asdf", "qwer" }, { 0, -2 })
 end)
 
 describe("byte_to_multiline_offset", function()
@@ -260,28 +307,39 @@ describe("byte_to_multiline_offset", function()
 
 	local function check(dscr, str, byte_pos, multiline_pos)
 		it(dscr, function()
-			assert.are.same(multiline_pos, exec_lua([[
+			assert.are.same(
+				multiline_pos,
+				exec_lua(
+					[[
 				local str, byte_pos = ...
 				return require("luasnip.util.str").byte_to_multiline_offset(str, byte_pos)
-			]], str, byte_pos))
+			]],
+					str,
+					byte_pos
+				)
+			)
 		end)
 	end
 	local function check_is_nil(dscr, str, byte_pos, multiline_pos)
 		it(dscr, function()
-			assert(exec_lua([[
+			assert(exec_lua(
+				[[
 				local str, byte_pos = ...
 				return require("luasnip.util.str").byte_to_multiline_offset(str, byte_pos) == nil
-			]], str, byte_pos))
+			]],
+				str,
+				byte_pos
+			))
 		end)
 	end
 
-	check("single line begin", {"asdf"}, 1, {0,0})
-	check("single line middle", {"asdf"}, 3, {0,2})
-	check("single line end", {"asdf"}, 4, {0,3})
-	check("single line on linebreak", {"asdf"}, 5, {0,4})
-	check("multiple lines", {"asdf", "qwer"}, 6, {1,0})
-	check("multiple lines middle", {"asdf", "qwer"}, 9, {1,3})
-	check("multiple lines middle linebreak", {"asdf", "qwer"}, 10, {1,4})
-	check_is_nil("before string", {"asdf", "qwer"}, -1)
-	check_is_nil("multiple lines behind string", {"asdf", "qwer"}, 11)
+	check("single line begin", { "asdf" }, 1, { 0, 0 })
+	check("single line middle", { "asdf" }, 3, { 0, 2 })
+	check("single line end", { "asdf" }, 4, { 0, 3 })
+	check("single line on linebreak", { "asdf" }, 5, { 0, 4 })
+	check("multiple lines", { "asdf", "qwer" }, 6, { 1, 0 })
+	check("multiple lines middle", { "asdf", "qwer" }, 9, { 1, 3 })
+	check("multiple lines middle linebreak", { "asdf", "qwer" }, 10, { 1, 4 })
+	check_is_nil("before string", { "asdf", "qwer" }, -1)
+	check_is_nil("multiple lines behind string", { "asdf", "qwer" }, 11)
 end)

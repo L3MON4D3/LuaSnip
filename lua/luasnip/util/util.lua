@@ -419,7 +419,7 @@ end
 -- Assumption: `pos` occurs after `base_pos`.
 local function pos_offset(base_pos, pos)
 	local row_offset = pos[1] - base_pos[1]
-	return {row_offset, row_offset == 0 and pos[2] - base_pos[2] or pos[2]}
+	return { row_offset, row_offset == 0 and pos[2] - base_pos[2] or pos[2] }
 end
 
 -- compute offset of `pos` into multiline string starting at `base_pos`.
@@ -427,7 +427,10 @@ end
 -- when `pos` is on a line different from `base_pos`.
 -- Assumption: `pos` occurs after `base_pos`.
 local function pos_from_offset(base_pos, offset)
-	return {base_pos[1]+offset[1], offset[1] == 0 and base_pos[2] + offset[2] or offset[2]}
+	return {
+		base_pos[1] + offset[1],
+		offset[1] == 0 and base_pos[2] + offset[2] or offset[2],
+	}
 end
 
 local function shallow_copy(t)
@@ -485,5 +488,5 @@ return {
 	default_tbl_get = default_tbl_get,
 	pos_offset = pos_offset,
 	pos_from_offset = pos_from_offset,
-	shallow_copy = shallow_copy
+	shallow_copy = shallow_copy,
 }

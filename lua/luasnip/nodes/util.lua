@@ -186,10 +186,7 @@ end
 
 local function linkable_node(node)
 	-- node.type has to be one of insertNode, exitNode.
-	return vim.tbl_contains(
-		{ types.insertNode, types.exitNode },
-		node.type
-	)
+	return vim.tbl_contains({ types.insertNode, types.exitNode }, node.type)
 end
 
 -- mainly used internally, by binarysearch_pos.
@@ -199,10 +196,7 @@ end
 -- feel appropriate (higher runtime), most cases should be served well by this
 -- heuristic.
 local function non_linkable_node(node)
-	return vim.tbl_contains(
-		{ types.textNode, types.functionNode },
-		node.type
-	)
+	return vim.tbl_contains({ types.textNode, types.functionNode }, node.type)
 end
 -- return whether a node is certainly (not) interactive.
 -- Coincindentially, the same nodes as (non-)linkable ones, but since there is a
@@ -858,9 +852,11 @@ local function collect_dependents(node, which, static)
 end
 
 local function str_args(args)
-	return args and vim.tbl_map(function(arg)
-		return snippet_string.isinstance(arg) and vim.split(arg:str(), "\n") or arg
-	end, args)
+	return args
+		and vim.tbl_map(function(arg)
+			return snippet_string.isinstance(arg) and vim.split(arg:str(), "\n")
+				or arg
+		end, args)
 end
 
 local store_id = 0
@@ -891,16 +887,24 @@ local function store_cursor_node_relative(node, opts)
 		-- from low to high
 		table.insert(store_ids, store_id)
 
-		snip_data.cursor_start_relative =
-			util.pos_offset(snippet_current_node.mark:get_endpoint(-1), cursor_state.pos)
+		snip_data.cursor_start_relative = util.pos_offset(
+			snippet_current_node.mark:get_endpoint(-1),
+			cursor_state.pos
+		)
 
 		snip_data.mode = cursor_state.mode
 
 		if cursor_state.pos_v then
-			snip_data.selection_end_start_relative = util.pos_offset(snippet_current_node.mark:get_endpoint(-1), cursor_state.pos_v)
+			snip_data.selection_end_start_relative = util.pos_offset(
+				snippet_current_node.mark:get_endpoint(-1),
+				cursor_state.pos_v
+			)
 		end
 
-		if snippet_current_node.type == types.insertNode and opts.place_cursor_mark then
+		if
+			snippet_current_node.type == types.insertNode
+			and opts.place_cursor_mark
+		then
 			-- if the snippet_current_node is not an insertNode, the cursor
 			-- should always be exactly at the beginning if the node is entered
 			-- (which, btw, can only happen if a text or functionNode is
@@ -925,23 +929,43 @@ local function store_cursor_node_relative(node, opts)
 			-- cursor correctly :)
 			snippet_current_node:store()
 
-			if snip_data.cursor_start_relative[1] >= 0 and snip_data.cursor_start_relative[2] >= 0 then
+			if
+				snip_data.cursor_start_relative[1] >= 0
+				and snip_data.cursor_start_relative[2] >= 0
+			then
 				-- we also have this in static_text, but recomputing the text
 				-- exactly is rather expensive -> text is still in buffer, yank
 				-- it.
 				local str = snippet_current_node:get_text()
-				local pos_byte_offset = str_util.multiline_to_byte_offset(str, snip_data.cursor_start_relative)
+				local pos_byte_offset = str_util.multiline_to_byte_offset(
+					str,
+					snip_data.cursor_start_relative
+				)
 				if pos_byte_offset then
-					snippet_current_node.static_text:add_mark(store_id .. "pos", pos_byte_offset, false)
-					if snip_data.selection_end_start_relative and
-					   snip_data.selection_end_start_relative[1] >= 0 and
-					   snip_data.selection_end_start_relative[2] >= 0 then
-						local pos_v_byte_offset = str_util.multiline_to_byte_offset(str, snip_data.selection_end_start_relative)
+					snippet_current_node.static_text:add_mark(
+						store_id .. "pos",
+						pos_byte_offset,
+						false
+					)
+					if
+						snip_data.selection_end_start_relative
+						and snip_data.selection_end_start_relative[1] >= 0
+						and snip_data.selection_end_start_relative[2] >= 0
+					then
+						local pos_v_byte_offset =
+							str_util.multiline_to_byte_offset(
+								str,
+								snip_data.selection_end_start_relative
+							)
 						if pos_v_byte_offset then
 							-- set rgrav of endpoint of selection true.
 							-- This means if the selection is replaced, it would still
 							-- be selected, which seems like a nice property.
-							snippet_current_node.static_text:add_mark(store_id .. "pos_v", pos_v_byte_offset, true)
+							snippet_current_node.static_text:add_mark(
+								store_id .. "pos_v",
+								pos_v_byte_offset,
+								true
+							)
 						end
 					end
 				end
@@ -967,26 +991,35 @@ local function restore_cursor_pos_relative(node, data)
 		local mark_pos = node.static_text:get_mark_pos(data.store_id .. "pos")
 		if mark_pos then
 			local str = node:get_text()
-			local mark_pos_offset = str_util.byte_to_multiline_offset(str, mark_pos)
+			local mark_pos_offset =
+				str_util.byte_to_multiline_offset(str, mark_pos)
 			cursor_pos = mark_pos_offset and mark_pos_offset or cursor_pos
 
-			local mark_pos_v = node.static_text:get_mark_pos(data.store_id .. "pos_v")
+			local mark_pos_v =
+				node.static_text:get_mark_pos(data.store_id .. "pos_v")
 			if mark_pos_v then
-				local mark_pos_v_offset = str_util.byte_to_multiline_offset(str, mark_pos_v)
+				local mark_pos_v_offset =
+					str_util.byte_to_multiline_offset(str, mark_pos_v)
 				cursor_pos_v = mark_pos_v_offset
 			end
 		end
 	end
 
 	if data.mode == "i" then
-		feedkeys.insert_at(util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos))
+		feedkeys.insert_at(
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
+		)
 	elseif data.mode == "s" then
 		-- is a selection => restore it.
-		local selection_from = util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
-		local selection_to = util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos_v)
+		local selection_from =
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
+		local selection_to =
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos_v)
 		feedkeys.select_range(selection_from, selection_to)
 	else
-		feedkeys.move_to_normal(util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos))
+		feedkeys.move_to_normal(
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
+		)
 	end
 end
 
@@ -1017,5 +1050,5 @@ return {
 	node_subtree_do = node_subtree_do,
 	str_args = str_args,
 	store_cursor_node_relative = store_cursor_node_relative,
-	restore_cursor_pos_relative = restore_cursor_pos_relative
+	restore_cursor_pos_relative = restore_cursor_pos_relative,
 }
