@@ -99,7 +99,7 @@ end
 
 function M.select_range(b, e)
 	local id = next_id()
-	enqueued_cursor_state = {pos = vim.deepcopy(b), pos_end = vim.deepcopy(e), id = id}
+	enqueued_cursor_state = {pos = vim.deepcopy(b), pos_v = vim.deepcopy(e), mode = "s", id = id}
 	enqueue_action(function()
 		-- stylua: ignore
 		_feedkeys_insert(id,
@@ -132,7 +132,7 @@ end
 -- move the cursor to a position and enter insert-mode (or stay in it).
 function M.insert_at(pos)
 	local id = next_id()
-	enqueued_cursor_state = {pos = pos, id = id}
+	enqueued_cursor_state = {pos = pos, mode = "i", id = id}
 
 	enqueue_action(function()
 		-- if current and target mode is INSERT, there's no reason to leave it.
@@ -152,13 +152,18 @@ function M.insert_at(pos)
 end
 
 -- move, without changing mode.
-function M.move_to(pos)
+function M.move_to_normal(pos)
 	local id = next_id()
-	enqueued_cursor_state = {pos = pos, id = id}
+	-- preserve mode.
+	enqueued_cursor_state = {pos = pos, mode = "n", id = id}
 
 	enqueue_action(function()
-		util.set_cursor_0ind(pos)
-		M.confirm(id)
+		if vim.fn.mode():sub(1,1) == "n" then
+			util.set_cursor_0ind(pos)
+			M.confirm(id)
+		else
+			_feedkeys_insert(id, "<Esc>" .. cursor_set_keys(pos))
+		end
 	end, id)
 end
 
@@ -181,6 +186,7 @@ end
 function M.last_state()
 	if enqueued_cursor_state then
 		local state = vim.deepcopy(enqueued_cursor_state)
+		-- remove internal data.
 		state.id = nil
 		return state
 	end
@@ -190,14 +196,14 @@ function M.last_state()
 	local getposdot = vim.fn.getpos(".")
 	state.pos = {getposdot[2]-1, getposdot[3]-1}
 
-	-- only re-enter select for now.
-	if vim.fn.mode() == "s" then
-		local getposv = vim.fn.getpos("v")
-		-- store selection-range with end-position one column after the cursor
-		-- at the end (so -1 to make getpos-position 0-based, +1 to move it one
-		-- beyond the last character of the range)
-		state.pos_end = {getposv[2]-1, getposv[3]+1}
-	end
+	local getposv = vim.fn.getpos("v")
+	-- store selection-range with end-position one column after the cursor
+	-- at the end (so -1 to make getpos-position 0-based, +1 to move it one
+	-- beyond the last character of the range)
+	state.pos_v = {getposv[2]-1, getposv[3]}
+
+	-- only store first component.
+	state.mode = vim.fn.mode():sub(1,1)
 
 	return state
 end
