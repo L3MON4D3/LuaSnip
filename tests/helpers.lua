@@ -23,7 +23,7 @@ local M = {
 function M.jsregexp_it(it, setup, name, fn)
 	for _, version in ipairs({ "005", "006", "010", "luasnip-installed" }) do
 		it(name .. " (jsregexp-" .. version .. ")", function()
-			setup({jsregexp_version = version})
+			setup({ jsregexp_version = version })
 			fn()
 		end)
 	end

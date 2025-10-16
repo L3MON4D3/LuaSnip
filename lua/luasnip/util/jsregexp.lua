@@ -58,7 +58,10 @@ if not test_re then
 	return false
 end
 
-if type(test_re) == "function" or (type(test_re) == "userdata" and getmetatable(test_re).__call ~= nil) then
+if
+	type(test_re) == "function"
+	or (type(test_re) == "userdata" and getmetatable(test_re).__call ~= nil)
+then
 	log.debug("Compiled regex is function or has __call, wrapping it.")
 	-- we have a jsregexp that supports the old call interface => add a
 	-- wrapper.
@@ -95,11 +98,13 @@ if type(test_re) == "function" or (type(test_re) == "userdata" and getmetatable(
 					table.insert(matches_010, to_010_match(match_005, line))
 				end
 				return matches_010
-			end
+			end,
 		}
 	end
 else
-	log.debug("Compiled regex already has functional :exec and :match_all_list.")
+	log.debug(
+		"Compiled regex already has functional :exec and :match_all_list."
+	)
 end
 
 return compile
