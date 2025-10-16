@@ -274,13 +274,13 @@ local function apply_modifier(text, modifier)
 	end
 end
 
-local function apply_transform_format(nodes, captures)
+local function apply_transform_format(nodes, match)
 	local transformed = ""
 	for _, node in ipairs(nodes) do
 		if node.type == types.TEXT then
 			transformed = transformed .. node.esc
 		else
-			local capture = captures[node.capture_index]
+			local capture = match[node.capture_index]
 			-- capture exists if it ..exists.. and is nonempty.
 			if capture and #capture > 0 then
 				if node.if_text then
@@ -312,7 +312,14 @@ function M.apply_transform(transform)
 			return function(lines)
 				-- luasnip expects+passes lines as list, but regex needs one string.
 				lines = table.concat(lines, "\n")
-				local matches = reg_compiled(lines)
+
+				local matches = {}
+				-- jsregexp can only use match_all* if "g" is set.
+				if transform.option:find("g", 1, true) ~= nil then
+					matches = reg_compiled:match_all_list(lines)
+				else
+					matches = {reg_compiled:exec(lines)}
+				end
 
 				local transformed = ""
 				-- index one past the end of previous match.
@@ -322,14 +329,14 @@ function M.apply_transform(transform)
 				for _, match in ipairs(matches) do
 					-- begin_ind and end_ind are inclusive.
 					transformed = transformed
-						.. lines:sub(prev_match_end + 1, match.begin_ind - 1)
+						.. lines:sub(prev_match_end + 1, match.index - 1)
 						.. apply_transform_format(
 							transform.format,
-							match.groups
+							match
 						)
 
 					-- end-inclusive
-					prev_match_end = match.end_ind
+					prev_match_end = match.index + #match[0]-1
 				end
 				transformed = transformed
 					.. lines:sub(prev_match_end + 1, #lines)

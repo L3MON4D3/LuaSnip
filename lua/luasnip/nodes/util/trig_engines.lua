@@ -83,11 +83,11 @@ if jsregexp_compile_safe then
 		return function(line_to_cursor, _)
 			line_to_cursor = apply_common_opts(line_to_cursor, opts)
 
-			-- get first (very likely only, since we appended the "$") match.
-			local match = trig_compiled(line_to_cursor)[1]
+			-- get first (and very likely only, since we appended the "$") match.
+			local match = trig_compiled:exec(line_to_cursor)
 			if match then
 				-- return full match, and all groups.
-				return line_to_cursor:sub(match.begin_ind), match.groups
+				return line_to_cursor:sub(match.index), match
 			else
 				return nil
 			end
