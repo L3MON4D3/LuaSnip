@@ -207,7 +207,7 @@ describe("Parser", function()
 		})
 	end)
 
-	ls_helpers.jsregexp_it(it, "can parse transformed variables", function()
+	ls_helpers.jsregexp_it(it, setup, "can parse transformed variables", function()
 		-- ls_helpers.session_setup_luasnip()
 		local snip = '"a${TM_LINE_INDEX/(.*)/asdf $1 asdf/g}a"'
 
@@ -245,7 +245,7 @@ describe("Parser", function()
 		})
 	end)
 
-	ls_helpers.jsregexp_it(it, "can parse transformed tabstop.", function()
+	ls_helpers.jsregexp_it(it, setup, "can parse transformed tabstop.", function()
 		-- ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
 
@@ -259,9 +259,8 @@ describe("Parser", function()
 			{2:-- INSERT --}                                      |]],
 		})
 	end)
-	it("copies tabstop if jsregexp is not available.", function()
-		setup({ prevent_jsregexp = true })
 
+	it("copies tabstop if jsregexp is not available.", function()
 		-- ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf $1 asdf/} a"'
 
@@ -300,6 +299,7 @@ describe("Parser", function()
 
 			ls_helpers.jsregexp_it(
 				it,
+				setup,
 				"applies " .. modifier .. " correctly",
 				function()
 					-- ls_helpers.session_setup_luasnip()
@@ -449,7 +449,7 @@ describe("Parser", function()
 		})
 	end)
 
-	ls_helpers.jsregexp_it(it, "can modify groups in transform.", function()
+	ls_helpers.jsregexp_it(it, setup, "can modify groups in transform.", function()
 		-- ls_helpers.session_setup_luasnip()
 		local snip = '"$1 a ${1/(.*)/asdf ${1:/upcase} asdf/} a"'
 
@@ -474,6 +474,7 @@ describe("Parser", function()
 
 	ls_helpers.jsregexp_it(
 		it,
+		setup,
 		"handle multiple captures in transform.",
 		function()
 			-- ls_helpers.session_setup_luasnip()
@@ -706,6 +707,7 @@ describe("Parser", function()
 
 	ls_helpers.jsregexp_it(
 		it,
+		setup,
 		"Applies transform to empty variable.",
 		function()
 			-- ls_helpers.session_setup_luasnip()
@@ -724,6 +726,7 @@ describe("Parser", function()
 
 	ls_helpers.jsregexp_it(
 		it,
+		setup,
 		"correctly transforms multiline-values.",
 		function()
 			-- ls_helpers.session_setup_luasnip()
@@ -746,6 +749,7 @@ describe("Parser", function()
 
 	ls_helpers.jsregexp_it(
 		it,
+		setup,
 		"correctly transforms if the match does not include the first character.",
 		function()
 			-- ls_helpers.session_setup_luasnip()
@@ -881,6 +885,7 @@ describe("Parser", function()
 
 	ls_helpers.jsregexp_it(
 		it,
+		setup,
 		"Correctly parses unescaped characters.",
 		function()
 			-- ls_helpers.session_setup_luasnip()

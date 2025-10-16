@@ -143,6 +143,7 @@ test: nvim install_jsregexp
 	export JSREGEXP005_ABS_PATH=$(JSREGEXP005_PATH); \
 	export TEST_FILE=$(realpath ${TEST_FILE}); \
 	export BUSTED_ARGS=--lpath=$(PROJECT_ROOT)/tests/?.lua; \
+	export LUASNIP_OVERRIDE_LOGPATH=$(PROJECT_ROOT); \
 	set -e; \
 	if ${TEST_07}; then "$(MAKE)" -C ${NVIM_0.7_PATH} functionaltest DEPS_CMAKE_FLAGS=-DUSE_BUNDLED_GPERF=OFF -j; fi; \
 	if ${TEST_09}; then "$(MAKE)" -C ${NVIM_0.9_PATH} -j; "$(MAKE)" -C ${NVIM_0.9_PATH} functionaltest -j; fi; \

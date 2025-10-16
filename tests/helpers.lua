@@ -20,61 +20,61 @@ local M = {
 	feed = helpers.feed,
 }
 
-function M.jsregexp_it(it, name, fn)
-	for _, version in ipairs({ "005", "006", "luasnip" }) do
+function M.jsregexp_it(it, setup, name, fn)
+	for _, version in ipairs({ "005", "006", "luasnip-installed" }) do
 		it(name .. " (jsregexp-" .. version .. ")", function()
-			exec_lua(
-				[[
-				local version, jsregexp_005_path, jsregexp_path = ...
-				if version ~= "luasnip" then
-					if version == "005" then
-						package.preload["jsregexp"] = package.loadlib(jsregexp_005_path .. "/jsregexp.so", "luaopen_jsregexp")
-
-						if package.preload["jsregexp"]().compile_safe then
-							error("wrong jsregexp-version loaded")
-						end
-					else
-						package.preload["jsregexp.core"] = package.loadlib(jsregexp_path .. "/jsregexp.so", "luaopen_jsregexp_core")
-						package.path = jsregexp_path .. "/?.lua;;"
-						-- populate package now, before jsregexp-core-preload is overwritten in util/jsregexp.lua.
-						-- also load it to check the version.
-						local jsregexp = require("jsregexp")
-						-- is actually 0.0.6.
-						if not jsregexp.compile_safe then
-							error("wrong jsregexp-version loaded")
-						end
-					end
-
-					-- don't accidentially load luasnip-jsregexp with unknown version.
-					local old_require = require
-					require = function(modulename)
-						if modulename == "luasnip-jsregexp" then
-							error("Disabled by `prevent_jsregexp`")
-						end
-						return old_require(modulename)
-					end
-				else
-					-- don't accidentially load regular jsregexp.
-					local old_require = require
-					require = function(modulename)
-						if modulename == "jsregexp" then
-							error("Disabled by `prevent_jsregexp`")
-						end
-						return old_require(modulename)
-					end
-				end
-			]],
-				version,
-				os.getenv("JSREGEXP005_ABS_PATH"),
-				os.getenv("JSREGEXP_ABS_PATH")
-			)
-
+			setup({jsregexp_version = version})
 			fn()
 		end)
 	end
 end
 
-function M.prevent_jsregexp()
+-- version one of "005", "006", "luasnip-installed"
+local function load_jsregexp(version)
+	exec_lua(
+		[[
+		local version, jsregexp_005_path, jsregexp_path = ...
+		if version ~= "luasnip-installed" then
+			if version == "005" then
+				package.preload["jsregexp"] = package.loadlib(jsregexp_005_path .. "/jsregexp.so", "luaopen_jsregexp")
+
+				if package.preload["jsregexp"]().compile_safe then
+					error("wrong jsregexp-version loaded")
+				end
+			else
+				package.preload["jsregexp.core"] = package.loadlib(jsregexp_path .. "/jsregexp.so", "luaopen_jsregexp_core")
+				package.path = jsregexp_path .. "/?.lua;;"
+				-- populate package now, before jsregexp-core-preload is overwritten in util/jsregexp.lua.
+				-- also load it to check the version.
+				local jsregexp = require("jsregexp")
+			end
+
+			-- don't accidentially load luasnip-jsregexp with unknown version.
+			local old_require = require
+			require = function(modulename)
+				if modulename == "luasnip-jsregexp" then
+					error("Disabled by `prevent_jsregexp`")
+				end
+				return old_require(modulename)
+			end
+		else
+			-- don't accidentially load regular jsregexp.
+			local old_require = require
+			require = function(modulename)
+				if modulename == "jsregexp" then
+					error("Disabled by `prevent_jsregexp`")
+				end
+				return old_require(modulename)
+			end
+		end
+	]],
+		version,
+		os.getenv("JSREGEXP005_ABS_PATH"),
+		os.getenv("JSREGEXP_ABS_PATH")
+	)
+end
+
+local function prevent_jsregexp()
 	-- append default-path.
 	exec_lua([[
 		local old_require = require
@@ -106,14 +106,17 @@ function M.session_setup_luasnip(opts)
 	end
 	-- nil or true.
 	local hl_choiceNode = opts.hl_choiceNode
-	local prevent_jsregexp = opts.prevent_jsregexp
+	local jsregexp_version = opts.jsregexp_version
 
-	if prevent_jsregexp then
-		M.prevent_jsregexp()
+	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
+
+	if jsregexp_version ~= nil then
+		load_jsregexp(jsregexp_version)
+	else
+		prevent_jsregexp()
 	end
 
 	-- stylua: ignore
-	helpers.exec("set rtp+=" .. os.getenv("LUASNIP_SOURCE"))
 	helpers.exec(
 		("source %s/plugin/luasnip.vim"):format(os.getenv("LUASNIP_SOURCE"))
 	)
@@ -169,6 +172,7 @@ function M.session_setup_luasnip(opts)
 				}
 			},
 		} or {}, setup_extend))
+		ls.log.set_loglevel("debug")
 	]],
 		-- passing nil here means the argument-list is terminated, I think.
 		-- Just pass false instead of nil/false.

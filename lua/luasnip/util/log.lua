@@ -6,6 +6,11 @@ if not logpath_ok then
 	logpath = vim.fn.stdpath("cache")
 end
 
+local override_logpath = os.getenv("LUASNIP_OVERRIDE_LOGPATH")
+if override_logpath then
+	logpath = override_logpath
+end
+
 -- just to be sure this dir exists.
 -- 448 = 0700
 vim.loop.fs_mkdir(logpath, 448)

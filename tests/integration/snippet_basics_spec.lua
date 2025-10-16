@@ -6,9 +6,10 @@ local Screen = require("test.functional.ui.screen")
 describe("snippets_basic", function()
 	local screen
 
-	before_each(function()
+	local function setup(opts)
+		opts.setup_parsers = true
 		ls_helpers.clear()
-		ls_helpers.session_setup_luasnip({ setup_parsers = true })
+		ls_helpers.session_setup_luasnip(opts)
 
 		screen = ls_helpers.new_screen(50, 3)
 		screen:set_default_attr_ids({
@@ -17,6 +18,9 @@ describe("snippets_basic", function()
 			[2] = { bold = true },
 			[3] = { background = Screen.colors.LightGray },
 		})
+	end
+	before_each(function()
+		setup({})
 	end)
 
 	after_each(function()
@@ -1091,7 +1095,7 @@ describe("snippets_basic", function()
 		ecma = [[(\d+)]],
 	}
 	for engine, trig in pairs(engine_data) do
-		it('trigEngine "' .. engine .. '" works', function()
+		ls_helpers.jsregexp_it(it, setup, 'trigEngine "' .. engine .. '" works', function()
 			exec_lua(
 				[[
 				trigEngine, trig = ...
@@ -1117,7 +1121,7 @@ describe("snippets_basic", function()
 	end
 
 	for engine, trig in pairs(engine_data) do
-		it('trigEngine "' .. engine .. '" respects `max_len`', function()
+		ls_helpers.jsregexp_it(it, setup, 'trigEngine "' .. engine .. '" respects `max_len`', function()
 			exec_lua(
 				[[
 				trigEngine, trig = ...
