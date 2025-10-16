@@ -21,7 +21,7 @@ local M = {
 }
 
 function M.jsregexp_it(it, setup, name, fn)
-	for _, version in ipairs({ "005", "006", "luasnip-installed" }) do
+	for _, version in ipairs({ "005", "006", "010", "luasnip-installed" }) do
 		it(name .. " (jsregexp-" .. version .. ")", function()
 			setup({jsregexp_version = version})
 			fn()
@@ -33,10 +33,11 @@ end
 local function load_jsregexp(version)
 	exec_lua(
 		[[
-		local version, jsregexp_005_path, jsregexp_path = ...
+		local version, version_to_path = ...
 		if version ~= "luasnip-installed" then
+			local jsregexp_path = version_to_path[version]
 			if version == "005" then
-				package.preload["jsregexp"] = package.loadlib(jsregexp_005_path .. "/jsregexp.so", "luaopen_jsregexp")
+				package.preload["jsregexp"] = package.loadlib(jsregexp_path .. "/jsregexp.so", "luaopen_jsregexp")
 
 				if package.preload["jsregexp"]().compile_safe then
 					error("wrong jsregexp-version loaded")
@@ -45,7 +46,6 @@ local function load_jsregexp(version)
 				package.preload["jsregexp.core"] = package.loadlib(jsregexp_path .. "/jsregexp.so", "luaopen_jsregexp_core")
 				package.path = jsregexp_path .. "/?.lua;;"
 				-- populate package now, before jsregexp-core-preload is overwritten in util/jsregexp.lua.
-				-- also load it to check the version.
 				local jsregexp = require("jsregexp")
 			end
 
@@ -69,8 +69,11 @@ local function load_jsregexp(version)
 		end
 	]],
 		version,
-		os.getenv("JSREGEXP005_ABS_PATH"),
-		os.getenv("JSREGEXP_ABS_PATH")
+		{
+			["005"] = os.getenv("JSREGEXP005_ABS_PATH"),
+			["006"] = os.getenv("JSREGEXP006_ABS_PATH"),
+			["010"] = os.getenv("JSREGEXP010_ABS_PATH"),
+		}
 	)
 end
 

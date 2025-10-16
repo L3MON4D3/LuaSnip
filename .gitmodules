@@ -4,3 +4,6 @@
 [submodule "deps/jsregexp005"]
 	path = deps/jsregexp005
 	url = ../../kmarius/jsregexp
+[submodule "deps/jsregexp006"]
+	path = deps/jsregexp006
+	url = ../../kmarius/jsregexp

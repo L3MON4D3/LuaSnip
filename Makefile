@@ -104,22 +104,24 @@ ifeq (,$(CC))
 $(error No compiler is provided in this environment. Please install a C compiler (gcc, clang, or zig).)
 endif
 PROJECT_ROOT:=$(CURDIR)
-JSREGEXP_PATH=$(PROJECT_ROOT)/deps/jsregexp
+JSREGEXP010_PATH=$(PROJECT_ROOT)/deps/jsregexp
 JSREGEXP005_PATH=$(PROJECT_ROOT)/deps/jsregexp005
+JSREGEXP006_PATH=$(PROJECT_ROOT)/deps/jsregexp006
 jsregexp:
 	git submodule init;
 	git submodule update;
-	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP_PATH)";
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP010_PATH)";
 	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP005_PATH)";
+	"$(MAKE)" "CC=$(CC)" "INCLUDE_DIR=-I$(PROJECT_ROOT)/deps/lua51_include/" "LDLIBS=$(LUA_LDLIBS)" -C "$(JSREGEXP006_PATH)";
 
 install_jsregexp: jsregexp
 # remove old binary.
 	rm -f "$(PROJECT_ROOT)/lua/luasnip-jsregexp.so";
 # there is some additional trickery to make this work with jsregexp-0.0.6 in
 # util/jsregexp.lua.
-	cp "$(JSREGEXP_PATH)/jsregexp.lua" "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua";
+	cp "$(JSREGEXP010_PATH)/jsregexp.lua" "$(PROJECT_ROOT)/lua/luasnip-jsregexp.lua";
 # just move out of jsregexp-directory, so it is not accidentally deleted.
-	cp "$(JSREGEXP_PATH)/jsregexp.so" "$(PROJECT_ROOT)/deps/luasnip-jsregexp.so";
+	cp "$(JSREGEXP010_PATH)/jsregexp.so" "$(PROJECT_ROOT)/deps/luasnip-jsregexp.so";
 
 uninstall_jsregexp:
 # also remove binaries of older version.
@@ -139,8 +141,9 @@ test: nvim install_jsregexp
 # For some Reason, on 0.9.0, `make functionaltest` has to be preceded by a regular make for doc to build.
 	if ${PREVENT_LUA_PATH_LEAK}; then unset LUA_PATH LUA_CPATH; fi; \
 	export LUASNIP_SOURCE=$(PROJECT_ROOT); \
-	export JSREGEXP_ABS_PATH=$(JSREGEXP_PATH); \
+	export JSREGEXP010_ABS_PATH=$(JSREGEXP010_PATH); \
 	export JSREGEXP005_ABS_PATH=$(JSREGEXP005_PATH); \
+	export JSREGEXP006_ABS_PATH=$(JSREGEXP006_PATH); \
 	export TEST_FILE=$(realpath ${TEST_FILE}); \
 	export BUSTED_ARGS=--lpath=$(PROJECT_ROOT)/tests/?.lua; \
 	export LUASNIP_OVERRIDE_LOGPATH=$(PROJECT_ROOT); \
