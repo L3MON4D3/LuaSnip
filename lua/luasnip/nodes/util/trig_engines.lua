@@ -87,7 +87,11 @@ if jsregexp_compile_safe then
 			local match = trig_compiled:exec(line_to_cursor)
 			if match then
 				-- return full match, and all groups.
-				return line_to_cursor:sub(match.index), match
+				local groups = {}
+				for group_idx, capture in ipairs(match) do
+					groups[group_idx] = capture
+				end
+				return line_to_cursor:sub(match.index), groups
 			else
 				return nil
 			end
