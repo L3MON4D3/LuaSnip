@@ -1,9 +1,12 @@
 local util = require("luasnip.util.util")
+local str_util = require("luasnip.util.str")
+local tbl_util = require("luasnip.util.table")
 local ext_util = require("luasnip.util.ext_opts")
 local types = require("luasnip.util.types")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local session = require("luasnip.session")
 local feedkeys = require("luasnip.util.feedkeys")
+local snippet_string = require("luasnip.nodes.util.snippet_string")
 
 local function subsnip_init_children(parent, children)
 	for _, child in ipairs(children) do
@@ -65,7 +68,7 @@ local function wrap_args(args)
 end
 
 -- includes child, does not include parent.
-local function get_nodes_between(parent, child)
+local function get_nodes_between(parent, child, static)
 	local nodes = {}
 
 	-- special case for nodes without absolute_position (which is only
@@ -81,7 +84,7 @@ local function get_nodes_between(parent, child)
 	local indx = #parent.absolute_position + 1
 	local prev = parent
 	while child_pos[indx] do
-		local next = prev:resolve_position(child_pos[indx])
+		local next = prev:resolve_position(child_pos[indx], static)
 		nodes[#nodes + 1] = next
 		prev = next
 		indx = indx + 1
@@ -183,10 +186,7 @@ end
 
 local function linkable_node(node)
 	-- node.type has to be one of insertNode, exitNode.
-	return vim.tbl_contains(
-		{ types.insertNode, types.exitNode },
-		rawget(node, "type")
-	)
+	return vim.tbl_contains({ types.insertNode, types.exitNode }, node.type)
 end
 
 -- mainly used internally, by binarysearch_pos.
@@ -196,10 +196,7 @@ end
 -- feel appropriate (higher runtime), most cases should be served well by this
 -- heuristic.
 local function non_linkable_node(node)
-	return vim.tbl_contains(
-		{ types.textNode, types.functionNode },
-		rawget(node, "type")
-	)
+	return vim.tbl_contains({ types.textNode, types.functionNode }, node.type)
 end
 -- return whether a node is certainly (not) interactive.
 -- Coincindentially, the same nodes as (non-)linkable ones, but since there is a
@@ -678,6 +675,8 @@ local function snippettree_find_undamaged_node(pos, opts)
 			-- The position of the offending snippet is returned in child_indx,
 			-- and we can remove it here.
 			prev_parent_children[child_indx]:remove_from_jumplist()
+			-- remove_from_jumplist modified prev_parent_children, don't need
+			-- to re-assign since we have a pointer to that table.
 		elseif found_parent ~= nil and not found_parent:extmarks_valid() then
 			-- found snippet damaged (the idea to sidestep the damaged snippet,
 			-- even if no error occurred _right now_, is to ensure that we can
@@ -704,12 +703,19 @@ local function snippettree_find_undamaged_node(pos, opts)
 	return prev_parent, prev_parent_children, child_indx, node
 end
 
-local function root_path(node)
+local function root_path(node, static)
 	local path = {}
 
 	while node do
-		local node_snippet = node.parent.snippet
-		local snippet_node_path = get_nodes_between(node_snippet, node)
+		local node_snippet
+		if node.parent == nil then
+			-- node is snippet.
+			node_snippet = node
+		else
+			node_snippet = node.parent.snippet
+		end
+
+		local snippet_node_path = get_nodes_between(node_snippet, node, static)
 		-- get_nodes_between gives parent -> node, but we need
 		-- node -> parent => insert back to front.
 		for i = #snippet_node_path, 1, -1 do
@@ -765,6 +771,290 @@ local function nodelist_adjust_rgravs(
 	end
 end
 
+local function find_node_dependents(node)
+	local node_position = node.absolute_insert_position
+	local dict = node:get_snippet().dependents_dict
+	local nodes = {}
+
+	-- this might also be called from a node which does not possess a position!
+	-- (for example, a functionNode may be depended upon via its key)
+	if node_position then
+		node_position[#node_position + 1] = "dependents"
+		vim.list_extend(nodes, dict:find_all(node_position, "dependent") or {})
+		node_position[#node_position] = nil
+	end
+
+	vim.list_extend(
+		nodes,
+		dict:find_all({ node, "dependents" }, "dependent") or {}
+	)
+
+	if node.key then
+		vim.list_extend(
+			nodes,
+			dict:find_all({ "key", node.key, "dependents" }, "dependent") or {}
+		)
+	end
+
+	return nodes
+end
+
+local function node_subtree_do(node, opts)
+	-- provide default-values.
+	if not opts.pre then
+		opts.pre = util.nop
+	end
+	if not opts.post then
+		opts.post = util.nop
+	end
+
+	node:subtree_do(opts)
+end
+
+local function collect_dependents(node, which, static)
+	local dependents_set = {}
+
+	if which.own then
+		for _, dep in ipairs(find_node_dependents(node)) do
+			dependents_set[dep] = true
+		end
+	end
+	if which.parents then
+		-- find dependents of all ancestors without duplicates.
+		local path_to_root = root_path(node, static)
+		-- remove `node` from path (its dependents are included if `which.own`
+		-- is set)
+		table.remove(path_to_root, 1)
+		for _, ancestor in ipairs(path_to_root) do
+			for _, dep in ipairs(find_node_dependents(ancestor)) do
+				dependents_set[dep] = true
+			end
+		end
+	end
+	if which.children then
+		-- only collects children in same snippet as node.
+		node_subtree_do(node, {
+			pre = function(st_node)
+				-- don't update for self.
+				if st_node == node then
+					return
+				end
+
+				for _, dep in ipairs(find_node_dependents(st_node)) do
+					dependents_set[dep] = true
+				end
+			end,
+			static = static,
+		})
+	end
+
+	return tbl_util.set_to_list(dependents_set)
+end
+
+local function str_args(args)
+	return args
+		and vim.tbl_map(function(arg)
+			return snippet_string.isinstance(arg) and vim.split(arg:str(), "\n")
+				or arg
+		end, args)
+end
+
+---@class LuaSnip.SnippetCursorRestoreData
+---This class holds data about the current position of the cursor in a snippet.
+---@field key string key of the current node.
+---@field store_id number uniquely identifies the data associated with this
+---store-restore cycle.
+---This is necessary because eg. the snippetStrings may contain cursor-positions
+---of more than one restore data, and the correct ones can be identified via
+---store_id.
+---@field node LuaSnip.Node The node the cursor will be stored relative to.
+---@field cursor_start_relative LuaSnip.BytecolBufferPosition The position of
+---the cursor, or beginning of selected area, relative to the beginning of
+---`node`.
+---@field selection_end_start_relative LuaSnip.BytecolBufferPosition The
+---position of the cursor, or end of selected area, relative to the beginning of
+---`node`. The column is one beyond the byte where the selection ends.
+---@field mode string The first character (see `vim.fn.mode()`) of the mode at
+---the time of `store`.
+
+---@alias LuaSnip.CursorRestoreData table<number, LuaSnip.SnippetCursorRestoreData>
+---Represents the position of the cursor relative to all snippets the cursor was
+---inside.
+---Maps a `store_id` to the data needed to restore the cursor relative to the
+---stored node of that snippet.
+---We need the data relative to all parent-snippets of some node because the
+---first 1,2,... snippets may disappear when a choice is changed.
+
+---@class LuaSnip.StoreCursorNodeRelativeOpts
+---@field place_cursor_mark boolean? Whether to, if possible, place a mark in
+---snippetText.
+
+local store_id = 0
+---@param node LuaSnip.Node The node to store the cursor relative to.
+---@param opts LuaSnip.StoreCursorNodeRelativeOpts
+local function store_cursor_node_relative(node, opts)
+	local data = {}
+
+	local snippet_current_node = node
+
+	local cursor_state = feedkeys.last_state()
+	local store_ids = {}
+
+	-- store for each snippet!
+	-- the innermost snippet may be destroyed, and we would have to restore the
+	-- cursor in a snippet above that.
+	while snippet_current_node do
+		local snip = snippet_current_node:get_snippet()
+
+		local snip_data = {}
+
+		snip_data.key = snippet_current_node.key
+		snippet_current_node.store_id = store_id
+		snip.node_store_id = store_id
+
+		snip_data.store_id = store_id
+
+		snip_data.node = snippet_current_node
+
+		-- from low to high
+		table.insert(store_ids, store_id)
+
+		snip_data.cursor_start_relative = util.pos_offset(
+			snippet_current_node.mark:get_endpoint(-1),
+			cursor_state.pos
+		)
+
+		snip_data.mode = cursor_state.mode
+
+		if cursor_state.pos_v then
+			snip_data.selection_end_start_relative = util.pos_offset(
+				snippet_current_node.mark:get_endpoint(-1),
+				cursor_state.pos_v
+			)
+		end
+
+		if
+			snippet_current_node.type == types.insertNode
+			and opts.place_cursor_mark
+		then
+			-- if the snippet_current_node is not an insertNode, the cursor
+			-- should always be exactly at the beginning if the node is entered
+			-- (which, btw, can only happen if a text or functionNode is
+			-- immediately nested inside a choiceNode), which means that
+			-- storing the cursor-position relative to the beginning of the
+			-- node is sufficient for restoring it in all usecases (now, a user
+			-- may have triggered the update while not in this position, but I
+			-- think it's fine to not restore the cursor 100% correctly in that
+			-- case.
+			--
+			-- When the node is an insertNode, the cursor may be somewhere
+			-- inside the node, and while it will be restored correctly if the
+			-- text does not change, if the update inserts some characters or a
+			-- line at the beginning of the node (but still reaches
+			-- equilibrium), the cursor will have moved relative to the
+			-- immediately surrounding text.
+			--
+			-- A solution to this is to simply place some kind if extmark (but
+			-- for regular strings, not for nvim-buffers) in the node (in the
+			-- text that is passed to some dynamicNode, to be precise), which
+			-- we then recover in the restore-function, and use to set the
+			-- cursor correctly :)
+			snippet_current_node:store()
+
+			if
+				snip_data.cursor_start_relative[1] >= 0
+				and snip_data.cursor_start_relative[2] >= 0
+			then
+				-- we also have this in static_text, but recomputing the text
+				-- exactly is rather expensive -> text is still in buffer, yank
+				-- it.
+				local str = snippet_current_node:get_text() --[=[@as string[] ]=]
+				local pos_byte_offset = str_util.multiline_to_byte_offset(
+					str,
+					snip_data.cursor_start_relative
+				)
+				if pos_byte_offset then
+					snippet_current_node.static_text:add_mark(
+						store_id .. "pos",
+						pos_byte_offset,
+						false
+					)
+					if
+						snip_data.selection_end_start_relative
+						and snip_data.selection_end_start_relative[1] >= 0
+						and snip_data.selection_end_start_relative[2] >= 0
+					then
+						local pos_v_byte_offset =
+							str_util.multiline_to_byte_offset(
+								str,
+								snip_data.selection_end_start_relative
+							)
+						if pos_v_byte_offset then
+							-- set rgrav of endpoint of selection true.
+							-- This means if the selection is replaced, it would still
+							-- be selected, which seems like a nice property.
+							snippet_current_node.static_text:add_mark(
+								store_id .. "pos_v",
+								pos_v_byte_offset,
+								true
+							)
+						end
+					end
+				end
+			end
+		end
+
+		data[snip] = snippet_current_node
+		data[store_id] = snip_data
+
+		snippet_current_node = snip.parent_node
+
+		store_id = store_id + 1
+	end
+	data.store_ids = store_ids
+
+	return data
+end
+
+local function restore_cursor_pos_relative(node, data)
+	local cursor_pos = data.cursor_start_relative
+	local cursor_pos_v = data.selection_end_start_relative
+	if node.type == types.insertNode then
+		local mark_pos = node.static_text:get_mark_pos(data.store_id .. "pos")
+		if mark_pos then
+			local str = node:get_text()
+			local mark_pos_offset =
+				str_util.byte_to_multiline_offset(str, mark_pos)
+			cursor_pos = mark_pos_offset and mark_pos_offset or cursor_pos
+
+			local mark_pos_v =
+				node.static_text:get_mark_pos(data.store_id .. "pos_v")
+			if mark_pos_v then
+				local mark_pos_v_offset =
+					str_util.byte_to_multiline_offset(str, mark_pos_v)
+				cursor_pos_v = mark_pos_v_offset
+			end
+		end
+	end
+
+	if data.mode == "i" then
+		feedkeys.insert_at(
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
+		)
+	elseif data.mode == "s" then
+		-- is a selection => restore it.
+		local selection_from =
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
+		local selection_to =
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos_v)
+		feedkeys.select_range(selection_from, selection_to)
+	else
+		feedkeys.move_to_normal(
+			util.pos_from_offset(node.mark:get_endpoint(-1), cursor_pos)
+		)
+	end
+end
+
 return {
 	subsnip_init_children = subsnip_init_children,
 	init_child_positions_func = init_child_positions_func,
@@ -787,4 +1077,10 @@ return {
 	interactive_node = interactive_node,
 	root_path = root_path,
 	nodelist_adjust_rgravs = nodelist_adjust_rgravs,
+	find_node_dependents = find_node_dependents,
+	collect_dependents = collect_dependents,
+	node_subtree_do = node_subtree_do,
+	str_args = str_args,
+	store_cursor_node_relative = store_cursor_node_relative,
+	restore_cursor_pos_relative = restore_cursor_pos_relative,
 }
