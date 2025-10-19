@@ -10,6 +10,9 @@ local extend_decorator = require("luasnip.util.extend_decorator")
 local mark = require("luasnip.util.mark").mark
 local log = require("luasnip.util.log").new("dynamicNode")
 local describe = require("luasnip.util.log").describe
+local session = require("luasnip.session")
+
+local update_depth_limit = 100
 
 local function D(pos, fn, args, opts)
 	opts = opts or {}
@@ -167,9 +170,12 @@ function DynamicNode:update()
 	end
 
 	local tmp
+	local old_state = nil
 	if self.snip then
 		if not args then
-			-- a snippet exists, don't delete it.
+			-- a snippet exists, and we don't have data to update it => abort
+			-- update, keep existing snippet.
+			log.debug("skipping update of %s due to missing args.", describe.node(self))
 			return
 		end
 
@@ -181,14 +187,39 @@ function DynamicNode:update()
 		self.snip:store()
 		self.snip:subtree_leave_entered()
 
-		-- build new snippet before exiting, markers may be needed for construncting.
-		tmp = self.fn(
-			effective_args,
-			self.parent,
-			self.snip.old_state,
-			unpack(self.user_args)
-		)
+		old_state = self.snip.old_state
+	end
 
+	-- set `last_args` here, prevents additional updates after update_depth was
+	-- exceeded.
+	self.last_args = str_args
+
+	local reset_depth = false
+	if not session.update_depths[self] then
+		session.update_depths[self] = 1
+		reset_depth = true
+	elseif session.update_depths[self] < update_depth_limit then
+		session.update_depths[self] = session.update_depths[self] + 1
+	elseif self.snip then
+		-- only skip updates if the snippet is already generated!!
+		log.error(
+			"Skipping update of %s because the number of nested updates exceeded %s. Traceback: %s",
+			describe.node(self),
+			update_depth_limit,
+			describe.traceback())
+		return
+	end
+
+	-- build new snippet before exiting, markers may be needed for
+	-- construncting.
+	tmp = self.fn(
+		effective_args,
+		self.parent,
+		old_state,
+		unpack(self.user_args)
+	)
+
+	if self.snip then
 		self.snip:exit()
 		self.snip = nil
 
@@ -196,24 +227,11 @@ function DynamicNode:update()
 		-- focuses node.
 		self:set_text_raw({ "" })
 	else
+		-- make sure dynamicNode is focused!
 		self:focus()
-		if not args then
-			-- not all args are available => set to empty snippet.
-			tmp = SnippetNode(nil, {})
-		else
-			-- also enter node here.
-			tmp = self.fn(
-				effective_args,
-				self.parent,
-				nil,
-				unpack(self.user_args)
-			)
-		end
 	end
 
-	-- make sure update only when text changed, not if there was just some kind
-	-- of metadata-modification of one of the snippets.
-	self.last_args = str_args
+	log.debug("updating %s (depth: %s)", describe.node(self), session.update_depths[self])
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
@@ -272,6 +290,10 @@ function DynamicNode:update()
 	-- children's depedents (since they may have dependents outside this
 	-- dynamicNode, who have not yet been updated)
 	self:update_dependents({ own = true, children = true, parents = true })
+
+	if reset_depth then
+		session.update_depths[self] = nil
+	end
 end
 
 local update_errorstring = [[
