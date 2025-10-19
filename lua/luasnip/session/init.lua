@@ -55,4 +55,6 @@ function M.get_snip_env()
 	return M.config.snip_env
 end
 
+M.update_depths = {}
+
 return M
