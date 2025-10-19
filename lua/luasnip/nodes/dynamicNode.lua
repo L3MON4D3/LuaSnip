@@ -8,6 +8,8 @@ local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
 local SnippetNode = require("luasnip.nodes.snippet").SN
 local extend_decorator = require("luasnip.util.extend_decorator")
 local mark = require("luasnip.util.mark").mark
+local log = require("luasnip.util.log").new("dynamicNode")
+local describe = require("luasnip.util.log").describe
 
 local function D(pos, fn, args, opts)
 	opts = opts or {}
@@ -152,6 +154,11 @@ function DynamicNode:update()
 
 	if vim.deep_equal(self.last_args, str_args) then
 		-- no update, the args still match.
+		log.debug(
+			"skipping update of %s due to unchanged args (old: %s, new: %s)",
+			describe.node(self),
+			describe.inspect(self.last_args),
+			describe.inspect(str_args))
 		return
 	end
 
@@ -185,6 +192,7 @@ function DynamicNode:update()
 		self.snip:exit()
 		self.snip = nil
 
+		log.debug("content of %s before update: %s.", describe.node(self), describe.node_buftext(self))
 		-- focuses node.
 		self:set_text_raw({ "" })
 	else
@@ -246,6 +254,7 @@ function DynamicNode:update()
 	local from, to = self.mark:pos_begin_end_raw()
 	-- inserts nodes with extmarks false,false
 	tmp:put_initial(from)
+	log.debug("content of %s after update: %s.", describe.node(self), describe.node_buftext(self))
 	-- adjust gravity in left side of snippet, such that it matches the current
 	-- gravity of self.
 	tmp:subtree_set_pos_rgrav(to, -1, true)
@@ -434,6 +443,13 @@ function DynamicNode:update_restore()
 
 		tmp:update_restore()
 	else
+		log.debug(
+			"update_restore: rejecting stored data of %s (has snip: %s, snip is visible: %s, old args: %s, new args: %s)",
+			describe.node(self),
+			self.snip ~= nil,
+			self.snip and self.snip.visible,
+			describe.inspect(self.last_args),
+			describe.inspect(str_args))
 		self:update()
 	end
 end

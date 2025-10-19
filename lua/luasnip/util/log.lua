@@ -1,4 +1,5 @@
 local util = require("luasnip.util.util")
+local tbl = require("luasnip.util.table")
 
 -- older neovim-versions (even 0.7.2) do not have stdpath("log").
 local logpath_ok, logpath = pcall(vim.fn.stdpath, "log")
@@ -108,13 +109,84 @@ function M.set_loglevel(target_level)
 	end
 end
 
+local describe_key = {}
+
+local function mk_describe(f)
+	local wrapped_f = function(self)
+		return f(unpack(self.args))
+	end
+	return function(...)
+		return {
+			args = {...},
+			get = wrapped_f,
+			-- we want to be able to uniquely identify describe-objects, and the
+			-- simplest way (I think) is to set a unique key that is not known,
+			-- or even better, accessible by other modules.
+			[describe_key] = true
+		}
+	end
+end
+local function is_describe(t)
+	return type(t) == "table" and t[describe_key] ~= nil
+end
+
+M.describe = {
+	node_buftext = mk_describe(function(node)
+		local from, to = node:get_buf_position()
+		return vim.inspect(vim.api.nvim_buf_get_text(0, from[1], from[2], to[1], to[2], {}))
+	end),
+	node = mk_describe(function(node)
+		if not node.parent then
+			return ("snippet[trig: %s]"):format(node.trigger)
+		else
+			local snip_id = node.parent.snippet.trigger
+			-- render node readably.
+			local node_id = ""
+			if node.key then
+				node_id = "key: " .. node.key
+			elseif node.absolute_insert_position then
+				node_id = "insert_pos: " .. vim.inspect(node.absolute_insert_position)
+			else
+				node_id = "pos: " .. vim.inspect(node.absolute_position)
+			end
+			return ("node[%s, snippet: `%s`]"):format(node_id, snip_id)
+		end
+	end),
+	inspect = mk_describe(function(t, inspect_opts)
+		return vim.inspect(t, inspect_opts or {})
+	end),
+	traceback = mk_describe(function()
+		-- get position where log.debug is called with describe-object.
+		return debug.traceback("", 3)
+	end)
+}
+
+
+local function readable_format(msg, ...)
+	local args = tbl.pack(...)
+	for i, arg in ipairs(args) do
+		if is_describe(arg) then
+			args[i] = arg:get()
+		end
+	end
+	return msg:format(tbl.unpack(args))
+end
+
 function M.new(module_name)
 	local module_log = {}
 	for name, _ in pairs(log) do
 		module_log[name] = function(msg, ...)
 			-- don't immediately get the referenced function, we'd like to
 			-- allow changing the loglevel on-the-fly.
-			effective_log[name](module_name .. ": " .. msg:format(...))
+
+			-- also: make sure that whatever code called for logging does not
+			-- cause an error.
+			local ok, fmt_msg = pcall(readable_format, msg, ...)
+			if not ok then
+				effective_log.error(("log: error while formatting or writing message \"%s\": %s"):format(msg, fmt_msg))
+			end
+
+			effective_log[name](module_name .. ": " .. fmt_msg)
 		end
 	end
 	return module_log
