@@ -346,15 +346,6 @@ local function key_sorted_pairs(t)
 	end
 end
 
-local function no_region_check_wrap(fn, ...)
-	session.jump_active = true
-	-- will run on next tick, after autocommands (especially CursorMoved) for this are done.
-	vim.schedule(function()
-		session.jump_active = false
-	end)
-	return fn(...)
-end
-
 local function id(a)
 	return a
 end
@@ -422,6 +413,37 @@ local function default_tbl_get(default, t, ...)
 	return default
 end
 
+-- compute offset of `pos` into multiline string starting at `base_pos`.
+-- This is different from pos_sub because here the column-offset starts at zero
+-- when `pos` is on a line different from `base_pos`.
+-- Assumption: `pos` occurs after `base_pos`.
+local function pos_offset(base_pos, pos)
+	local row_offset = pos[1] - base_pos[1]
+	return { row_offset, row_offset == 0 and pos[2] - base_pos[2] or pos[2] }
+end
+
+-- compute offset of `pos` into multiline string starting at `base_pos`.
+-- This is different from pos_sub because here the column-offset starts at zero
+-- when `pos` is on a line different from `base_pos`.
+-- Assumption: `pos` occurs after `base_pos`.
+local function pos_from_offset(base_pos, offset)
+	return {
+		base_pos[1] + offset[1],
+		offset[1] == 0 and base_pos[2] + offset[2] or offset[2],
+	}
+end
+
+local function shallow_copy(t)
+	if type(t) == "table" then
+		local res = {}
+		for k, v in pairs(t) do
+			res[k] = v
+		end
+		return res
+	end
+	return t
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -453,7 +475,6 @@ return {
 	deduplicate = deduplicate,
 	pop_front = pop_front,
 	key_sorted_pairs = key_sorted_pairs,
-	no_region_check_wrap = no_region_check_wrap,
 	id = id,
 	no = no,
 	yes = yes,
@@ -465,4 +486,7 @@ return {
 	validate = validate,
 	str_utf32index = str_utf32index,
 	default_tbl_get = default_tbl_get,
+	pos_offset = pos_offset,
+	pos_from_offset = pos_from_offset,
+	shallow_copy = shallow_copy,
 }

@@ -7,6 +7,10 @@ local events = require("luasnip.util.events")
 local FunctionNode = require("luasnip.nodes.functionNode").FunctionNode
 local SnippetNode = require("luasnip.nodes.snippet").SN
 local extend_decorator = require("luasnip.util.extend_decorator")
+local mark = require("luasnip.util.mark").mark
+local log = require("luasnip.util.log").new("dynamicNode")
+local describe = require("luasnip.util.log").describe
+local session = require("luasnip.session")
 
 local function D(pos, fn, args, opts)
 	opts = opts or {}
@@ -18,6 +22,7 @@ local function D(pos, fn, args, opts)
 		type = types.dynamicNode,
 		mark = nil,
 		user_args = opts.user_args or {},
+		snippetstring_args = opts.snippetstring_args or false,
 		dependents = {},
 		active = false,
 	}, opts)
@@ -44,7 +49,6 @@ function DynamicNode:input_leave(_, dry_run)
 	end
 	self:event(events.leave)
 
-	self:update_dependents()
 	self.active = false
 	self.mark:update_opts(self:get_passive_ext_opts())
 end
@@ -66,6 +70,8 @@ function DynamicNode:get_docstring()
 	if not self.docstring then
 		if self.static_snip then
 			self.docstring = self.static_snip:get_docstring()
+		elseif self.snip then
+			self.docstring = self.snip:get_docstring()
 		else
 			self.docstring = { "" }
 		end
@@ -74,7 +80,32 @@ function DynamicNode:get_docstring()
 end
 
 -- DynamicNode's don't have static text, only set as visible.
-function DynamicNode:put_initial(_)
+function DynamicNode:put_initial(pos)
+	-- if we generated a snippet before, insert it into the buffer now. This
+	-- can happen if this dynamicNode was removed (eg. because of a
+	-- change_choice or an update to a dynamicNode), and is then reinserted due
+	-- to a restoreNode or snippetstring_args.
+	--
+	-- This procedure is necessary to keep
+	if self.snip then
+		-- position might (will probably!!) still have changed, so update it
+		-- here too (as opposed to only in update).
+		self.snip:init_positions(self.snip_absolute_position)
+		self.snip:init_insert_positions(self.snip_absolute_insert_position)
+
+		self.snip:make_args_absolute()
+
+		self.snip:set_dependents()
+		self.snip:set_argnodes(self.parent.snippet.dependents_dict)
+
+		local old_pos = vim.deepcopy(pos)
+		self.snip:put_initial(pos)
+		local mark_opts = vim.tbl_extend("keep", {
+			right_gravity = false,
+			end_right_gravity = false,
+		}, self.snip:get_passive_ext_opts())
+		self.snip.mark = mark(old_pos, pos, mark_opts)
+	end
 	self.visible = true
 end
 
@@ -112,10 +143,24 @@ function DynamicNode:jump_into(dir, no_move, dry_run)
 	end
 end
 
+function DynamicNode:jump_into_snippet(no_move)
+	self.active = false
+	return self:jump_into(1, no_move, false)
+end
+
 function DynamicNode:update()
 	local args = self:get_args()
-	if vim.deep_equal(self.last_args, args) then
+	local str_args = node_util.str_args(args)
+	local effective_args = self.snippetstring_args and args or str_args
+
+	if vim.deep_equal(self.last_args, str_args) then
 		-- no update, the args still match.
+		log.debug(
+			"skipping update of %s due to unchanged args (old: %s, new: %s)",
+			describe.node(self),
+			describe.inspect(self.last_args),
+			describe.inspect(str_args)
+		)
 		return
 	end
 
@@ -124,35 +169,53 @@ function DynamicNode:update()
 	end
 
 	local tmp
+	local old_state = nil
 	if self.snip then
 		if not args then
-			-- a snippet exists, don't delete it.
+			-- a snippet exists, and we don't have data to update it => abort
+			-- update, keep existing snippet.
+			log.debug(
+				"skipping update of %s due to missing args.",
+				describe.node(self)
+			)
 			return
 		end
 
-		-- build new snippet before exiting, markers may be needed for construncting.
-		tmp = self.fn(
-			args,
-			self.parent,
-			self.snip.old_state,
-			unpack(self.user_args)
-		)
+		-- make sure all nodes store their up-to-date content.
+		-- This is relevant if an argnode contains a snippet which contains a
+		-- restoreNode: the snippet will be copied and the `self.snip:exit`
+		-- will cause a store for the original snippet, but not the copy that
+		-- may be inserted into `tmp` by `self.fn`.
+		self.snip:store()
+		self.snip:subtree_leave_entered()
+
+		old_state = self.snip.old_state
+	end
+
+	-- build new snippet before exiting, markers may be needed for
+	-- construncting.
+	tmp =
+		self.fn(effective_args, self.parent, old_state, unpack(self.user_args))
+
+	if self.snip then
 		self.snip:exit()
 		self.snip = nil
 
+		log.debug(
+			"content of %s before update: %s.",
+			describe.node(self),
+			describe.node_buftext(self)
+		)
 		-- focuses node.
-		self:set_text({ "" })
+		self:set_text_raw({ "" })
 	else
+		-- make sure dynamicNode is focused!
 		self:focus()
-		if not args then
-			-- no snippet exists, set an empty one.
-			tmp = SnippetNode(nil, {})
-		else
-			-- also enter node here.
-			tmp = self.fn(args, self.parent, nil, unpack(self.user_args))
-		end
 	end
-	self.last_args = args
+
+	log.debug("updating %s", describe.node(self))
+
+	self.last_args = str_args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
@@ -167,13 +230,7 @@ function DynamicNode:update()
 	tmp:resolve_node_ext_opts()
 	tmp:subsnip_init()
 
-	tmp.mark =
-		self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
 	tmp.dynamicNode = self
-	tmp.update_dependents = function(node)
-		node:_update_dependents()
-		node.dynamicNode:update_dependents()
-	end
 
 	tmp:init_positions(self.snip_absolute_position)
 	tmp:init_insert_positions(self.snip_absolute_insert_position)
@@ -189,10 +246,21 @@ function DynamicNode:update()
 	tmp:indent(self.parent.indentstr)
 
 	-- sets own extmarks false,true
+	-- focus and then set snippetNode-gravity => make sure that
+	-- snippetNode-extmark is shifted correctly.
 	self:focus()
+
+	tmp.mark =
+		self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
+
 	local from, to = self.mark:pos_begin_end_raw()
 	-- inserts nodes with extmarks false,false
 	tmp:put_initial(from)
+	log.debug(
+		"content of %s after update: %s.",
+		describe.node(self),
+		describe.node_buftext(self)
+	)
 	-- adjust gravity in left side of snippet, such that it matches the current
 	-- gravity of self.
 	tmp:subtree_set_pos_rgrav(to, -1, true)
@@ -203,10 +271,13 @@ function DynamicNode:update()
 	-- Both are needed, because
 	-- - a node could only depend on nodes outside of tmp
 	-- - a node outside of tmp could depend on one inside of tmp
-	tmp:update()
-	tmp:update_all_dependents()
+	tmp:update_restore()
 
-	self:update_dependents()
+	-- update nodes that depend on this dynamicNode, nodes that are parents
+	-- (and thus have changed text after this update), and all of the
+	-- children's depedents (since they may have dependents outside this
+	-- dynamicNode, who have not yet been updated)
+	self:update_dependents({ own = true, children = true, parents = true })
 end
 
 local update_errorstring = [[
@@ -216,7 +287,10 @@ Error while evaluating dynamicNode@%d for snippet '%s':
 :h luasnip-docstring for more info]]
 function DynamicNode:update_static()
 	local args = self:get_static_args()
-	if vim.deep_equal(self.last_static_args, args) then
+	local str_args = node_util.str_args(args)
+	local effective_args = self.snippetstring_args and args or str_args
+
+	if vim.deep_equal(self.last_static_args, str_args) then
 		-- no update, the args still match.
 		return
 	end
@@ -231,9 +305,9 @@ function DynamicNode:update_static()
 		-- build new snippet before exiting, markers may be needed for construncting.
 		ok, tmp = pcall(
 			self.fn,
-			args,
+			effective_args,
 			self.parent,
-			self.snip.old_state,
+			self.static_snip.old_state,
 			unpack(self.user_args)
 		)
 	else
@@ -242,8 +316,13 @@ function DynamicNode:update_static()
 			tmp = SnippetNode(nil, {})
 		else
 			-- also enter node here.
-			ok, tmp =
-				pcall(self.fn, args, self.parent, nil, unpack(self.user_args))
+			ok, tmp = pcall(
+				self.fn,
+				effective_args,
+				self.parent,
+				nil,
+				unpack(self.user_args)
+			)
 		end
 	end
 	if not ok then
@@ -253,12 +332,12 @@ function DynamicNode:update_static()
 		-- set empty snippet on failure
 		tmp = SnippetNode(nil, {})
 	end
-	self.last_static_args = args
+	self.last_static_args = str_args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
 	tmp.indx = self.indx
-	tmp.pos = rawget(self, "pos")
+	tmp.pos = self.pos
 
 	tmp.next = self
 	tmp.prev = self
@@ -268,10 +347,6 @@ function DynamicNode:update_static()
 	tmp.snippet = self.parent.snippet
 
 	tmp.dynamicNode = self
-	tmp.update_dependents_static = function(node)
-		node:_update_dependents_static()
-		node.dynamicNode:update_dependents_static()
-	end
 
 	tmp:resolve_child_ext_opts()
 	tmp:resolve_node_ext_opts()
@@ -295,13 +370,15 @@ function DynamicNode:update_static()
 
 	tmp:static_init()
 
-	tmp:update_static()
-	-- updates dependents in tmp.
-	tmp:update_all_dependents_static()
-
 	self.static_snip = tmp
+
+	tmp:update_static()
 	-- updates own dependents.
-	self:update_dependents_static()
+	self:update_dependents_static({
+		own = true,
+		parents = true,
+		children = true,
+	})
 end
 
 function DynamicNode:exit()
@@ -312,8 +389,6 @@ function DynamicNode:exit()
 	if self.snip then
 		self.snip:exit()
 	end
-	self.stored_snip = self.snip
-	self.snip = nil
 	self.active = false
 end
 
@@ -321,7 +396,7 @@ function DynamicNode:set_ext_opts(name)
 	Node.set_ext_opts(self, name)
 
 	-- might not have been generated (missing nodes).
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:set_ext_opts(name)
 	end
 end
@@ -334,11 +409,16 @@ end
 
 function DynamicNode:update_restore()
 	-- only restore snippet if arg-values still match.
-	if self.stored_snip and vim.deep_equal(self:get_args(), self.last_args) then
-		local tmp = self.stored_snip
+	local args = self:get_args()
+	local str_args = node_util.str_args(args)
 
-		tmp.mark =
-			self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
+	-- only insert snip if it is not currently visible!
+	if
+		self.snip
+		and not self.snip.visible
+		and vim.deep_equal(str_args, self.last_args)
+	then
+		local tmp = self.snip
 
 		-- position might (will probably!!) still have changed, so update it
 		-- here too (as opposed to only in update).
@@ -350,9 +430,11 @@ function DynamicNode:update_restore()
 		tmp:set_dependents()
 		tmp:set_argnodes(self.parent.snippet.dependents_dict)
 
-		-- sets own extmarks false,true
-		self:focus()
-		-- inserts nodes with extmarks false,false
+		-- also focuses node, and sets own extmarks false,true
+		self:set_text_raw({ "" })
+		tmp.mark =
+			self.mark:copy_pos_gravs(vim.deepcopy(tmp:get_passive_ext_opts()))
+
 		local from, to = self.mark:pos_begin_end_raw()
 		tmp:put_initial(from)
 		-- adjust gravity in left side of snippet, such that it matches the current
@@ -367,16 +449,24 @@ function DynamicNode:update_restore()
 
 		tmp:update_restore()
 	else
+		log.debug(
+			"update_restore: rejecting stored data of %s (has snip: %s, snip is visible: %s, old args: %s, new args: %s)",
+			describe.node(self),
+			self.snip ~= nil,
+			self.snip and self.snip.visible,
+			describe.inspect(self.last_args),
+			describe.inspect(str_args)
+		)
 		self:update()
 	end
 end
 
-function DynamicNode:find_node(predicate)
+function DynamicNode:find_node(predicate, opts)
 	if self.snip then
 		if predicate(self.snip) then
 			return self.snip
 		else
-			return self.snip:find_node(predicate)
+			return self.snip:find_node(predicate, opts)
 		end
 	end
 	return nil
@@ -408,30 +498,55 @@ end
 DynamicNode.make_args_absolute = FunctionNode.make_args_absolute
 DynamicNode.set_dependents = FunctionNode.set_dependents
 
-function DynamicNode:resolve_position(position)
+function DynamicNode:resolve_position(position, static)
 	-- position must be 0, there are no other options.
-	return self.snip
+	if static then
+		return self.static_snip
+	else
+		return self.snip
+	end
 end
 
 function DynamicNode:subtree_set_pos_rgrav(pos, direction, rgrav)
 	self.mark:set_rgrav(-direction, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_pos_rgrav(pos, direction, rgrav)
 	end
 end
 
 function DynamicNode:subtree_set_rgrav(rgrav)
 	self.mark:set_rgravs(rgrav, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_rgrav(rgrav)
 	end
 end
 
 function DynamicNode:extmarks_valid()
-	if self.snip then
+	if self.snip and self.snip.visible then
 		return node_util.generic_extmarks_valid(self, self.snip)
 	end
 	return true
+end
+
+function DynamicNode:subtree_do(opts)
+	opts.pre(self)
+	if opts.static then
+		if self.static_snip then
+			self.static_snip:subtree_do(opts)
+		end
+	else
+		if self.snip then
+			self.snip:subtree_do(opts)
+		end
+	end
+	opts.post(self)
+end
+
+function DynamicNode:subtree_leave_entered()
+	if self.active then
+		self.snip:subtree_leave_entered()
+		self:input_leave()
+	end
 end
 
 return {

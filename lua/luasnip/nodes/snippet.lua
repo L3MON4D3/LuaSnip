@@ -120,11 +120,6 @@ function Snippet:init_nodes()
 				insert_nodes[node.pos] = node
 			end
 		end
-
-		node.update_dependents = function(node)
-			node:_update_dependents()
-			node.parent:update_dependents()
-		end
 	end
 
 	if insert_nodes[1] then
@@ -375,16 +370,6 @@ local function _S(snip, nodes, opts)
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
 
-	-- if the snippet is expanded inside another snippet (can be recognized by
-	-- non-nil parent_node), the node of the snippet this one is inside has to
-	-- update its dependents.
-	function snip:_update_dependents()
-		if self.parent_node then
-			self.parent_node:update_dependents()
-		end
-	end
-	snip.update_dependents = snip._update_dependents
-
 	snip:init_nodes()
 
 	if not snip.insert_nodes[0] then
@@ -502,6 +487,10 @@ function Snippet:remove_from_jumplist()
 	-- nxt is snippet.
 	local nxt = self.next.next
 
+	-- the advantage of remove_from_jumplist over exit is that the former
+	-- modifies its parents child_snippets, or the root-snippet-list.
+	-- Since the owners of this snippets' child_snippets are invalid anyway, we
+	-- don't bother modifying them.
 	self:exit()
 
 	local sibling_list = self.parent_node ~= nil
@@ -542,17 +531,22 @@ function Snippet:remove_from_jumplist()
 	end
 end
 
-local function insert_into_jumplist(
-	snippet,
-	start_node,
+function Snippet:insert_into_jumplist(
 	current_node,
 	parent_node,
 	sibling_snippets,
 	own_indx
 )
+	-- this is always the case.
+	local start_node = self.prev
+
 	local prev_snippet = sibling_snippets[own_indx - 1]
 	-- have not yet inserted self!!
 	local next_snippet = sibling_snippets[own_indx]
+
+	-- can set this immediately
+	-- parent_node is nil if the snippet is toplevel.
+	self.parent_node = parent_node
 
 	-- only consider sibling-snippets with the same parent-node as
 	-- previous/next snippet for linking-purposes.
@@ -582,13 +576,13 @@ local function insert_into_jumplist(
 			-- in all cases
 			if link_children and prev ~= nil then
 				-- if we have a previous snippet we can link to, just do that.
-				prev.next.next = snippet
+				prev.next.next = self
 				start_node.prev = prev.insert_nodes[0]
 			else
 				-- only jump from parent to child if link_children is set.
 				if link_children then
 					-- prev is nil, but we can link up using the parent.
-					parent_node.inner_first = snippet
+					parent_node.inner_first = self
 				end
 				-- make sure we can jump back to the parent.
 				start_node.prev = parent_node
@@ -597,14 +591,14 @@ local function insert_into_jumplist(
 			-- exact same reasoning here as in prev-case above, omitting comments.
 			if link_children and next ~= nil then
 				-- jump from next snippets start_node to $0.
-				next.prev.prev = snippet.insert_nodes[0]
+				next.prev.prev = self.insert_nodes[0]
 				-- jump from $0 to next snippet (skip its start_node)
-				snippet.insert_nodes[0].next = next
+				self.insert_nodes[0].next = next
 			else
 				if link_children then
-					parent_node.inner_last = snippet.insert_nodes[0]
+					parent_node.inner_last = self.insert_nodes[0]
 				end
-				snippet.insert_nodes[0].next = parent_node
+				self.insert_nodes[0].next = parent_node
 			end
 		else
 			-- naively, even if the parent is linkable, there might be snippets
@@ -623,23 +617,23 @@ local function insert_into_jumplist(
 			-- previous history, and we don't mess up whatever jumps
 			-- are set up around current_node)
 			start_node.prev = current_node
-			snippet.insert_nodes[0].next = current_node
+			self.insert_nodes[0].next = current_node
 		end
 	-- don't link different root-nodes for unlinked_roots.
 	elseif link_roots then
 		-- inserted into top-level snippet-forest, just hook up with prev, next.
 		-- prev and next have to be snippets or nil, in this case.
 		if prev ~= nil then
-			prev.next.next = snippet
+			prev.next.next = self
 			start_node.prev = prev.insert_nodes[0]
 		end
 		if next ~= nil then
-			snippet.insert_nodes[0].next = next
-			next.prev.prev = snippet.insert_nodes[0]
+			self.insert_nodes[0].next = next
+			next.prev.prev = self.insert_nodes[0]
 		end
 	end
 
-	table.insert(sibling_snippets, own_indx, snippet)
+	table.insert(sibling_snippets, own_indx, self)
 end
 
 function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
@@ -772,25 +766,11 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	end
 
 	local start_node = iNode.I(0)
-
-	local old_pos = vim.deepcopy(pos)
-	self:put_initial(pos)
-
-	local mark_opts = vim.tbl_extend("keep", {
-		right_gravity = false,
-		end_right_gravity = false,
-	}, self:get_passive_ext_opts())
-	self.mark = mark(old_pos, pos, mark_opts)
-
-	self:update()
-	self:update_all_dependents()
-
-	-- Marks should stay at the beginning of the snippet, only the first mark is needed.
-	start_node.mark = self.nodes[1].mark
 	start_node.pos = -1
 	-- needed for querying node-path from snippet to this node.
 	start_node.absolute_position = { -1 }
 	start_node.parent = self
+	start_node.visible = true
 
 	-- hook up i0 and start_node, and then the snippet itself.
 	-- they are outside, not inside the snippet.
@@ -802,12 +782,12 @@ function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	self.insert_nodes[0].prev = self
 	self.next = self.insert_nodes[0]
 
-	-- parent_node is nil if the snippet is toplevel.
-	self.parent_node = parent_node
+	self:put(pos)
 
-	insert_into_jumplist(
-		self,
-		start_node,
+	self:update()
+	self:update_dependents({ children = true })
+
+	self:insert_into_jumplist(
 		current_node,
 		parent_node,
 		sibling_snippets,
@@ -965,6 +945,8 @@ function Snippet:fake_expand(opts)
 
 	self:indent("")
 
+	self.___static_expanded = true
+
 	-- ext_opts don't matter here, just use convenient values.
 	self.effective_child_ext_opts = self.child_ext_opts
 	self.ext_opts = self.node_ext_opts
@@ -1045,7 +1027,7 @@ function Snippet:get_docstring()
 	-- function/dynamicNodes.
 	-- if not outer snippet, wrap it in ${}.
 	self.docstring = self.type == types.snippet and docstring
-		or util.string_wrap(docstring, rawget(self, "pos"))
+		or util.string_wrap(docstring, self.pos)
 	return self.docstring
 end
 
@@ -1132,7 +1114,6 @@ function Snippet:input_leave(_, dry_run)
 	end
 
 	self:event(events.leave)
-	self:update_dependents()
 
 	-- set own ext_opts to snippet-passive, there is no passive for snippets.
 	self.mark:update_opts(self.ext_opts.snippet_passive)
@@ -1178,12 +1159,12 @@ end
 
 function Snippet:exit()
 	if self.type == types.snippet then
-		-- if exit is called, this will not be visited again.
-		-- Thus, also clean up the child-snippets, which will also not be
-		-- visited again, since they can only be visited through self.
-		for _, child in ipairs(self.child_snippets) do
-			child:exit()
+		-- insertNode also call exit for their child_snippets, but if we
+		-- :exit() the whole snippet we can just remove all of them here.
+		for _, snip in ipairs(self.child_snippets) do
+			snip:exit()
 		end
+		self.child_snippets = {}
 	end
 
 	self.visible = false
@@ -1297,16 +1278,19 @@ function Snippet:get_pattern_expand_helper()
 	return self.expand_helper_snippet
 end
 
-function Snippet:find_node(predicate)
+function Snippet:find_node(predicate, opts)
 	for _, node in ipairs(self.nodes) do
 		if predicate(node) then
 			return node
 		else
-			local node_in_child = node:find_node(predicate)
+			local node_in_child = node:find_node(predicate, opts)
 			if node_in_child then
 				return node_in_child
 			end
 		end
+	end
+	if predicate(self.prev) then
+		return self.prev
 	end
 	return nil
 end
@@ -1329,23 +1313,6 @@ function Snippet:set_argnodes(dict)
 	node_mod.Node.set_argnodes(self, dict)
 	for _, node in ipairs(self.nodes) do
 		node:set_argnodes(dict)
-	end
-end
-
-function Snippet:update_all_dependents()
-	-- call the version that only updates this node.
-	self:_update_dependents()
-	-- only for insertnodes, others will not have dependents.
-	for _, node in ipairs(self.insert_nodes) do
-		node:update_all_dependents()
-	end
-end
-function Snippet:update_all_dependents_static()
-	-- call the version that only updates this node.
-	self:_update_dependents_static()
-	-- only for insertnodes, others will not have dependents.
-	for _, node in ipairs(self.insert_nodes) do
-		node:update_all_dependents_static()
 	end
 end
 
@@ -1559,7 +1526,8 @@ function Snippet:extmarks_valid()
 		return false
 	end
 
-	-- below code does not work correctly if the snippet(Node) does not have any children.
+	-- the following code assumes that the snippet(Node) has at least one child,
+	-- if it doesn't, it's valid anyway.
 	if #self.nodes == 0 then
 		return true
 	end
@@ -1569,11 +1537,12 @@ function Snippet:extmarks_valid()
 			pcall(node.mark.pos_begin_end_raw, node.mark)
 		-- this snippet is invalid if:
 		-- - we can't get the position of some node
-		-- - the positions aren't contiguous or don't completely fill the parent, or
+		-- - the positions aren't contiguous, don't completely fill the parent, or the `to` is before the `from`, or
 		-- - any child of this node violates these rules.
 		if
 			not ok_
 			or util.pos_cmp(current_from, node_from) ~= 0
+			or util.pos_cmp(node_from, node_to) > 0
 			or not node:extmarks_valid()
 		then
 			return false
@@ -1585,6 +1554,55 @@ function Snippet:extmarks_valid()
 	end
 
 	return true
+end
+
+function Snippet:subtree_do(opts)
+	opts.pre(self)
+	for _, child in ipairs(self.nodes) do
+		child:subtree_do(opts)
+	end
+	opts.post(self)
+end
+
+function Snippet:get_snippet()
+	if self.type == types.snippet then
+		return self
+	else
+		return self.parent.snippet
+	end
+end
+
+-- affect all children nested into this snippet.
+function Snippet:subtree_leave_entered()
+	if self.active then
+		for _, node in ipairs(self.nodes) do
+			node:subtree_leave_entered()
+		end
+		self:input_leave()
+	else
+		if self.type ~= types.snippetNode then
+			-- the exit-nodes (-1 and 0) may be active if the snippet itself is
+			-- not; just do these two calls, no hurt if they're not active.
+			self.prev:subtree_leave_entered()
+			self.insert_nodes[0]:subtree_leave_entered()
+		end
+	end
+end
+
+function Snippet:put(pos)
+	--- Put text-content of snippet into buffer and set marks.
+	local old_pos = vim.deepcopy(pos)
+	self:put_initial(pos)
+
+	local mark_opts = vim.tbl_extend("keep", {
+		right_gravity = false,
+		end_right_gravity = false,
+	}, self:get_passive_ext_opts())
+	self.mark = mark(old_pos, pos, mark_opts)
+
+	-- The start_nodes' marks should stay at the beginning of the snippet, only
+	-- the first mark is needed.
+	self.prev.mark = self.nodes[1].mark
 end
 
 return {

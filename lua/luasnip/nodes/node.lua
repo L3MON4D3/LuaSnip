@@ -5,8 +5,19 @@ local ext_util = require("luasnip.util.ext_opts")
 local events = require("luasnip.util.events")
 local key_indexer = require("luasnip.nodes.key_indexer")
 local types = require("luasnip.util.types")
+local opt_args = require("luasnip.nodes.optional_arg")
+local snippet_string = require("luasnip.nodes.util.snippet_string")
+local log = require("luasnip.util.log").new("node")
+local describe = require("luasnip.util.log").describe
 
 ---@class LuaSnip.Node
+---@field key? any Key to identify the node with.
+---@field store_id? number May be set when the node is used to store/restore.
+---A generic node.
+---@field mark? LuaSnip.Mark The mark associated with this node.
+---@field type number Identifies the type of the snippet.
+---@field next LuaSnip.Node Link to the next node in jump-order.
+---@field prev LuaSnip.Node Link to the previous node in jump-order.
 local Node = {}
 
 ---@alias LuaSnip.NodeExtOpts {["active"|"passive"|"visited"|"unvisited"|"snippet_passive"]: vim.api.keyset.set_extmark}
@@ -52,28 +63,6 @@ function Node:new(o, opts)
 end
 
 function Node:get_static_text()
-	-- return nil if not visible.
-	-- This will prevent updates if not all nodes are visible during
-	-- docstring/static_text-generation. (One example that would otherwise fail
-	-- is the following snippet:
-	--
-	-- s("trig", {
-	-- 	i(1, "cccc"),
-	-- 	t" ",
-	-- 	c(2, {
-	-- 		t"aaaa",
-	-- 		i(nil, "bbbb")
-	-- 	}),
-	-- 	f(function(args) return args[1][1]..args[2][1] end, {ai[2][2], 1} )
-	-- })
-	--
-	-- )
-	-- By also allowing visible, and not only static_visible, the docstrings
-	-- generated during `get_current_choices` (ie. without having the whole
-	-- snippet `static_init`ed) get better.
-	if not self.visible and not self.static_visible then
-		return nil
-	end
 	return self.static_text
 end
 
@@ -174,6 +163,16 @@ function Node:get_text()
 	return ok and text or { "" }
 end
 
+function Node:get_snippetstring()
+	-- if this is not overridden, get_text returns a multiline string.
+	return snippet_string.new(self:get_text())
+end
+
+function Node:get_static_snippetstring()
+	-- if this is not overridden, get_static_text() is a multiline string.
+	return snippet_string.new(self:get_static_text())
+end
+
 function Node:set_old_text()
 	self.old_text = self:get_text()
 end
@@ -202,84 +201,12 @@ end
 function Node:input_leave_children() end
 function Node:input_enter_children() end
 
-local function find_dependents(self, position_self, dict)
-	local nodes = {}
-
-	-- this might also be called from a node which does not possess a position!
-	-- (for example, a functionNode may be depended upon via its key)
-	if position_self then
-		position_self[#position_self + 1] = "dependents"
-		vim.list_extend(nodes, dict:find_all(position_self, "dependent") or {})
-		position_self[#position_self] = nil
-	end
-
-	vim.list_extend(
-		nodes,
-		dict:find_all({ self, "dependents" }, "dependent") or {}
-	)
-
-	if self.key then
-		vim.list_extend(
-			nodes,
-			dict:find_all({ "key", self.key, "dependents" }, "dependent") or {}
-		)
-	end
-
-	return nodes
-end
-
-function Node:_update_dependents()
-	local dependent_nodes = find_dependents(
-		self,
-		self.absolute_insert_position,
-		self.parent.snippet.dependents_dict
-	)
-	if #dependent_nodes == 0 then
-		return
-	end
-	for _, node in ipairs(dependent_nodes) do
-		if node.visible then
-			node:update()
-		end
-	end
-end
-
--- _update_dependents is the function to update the nodes' dependents,
--- update_dependents is what will actually be called.
--- This allows overriding update_dependents in a parent-node (eg. snippetNode)
--- while still having access to the original function (for subsequent overrides).
-Node.update_dependents = Node._update_dependents
--- update_all_dependents is used to update all nodes' dependents in a
--- snippet-tree. Necessary in eg. set_choice (especially since nodes may have
--- dependencies outside the tree itself, so update_all_dependents should take
--- care of those too.)
-Node.update_all_dependents = Node._update_dependents
-
-function Node:_update_dependents_static()
-	local dependent_nodes = find_dependents(
-		self,
-		self.absolute_insert_position,
-		self.parent.snippet.dependents_dict
-	)
-	if #dependent_nodes == 0 then
-		return
-	end
-	for _, node in ipairs(dependent_nodes) do
-		if node.static_visible then
-			node:update_static()
-		end
-	end
-end
-
-Node.update_dependents_static = Node._update_dependents_static
-Node.update_all_dependents_static = Node._update_dependents_static
-
 function Node:update() end
 
 function Node:update_static() end
 
-function Node:expand_tabs(tabwidth, indentstr)
-	util.expand_tabs(self.static_text, tabwidth, indentstr)
+function Node:expand_tabs(tabwidth, indentstrlen)
+	util.expand_tabs(self.static_text, tabwidth, indentstrlen)
 end
 
 function Node:indent(indentstr)
@@ -322,9 +249,14 @@ function Node:event(event)
 	})
 end
 
-local function get_args(node, get_text_func_name)
+local function get_args(node, get_text_func_name, static)
 	local argnodes_text = {}
-	for _, arg in ipairs(node.args_absolute) do
+	for key, arg in ipairs(node.args_absolute) do
+		local is_optional = opt_args.is_opt(arg)
+		if is_optional then
+			arg = arg.ref
+		end
+
 		local argnode
 		if key_indexer.is_key(arg) then
 			argnode = node.parent.snippet.dependents_dict:get({
@@ -349,28 +281,43 @@ local function get_args(node, get_text_func_name)
 			dict_key[#dict_key] = nil
 		end
 		-- maybe the node is part of a dynamicNode and not yet generated.
-		if not argnode then
-			return nil
+		-- also handle the argnode as not-present if
+		-- * we are doing a regular update and it is not visible, or
+		-- * we are doing a static update and it is not static_visible or
+		--   visible (this second condition is to allow the docstring-generation
+		--   to be improved by data provided after the expansion)
+		if
+			argnode
+			and (
+				(static and (argnode.static_visible or argnode.visible))
+				or (not static and argnode.visible)
+			)
+		then
+			local argnode_text = argnode[get_text_func_name](argnode)
+			-- can only occur with `get_text`. If one returns nil, the argnode
+			-- isn't visible or some other error occured. Either way, return nil
+			-- to signify that not all argnodes are available.
+			if not argnode_text then
+				return nil
+			end
+			argnodes_text[key] = argnode_text
+		else
+			if is_optional then
+				argnodes_text[key] = nil
+			else
+				return nil
+			end
 		end
-
-		local argnode_text = argnode[get_text_func_name](argnode)
-		-- can only occur with `get_text`. If one returns nil, the argnode
-		-- isn't visible or some other error occured. Either way, return nil
-		-- to signify that not all argnodes are available.
-		if not argnode_text then
-			return nil
-		end
-		table.insert(argnodes_text, argnode_text)
 	end
 
 	return argnodes_text
 end
 
 function Node:get_args()
-	return get_args(self, "get_text")
+	return get_args(self, "argnode_text", false)
 end
 function Node:get_static_args()
-	return get_args(self, "get_static_text")
+	return get_args(self, "get_static_snippetstring", true)
 end
 
 function Node:get_jump_index()
@@ -386,10 +333,8 @@ function Node:set_ext_opts(name)
 	end
 end
 
--- for insert,functionNode.
-function Node:store()
-	self.static_text = self:get_text()
-end
+-- default impl. for textNode and functionNode (fNode stores after an update).
+function Node:store() end
 
 function Node:update_restore() end
 
@@ -415,8 +360,8 @@ function Node:set_argnodes(dict)
 		dict:set(self.absolute_insert_position, self)
 		self.absolute_insert_position[#self.absolute_insert_position] = nil
 	end
-	if rawget(self, "key") then
-		dict:set({ "key", rawget(self, "key"), "node" }, self)
+	if self.key then
+		dict:set({ "key", self.key, "node" }, self)
 	end
 end
 
@@ -613,6 +558,20 @@ function Node:focus()
 end
 
 function Node:set_text(text)
+	local text_indented = util.indent(text, self.parent.indentstr)
+
+	if self:get_snippet().___static_expanded then
+		self.static_text = text_indented
+		self:update_dependents_static({ own = true, parents = true })
+	else
+		if self.visible then
+			self:set_text_raw(text_indented)
+			self:update_dependents({ own = true, parents = true })
+		end
+	end
+end
+
+function Node:set_text_raw(text)
 	self:focus()
 
 	local node_from, node_to = self.mark:pos_begin_end_raw()
@@ -640,23 +599,77 @@ end
 
 function Node:linkable()
 	-- linkable if insert or exitNode.
-	return vim.tbl_contains(
-		{ types.insertNode, types.exitNode },
-		rawget(self, "type")
-	)
+	return vim.tbl_contains({ types.insertNode, types.exitNode }, self.type)
 end
 function Node:interactive()
 	-- interactive if immediately inside choiceNode.
-	return vim.tbl_contains(
-		{ types.insertNode, types.exitNode },
-		rawget(self, "type")
-	) or rawget(self, "choice") ~= nil
+	return vim.tbl_contains({ types.insertNode, types.exitNode }, self.type)
+		or self.choice ~= nil
 end
 function Node:leaf()
 	return vim.tbl_contains(
 		{ types.textNode, types.functionNode, types.insertNode, types.exitNode },
-		rawget(self, "type")
+		self.type
 	)
+end
+
+function Node:parent_of(node)
+	for i = 1, #self.absolute_position do
+		if self.absolute_position[i] ~= node.absolute_position[i] then
+			return false
+		end
+	end
+
+	return true
+end
+
+-- self has to be visible/in the buffer.
+-- none of the node's ancestors may contain self.
+function Node:update_dependents(which)
+	log.debug(
+		"updating dependents of %s, selected %s",
+		describe.node(self),
+		describe.inspect(which, { newline = " ", indent = "" })
+	)
+	-- false: don't set static
+	local dependents = node_util.collect_dependents(self, which, false)
+	for _, node in ipairs(dependents) do
+		if node.visible then
+			node:update_restore()
+		else
+			log.debug(
+				"skipping update of %s, it is not visible.",
+				describe.node(node)
+			)
+		end
+	end
+end
+
+function Node:update_dependents_static(which)
+	-- true: set static
+	local dependents = node_util.collect_dependents(self, which, true)
+	for _, node in ipairs(dependents) do
+		if node.static_visible then
+			node:update_static()
+		end
+	end
+end
+
+function Node:subtree_do(opts)
+	opts.pre(self)
+	opts.post(self)
+end
+
+function Node:get_snippet()
+	return self.parent.snippet
+end
+
+-- all nodes that can be entered have an override, only need to nop this for
+-- those that don't.
+function Node:subtree_leave_entered() end
+
+function Node:argnode_text()
+	return self:get_snippetstring()
 end
 
 return {

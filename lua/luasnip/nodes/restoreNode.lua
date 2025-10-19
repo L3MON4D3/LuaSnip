@@ -36,12 +36,10 @@ function RestoreNode:exit()
 
 	self.visible = false
 	self.mark:clear()
-	-- snip should exist if exit is called.
-	self.snip:store()
+
 	-- will be copied on restore, no need to copy here too.
 	self.parent.snippet.stored[self.key] = self.snip
 	self.snip:exit()
-	self.snip = nil
 	self.active = false
 end
 
@@ -66,7 +64,6 @@ function RestoreNode:input_leave(_, dry_run)
 
 	self:event(events.leave)
 
-	self:update_dependents()
 	self.active = false
 
 	self.mark:update_opts(self:get_passive_ext_opts())
@@ -102,11 +99,6 @@ function RestoreNode:put_initial(pos)
 	tmp.snippet = self.parent.snippet
 
 	tmp.restore_node = self
-	tmp.update_dependents = function(node)
-		node:_update_dependents()
-		-- self is restoreNode.
-		node.restore_node:update_dependents()
-	end
 
 	tmp:resolve_child_ext_opts()
 	tmp:resolve_node_ext_opts()
@@ -182,7 +174,7 @@ local function snip_init(self, snip)
 
 	snip.snippet = self.parent.snippet
 	-- pos should be nil if the restoreNode is inside a choiceNode.
-	snip.pos = rawget(self, "pos")
+	snip.pos = self.pos
 
 	snip:resolve_child_ext_opts()
 	snip:resolve_node_ext_opts()
@@ -221,19 +213,23 @@ function RestoreNode:get_docstring()
 	return self.docstring
 end
 
-function RestoreNode:store() end
+function RestoreNode:store()
+	if self.snip then
+		self.snip:store()
+	end
+end
 
 -- will be restored through other means.
 function RestoreNode:update_restore()
 	self.snip:update_restore()
 end
 
-function RestoreNode:find_node(predicate)
+function RestoreNode:find_node(predicate, opts)
 	if self.snip then
 		if predicate(self.snip) then
 			return self.snip
 		else
-			return self.snip:find_node(predicate)
+			return self.snip:find_node(predicate, opts)
 		end
 	end
 	return nil
@@ -245,16 +241,6 @@ function RestoreNode:insert_to_node_absolute(position)
 	end
 	-- nil if not yet available.
 	return self.snip and self.snip:insert_to_node_absolute(position)
-end
-
-function RestoreNode:update_all_dependents()
-	self:_update_dependents()
-	self.snip:update_all_dependents()
-end
-
-function RestoreNode:update_all_dependents_static()
-	self:_update_dependents_static()
-	self.parent.snippet.stored[self.key]:_update_dependents_static()
 end
 
 function RestoreNode:init_insert_positions(position_so_far)
@@ -286,20 +272,43 @@ end
 
 function RestoreNode:subtree_set_pos_rgrav(pos, direction, rgrav)
 	self.mark:set_rgrav(-direction, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_pos_rgrav(pos, direction, rgrav)
 	end
 end
 
 function RestoreNode:subtree_set_rgrav(rgrav)
 	self.mark:set_rgravs(rgrav, rgrav)
-	if self.snip then
+	if self.snip and self.snip.visible then
 		self.snip:subtree_set_rgrav(rgrav)
 	end
 end
 
 function RestoreNode:extmarks_valid()
 	return node_util.generic_extmarks_valid(self, self.snip)
+end
+
+function RestoreNode:subtree_do(opts)
+	opts.pre(self)
+	if self.snip then
+		self.snip:subtree_do(opts)
+	else
+		if opts.static then
+			-- try using stored snippet for recursion when static and regular
+			-- snip does not exist.
+			self.parent.snippet.stored[self.key]:subtree_do(opts)
+		end
+	end
+	opts.post(self)
+end
+
+function RestoreNode:subtree_leave_entered()
+	if self.active then
+		if self.snip then
+			self.snip:subtree_leave_entered()
+		end
+		self:input_leave()
+	end
 end
 
 return {

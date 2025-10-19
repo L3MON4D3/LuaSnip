@@ -1,6 +1,7 @@
 local session = require("luasnip.session")
 local util = require("luasnip.util.util")
 
+---@class LuaSnip.Mark
 local Mark = {}
 
 function Mark:new(o)
@@ -198,8 +199,15 @@ function Mark:update_opts(opts)
 	self:set_opts(opts_cp)
 end
 
+-- invalidate this mark object only, leave the underlying extmark alone.
+function Mark:invalidate()
+	self.id = nil
+end
+
 function Mark:clear()
-	vim.api.nvim_buf_del_extmark(0, session.ns_id, self.id)
+	if self.id then
+		vim.api.nvim_buf_del_extmark(0, session.ns_id, self.id)
+	end
 end
 
 return {
