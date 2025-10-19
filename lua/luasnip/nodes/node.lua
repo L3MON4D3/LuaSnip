@@ -7,6 +7,8 @@ local key_indexer = require("luasnip.nodes.key_indexer")
 local types = require("luasnip.util.types")
 local opt_args = require("luasnip.nodes.optional_arg")
 local snippet_string = require("luasnip.nodes.util.snippet_string")
+local log = require("luasnip.util.log").new("node")
+local describe = require("luasnip.util.log").describe
 
 ---@class LuaSnip.Node
 ---@field key? any Key to identify the node with.
@@ -624,11 +626,14 @@ end
 -- self has to be visible/in the buffer.
 -- none of the node's ancestors may contain self.
 function Node:update_dependents(which)
+	log.debug("updating dependents of %s, selected %s", describe.node(self), describe.inspect(which, {newline =" ", indent = ""}))
 	-- false: don't set static
 	local dependents = node_util.collect_dependents(self, which, false)
 	for _, node in ipairs(dependents) do
 		if node.visible then
 			node:update_restore()
+		else
+			log.debug("skipping update of %s, it is not visible.", describe.node(node))
 		end
 	end
 end
