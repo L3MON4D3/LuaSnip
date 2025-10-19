@@ -34,12 +34,16 @@ local function list_to_set(values)
 end
 
 -- http://lua-users.org/wiki/VarargTheSecondClassCitizen
-local function pack2(...) return {n=select('#', ...), ...} end
-local function unpack2(t) return unpack(t, 1, t.n) end
+local function pack2(...)
+	return { n = select("#", ...), ... }
+end
+local function unpack2(t)
+	return unpack(t, 1, t.n)
+end
 
 return {
 	list_to_set = list_to_set,
 	set_to_list = set_to_list,
 	pack = pack2,
-	unpack = unpack2
+	unpack = unpack2,
 }

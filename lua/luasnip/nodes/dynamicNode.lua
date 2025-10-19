@@ -159,7 +159,8 @@ function DynamicNode:update()
 			"skipping update of %s due to unchanged args (old: %s, new: %s)",
 			describe.node(self),
 			describe.inspect(self.last_args),
-			describe.inspect(str_args))
+			describe.inspect(str_args)
+		)
 		return
 	end
 
@@ -173,7 +174,10 @@ function DynamicNode:update()
 		if not args then
 			-- a snippet exists, and we don't have data to update it => abort
 			-- update, keep existing snippet.
-			log.debug("skipping update of %s due to missing args.", describe.node(self))
+			log.debug(
+				"skipping update of %s due to missing args.",
+				describe.node(self)
+			)
 			return
 		end
 
@@ -190,18 +194,18 @@ function DynamicNode:update()
 
 	-- build new snippet before exiting, markers may be needed for
 	-- construncting.
-	tmp = self.fn(
-		effective_args,
-		self.parent,
-		old_state,
-		unpack(self.user_args)
-	)
+	tmp =
+		self.fn(effective_args, self.parent, old_state, unpack(self.user_args))
 
 	if self.snip then
 		self.snip:exit()
 		self.snip = nil
 
-		log.debug("content of %s before update: %s.", describe.node(self), describe.node_buftext(self))
+		log.debug(
+			"content of %s before update: %s.",
+			describe.node(self),
+			describe.node_buftext(self)
+		)
 		-- focuses node.
 		self:set_text_raw({ "" })
 	else
@@ -252,7 +256,11 @@ function DynamicNode:update()
 	local from, to = self.mark:pos_begin_end_raw()
 	-- inserts nodes with extmarks false,false
 	tmp:put_initial(from)
-	log.debug("content of %s after update: %s.", describe.node(self), describe.node_buftext(self))
+	log.debug(
+		"content of %s after update: %s.",
+		describe.node(self),
+		describe.node_buftext(self)
+	)
 	-- adjust gravity in left side of snippet, such that it matches the current
 	-- gravity of self.
 	tmp:subtree_set_pos_rgrav(to, -1, true)
@@ -447,7 +455,8 @@ function DynamicNode:update_restore()
 			self.snip ~= nil,
 			self.snip and self.snip.visible,
 			describe.inspect(self.last_args),
-			describe.inspect(str_args))
+			describe.inspect(str_args)
+		)
 		self:update()
 	end
 end
