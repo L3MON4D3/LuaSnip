@@ -12,8 +12,6 @@ local log = require("luasnip.util.log").new("dynamicNode")
 local describe = require("luasnip.util.log").describe
 local session = require("luasnip.session")
 
-local update_depth_limit = 100
-
 local function D(pos, fn, args, opts)
 	opts = opts or {}
 
@@ -190,26 +188,6 @@ function DynamicNode:update()
 		old_state = self.snip.old_state
 	end
 
-	-- set `last_args` here, prevents additional updates after update_depth was
-	-- exceeded.
-	self.last_args = str_args
-
-	local reset_depth = false
-	if not session.update_depths[self] then
-		session.update_depths[self] = 1
-		reset_depth = true
-	elseif session.update_depths[self] < update_depth_limit then
-		session.update_depths[self] = session.update_depths[self] + 1
-	elseif self.snip then
-		-- only skip updates if the snippet is already generated!!
-		log.error(
-			"Skipping update of %s because the number of nested updates exceeded %s. Traceback: %s",
-			describe.node(self),
-			update_depth_limit,
-			describe.traceback())
-		return
-	end
-
 	-- build new snippet before exiting, markers may be needed for
 	-- construncting.
 	tmp = self.fn(
@@ -231,7 +209,9 @@ function DynamicNode:update()
 		self:focus()
 	end
 
-	log.debug("updating %s (depth: %s)", describe.node(self), session.update_depths[self])
+	log.debug("updating %s", describe.node(self))
+
+	self.last_args = str_args
 
 	-- act as if snip is directly inside parent.
 	tmp.parent = self.parent
@@ -290,10 +270,6 @@ function DynamicNode:update()
 	-- children's depedents (since they may have dependents outside this
 	-- dynamicNode, who have not yet been updated)
 	self:update_dependents({ own = true, children = true, parents = true })
-
-	if reset_depth then
-		session.update_depths[self] = nil
-	end
 end
 
 local update_errorstring = [[
