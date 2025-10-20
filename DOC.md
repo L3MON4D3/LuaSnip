@@ -1308,6 +1308,26 @@ ls.add_snippets("all", {
 })
 ```
 
+This example shows how to access the snippet opts for multisnippets.
+Note that unlike a `s` snippet these opts must be in the `common_opts`
+table item.
+
+```lua
+ls.addsnippets('all', {
+    ms({ 'test' }, { t('Access multisnippet opts') }, {
+        common_opts = {
+            callbacks = {
+                [-1] = {
+                    [events.pre_expand] = function()
+                        vim.notify('multisnippet opts callback')
+                    end,
+                },
+            },
+        },
+    }),
+}),
+```
+
 # Extras
 
 ## Lambda
