@@ -1,4 +1,4 @@
-*luasnip.txt*         For NeoVim 0.7-0.11         Last change: 2025 October 17
+*luasnip.txt*         For NeoVim 0.7-0.11         Last change: 2025 October 20
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1291,6 +1291,25 @@ The returned object is an `addable`, something which can be passed to
             t"a or b (but autotriggered!!)"
         })
     })
+<
+
+This example shows how to access the snippet opts for multisnippets. Note that
+unlike a `s` snippet these opts must be in the `common_opts` table item.
+
+>lua
+    ls.addsnippets('all', {
+        ms({ 'test' }, { t('Access multisnippet opts') }, {
+            common_opts = {
+                callbacks = {
+                    [-1] = {
+                        [events.pre_expand] = function()
+                            vim.notify('multisnippet opts callback')
+                        end,
+                    },
+                },
+            },
+        }),
+    }),
 <
 
 
