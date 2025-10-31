@@ -75,19 +75,15 @@ local stored_mt = {
 ---
 ---@field _source? {file: string, line: integer}
 ---@field nodes LuaSnip.Node[]
----@field env table<string, any> Variables used in the LSP-protocol (e.g. `TM_CURRENT_LINE` or `TM_FILENAME`).
----@field trigger string The string that triggered this snipper. Only
----  interesting when the snippet was triggered with a non-"plain" `trigEngine`
----  for getting the full match.
----@field captures string[] The capture-groups when the snippet was triggered
----  with a non-"plain" `trigEngine`.
 ---@field snippet LuaSnip.Snippet
----@field dependents_dict table (FIXME: type!)
----@field child_snippets table[] (FIXME: type!)
+---@field dependents_dict table (FIXME(@bew): type!)
+---@field child_snippets table[] (FIXME(@bew): type!)
+---@field static_text string[]?
+---@field indentstr string
 local Snippet = node_mod.Node:new()
 
----@class LuaSnip._SnippetData: LuaSnip.BareInternalSnippet, LuaSnip.NormalizedSnippetContext, LuaSnip.NormalizedSnippetOpts
----@class LuaSnip.Snippet: LuaSnip._SnippetData, LuaSnip.Addable, LuaSnip.ExpandedSnippet
+---@class LuaSnip.Snippet: LuaSnip.BareInternalSnippet, LuaSnip.NormalizedSnippetContext, LuaSnip.NormalizedSnippetOpts, LuaSnip.Addable
+---@field node_store_id integer
 
 -- very approximate classes, for now.
 ---@alias LuaSnip.SnippetID integer
@@ -98,7 +94,14 @@ local Snippet = node_mod.Node:new()
 ---@field retrieve_all (fun(self: LuaSnip.Addable): LuaSnip.Snippet[])
 
 ---Represents an expanded snippet.
----@class LuaSnip.ExpandedSnippet: LuaSnip.Node
+---@class LuaSnip.ExpandedSnippet: LuaSnip.Snippet
+---@field env table<string, any> Variables used in the LSP-protocol
+---  (e.g. `TM_CURRENT_LINE` or `TM_FILENAME`).
+---@field trigger string The string that triggered this snipper.
+---  Only interesting when the snippet was triggered with a non-"plain"
+---  `trigEngine` for getting the full match.
+---@field captures string[] The capture-groups when the snippet was triggered
+---  with a non-"plain" `trigEngine`.
 
 ---@class LuaSnip.NormalizedSnippetContext
 ---@field trigger string The trigger of the snippet
@@ -451,8 +454,8 @@ local function _S(snip, nodes, opts)
 
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
-	-- FIXME(@bew): typing is annoying here, because at this stage we have the
-	--   guarentee to have a BareInternalSnippet.
+	-- FIXME(@bew): typing is annoying here, because at this stage we only have
+	--   the guarentee that snip is a BareInternalSnippet.
 	--   (and we know this function's return might never be a full snippet..)
 
 	verify_nodes(nodes)
@@ -758,6 +761,7 @@ local function ISN(pos, nodes, indent_text, opts)
 end
 extend_decorator.register(ISN, { arg_indx = 4 })
 
+-- FIXME(@bew): should only be on ExpandedSnippet 🤔
 function Snippet:remove_from_jumplist()
 	if not self.visible then
 		-- snippet not visible => already removed.
@@ -816,6 +820,7 @@ function Snippet:remove_from_jumplist()
 	end
 end
 
+-- FIXME(@bew): should only be on ExpandedSnippet 🤔
 function Snippet:insert_into_jumplist(
 	current_node,
 	parent_node,
@@ -1139,28 +1144,11 @@ function Snippet:matches(line_to_cursor, opts)
 	return expand_params
 end
 
--- https://gist.github.com/tylerneylon/81333721109155b2d244
-local function copy3(obj, seen)
-	-- Handle non-tables and previously-seen tables.
-	if type(obj) ~= "table" then
-		return obj
-	end
-	if seen and seen[obj] then
-		return seen[obj]
-	end
-
-	-- New table; mark it as seen an copy recursively.
-	local s = seen or {}
-	local res = {}
-	s[obj] = res
-	for k, v in next, obj do
-		res[copy3(k, s)] = copy3(v, s)
-	end
-	return setmetatable(res, getmetatable(obj))
-end
-
+---@generic T
+---@param self T
+---@return T
 function Snippet:copy()
-	return copy3(self)
+	return util.copy3(self)
 end
 
 function Snippet:del_marks()
@@ -1267,6 +1255,7 @@ end
 
 -- to work correctly, this may require that the snippets' env,indent,captures? are
 -- set.
+---@return string[]?
 function Snippet:get_static_text()
 	if self.static_text then
 		return self.static_text
@@ -1299,6 +1288,7 @@ function Snippet:get_static_text()
 	return text
 end
 
+---@return string[]
 function Snippet:get_docstring()
 	if self.docstring then
 		return self.docstring
@@ -1383,7 +1373,7 @@ Snippet.init_insert_positions = node_util.init_child_positions_func(
 
 function Snippet:make_args_absolute()
 	for _, node in ipairs(self.nodes) do
-		-- (allowed: this arg only exists for some node types)
+		---(allowed: this arg only exists for some node types)
 		---@diagnostic disable-next-line: redundant-parameter
 		node:make_args_absolute(self.absolute_insert_position)
 	end
@@ -1487,7 +1477,9 @@ end
 --- Trigger event with args
 ---@param event LuaSnip.EventType
 ---@param event_args? table
----@return unknown
+---@return any
+-- FIXME(@bew): This should only be on SnippetNode & Snippet 🤔
+--   (to access callbacks)
 function Snippet:event(event, event_args)
 	-- there are 3 sources of a callback, for a snippetNode:
 	-- self.callbacks[-1], self.node_callbacks, and parent.callbacks[self.pos].

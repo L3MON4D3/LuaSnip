@@ -8,7 +8,7 @@ local function dedent(lines)
 		local ind_size = math.huge
 		for i, _ in ipairs(lines) do
 			local i1, i2 = lines[i]:find("^%s*[^%s]")
-			if i1 and i2 < ind_size then
+			if i1 and i2 and i2 < ind_size then
 				ind_size = i2
 			end
 		end
@@ -77,12 +77,17 @@ function M.process_multiline(lines, options)
 	end
 end
 
+---@param s string
+---@return string
 function M.dedent(s)
 	local lst = vim.split(s, "\n")
 	dedent(lst)
 	return table.concat(lst, "\n")
 end
 
+---@param s string
+---@param indent_string string
+---@return string
 function M.convert_indent(s, indent_string)
 	local lst = vim.split(s, "\n")
 	convert_indent(lst, indent_string, "\t")
@@ -101,11 +106,12 @@ local function is_escaped(s, indx)
 	return count % 2 == 1
 end
 
---- return position of next (relative to `start`) unescaped occurence of
+--- Return position of next (relative to `start`) unescaped occurence of
 --- `target` in `s`.
 ---@param s string
 ---@param target string
----@param start number
+---@param start integer
+---@return integer?
 local function find_next_unescaped(s, target, start)
 	while true do
 		local from = s:find(target, start, true)
@@ -125,7 +131,7 @@ end
 ---@param s string
 ---@param left string
 ---@param right string
----@return function: iterator, returns pairs from,to.
+---@return fun(): (integer?, integer?) An iterator returning pairs from,to.
 function M.unescaped_pairs(s, left, right)
 	local search_from = 1
 
@@ -198,12 +204,13 @@ function M.multiline_append(strmod, strappend)
 	end
 end
 
--- turn a row+col-offset for a multiline-string (string[]) (where the column is
--- given in bytes and 0-based) into an offset (in bytes, 1-based) for
--- the \n-concatenated version of that string.
+--- Turns a row+col-offset for a multiline-string (string[]) (where the column is
+--- given in bytes and 0-based) into an offset (in bytes, 1-based) for
+--- the \n-concatenated version of that string.
 ---
 ---@param str string[], a multiline string
 ---@param pos LuaSnip.ApiPosition, an api-position relative to the start of str.
+---@return integer?
 function M.multiline_to_byte_offset(str, pos)
 	if pos[1] < 0 or pos[1] + 1 > #str or pos[2] < 0 then
 		-- pos is trivially (row negative or beyond str, or col negative)
@@ -236,6 +243,7 @@ end
 -- inverse of multiline_to_byte_offset, 1-based byte to 0,0-based row,column.
 ---@param str string[], the multiline string
 ---@param byte_pos number, a 1-based index into the \n-concatenated `str`.
+---@return [integer, integer]?
 function M.byte_to_multiline_offset(str, byte_pos)
 	if byte_pos < 0 then
 		return nil
@@ -256,10 +264,15 @@ end
 -- string-operations implemented according to
 -- https://github.com/microsoft/vscode/blob/71c221c532996c9976405f62bb888283c0cf6545/src/vs/editor/contrib/snippet/browser/snippetParser.ts#L372-L415
 -- such that they can be used for snippet-transformations in vscode-snippets.
+---@param str string
+---@return string
 local function capitalize(str)
 	-- uppercase first character.
-	return str:gsub("^.", string.upper)
+	local ret = str:gsub("^.", string.upper)
+	return ret -- note: local var required for correct typing
 end
+---@param str string
+---@return string
 local function pascalcase(str)
 	local pascalcased = ""
 	for match in str:gmatch("[a-zA-Z0-9]+") do
@@ -267,16 +280,20 @@ local function pascalcase(str)
 	end
 	return pascalcased
 end
+---@param str string
+---@return string
+local function camelcase(str)
+	-- same as pascalcase, but first character lowercased.
+	local ret = pascalcase(str):gsub("^.", string.lower)
+	return ret -- note: local var required for correct typing
+end
 
 M.vscode_string_modifiers = {
 	upcase = string.upper,
 	downcase = string.lower,
 	capitalize = capitalize,
 	pascalcase = pascalcase,
-	camelcase = function(str)
-		-- same as pascalcase, but first character lowercased.
-		return pascalcase(str):gsub("^.", string.lower)
-	end,
+	camelcase = camelcase,
 }
 
 return M

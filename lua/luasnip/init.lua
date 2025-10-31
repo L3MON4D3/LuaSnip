@@ -61,6 +61,10 @@ local function api_leave()
 	session.luasnip_changedtick = nil
 end
 
+---@generic T: any?
+---@param fn (fun(...))|(fun(...): T)
+---@param ... any
+---@return T
 local function api_do(fn, ...)
 	api_enter()
 
@@ -523,6 +527,7 @@ end
 ---@field jump_into_func? (fun(snip: LuaSnip.Snippet): LuaSnip.Node)
 ---  Callback responsible for jumping into the snippet. The returned node is
 ---  set as the new active node, i.e. it is the origin of the next jump.
+---
 ---  The default is basically this:
 ---  ```lua
 ---  function(snip)
@@ -531,15 +536,14 @@ end
 ---      return snip:jump_into(1)
 ---  end
 ---  ```
----  while this can be used to insert the snippet and immediately move the cursor
----  at the `i(0)`:
+---  while this can be used to insert the snippet and immediately move the
+---  cursor at the `i(0)`:
 ---  ```lua
 ---  function(snip)
 ---      return snip.insert_nodes[0]
 ---  end
 ---  ```
 
---This can also use `jump_into_func`.
 ---@class LuaSnip.Opts.SnipExpand: LuaSnip.Opts.Expand
 ---
 ---@field clear_region? LuaSnip.BufferRegion A region of text to clear after
@@ -590,8 +594,12 @@ end
 ---  }
 ---  ```
 
+---@param snippet LuaSnip.Snippet
+---@param opts? LuaSnip.Opts.SnipExpand
+---@return LuaSnip.ExpandedSnippet
 local function _snip_expand(snippet, opts)
 	local snip = snippet:copy()
+	---@cast snip LuaSnip.ExpandedSnippet
 
 	opts = opts or {}
 	opts.expand_params = opts.expand_params or {}
@@ -681,9 +689,8 @@ function API.snip_expand(snippet, opts)
 end
 
 ---Find a snippet matching the current cursor-position.
----@param opts table: may contain:
---- - `jump_into_func`: passed through to `snip_expand`.
----@return boolean: whether a snippet was expanded.
+---@param opts? LuaSnip.Opts.Expand
+---@return boolean _ Whether a snippet was expanded.
 local function _expand(opts)
 	local expand_params
 	local snip
@@ -740,6 +747,7 @@ function API.expand_auto()
 		local snip, expand_params =
 			match_snippet(util.get_current_line_to_cursor(), "autosnippets")
 		if snip then
+			---@cast expand_params -nil
 			local cursor = util.get_cursor_0ind()
 			local clear_region = expand_params.clear_region
 				or {

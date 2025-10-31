@@ -1,7 +1,30 @@
 local str_util = require("luasnip.util.str")
 local util = require("luasnip.util.util")
 
----@class SnippetString
+---@class LuaSnip.SnippetString.Mark
+---  A kind-of extmark to the text in this buffer.
+---
+---  It moves with inserted text, and has a gravity to control into which
+---  direction it shifts. pos is 1-based and refers to one character in the
+---  string
+---
+---  If the edge is in the middle of multiple characters (for example rgrav=true,
+---  and chars at pos and pos+1 are replaced), the mark is removed.
+---
+---  FIXME(@bew): How is it different than extmarks? (-> why not use them?)
+---
+---@field id string ID of the mark
+---@field pos integer 1-based, refers to one character in the string
+---@field rgrav boolean The gravity of the mark.
+---  - When rgrav=true, the mark being incident with the characters right edge.
+---    (replace character at pos with multiple characters => mark will move to
+---    the right of the newly inserted chars)
+---  - When rgrav=false, the mark follows the the left edge.
+---    (replace char with multiple chars => mark stays at char)
+
+---@class LuaSnip.SnippetString
+---@field marks LuaSnip.SnippetString.Mark[]
+---@field metadata? table
 local SnippetString = {}
 local SnippetString_mt = {
 	__index = SnippetString,
@@ -13,7 +36,8 @@ local M = {}
 
 ---Create new SnippetString.
 ---@param initial_str string[]?, optional initial multiline string.
----@return SnippetString
+---@param metadata? table
+---@return LuaSnip.SnippetString
 function M.new(initial_str, metadata)
 	local o = {
 		initial_str and table.concat(initial_str, "\n"),
@@ -130,6 +154,7 @@ function SnippetString:put(pos)
 	end
 end
 
+-- FIXME(@bew): what is the return type here?
 function SnippetString:copy()
 	-- on 0.7 vim.deepcopy does not behave correctly on snippets => have to manually copy.
 	return setmetatable(
@@ -178,6 +203,7 @@ function SnippetString:copy()
 end
 
 -- copy without copying snippets.
+---@return LuaSnip.SnippetString
 function SnippetString:flatcopy()
 	local res = {}
 	for i, v in ipairs(self) do
@@ -189,7 +215,8 @@ function SnippetString:flatcopy()
 	return setmetatable(res, SnippetString_mt)
 end
 
--- where o is string, string[] or SnippetString.
+---@param o string|string[]|LuaSnip.SnippetString
+---@return LuaSnip.SnippetString
 local function to_snippetstring(o)
 	if type(o) == "string" then
 		return M.new({ o })
@@ -200,6 +227,9 @@ local function to_snippetstring(o)
 	end
 end
 
+---@param a string|string[]|LuaSnip.SnippetString
+---@param b string|string[]|LuaSnip.SnippetString
+---@return LuaSnip.SnippetString
 function SnippetString.concat(a, b)
 	a = to_snippetstring(a):flatcopy()
 	b = to_snippetstring(b):flatcopy()
@@ -552,15 +582,10 @@ function SnippetString:sub(from, to)
 	return self
 end
 
--- add a kind-of extmark to the text in this buffer. It moves with inserted
--- text, and has a gravity to control into which direction it shifts.
--- pos is 1-based and refers to one character in the string, rgrav = true can be
--- understood as the mark being incident with the characters right edge (replace
--- character at pos with multiple characters => mark will move to the right of
--- the newly inserted chars), and rgrav = false with the left edge (replace char
--- with multiple chars => mark stays at char).
--- If the edge is in the middle of multiple characters (for example rgrav=true,
--- and chars at pos and pos+1 are replaced), the mark is removed.
+--- Add a kind-of extmark to the text in this buffer.
+---@param id string ID of the mark
+---@param pos integer 1-based, refers to one character in the string.
+---@param rgrav boolean The gravity of the mark, true=right, false=left.
 function SnippetString:add_mark(id, pos, rgrav)
 	-- I'd expect there to be at most 0-2 marks in any given static_text, which
 	-- are those set to track the cursor-position.
@@ -578,6 +603,8 @@ function SnippetString:add_mark(id, pos, rgrav)
 	})
 end
 
+---@param id string ID of the mark
+---@return integer?
 function SnippetString:get_mark_pos(id)
 	for _, mark in ipairs(self.marks) do
 		if mark.id == id then

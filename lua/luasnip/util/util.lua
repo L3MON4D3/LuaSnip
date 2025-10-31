@@ -68,7 +68,7 @@ end
 --- by.
 ---@param parent_indent_displaycolumns number, displaycolumn this text is
 --- already at.
----@return string[], `text` (only for simple nesting).
+---@return string[] _ `text` (only for simple nesting).
 local function expand_tabs(text, tabwidth, parent_indent_displaycolumns)
 	for i, line in ipairs(text) do
 		local new_line = ""
@@ -446,6 +446,32 @@ local function shallow_copy(t)
 	return t
 end
 
+--- Deepcopy given table, with support for recursive tables & metatable.
+--- Taken from: https://gist.github.com/tylerneylon/81333721109155b2d244
+---
+---@generic T: table
+---@param obj T
+---@param seen? table
+---@return T
+local function copy3(obj, seen)
+	-- Handle non-tables and previously-seen tables.
+	if type(obj) ~= "table" then
+		return obj
+	end
+	if seen and seen[obj] then
+		return seen[obj]
+	end
+
+	-- New table; mark it as seen an copy recursively.
+	local s = seen or {}
+	local res = {}
+	s[obj] = res
+	for k, v in next, obj do
+		res[copy3(k, s)] = copy3(v, s)
+	end
+	return setmetatable(res, getmetatable(obj))
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -491,4 +517,5 @@ return {
 	pos_offset = pos_offset,
 	pos_from_offset = pos_from_offset,
 	shallow_copy = shallow_copy,
+	copy3 = copy3,
 }
