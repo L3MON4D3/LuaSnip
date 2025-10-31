@@ -38,6 +38,9 @@ local function init_child_positions_func(
 	end
 end
 
+---@param args LuaSnip.NodeRef[]
+---@param parent_insert_position integer[]
+---@param target LuaSnip.NormalizedNodeRef[] Target for the normalized node refs
 local function make_args_absolute(args, parent_insert_position, target)
 	for i, arg in ipairs(args) do
 		if type(arg) == "number" then
@@ -55,6 +58,9 @@ local function make_args_absolute(args, parent_insert_position, target)
 	end
 end
 
+--- Normarlizes node references
+---@param args LuaSnip.NodeRef[]|LuaSnip.NodeRef
+---@return LuaSnip.NodeRef[]
 local function wrap_args(args)
 	-- stylua: ignore
 	if type(args) ~= "table" or
@@ -144,6 +150,8 @@ local function print_dict(dict)
 	}))
 end
 
+---@param opts LuaSnip.Opts.Node
+---@return LuaSnip.NormalizedNodeOpts
 local function init_node_opts(opts)
 	local in_node = {}
 	if not opts then

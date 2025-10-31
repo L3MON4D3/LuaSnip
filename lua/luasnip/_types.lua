@@ -16,3 +16,6 @@
 ---@class LuaSnip.BufferRegion
 ---@field from LuaSnip.BytecolBufferPosition Starting position, included.
 ---@field to LuaSnip.BytecolBufferPosition Ending position, excluded.
+
+---@alias LuaSnip.NormalizedNodeRef LuaSnip.KeyIndexer|LuaSnip.AbsoluteIndexer
+---@alias LuaSnip.NodeRef LuaSnip.KeyIndexer|LuaSnip.AbsoluteIndexer|number
