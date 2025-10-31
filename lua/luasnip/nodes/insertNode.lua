@@ -1,6 +1,5 @@
-local Node = require("luasnip.nodes.node")
-local InsertNode = Node.Node:new()
-local ExitNode = InsertNode:new()
+local node_mod = require("luasnip.nodes.node")
+local Node = node_mod.Node
 local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
@@ -12,10 +11,40 @@ local str_util = require("luasnip.util.str")
 local log = require("luasnip.util.log").new("insertNode")
 local session = require("luasnip.session")
 
-local function I(pos, static_text, opts)
+---@class LuaSnip.InsertNode: LuaSnip.Node
+---@field static_text LuaSnip.SnippetString
+---@field inner_active boolean
+---@field input_active boolean
+local InsertNode = Node:new()
+
+---@class LuaSnip.ExitNode: LuaSnip.InsertNode
+local ExitNode = InsertNode:new()
+
+--- These Nodes contain editable text and can be jumped to- and from (e.g.
+--- traditional placeholders and tabstops, like `$1` in TextMate-snippets).
+---
+--- The functionality is best demonstrated with an example:
+---
+--- ```lua
+--- s("trigger", {
+--- 	t({"After expanding, the cursor is here ->"}), i(1),
+--- 	t({"", "After jumping forward once, cursor is here ->"}), i(2),
+--- 	t({"", "After jumping once more, the snippet is exited there ->"}), i(0),
+--- })
+--- ```
+---
+--- FIXME(@bew): how to put the whole InsertNode documentation here, how to deal
+--- with the gifs here?
+---
+---@param pos integer? Jump-index of the node.
+---@param static_text? string|LuaSnip.SnippetString
+---@param node_opts? LuaSnip.Opts.Node
+---@return LuaSnip.InsertNode|LuaSnip.ExitNode
+local function I(pos, static_text, node_opts)
 	if not snippet_string.isinstance(static_text) then
 		static_text = snippet_string.new(util.to_string_table(static_text))
 	end
+	---@cast snippet_string LuaSnip.SnippetString
 
 	local node
 	if pos == 0 then
@@ -28,7 +57,7 @@ local function I(pos, static_text, opts)
 			ext_gravities_active = { false, false },
 			inner_active = false,
 			input_active = false,
-		}, opts)
+		}, node_opts)
 	else
 		node = InsertNode:new({
 			pos = pos,
@@ -37,8 +66,9 @@ local function I(pos, static_text, opts)
 			type = types.insertNode,
 			inner_active = false,
 			input_active = false,
-		}, opts)
+		}, node_opts)
 	end
+	---@cast node LuaSnip.InsertNode|LuaSnip.ExitNode
 
 	-- make static text owned by this insertNode.
 	-- This includes copying it so that it is separate from the snippets that
@@ -86,7 +116,7 @@ function ExitNode:focus()
 		rrgrav = true
 	end
 
-	Node.focus_node(self, lrgrav, rrgrav)
+	node_mod.focus_node(self, lrgrav, rrgrav)
 end
 
 function ExitNode:input_leave(no_move, dry_run)
@@ -389,6 +419,7 @@ function InsertNode:get_snippetstring()
 			)
 			snippetstring:append_snip(
 				snip,
+				-- FIXME(@bew): This param does not exist on append_snip? 👀
 				str_util.multiline_substr(
 					text,
 					snip_from_base_rel,

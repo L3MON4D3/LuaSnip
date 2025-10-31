@@ -21,16 +21,18 @@ local describe = require("luasnip.util.log").describe
 ---@field store_id? number May be set when the node is used to store/restore a
 ---  generic node.
 ---@field mark? LuaSnip.Mark The mark associated with this node.
+---@field active? boolean
 ---@field type LuaSnip.NodeType Identifies the type of the snippet.
 ---@field next LuaSnip.Node Link to the next node in jump-order.
 ---@field prev LuaSnip.Node Link to the previous node in jump-order.
 ---@field parent LuaSnip.Snippet|LuaSnip.SnippetNode The parent snippet or
 ---  snippet node.
----@field indx ... (FIXME: what is this? is it an indexer?)
+---@field indx ... (FIXME(@bew): what is this? is it an indexer?)
 ---  It looks like it's something used like an integer,
 ---  but other times `:resolve` is called on it 🤔
 ---
 ---@field visible boolean
+---@field static_text string[] (FIXME(@bew): Where is this initialized?)
 ---@field static_visible boolean
 ---@field visited boolean
 ---@field old_text ... (?)
@@ -39,9 +41,8 @@ local Node = {}
 ---@class LuaSnip.NodeExtOpts: {["active"|"passive"|"visited"|"unvisited"|"snippet_passive"]: vim.api.keyset.set_extmark}
 ---  Extmark options by node state.
 
--- ---@class LuaSnip.ChildExtOpts: {[integer]: {[LuaSnip.NodeType]: LuaSnip.NodeExtOpts}}
 ---@class LuaSnip.ChildExtOpts: {[LuaSnip.NodeType]: LuaSnip.NodeExtOpts}
----  Extmark options by node state, for child nodes by their jump index.
+---  Extmark options by node state, by node type.
 
 ---@class LuaSnip.Opts.Node Common options for nodes
 ---
@@ -49,8 +50,10 @@ local Node = {}
 ---  underlying extmarks representing the node. Notably, this enables highlighting
 ---  the nodes, and allows the highlight to be different based on the state of the
 ---  node/snippet. See [ext_opts](../../../DOC.md#ext_opts)
+---
 ---@field merge_node_ext_opts? boolean Whether to use the parents' `ext_opts` to
 ---  compute this nodes' `ext_opts`.
+---
 ---@field key? any Some unique value (strings seem useful) to identify this
 ---  node.
 ---  This is useful for [Key Indexer](../../../DOC.md#key-indexer) or for finding the node at
@@ -59,6 +62,7 @@ local Node = {}
 ---  but every key should occur only once at the same time. This means it is fine
 ---  to return a keyed node from a dynamicNode, because even if it will be
 ---  generated multiple times, the same key not occur twice at the same time.
+---
 ---@field node_callbacks? {["enter"|"leave"]: fun(node:LuaSnip.Node)}
 ---  Specify functions to call after changing the choice, or entering or leaving
 ---  the node. The callback receives the `node` the callback was called on.
@@ -248,7 +252,11 @@ function Node:init_insert_positions(position_so_far)
 	self.absolute_insert_position = vim.deepcopy(position_so_far)
 end
 
+---@param event LuaSnip.EventType
 function Node:event(event)
+	-- FIXME(@bew): wrong type for node_callbacks ?
+	-- We index witha EventType(integer), but the field definition uses string
+	-- keys "enter"/"leave" 🤔
 	local node_callback = self.node_callbacks[event]
 	if node_callback then
 		node_callback(self)
@@ -274,6 +282,7 @@ function Node:event(event)
 	})
 end
 
+---@return (string[])?
 local function get_args(node, get_text_func_name, static)
 	local argnodes_text = {}
 	for key, arg in ipairs(node.args_absolute) do
@@ -364,6 +373,7 @@ function Node:store() end
 function Node:update_restore() end
 
 -- find_node only needs to check children, self is checked by the parent.
+---@return LuaSnip.Node?
 function Node:find_node(_predicate, _opts)
 	return nil
 end
@@ -629,6 +639,8 @@ end
 function Node:interactive()
 	-- interactive if immediately inside choiceNode.
 	return vim.tbl_contains({ types.insertNode, types.exitNode }, self.type)
+		---(allowed: exists only in ChoiceNode)
+		---@diagnostic disable-next-line: undefined-field
 		or self.choice ~= nil
 end
 function Node:leaf()
@@ -685,6 +697,7 @@ function Node:subtree_do(opts)
 	opts.post(self)
 end
 
+---@return LuaSnip.Snippet
 function Node:get_snippet()
 	return self.parent.snippet
 end

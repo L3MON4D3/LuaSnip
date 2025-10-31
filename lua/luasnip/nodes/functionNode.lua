@@ -16,10 +16,29 @@ local snippet_string = require("luasnip.nodes.util.snippet_string")
 ---@field user_args any[] Additional args that will be passed to `fn`
 ---@field args LuaSnip.NodeRef[]
 ---@field args_absolute LuaSnip.NormalizedNodeRef[]
+---@field last_args ((string[])[])?
 local FunctionNode = Node:new()
 
 ---@class LuaSnip.Opts.FunctionNode: LuaSnip.Opts.Node
----@field user_args? any[] Additional args that will be passed to `fn`
+---@field user_args? any[] Additional args that will be passed to `fn` as
+---  `user_arg1`-`user_argn`.
+---
+---  These make it easier to reuse similar functions, for example a functionNode
+---  that wraps some text in different delimiters (`()`, `[]`, ...).
+---  ```lua
+---  local function reused_func(_,_, user_arg1)
+---      return user_arg1
+---  end
+---
+---  s("trig", {
+---      f(reused_func, {}, {
+---          user_args = {"text"}
+---      }),
+---      f(reused_func, {}, {
+---          user_args = {"different text"}
+---      }),
+---  })
+---  ```
 
 --- Function Nodes insert text based on the content of other nodes using a
 --- user-defined function:
@@ -44,7 +63,35 @@ local FunctionNode = Node:new()
 --- ```
 ---
 ---@param fn LuaSnip.FunctionNode.Fn
+---
+---  - `argnode_text`: The text currently contained in the argnodes
+---    (e.g. `{{line1}, {line1, line2}}`).
+---    The snippet indent will be removed from all lines following the first.
+---
+---  - `parent`: The immediate parent of the `functionNode`. It is included here
+---    as it allows easy access to some information that could be useful in
+---    functionNodes (see [Snippets-Data](#data) for some examples).
+---
+---    Many snippets access the surrounding snippet just as `parent`, but if the
+---    `functionNode` is nested within a `snippetNode`, the immediate parent is
+---    a `snippetNode`, not the surrounding snippet (only the surrounding
+---    snippet contains data like `env` or `captures`).
+---
+---  - `user_args`: The `user_args` passed in `opts`. Note that there may be
+---    multiple `user_args` (e.g. `user_args1, ..., user_argsn`).
+---
+---  The function shall return a string, which will be inserted as is, or a
+---  table of strings for multiline strings, where all lines following the first
+---  will be prefixed with the snippets' indentation.
+---
 ---@param argsnode_refs? LuaSnip.NodeRef[]|LuaSnip.NodeRef
+---  [Node References](#node-reference) to the nodes the functionNode depends
+---  on.
+---  Changing any of these will trigger a re-evaluation of `fn`, and insertion of
+---  the updated text.
+---  If no node reference is passed, the `functionNode` is evaluated once upon
+---  expansion.
+---
 ---@param node_opts? LuaSnip.Opts.FunctionNode
 ---@return LuaSnip.FunctionNode
 --
