@@ -122,7 +122,12 @@ function ChoiceNode:subsnip_init()
 	for _, choice in ipairs(self.choices) do
 		choice.parent = self.parent
 		-- only insertNode needs this. (?)
-		if vim.list_contains({types.textNode, types.insertNode, types.functionNode}, choice.type) then
+		if
+			vim.list_contains(
+				{ types.textNode, types.insertNode, types.functionNode },
+				choice.type
+			)
+		then
 			choice.pos = self.pos
 		end
 	end
