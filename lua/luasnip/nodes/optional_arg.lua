@@ -1,5 +1,7 @@
 local M = {}
 
+-- FIXME: This is not documented!
+
 local opt_mt = {}
 function M.new_opt(ref)
 	return setmetatable({ ref = ref }, opt_mt)

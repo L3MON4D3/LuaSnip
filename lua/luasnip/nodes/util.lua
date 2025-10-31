@@ -19,6 +19,10 @@ local function subsnip_init_children(parent, children)
 	end
 end
 
+---@param key string
+---@param node_children_key string
+---@param child_func_name string
+---@return fun(node: LuaSnip.Node, position_so_far: integer[])
 local function init_child_positions_func(
 	key,
 	node_children_key,
@@ -38,6 +42,9 @@ local function init_child_positions_func(
 	end
 end
 
+---@param args LuaSnip.NodeRef[]
+---@param parent_insert_position integer[]
+---@param target LuaSnip.NormalizedNodeRef[] Target for the normalized node refs
 local function make_args_absolute(args, parent_insert_position, target)
 	for i, arg in ipairs(args) do
 		if type(arg) == "number" then
@@ -55,6 +62,9 @@ local function make_args_absolute(args, parent_insert_position, target)
 	end
 end
 
+--- Normarlizes node references
+---@param args LuaSnip.NodeRef[]|LuaSnip.NodeRef
+---@return LuaSnip.NodeRef[]
 local function wrap_args(args)
 	-- stylua: ignore
 	if type(args) ~= "table" or
@@ -144,6 +154,8 @@ local function print_dict(dict)
 	}))
 end
 
+---@param opts LuaSnip.Opts.Node
+---@return LuaSnip.NormalizedNodeOpts
 local function init_node_opts(opts)
 	local in_node = {}
 	if not opts then
@@ -851,6 +863,8 @@ local function collect_dependents(node, which, static)
 	return tbl_util.set_to_list(dependents_set)
 end
 
+---@param args (string[])?
+---@return ((string[])[])?
 local function str_args(args)
 	return args
 		and vim.tbl_map(function(arg)
@@ -860,38 +874,43 @@ local function str_args(args)
 end
 
 ---@class LuaSnip.SnippetCursorRestoreData
----This class holds data about the current position of the cursor in a snippet.
+---  This class holds data about the current position of the cursor in a snippet.
+---
 ---@field key string key of the current node.
 ---@field store_id number uniquely identifies the data associated with this
----store-restore cycle.
----This is necessary because eg. the snippetStrings may contain cursor-positions
----of more than one restore data, and the correct ones can be identified via
----store_id.
+---  store-restore cycle.
+---  This is necessary because eg. the snippetStrings may contain
+---  cursor-positions of more than one restore data, and the correct ones can be
+---  identified via store_id.
+---
 ---@field node LuaSnip.Node The node the cursor will be stored relative to.
+---
 ---@field cursor_start_relative LuaSnip.BytecolBufferPosition The position of
----the cursor, or beginning of selected area, relative to the beginning of
----`node`.
+---  the cursor, or beginning of selected area, relative to the beginning of
+---  `node`.
+---
 ---@field selection_end_start_relative LuaSnip.BytecolBufferPosition The
----position of the cursor, or end of selected area, relative to the beginning of
----`node`. The column is one beyond the byte where the selection ends.
+---  position of the cursor, or end of selected area, relative to the beginning of
+---  `node`. The column is one beyond the byte where the selection ends.
+---
 ---@field mode string The first character (see `vim.fn.mode()`) of the mode at
----the time of `store`.
+---  the time of `store`.
 
 ---@alias LuaSnip.CursorRestoreData table<number, LuaSnip.SnippetCursorRestoreData>
----Represents the position of the cursor relative to all snippets the cursor was
----inside.
----Maps a `store_id` to the data needed to restore the cursor relative to the
----stored node of that snippet.
----We need the data relative to all parent-snippets of some node because the
----first 1,2,... snippets may disappear when a choice is changed.
+---  Represents the position of the cursor relative to all snippets the cursor
+---  was inside.
+---  Maps a `store_id` to the data needed to restore the cursor relative to the
+---  stored node of that snippet.
+---  We need the data relative to all parent-snippets of some node because the
+---  first 1,2,... snippets may disappear when a choice is changed.
 
----@class LuaSnip.StoreCursorNodeRelativeOpts
----@field place_cursor_mark boolean? Whether to, if possible, place a mark in
----snippetText.
+---@class LuaSnip.Opts.StoreCursorNodeRelative
+---@field place_cursor_mark? boolean Whether to, if possible, place a mark in
+---  snippetText.
 
 local store_id = 0
 ---@param node LuaSnip.Node The node to store the cursor relative to.
----@param opts LuaSnip.StoreCursorNodeRelativeOpts
+---@param opts LuaSnip.Opts.StoreCursorNodeRelative
 local function store_cursor_node_relative(node, opts)
 	local data = {}
 
@@ -937,6 +956,7 @@ local function store_cursor_node_relative(node, opts)
 			snippet_current_node.type == types.insertNode
 			and opts.place_cursor_mark
 		then
+			---@cast snippet_current_node LuaSnip.InsertNode
 			-- if the snippet_current_node is not an insertNode, the cursor
 			-- should always be exactly at the beginning if the node is entered
 			-- (which, btw, can only happen if a text or functionNode is
