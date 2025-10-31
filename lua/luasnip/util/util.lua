@@ -240,6 +240,8 @@ local function buffer_comment_chars()
 	return comments
 end
 
+---@param table_or_string string|string[]
+---@return string[]
 local function to_line_table(table_or_string)
 	local tbl = to_string_table(table_or_string)
 

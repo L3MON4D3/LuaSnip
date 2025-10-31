@@ -2,6 +2,8 @@ local snip_mod = require("luasnip.nodes.snippet")
 local node_util = require("luasnip.nodes.util")
 local extend_decorator = require("luasnip.util.extend_decorator")
 
+---@class LuaSnip.VirtualSnippet: LuaSnip.NormalizedSnippetContext
+---@field snippet LuaSnip.BareInternalSnippet
 local VirtualSnippet = {}
 local VirtualSnippet_mt = { __index = VirtualSnippet }
 
@@ -10,6 +12,8 @@ function VirtualSnippet:get_docstring()
 end
 function VirtualSnippet:copy()
 	local copy = self.snippet:copy()
+	-- FIXME(@bew): why does the VirtualSnippet have an ID ?
+	--   It's never added to a collection is it?
 	copy.id = self.id
 
 	return copy
@@ -22,12 +26,14 @@ VirtualSnippet.invalidate = snip_mod.Snippet.invalidate
 ---Create new virtual snippet, ie. an object which is capable of performning
 ---all the functions expected from a snippet which is yet to be expanded
 ---(`matches`,`get_docstring`,`invalidate`,`retrieve_all`,`copy`)
----@param context context as defined for snippet-constructor. Table, not nil.
----@param snippet The snippet this virtual snippet will return on `copy`, also not nil.
----@param opts opts as defined for snippet-constructor. Has to be a table, may be empty.
+---@param context LuaSnip.SnipContext The context, as defined for snippet-constructor.
+---@param snippet LuaSnip.BareInternalSnippet The snippet this virtual snippet will return on `copy`.
+---@param opts LuaSnip.Opts.Snippet|table Snippet options as defined for snippet-constructor. Has to be a table, may be empty.
+---@return LuaSnip.VirtualSnippet
 local function new_virtual_snippet(context, snippet, opts)
 	-- init fields necessary for matches, invalidate, adding the snippet.
 	local o = snip_mod.init_snippet_context(context, opts)
+	---@cast o LuaSnip.VirtualSnippet
 	o.snippet = snippet
 
 	setmetatable(o, VirtualSnippet_mt)
@@ -35,6 +41,8 @@ local function new_virtual_snippet(context, snippet, opts)
 	return o
 end
 
+---@class LuaSnip.MultiSnippet: LuaSnip.Addable
+---@field v_snips LuaSnip.VirtualSnippet[]
 local MultiSnippet = {}
 local MultiSnippet_mt = { __index = MultiSnippet }
 
@@ -42,6 +50,15 @@ function MultiSnippet:retrieve_all()
 	return self.v_snips
 end
 
+---@class LuaSnip.Opts.MultiSnippetContexts: LuaSnip.SnipContext[]
+---@field common? LuaSnip.SnipContext
+
+---@param contexts LuaSnip.Opts.MultiSnippetContexts
+---@param snippet LuaSnip.BareInternalSnippet
+---  (FIXME: this will never be a full LuaSnip.Snippet, so we can't really
+---  annotate it as such 🤔)
+---@param snippet_opts LuaSnip.Opts.Snippet
+---@return LuaSnip.MultiSnippet
 local function multisnippet_from_snippet_obj(contexts, snippet, snippet_opts)
 	assert(
 		type(contexts) == "table",
@@ -49,6 +66,7 @@ local function multisnippet_from_snippet_obj(contexts, snippet, snippet_opts)
 	)
 	local common_context = node_util.wrap_context(contexts.common) or {}
 
+	---@type LuaSnip.VirtualSnippet[]
 	local v_snips = {}
 	for _, context in ipairs(contexts) do
 		local complete_context = vim.tbl_extend(
@@ -65,12 +83,15 @@ local function multisnippet_from_snippet_obj(contexts, snippet, snippet_opts)
 	local o = {
 		v_snips = v_snips,
 	}
-
 	setmetatable(o, MultiSnippet_mt)
 
 	return o
 end
 
+---@param contexts LuaSnip.Opts.MultiSnippetContexts
+---@param nodes LuaSnip.Node|LuaSnip.Node[]
+---@param opts? {common_opts: LuaSnip.Opts.Snippet}
+---@return LuaSnip.MultiSnippet
 local function multisnippet_from_nodes(contexts, nodes, opts)
 	opts = opts or {}
 	local common_snip_opts = opts.common_opts or {}

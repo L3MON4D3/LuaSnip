@@ -1,5 +1,4 @@
 local Node = require("luasnip.nodes.node").Node
-local FunctionNode = Node:new()
 local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
@@ -9,16 +8,61 @@ local key_indexer = require("luasnip.nodes.key_indexer")
 local opt_args = require("luasnip.nodes.optional_arg")
 local snippet_string = require("luasnip.nodes.util.snippet_string")
 
-local function F(fn, args, opts)
-	opts = opts or {}
+---@alias LuaSnip.FunctionNode.Fn fun(args: (string[])[], parent: LuaSnip.Snippet | LuaSnip.SnippetNode, ...: table): string|string[]
+-- FIXME: how to document each param of the callback function?
 
-	return FunctionNode:new({
+---@class LuaSnip.FunctionNode: LuaSnip.Node
+---@field fn LuaSnip.FunctionNode.Fn
+---@field user_args any[] Additional args that will be passed to `fn`
+---@field args LuaSnip.NodeRef[]
+---@field args_absolute LuaSnip.NormalizedNodeRef[]
+local FunctionNode = Node:new()
+
+---@class LuaSnip.Opts.FunctionNode: LuaSnip.Opts.Node
+---@field user_args? any[] Additional args that will be passed to `fn`
+
+--- Function Nodes insert text based on the content of other nodes using a
+--- user-defined function:
+---
+--- ```lua
+--- local function fn(
+---   args,     -- text from i(2) in this example i.e. { { "456" } }
+---   parent,   -- parent snippet or parent node
+---   user_args -- user_args from opts.user_args 
+--- )
+---    return '[' .. args[1][1] .. user_args .. ']'
+--- end
+---
+--- s("trig", {
+---   i(1), t '<-i(1) ',
+---   f(fn,  -- callback (args, parent, user_args) -> string
+---     {2}, -- node indice(s) whose text is passed to fn, i.e. i(2)
+---     { user_args = { "user_args_value" }} -- opts
+---   ),
+---   t ' i(2)->', i(2), t '<-i(2) i(0)->', i(0)
+--- })
+--- ```
+---
+---@param fn LuaSnip.FunctionNode.Fn
+---@param argsnode_refs? LuaSnip.NodeRef[]|LuaSnip.NodeRef
+---@param node_opts? LuaSnip.Opts.FunctionNode
+---@return LuaSnip.FunctionNode
+--
+-- FIXME(@bew): The super flexible NodeRef param & the fact that the NodeRef
+-- type is an alias, makes luals make a huge function signature here 👀
+local function F(fn, argsnode_refs, node_opts)
+	node_opts = node_opts or {}
+
+	local node = FunctionNode:new({
 		fn = fn,
-		args = node_util.wrap_args(args),
+		args = node_util.wrap_args(argsnode_refs or {}),
+		args_absolute = {},
 		type = types.functionNode,
 		mark = nil,
-		user_args = opts.user_args or {},
-	}, opts)
+		user_args = node_opts.user_args or {},
+	}, node_opts)
+	---@cast node LuaSnip.FunctionNode
+	return node
 end
 extend_decorator.register(F, { arg_indx = 3 })
 

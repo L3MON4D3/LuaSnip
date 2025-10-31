@@ -11,9 +11,17 @@ local feedkeys = require("luasnip.util.feedkeys")
 local log = require("luasnip.util.log").new("choice")
 
 ---@class LuaSnip.ChoiceNode.ItemNode: LuaSnip.Node
+---@field choice ...
+---@field parent? LuaSnip.ChoiceNode
+---@field next_choice? LuaSnip.ChoiceNode.ItemNode
+---@field prev_choice LuaSnip.ChoiceNode.ItemNode
 
 ---@class LuaSnip.ChoiceNode: LuaSnip.Node
 ---@field choices LuaSnip.ChoiceNode.ItemNode[]
+---@field parent? LuaSnip.ChoiceNode
+---@field active_choice LuaSnip.ChoiceNode.ItemNode The active choice item node
+---@field restore_cursor boolean Whether the cursor should be restored when
+---  changing the current choice.
 local ChoiceNode = Node:new()
 
 function ChoiceNode:init_nodes()
@@ -111,8 +119,8 @@ extend_decorator.register(ChoiceNode.C, { arg_indx = 3 })
 function ChoiceNode:subsnip_init()
 	for _, choice in ipairs(self.choices) do
 		choice.parent = self.parent
-		-- only insertNode needs this.
-		if choice.type == 2 or choice.type == 1 or choice.type == 3 then
+		-- only insertNode needs this. (?)
+		if vim.list_contains({types.textNode, types.insertNode, types.functionNode}, choice.type) then
 			choice.pos = self.pos
 		end
 	end
