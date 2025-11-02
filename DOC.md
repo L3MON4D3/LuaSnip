@@ -31,6 +31,7 @@ local d = ls.dynamic_node
 local r = ls.restore_node
 local events = require("luasnip.util.events")
 local ai = require("luasnip.nodes.absolute_indexer")
+local opt = require("luasnip.nodes.optional_arg")
 local extras = require("luasnip.extras")
 local l = extras.lambda
 local rep = extras.rep
@@ -937,8 +938,10 @@ user input.
    the dynamicNode's place.  
    `args`, `parent` and `user_args` are also explained in
    [FunctionNode](#functionnode)
-   - `args`: `table of text` (`{{"node1line1", "node1line2"}, {"node2line1"}}`)
-     from nodes the `dynamicNode` depends on.
+   - `args`: `table of text` (`snippetstring_args == false`) or `snippetString`
+     (otherwise). Represents content of the nodes this dynamicNode depends on.
+     Their index in the `node_references`-list determines the position in
+     this list.
    - `parent`: the immediate parent of the `dynamicNode`.
    - `old_state`: a user-defined table. This table may contain anything; its
    	 intended usage is to preserve information from the previously generated
@@ -957,8 +960,10 @@ user input.
   inserted at the `dynamicNode`s place.  
   (`dynamicNode` behaves exactly the same as `functionNode` in this regard).
 
-- `opts`: In addition to the common [Node](#node)-keys, there is, again, 
+- `opts`: In addition to the common [Node](#node)-keys, there is:
   - `user_args`, which is described in [FunctionNode](#functionnode).
+  - `snippetstring_args`, boolean: If set, `function` receives a list of
+    [Snippetstring](#snippetstring) instead of `string[]`. `false` by default.
 
 **Examples**:
 
@@ -1023,6 +1028,70 @@ ls.add_snippets("all",
 
 As with `functionNode`, `user_args` can be used to reuse similar `dynamicNode`-
 functions.
+
+## Self-dependent DynamicNode
+
+While the previous examples only showed dynamicNodes that depend on nodes
+outside of itself, it's possible to update a dynamicNode in response to a change
+to a node within it:
+
+```lua
+ls.snip_expand(s("trig", {
+    d(1, function(args)
+        if not args[1] then
+            -- the arg does not exist -> provide a default.
+            return sn(nil, {i(1, "asdf", {key = "ins"})})
+        else
+            -- This branch is only take after the dynamicNode was updated once.
+            -- Now we can perform the actual "task" of this dynamicNode:
+            -- replacing all occurences of "a" with "e".
+            return sn(nil, {i(1, args[1]:gsub("a", "e"), {key = "ins"})})
+        end
+    end, {opt(k("ins"))}, { snippetstring_args = true })
+}))
+```
+
+The example above shows a dynamicNode that will substitute all occurrences of
+"a" within it with an "e". Important for this to work are:
+* Use an [Optional Noderef](#optional-noderef) `opt(k("ins"))` to reference the
+  generated insertNode that will eventually update the dynamicNode on changes:
+  A dynamicNode does not update when one of its argnodes is missing, so in
+  order to get anything out of the node, we need `opt`.
+* Set `snippetstring_args`: This ensures that snippets expanded inside the
+  dynamicNode are preserved during the update! While not completely necessary,
+  this is a good idea because it can be annoying to lose jump-points
+  only because the snippet they belong is inside such a self-dependent
+  dynamicNode.
+
+When using these self-dependent dynamicNodes it is a really good idea to give
+nodes that can cause an update some unique key, or make sure that they are
+inside of a restoreNode. If this is not done, LuaSnip may not find a node that
+is equivalent to the one that contained the cursor before the update, and thus
+may have to jump into the dynamicNode anew, which may be unexpected.
+
+Another danger is in accidentally constructing an infinite loop of updates.
+Right now, LuaSnip is very indiscriminate in updating dynamicNodes, and if given
+a snippet like
+
+```lua
+s("srep", {
+    d(1, function(args)
+        if not args[1] then
+            return sn(nil, {i(1, "sdf", {key = "ins"})})
+        else
+            return sn(nil, {i(1, args[1]:gsub("a", "aa"), {key = "ins"})})
+        end
+    end, {opt(k("ins"))}, {snippetstring_args = true})
+}),
+```
+
+any "a" is replaced with "aa", ad infinitum (or until the process is killed,
+which is likely soon).
+
+These infinite loops may also be caused by nested self-dependent dynamicNodes,
+think one that replaces "a" with "e", and another that changes "e" back to "a",
+so it's best to build in some kind of safeguard into the generating function.  
+One could for example skip the update once the argnode exceeds a certain length.
 
 # RestoreNode
 
@@ -1121,6 +1190,20 @@ that really bothers you feel free to open an issue.
 
 <!-- panvimdoc-ignore-end -->
 
+# Snippetstring
+
+Snippetstrings can store the content of an insertNode as-is. This includes both
+the regular text, and expanded snippets. The primary purpose of snippetstrings
+is to facilitate easy modifications of text in dynamicNode, while preserving
+snippets and cursor-positions.
+
+A snippetstring supports the string-functions `lower`, `upper`, `gsub` and
+`sub`, and the `..`-metamethod. While `lower`, `upper`, and `..` will always
+preserve snippets inside the snippetstring, `sub` will replace partially
+contained snippets with their text, while `gsub` will do so if a replacement
+crosses a node-boundary.
+
+
 # Key Indexer
 
 A very flexible way of referencing nodes ([Node Reference](#node-reference)).  
@@ -1176,6 +1259,29 @@ s("trig", {
 ![Key/AbsoluteIndexer](https://user-images.githubusercontent.com/25300418/184359369-3bbd2b30-33d1-4a5d-9474-19367867feff.gif)
 
 <!-- panvimdoc-ignore-end -->
+
+
+# Optional Noderef
+
+`opt` wraps another node-reference and makes the wrapped node not strictly
+required for performing an update. This means, amongs other things, that a
+`dynamicNode`s can be updated by nodes within it:
+
+```lua
+ls.snip_expand(s("trig", {
+    d(1, function(args)
+        if not args[1] then
+            -- the arg does not exist -> provide a default.
+            return sn(nil, {i(1, "asdf", {key = "ins"})})
+        else
+            -- This branch is only take after the dynamicNode was updated once.
+            -- Now we can perform the actual "task" of this dynamicNode:
+            -- replacing all occurences of "a" with "e".
+            return sn(nil, {i(1, args[1][1]:gsub("a", "e"), {key = "ins"})})
+        end
+    end, {opt(k("ins"))})
+}))
+```
 
 
 # Absolute Indexer

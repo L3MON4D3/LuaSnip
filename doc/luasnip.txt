@@ -19,11 +19,14 @@ Table of Contents                                  *luasnip-table-of-contents*
 9. SnippetNode                                           |luasnip-snippetnode|
 10. IndentSnippetNode                              |luasnip-indentsnippetnode|
 11. DynamicNode                                          |luasnip-dynamicnode|
+  - Self-dependent DynamicNode|luasnip-dynamicnode-self-dependent-dynamicnode|
 12. RestoreNode                                          |luasnip-restorenode|
-13. Key Indexer                                          |luasnip-key-indexer|
-14. Absolute Indexer                                |luasnip-absolute-indexer|
-15. MultiSnippet                                        |luasnip-multisnippet|
-16. Extras                                                    |luasnip-extras|
+13. Snippetstring                                      |luasnip-snippetstring|
+14. Key Indexer                                          |luasnip-key-indexer|
+15. Optional Noderef                                |luasnip-optional-noderef|
+16. Absolute Indexer                                |luasnip-absolute-indexer|
+17. MultiSnippet                                        |luasnip-multisnippet|
+18. Extras                                                    |luasnip-extras|
   - Lambda                                             |luasnip-extras-lambda|
   - Match                                               |luasnip-extras-match|
   - Repeat                                             |luasnip-extras-repeat|
@@ -39,32 +42,32 @@ Table of Contents                                  *luasnip-table-of-contents*
   - Treesitter-Postfix-Snippet     |luasnip-extras-treesitter-postfix-snippet|
   - Snippet List                                 |luasnip-extras-snippet-list|
   - Snippet Location                         |luasnip-extras-snippet-location|
-17. Extend Decorator                                |luasnip-extend-decorator|
-18. LSP-Snippets                                        |luasnip-lsp-snippets|
+19. Extend Decorator                                |luasnip-extend-decorator|
+20. LSP-Snippets                                        |luasnip-lsp-snippets|
   - SnipMate Parser                     |luasnip-lsp-snippets-snipmate-parser|
   - Transformations                     |luasnip-lsp-snippets-transformations|
-19. Variables                                              |luasnip-variables|
+21. Variables                                              |luasnip-variables|
   - Environment Namespaces          |luasnip-variables-environment-namespaces|
   - LSP-Variables                            |luasnip-variables-lsp-variables|
-20. Loaders                                                  |luasnip-loaders|
+22. Loaders                                                  |luasnip-loaders|
   - Snippet-specific filetypes    |luasnip-loaders-snippet-specific-filetypes|
   - VS-Code                                          |luasnip-loaders-vs-code|
   - SNIPMATE                                        |luasnip-loaders-snipmate|
   - Lua                                                  |luasnip-loaders-lua|
   - edit_snippets                              |luasnip-loaders-edit_snippets|
-21. SnippetProxy                                        |luasnip-snippetproxy|
-22. ext_opts                                                |luasnip-ext_opts|
-23. Docstrings                                            |luasnip-docstrings|
-24. Docstring-Cache                                  |luasnip-docstring-cache|
-25. Events                                                    |luasnip-events|
-26. Cleanup                                                  |luasnip-cleanup|
-27. Logging                                                  |luasnip-logging|
-28. Source                                                    |luasnip-source|
-29. Selection                                              |luasnip-selection|
-30. Config-Options                                    |luasnip-config-options|
-31. Troubleshooting                                  |luasnip-troubleshooting|
+23. SnippetProxy                                        |luasnip-snippetproxy|
+24. ext_opts                                                |luasnip-ext_opts|
+25. Docstrings                                            |luasnip-docstrings|
+26. Docstring-Cache                                  |luasnip-docstring-cache|
+27. Events                                                    |luasnip-events|
+28. Cleanup                                                  |luasnip-cleanup|
+29. Logging                                                  |luasnip-logging|
+30. Source                                                    |luasnip-source|
+31. Selection                                              |luasnip-selection|
+32. Config-Options                                    |luasnip-config-options|
+33. Troubleshooting                                  |luasnip-troubleshooting|
   - Adding Snippets                  |luasnip-troubleshooting-adding-snippets|
-32. API                                                          |luasnip-api|
+34. API                                                          |luasnip-api|
 >
                 __                       ____
                /\ \                     /\  _`\           __
@@ -98,6 +101,7 @@ All code snippets in this help assume the following:
     local r = ls.restore_node
     local events = require("luasnip.util.events")
     local ai = require("luasnip.nodes.absolute_indexer")
+    local opt = require("luasnip.nodes.optional_arg")
     local extras = require("luasnip.extras")
     local l = extras.lambda
     local rep = extras.rep
@@ -944,8 +948,10 @@ user input.
   return (wrapped inside a `snippetNode`) nodes, which will be inserted at the
   dynamicNode’s place.
   `args`, `parent` and `user_args` are also explained in |luasnip-functionnode|
-  - `args`: `table of text` (`{{"node1line1", "node1line2"}, {"node2line1"}}`)
-    from nodes the `dynamicNode` depends on.
+  - `args`: `table of text` (`snippetstring_args == false`) or `snippetString`
+    (otherwise). Represents content of the nodes this dynamicNode depends on.
+    Their index in the `node_references`-list determines the position in
+    this list.
   - `parent`: the immediate parent of the `dynamicNode`.
   - `old_state`: a user-defined table. This table may contain anything; its
     intended usage is to preserve information from the previously generated
@@ -963,8 +969,10 @@ user input.
   `dynamicNode`s’ function will be executed, and the result inserted at the
   `dynamicNode`s place.
   (`dynamicNode` behaves exactly the same as `functionNode` in this regard).
-- `opts`: In addition to the common |luasnip-node|-keys, there is, again,
+- `opts`: In addition to the common |luasnip-node|-keys, there is:
   - `user_args`, which is described in |luasnip-functionnode|.
+  - `snippetstring_args`, boolean: If set, `function` receives a list of
+    |luasnip-snippetstring| instead of `string[]`. `false` by default.
 
 **Examples**:
 
@@ -1018,6 +1026,71 @@ instead of `old_state`.
 
 As with `functionNode`, `user_args` can be used to reuse similar `dynamicNode`-
 functions.
+
+
+SELF-DEPENDENT DYNAMICNODE    *luasnip-dynamicnode-self-dependent-dynamicnode*
+
+While the previous examples only showed dynamicNodes that depend on nodes
+outside of itself, it’s possible to update a dynamicNode in response to a
+change to a node within it:
+
+>lua
+    ls.snip_expand(s("trig", {
+        d(1, function(args)
+            if not args[1] then
+                -- the arg does not exist -> provide a default.
+                return sn(nil, {i(1, "asdf", {key = "ins"})})
+            else
+                -- This branch is only take after the dynamicNode was updated once.
+                -- Now we can perform the actual "task" of this dynamicNode:
+                -- replacing all occurences of "a" with "e".
+                return sn(nil, {i(1, args[1]:gsub("a", "e"), {key = "ins"})})
+            end
+        end, {opt(k("ins"))}, { snippetstring_args = true })
+    }))
+<
+
+The example above shows a dynamicNode that will substitute all occurrences of
+"a" within it with an "e". Important for this to work are: * Use an
+|luasnip-optional-noderef| `opt(k("ins"))` to reference the generated
+insertNode that will eventually update the dynamicNode on changes: A
+dynamicNode does not update when one of its argnodes is missing, so in order to
+get anything out of the node, we need `opt`. * Set `snippetstring_args`: This
+ensures that snippets expanded inside the dynamicNode are preserved during the
+update! While not completely necessary, this is a good idea because it can be
+annoying to lose jump-points only because the snippet they belong is inside
+such a self-dependent dynamicNode.
+
+When using these self-dependent dynamicNodes it is a really good idea to give
+nodes that can cause an update some unique key, or make sure that they are
+inside of a restoreNode. If this is not done, LuaSnip may not find a node that
+is equivalent to the one that contained the cursor before the update, and thus
+may have to jump into the dynamicNode anew, which may be unexpected.
+
+Another danger is in accidentally constructing an infinite loop of updates.
+Right now, LuaSnip is very indiscriminate in updating dynamicNodes, and if
+given a snippet like
+
+>lua
+    s("srep", {
+        d(1, function(args)
+            if not args[1] then
+                return sn(nil, {i(1, "sdf", {key = "ins"})})
+            else
+                return sn(nil, {i(1, args[1]:gsub("a", "aa"), {key = "ins"})})
+            end
+        end, {opt(k("ins"))}, {snippetstring_args = true})
+    }),
+<
+
+any "a" is replaced with "aa", ad infinitum (or until the process is killed,
+which is likely soon).
+
+These infinite loops may also be caused by nested self-dependent dynamicNodes,
+think one that replaces "a" with "e", and another that changes "e" back to "a",
+so it’s best to build in some kind of safeguard into the generating function.
+One could for example skip the update once the argnode exceeds a certain
+length.
 
 
 ==============================================================================
@@ -1103,7 +1176,22 @@ that really bothers you feel free to open an issue.
 
 
 ==============================================================================
-13. Key Indexer                                          *luasnip-key-indexer*
+13. Snippetstring                                      *luasnip-snippetstring*
+
+Snippetstrings can store the content of an insertNode as-is. This includes both
+the regular text, and expanded snippets. The primary purpose of snippetstrings
+is to facilitate easy modifications of text in dynamicNode, while preserving
+snippets and cursor-positions.
+
+A snippetstring supports the string-functions `lower`, `upper`, `gsub` and
+`sub`, and the `..`-metamethod. While `lower`, `upper`, and `..` will always
+preserve snippets inside the snippetstring, `sub` will replace partially
+contained snippets with their text, while `gsub` will do so if a replacement
+crosses a node-boundary.
+
+
+==============================================================================
+14. Key Indexer                                          *luasnip-key-indexer*
 
 A very flexible way of referencing nodes (|luasnip-node-reference|).
 While the straightforward way of addressing nodes via their
@@ -1157,7 +1245,31 @@ the same to the `functionNode`.
 
 
 ==============================================================================
-14. Absolute Indexer                                *luasnip-absolute-indexer*
+15. Optional Noderef                                *luasnip-optional-noderef*
+
+`opt` wraps another node-reference and makes the wrapped node not strictly
+required for performing an update. This means, amongs other things, that a
+`dynamicNode`s can be updated by nodes within it:
+
+>lua
+    ls.snip_expand(s("trig", {
+        d(1, function(args)
+            if not args[1] then
+                -- the arg does not exist -> provide a default.
+                return sn(nil, {i(1, "asdf", {key = "ins"})})
+            else
+                -- This branch is only take after the dynamicNode was updated once.
+                -- Now we can perform the actual "task" of this dynamicNode:
+                -- replacing all occurences of "a" with "e".
+                return sn(nil, {i(1, args[1][1]:gsub("a", "e"), {key = "ins"})})
+            end
+        end, {opt(k("ins"))})
+    }))
+<
+
+
+==============================================================================
+16. Absolute Indexer                                *luasnip-absolute-indexer*
 
 `absolute_indexer` allows accessing nodes by their unique jump-index path from
 the snippet-root. This makes it almost as powerful as |luasnip-key-indexer|,
@@ -1228,7 +1340,7 @@ are all the same node.
 
 
 ==============================================================================
-15. MultiSnippet                                        *luasnip-multisnippet*
+17. MultiSnippet                                        *luasnip-multisnippet*
 
 There are situations where it might be comfortable to access a snippet in
 different ways. For example, one might want to enable auto-triggering in
@@ -1314,7 +1426,7 @@ unlike a `s` snippet these opts must be in the `common_opts` table item.
 
 
 ==============================================================================
-16. Extras                                                    *luasnip-extras*
+18. Extras                                                    *luasnip-extras*
 
 
 LAMBDA                                                 *luasnip-extras-lambda*
@@ -2203,7 +2315,7 @@ manually.
 
 
 ==============================================================================
-17. Extend Decorator                                *luasnip-extend-decorator*
+19. Extend Decorator                                *luasnip-extend-decorator*
 
 Most of LuaSnip’s functions have some arguments to control their behavior.
 Examples include `s`, where `wordTrig`, `regTrig`, … can be set in the first
@@ -2281,7 +2393,7 @@ One more example for registering a new function:
 
 
 ==============================================================================
-18. LSP-Snippets                                        *luasnip-lsp-snippets*
+20. LSP-Snippets                                        *luasnip-lsp-snippets*
 
 LuaSnip is capable of parsing LSP-style snippets using
 `ls.parser.parse_snippet(context, snippet_string, opts)`:
@@ -2369,7 +2481,7 @@ If `jsregexp` is not available, transformations are replaced by a simple copy.
 
 
 ==============================================================================
-19. Variables                                              *luasnip-variables*
+21. Variables                                              *luasnip-variables*
 
 All `TM_something`-variables are supported with two additions: `LS_SELECT_RAW`
 and `LS_SELECT_DEDENT`. These were introduced because `TM_SELECTED_TEXT` is
@@ -2482,7 +2594,7 @@ snippets.
 
 
 ==============================================================================
-20. Loaders                                                  *luasnip-loaders*
+22. Loaders                                                  *luasnip-loaders*
 
 Luasnip is capable of loading snippets from different formats, including both
 the well-established VSCode and SnipMate format, as well as plain Lua files for
@@ -3071,7 +3183,7 @@ One comfortable way to call this function is registering it as a command:
 
 
 ==============================================================================
-21. SnippetProxy                                        *luasnip-snippetproxy*
+23. SnippetProxy                                        *luasnip-snippetproxy*
 
 `SnippetProxy` is used internally to alleviate the upfront cost of loading
 snippets from e.g. a SnipMate library or a VSCode package. This is achieved by
@@ -3103,7 +3215,7 @@ while this will parse the snippet upon expansion:
 
 
 ==============================================================================
-22. ext_opts                                                *luasnip-ext_opts*
+24. ext_opts                                                *luasnip-ext_opts*
 
 `ext_opts` can be used to set the `opts` (see `nvim_buf_set_extmark`) of the
 extmarks used for marking node positions, either globally, per snippet or per
@@ -3304,7 +3416,7 @@ always visible on top of it.
 
 
 ==============================================================================
-23. Docstrings                                            *luasnip-docstrings*
+25. Docstrings                                            *luasnip-docstrings*
 
 Snippet docstrings can be queried using `snippet:get_docstring()`. The function
 evaluates the snippet as if it was expanded regularly, which can be problematic
@@ -3355,7 +3467,7 @@ example to understand `docTrig` and `docstring`.
 
 
 ==============================================================================
-24. Docstring-Cache                                  *luasnip-docstring-cache*
+26. Docstring-Cache                                  *luasnip-docstring-cache*
 
 Although generation of docstrings is pretty fast, it’s preferable to not redo
 it as long as the snippets haven’t changed. Using
@@ -3373,7 +3485,7 @@ The cache is located at `stdpath("cache")/luasnip/docstrings.json` (probably
 
 
 ==============================================================================
-25. Events                                                    *luasnip-events*
+27. Events                                                    *luasnip-events*
 
 Events can be used to react to some action inside snippets. These callbacks can
 be defined per snippet (`callbacks`-key in snippet constructor), per-node by
@@ -3465,7 +3577,7 @@ or some information about expansions:
 
 
 ==============================================================================
-26. Cleanup                                                  *luasnip-cleanup*
+28. Cleanup                                                  *luasnip-cleanup*
 
 The function ls.cleanup() triggers the `LuasnipCleanup` user event, that you
 can listen to do some kind of cleaning in your own snippets; by default it will
@@ -3473,7 +3585,7 @@ empty the snippets table and the caches of the lazy_load.
 
 
 ==============================================================================
-27. Logging                                                  *luasnip-logging*
+29. Logging                                                  *luasnip-logging*
 
 Luasnip uses logging to report unexpected program states, and information on
 what’s going on in general. If something does not work as expected, taking a
@@ -3500,7 +3612,7 @@ print a short message to the log.
 
 
 ==============================================================================
-28. Source                                                    *luasnip-source*
+30. Source                                                    *luasnip-source*
 
 It is possible to attach, to a snippet, information about its source. This can
 be done either by the various loaders (if it is enabled in `ls.setup`
@@ -3535,7 +3647,7 @@ It is also possible to get/set the source of a snippet via API:
 
 
 ==============================================================================
-29. Selection                                              *luasnip-selection*
+31. Selection                                              *luasnip-selection*
 
 Many snippets use the `$TM_SELECTED_TEXT` or (for LuaSnip, preferably
 `LS_SELECT_RAW` or `LS_SELECT_DEDENT`) variable, which has to be populated by
@@ -3565,7 +3677,7 @@ for something else), so one has to
 
 
 ==============================================================================
-30. Config-Options                                    *luasnip-config-options*
+32. Config-Options                                    *luasnip-config-options*
 
 These are the settings you can provide to `luasnip.setup()`:
 
@@ -3646,7 +3758,7 @@ These are the settings you can provide to `luasnip.setup()`:
 
 
 ==============================================================================
-31. Troubleshooting                                  *luasnip-troubleshooting*
+33. Troubleshooting                                  *luasnip-troubleshooting*
 
 
 ADDING SNIPPETS                      *luasnip-troubleshooting-adding-snippets*
@@ -3717,7 +3829,7 @@ GENERAL ~
 
 
 ==============================================================================
-32. API                                                          *luasnip-api*
+34. API                                                          *luasnip-api*
 
 `require("luasnip")`:
 
