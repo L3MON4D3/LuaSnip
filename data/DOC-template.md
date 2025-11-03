@@ -1158,13 +1158,13 @@ that really bothers you feel free to open an issue.
 # Snippetstring
 
 Snippetstrings can store the content of an insertNode as-is. This includes both
-the regular text, and expanded snippets. The primary purpose of snippetstrings
+the regular text, and expanded snippets. The primary purpose of Snippetstrings
 is to facilitate easy modifications of text in dynamicNode, while preserving
 snippets and cursor-positions.
 
-A snippetstring supports the string-functions `lower`, `upper`, `gsub` and
+A Snippetstring supports the string-functions `lower`, `upper`, `gsub` and
 `sub`, and the `..`-metamethod. While `lower`, `upper`, and `..` will always
-preserve snippets inside the snippetstring, `sub` will replace partially
+preserve snippets inside the Snippetstring, `sub` will replace partially
 contained snippets with their text, while `gsub` will do so if a replacement
 crosses a node-boundary.
 
@@ -1229,7 +1229,7 @@ s("trig", {
 # Optional Noderef
 
 `opt` wraps another node-reference and makes the wrapped node not strictly
-required for performing an update. This means, amongs other things, that a
+required for performing an update. This means, amongst other things, that a
 `dynamicNode`s can be updated by nodes within it:
 
 ```lua
@@ -1379,7 +1379,7 @@ ls.add_snippets("all", {
 })
 ```
 
-This example shows how to access the snippet opts for multisnippets.
+This example shows how to access the snippet opts for MultiSnippets.
 Note that unlike a `s` snippet these opts must be in the `common_opts`
 table item.
 

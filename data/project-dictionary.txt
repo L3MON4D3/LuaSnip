@@ -1,4 +1,4 @@
-personal_ws-1.1 en 123 utf-8
+personal_ws-1.1 en 130 utf-8
 AbsoluteIndexer
 Autosnippets
 Cfigure
@@ -17,12 +17,16 @@ LuaSnip
 LuaSnip's
 MiB
 MultiSnippet
+MultiSnippets
 Neovim
 Neovim's
+Noderef
 PascalCase
 README
 SnipMate
 SnippetProxy
+Snippetstring
+Snippetstrings
 TJ
 TextMate
 Treesitter
@@ -30,6 +34,7 @@ UTF
 VSCode
 VSCode's
 Ziontee
+aa
 amongst
 anytext
 argnode
@@ -77,6 +82,7 @@ get's
 globals
 honza
 ie
+infinitum
 ing
 insertNode
 insertNodes
@@ -88,6 +94,7 @@ lsp
 lua
 luasnip
 luasnip's
+metamethod
 mistyped
 molleweide
 multiline

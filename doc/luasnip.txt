@@ -1,4 +1,4 @@
-*luasnip.txt*         For NeoVim 0.7-0.11        Last change: 2025 November 03
+*luasnip.txt*         For NeoVim 0.7-0.11        Last change: 2025 November 04
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*
@@ -1179,13 +1179,13 @@ that really bothers you feel free to open an issue.
 13. Snippetstring                                      *luasnip-snippetstring*
 
 Snippetstrings can store the content of an insertNode as-is. This includes both
-the regular text, and expanded snippets. The primary purpose of snippetstrings
+the regular text, and expanded snippets. The primary purpose of Snippetstrings
 is to facilitate easy modifications of text in dynamicNode, while preserving
 snippets and cursor-positions.
 
-A snippetstring supports the string-functions `lower`, `upper`, `gsub` and
+A Snippetstring supports the string-functions `lower`, `upper`, `gsub` and
 `sub`, and the `..`-metamethod. While `lower`, `upper`, and `..` will always
-preserve snippets inside the snippetstring, `sub` will replace partially
+preserve snippets inside the Snippetstring, `sub` will replace partially
 contained snippets with their text, while `gsub` will do so if a replacement
 crosses a node-boundary.
 
@@ -1248,7 +1248,7 @@ the same to the `functionNode`.
 15. Optional Noderef                                *luasnip-optional-noderef*
 
 `opt` wraps another node-reference and makes the wrapped node not strictly
-required for performing an update. This means, amongs other things, that a
+required for performing an update. This means, amongst other things, that a
 `dynamicNode`s can be updated by nodes within it:
 
 >lua
@@ -1405,7 +1405,7 @@ The returned object is an `addable`, something which can be passed to
     })
 <
 
-This example shows how to access the snippet opts for multisnippets. Note that
+This example shows how to access the snippet opts for MultiSnippets. Note that
 unlike a `s` snippet these opts must be in the `common_opts` table item.
 
 >lua
