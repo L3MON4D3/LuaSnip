@@ -66,7 +66,6 @@ function RestoreNode:input_leave(_, dry_run)
 
 	self:event(events.leave)
 
-	self:update_dependents()
 	self.active = false
 
 	self.mark:update_opts(self:get_passive_ext_opts())
@@ -102,11 +101,6 @@ function RestoreNode:put_initial(pos)
 	tmp.snippet = self.parent.snippet
 
 	tmp.restore_node = self
-	tmp.update_dependents = function(node)
-		node:_update_dependents()
-		-- self is restoreNode.
-		node.restore_node:update_dependents()
-	end
 
 	tmp:resolve_child_ext_opts()
 	tmp:resolve_node_ext_opts()
@@ -245,16 +239,6 @@ function RestoreNode:insert_to_node_absolute(position)
 	end
 	-- nil if not yet available.
 	return self.snip and self.snip:insert_to_node_absolute(position)
-end
-
-function RestoreNode:update_all_dependents()
-	self:_update_dependents()
-	self.snip:update_all_dependents()
-end
-
-function RestoreNode:update_all_dependents_static()
-	self:_update_dependents_static()
-	self.parent.snippet.stored[self.key]:_update_dependents_static()
 end
 
 function RestoreNode:init_insert_positions(position_so_far)
