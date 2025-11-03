@@ -75,6 +75,7 @@ local stored_mt = {
 ---
 ---@field _source? {file: string, line: integer}
 ---@field nodes LuaSnip.Node[]
+---@field insert_nodes LuaSnip.InsertNode[]
 ---@field snippet LuaSnip.Snippet
 ---@field dependents_dict table (FIXME(@bew): type!)
 ---@field child_snippets table[] (FIXME(@bew): type!)

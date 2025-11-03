@@ -59,15 +59,17 @@ local function indent(text, indentstring)
 end
 
 --- In-place expands tabs in `text`.
---- Difficulties:
---- we cannot simply replace tabs with a given number of spaces, the tabs align
---- text at multiples of `tabwidth`. This is also the reason we need the number
---- of columns the text is already indented by (otherwise we can only start a 0).
----@param text string[], multiline string.
----@param tabwidth number, displaycolumns one tab should shift following text
---- by.
----@param parent_indent_displaycolumns number, displaycolumn this text is
---- already at.
+---
+--- _Difficulties_:
+--- We cannot simply replace tabs with a given number of spaces, the tabs align
+--- text at multiples of `tabwidth`.
+--- This is also the reason we need the number of columns the text is already
+--- indented by (otherwise we can only start a 0).
+---
+---@param text string[] multiline string.
+---@param tabwidth number displaycolumns one tab should shift following text by.
+---@param parent_indent_displaycolumns number displaycolumn this text is
+---  already at.
 ---@return string[] _ `text` (only for simple nesting).
 local function expand_tabs(text, tabwidth, parent_indent_displaycolumns)
 	for i, line in ipairs(text) do
@@ -171,8 +173,9 @@ local function put(text, pos)
 	pos[2] = (#text > 1 and 0 or pos[2]) + #text[#text]
 end
 
---[[ Wraps the value in a table if it's not one, makes
-  the first element an empty str if the table is empty]]
+--- Wraps the value in a table if it's not one, makes
+--- the first element an empty str if the table is empty
+---@return string[]
 local function to_string_table(value)
 	if not value then
 		return { "" }
@@ -188,13 +191,17 @@ local function to_string_table(value)
 	return value
 end
 
--- Wrap node in a table if it is not one
+--- Wrap node in a table if it is not one
+---@param nodes LuaSnip.Node[]|LuaSnip.Node
+---@return LuaSnip.Node[]
 local function wrap_nodes(nodes)
 	-- safe to assume, if nodes has a metatable, it is a single node, not a
 	-- table.
 	if getmetatable(nodes) and nodes.type then
+		---@cast nodes LuaSnip.Node
 		return { nodes }
 	else
+		---@cast nodes LuaSnip.Node[]
 		return nodes
 	end
 end
