@@ -117,12 +117,12 @@ local function mk_describe(f)
 	end
 	return function(...)
 		return {
-			args = {...},
+			args = { ... },
 			get = wrapped_f,
 			-- we want to be able to uniquely identify describe-objects, and the
 			-- simplest way (I think) is to set a unique key that is not known,
 			-- or even better, accessible by other modules.
-			[describe_key] = true
+			[describe_key] = true,
 		}
 	end
 end
@@ -133,7 +133,9 @@ end
 M.describe = {
 	node_buftext = mk_describe(function(node)
 		local from, to = node:get_buf_position()
-		return vim.inspect(vim.api.nvim_buf_get_text(0, from[1], from[2], to[1], to[2], {}))
+		return vim.inspect(
+			vim.api.nvim_buf_get_text(0, from[1], from[2], to[1], to[2], {})
+		)
 	end),
 	node = mk_describe(function(node)
 		if not node.parent then
@@ -145,7 +147,8 @@ M.describe = {
 			if node.key then
 				node_id = "key: " .. node.key
 			elseif node.absolute_insert_position then
-				node_id = "insert_pos: " .. vim.inspect(node.absolute_insert_position)
+				node_id = "insert_pos: "
+					.. vim.inspect(node.absolute_insert_position)
 			else
 				node_id = "pos: " .. vim.inspect(node.absolute_position)
 			end
@@ -158,9 +161,8 @@ M.describe = {
 	traceback = mk_describe(function()
 		-- get position where log.debug is called with describe-object.
 		return debug.traceback("", 3)
-	end)
+	end),
 }
-
 
 local function readable_format(msg, ...)
 	local args = tbl.pack(...)
@@ -183,7 +185,12 @@ function M.new(module_name)
 			-- cause an error.
 			local ok, fmt_msg = pcall(readable_format, msg, ...)
 			if not ok then
-				effective_log.error(("log: error while formatting or writing message \"%s\": %s"):format(msg, fmt_msg))
+				effective_log.error(
+					('log: error while formatting or writing message "%s": %s'):format(
+						msg,
+						fmt_msg
+					)
+				)
 			end
 
 			effective_log[name](module_name .. ": " .. fmt_msg)
