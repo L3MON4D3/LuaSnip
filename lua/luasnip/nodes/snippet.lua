@@ -297,7 +297,11 @@ end
 local function verify_nodes(nodes)
 	for i, node in ipairs(nodes) do
 		if node.parent then
-			error("Node at position " .. i .. " is already initialized! This is forbidden, generate a new node and pass it instead.")
+			error(
+				"Node at position "
+					.. i
+					.. " is already initialized! This is forbidden, generate a new node and pass it instead."
+			)
 		end
 	end
 end
