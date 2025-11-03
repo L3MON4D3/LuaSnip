@@ -294,6 +294,14 @@ local function init_snippet_context(context, opts)
 	return effective_context
 end
 
+local function verify_nodes(nodes)
+	for i, node in ipairs(nodes) do
+		if node.parent then
+			error("Node at position " .. i .. " is already initialized! This is forbidden, generate a new node and pass it instead.")
+		end
+	end
+end
+
 -- Create snippet without initializing opts+context.
 -- this might be called from snippetProxy.
 local function _S(snip, nodes, opts)
@@ -385,6 +393,7 @@ local function _S(snip, nodes, opts)
 	end
 	snip.update_dependents = snip._update_dependents
 
+	verify_nodes(nodes)
 	snip:init_nodes()
 
 	if not snip.insert_nodes[0] then
@@ -438,6 +447,7 @@ function SN(pos, nodes, opts)
 		}, init_snippetNode_opts(opts)),
 		opts
 	)
+	verify_nodes(nodes)
 	snip:init_nodes()
 
 	return snip

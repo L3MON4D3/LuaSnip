@@ -1666,4 +1666,13 @@ describe("snippets_basic", function()
 			})
 		end
 	)
+	it("throws error when reusing nodes", function()
+		local ok, err = pcall(exec_lua, [[
+			local i1 = i(1)
+			local snipA = ls.s({trig="asdf"}, {i1})
+			local snipB = ls.s({trig="asdf"}, {i1})
+		]])
+		assert(not ok, "Throws error")
+		assert(err:match("Node at position 1 is already initialized") ~= nil, "Throws correct error")
+	end)
 end)
