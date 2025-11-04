@@ -3,6 +3,8 @@ local node_util = require("luasnip.nodes.util")
 local extend_decorator = require("luasnip.util.extend_decorator")
 
 ---@class LuaSnip.VirtualSnippet: LuaSnip.NormalizedSnippetContext
+---@field id? integer Internal ID of this snippet (used for source mapping)
+---  (note: this is part of LuaSnip.Addable, which is present on LuaSnip.MultiSnippet)
 ---@field snippet LuaSnip.BareInternalSnippet
 local VirtualSnippet = {}
 local VirtualSnippet_mt = { __index = VirtualSnippet }
@@ -12,8 +14,8 @@ function VirtualSnippet:get_docstring()
 end
 function VirtualSnippet:copy()
 	local copy = self.snippet:copy()
-	-- FIXME(@bew): why does the VirtualSnippet have an ID ?
-	--   It's never added to a collection is it?
+	---@diagnostic disable-next-line: cast-type-mismatch
+	---@cast copy LuaSnip.VirtualSnippet
 	copy.id = self.id
 
 	return copy

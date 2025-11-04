@@ -9,7 +9,6 @@ local opt_args = require("luasnip.nodes.optional_arg")
 local snippet_string = require("luasnip.nodes.util.snippet_string")
 
 ---@alias LuaSnip.FunctionNode.Fn fun(args: (string[])[], parent: LuaSnip.Snippet | LuaSnip.SnippetNode, ...: table): string|string[]
--- FIXME: how to document each param of the callback function?
 
 ---@class LuaSnip.FunctionNode: LuaSnip.Node
 ---@field fn LuaSnip.FunctionNode.Fn
@@ -94,9 +93,6 @@ local FunctionNode = Node:new()
 ---
 ---@param node_opts? LuaSnip.Opts.FunctionNode
 ---@return LuaSnip.FunctionNode
---
--- FIXME(@bew): The super flexible NodeRef param & the fact that the NodeRef
--- type is an alias, makes luals make a huge function signature here 👀
 local function F(fn, argsnode_refs, node_opts)
 	node_opts = node_opts or {}
 

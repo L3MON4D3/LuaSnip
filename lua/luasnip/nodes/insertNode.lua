@@ -417,15 +417,7 @@ function InsertNode:get_snippetstring()
 			snippetstring:append_text(
 				str_util.multiline_substr(text, current, snip_from_base_rel)
 			)
-			snippetstring:append_snip(
-				snip,
-				-- FIXME(@bew): This param does not exist on append_snip? 👀
-				str_util.multiline_substr(
-					text,
-					snip_from_base_rel,
-					snip_to_base_rel
-				)
-			)
+			snippetstring:append_snip(snip)
 			current = snip_to_base_rel
 		end
 	end

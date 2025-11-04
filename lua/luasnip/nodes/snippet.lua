@@ -103,6 +103,9 @@ local Snippet = node_mod.Node:new()
 ---  `trigEngine` for getting the full match.
 ---@field captures string[] The capture-groups when the snippet was triggered
 ---  with a non-"plain" `trigEngine`.
+---
+---@field prev LuaSnip.Node
+---@field next LuaSnip.Node
 
 ---@class LuaSnip.NormalizedSnippetContext
 ---@field trigger string The trigger of the snippet

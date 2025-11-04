@@ -15,7 +15,7 @@ local session = require("luasnip.session")
 ---@field old_state? any
 ---@field dynamicNode? LuaSnip.DynamicNode
 
----@alias LuaSnip.DynamicNode.Fn fun(args: (string[])[], parent: LuaSnip.Snippet | LuaSnip.SnippetNode, old_state?: table, ...: table): LuaSnip.SnippetNode
+---@alias LuaSnip.DynamicNode.Fn fun(args: (string[])[], parent: LuaSnip.Snippet | LuaSnip.SnippetNode, old_state?: table, ...: any): LuaSnip.SnippetNode
 
 ---@class LuaSnip.DynamicNode: LuaSnip.Node
 ---@field fn LuaSnip.DynamicNode.Fn
@@ -217,6 +217,8 @@ function DynamicNode:jump_into_snippet(no_move)
 	return self:jump_into(1, no_move, false)
 end
 
+-- FIXME(@bew): This should be on a `ExpandedDynamicNode` class?
+-- To have access to `next`/`prev` (that would go on a `ExpandedNode` 🤔)
 function DynamicNode:update()
 	local args = self:get_args()
 	local str_args = node_util.str_args(args)
