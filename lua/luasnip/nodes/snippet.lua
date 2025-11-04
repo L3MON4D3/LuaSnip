@@ -261,7 +261,7 @@ local function init_snippet_context(context, opts)
 
 	local given_trigger = context.trig
 	if not given_trigger then
-	  error("Snippet trigger is not set!")
+		error("Snippet trigger is not set!")
 	end
 	-- note: at this point `given_trigger` is guaranteed to be a string
 
@@ -654,7 +654,6 @@ extend_decorator.register(
 	{ arg_indx = 1, extend = node_util.snippet_extend_context },
 	{ arg_indx = 3 }
 )
-
 
 ---@class LuaSnip.SnippetNode: LuaSnip.BareInternalSnippet, LuaSnip.NormalizedSnippetNodeOpts
 ---@field is_default boolean

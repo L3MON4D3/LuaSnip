@@ -263,8 +263,12 @@ function DynamicNode:update()
 
 	-- build new snippet before exiting, markers may be needed for
 	-- construncting.
-	tmp =
-		self.fn(effective_args or {}, self.parent, old_state, unpack(self.user_args))
+	tmp = self.fn(
+		effective_args or {},
+		self.parent,
+		old_state,
+		unpack(self.user_args)
+	)
 	---@cast tmp LuaSnip.SnippetNodeForDynNode
 
 	if self.snip then
