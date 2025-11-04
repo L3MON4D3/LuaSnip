@@ -352,7 +352,9 @@ local function _replace(self, replacements, snipstr_map)
 							and node_relative_repl_from <= node_len
 						then
 							if node_relative_repl_to <= node_len then
-								if SnippetString.isinstance(node.static_text) then
+								if
+									SnippetString.isinstance(node.static_text)
+								then
 									-- node contains a snippetString, recurse!
 									-- since we only check string-positions via
 									-- snipstr_map, we don't even have to
