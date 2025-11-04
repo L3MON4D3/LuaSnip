@@ -32,13 +32,11 @@ local SnippetString_mt = {
 	-- __concat and __tostring will be set later on.
 }
 
-local M = {}
-
 ---Create new SnippetString.
 ---@param initial_str string[]?, optional initial multiline string.
 ---@param metadata? table
 ---@return LuaSnip.SnippetString
-function M.new(initial_str, metadata)
+function SnippetString.new(initial_str, metadata)
 	local o = {
 		initial_str and table.concat(initial_str, "\n"),
 		marks = {},
@@ -47,7 +45,7 @@ function M.new(initial_str, metadata)
 	return setmetatable(o, SnippetString_mt)
 end
 
-function M.isinstance(o)
+function SnippetString.isinstance(o)
 	return getmetatable(o) == SnippetString_mt
 end
 
@@ -74,7 +72,7 @@ local function gen_snipstr_map(self, map, from_offset)
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							local nested_str = gen_snipstr_map(
 								node.static_text,
 								map,
@@ -219,11 +217,11 @@ end
 ---@return LuaSnip.SnippetString
 local function to_snippetstring(o)
 	if type(o) == "string" then
-		return M.new({ o })
+		return SnippetString.new({ o })
 	elseif getmetatable(o) == SnippetString_mt then
 		return o
 	else
-		return M.new(o)
+		return SnippetString.new(o)
 	end
 end
 
@@ -302,7 +300,7 @@ local function nodetext_len(node, snipstr_map)
 		return 0
 	end
 
-	if M.isinstance(node.static_text) then
+	if SnippetString.isinstance(node.static_text) then
 		return #snipstr_map[node.static_text].str
 	else
 		-- +1 for each newline.
@@ -354,7 +352,7 @@ local function _replace(self, replacements, snipstr_map)
 							and node_relative_repl_from <= node_len
 						then
 							if node_relative_repl_to <= node_len then
-								if M.isinstance(node.static_text) then
+								if SnippetString.isinstance(node.static_text) then
 									-- node contains a snippetString, recurse!
 									-- since we only check string-positions via
 									-- snipstr_map, we don't even have to
@@ -462,7 +460,7 @@ local function upper(self)
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							node.static_text:_upper()
 						else
 							str_util.multiline_upper(node.static_text)
@@ -483,7 +481,7 @@ local function lower(self)
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							node.static_text:_lower()
 						else
 							str_util.multiline_lower(node.static_text)
@@ -562,7 +560,7 @@ function SnippetString:sub(from, to)
 
 	-- empty range => return empty snippetString.
 	if from > #str or to < from or to < 1 then
-		return M.new({ "" })
+		return SnippetString.new({ "" })
 	end
 
 	from = math.max(from, 1)
@@ -617,4 +615,4 @@ function SnippetString:clear_marks()
 	self.marks = {}
 end
 
-return M
+return SnippetString
