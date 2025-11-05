@@ -167,7 +167,18 @@ local function _luasnip_load_file(file)
 	if not run_ok then
 		local err = file_snippets_or_err
 		log.error("Failed to execute snippet file %s\n: %s", file, err)
-		loader_util.msg_user_snippet_load_failed("from_lua loader", file, err)
+
+		-- Stacktrace is like
+		-- ```
+		-- <trace in loaded file>
+		-- <xpcall>
+		-- <_luasnip_load_file>
+		-- <trace in luasnip>
+		-- ```
+		-- Remove all the trace in luasnip, not interesting for user.
+		local clean_err = err:gsub("\n[^\n]+xpcall[^\n]*\n[^\n]+_luasnip_load_file[^\n]+\n.*", "")
+
+		loader_util.msg_user_snippet_load_failed("from_lua loader", file, clean_err)
 		-- treat this file as having added no snippets.
 		return {}, {}, {}
 	end
