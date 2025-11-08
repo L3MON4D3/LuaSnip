@@ -27,12 +27,10 @@ local describe = require("luasnip.util.log").describe
 ---@field prev LuaSnip.Node Link to the previous node in jump-order.
 ---@field parent LuaSnip.Snippet|LuaSnip.SnippetNode The parent snippet or
 ---  snippet node.
----@field indx ... (FIXME(@bew): what is this? is it an indexer?)
----  It looks like it's something used like an integer,
----  but other times `:resolve` is called on it 🤔
+---@field indx integer Index of the node in the snippet or snippet node.
 ---
 ---@field visible boolean
----@field static_text string[] (FIXME(@bew): Where is this initialized?)
+---@field static_text string[] (FIXME(@bew): What is this for?)
 ---@field static_visible boolean
 ---@field visited boolean
 ---@field old_text ... (?)

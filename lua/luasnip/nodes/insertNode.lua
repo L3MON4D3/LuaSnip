@@ -33,8 +33,56 @@ local ExitNode = InsertNode:new()
 --- })
 --- ```
 ---
---- FIXME(@bew): how to put the whole InsertNode documentation here, how to deal
---- with the gifs here?
+--- <demo-gif:InsertNode>
+---
+--- The Insert Nodes are visited in order `1,2,3,..,n,0`.
+--- (The jump-index 0 also _has_ to belong to an `insertNode`!)
+--- So the order of InsertNode-jumps is as follows:
+---
+--- 1. After expansion, the cursor is at InsertNode 1,
+--- 2. after jumping forward once at InsertNode 2,
+--- 3. and after jumping forward again at InsertNode 0.
+---
+--- If no 0-th InsertNode is found in a snippet, one is automatically inserted
+--- after all other nodes.
+---
+--- The jump-order doesn't have to follow the "textual" order of the nodes:
+--- ```lua
+--- s("trigger", {
+--- 	t({"After jumping forward once, cursor is here ->"}), i(2),
+--- 	t({"", "After expanding, the cursor is here ->"}), i(1),
+--- 	t({"", "After jumping once more, the snippet is exited there ->"}), i(0),
+--- })
+--- ```
+--- The above snippet will behave as follows:
+---
+--- 1. After expansion, we will be at InsertNode 1.
+--- 2. After jumping forward, we will be at InsertNode 2.
+--- 3. After jumping forward again, we will be at InsertNode 0.
+---
+--- An **important** (because here Luasnip differs from other snippet engines) detail
+--- is that the jump-indices restart at 1 in nested snippets:
+--- ```lua
+--- s("trigger", {
+--- 	i(1, "First jump"),
+--- 	t(" :: "),
+--- 	sn(2, {
+--- 		i(1, "Second jump"),
+--- 		t" : ",
+--- 		i(2, "Third jump")
+--- 	})
+--- })
+--- ```
+---
+--- <demo-gif:InsertNode2>
+---
+--- as opposed to e.g. the TextMate syntax, where tabstops are snippet-global:
+--- ```snippet
+--- ${1:First jump} :: ${2: ${3:Third jump} : ${4:Fourth jump}}
+--- ```
+--- (this is not exactly the same snippet of course, but as close as possible)
+--- (the restart-rule only applies when defining snippets in Lua, the above
+--- TextMate-snippet will expand correctly when parsed).
 ---
 ---@param pos integer? Jump-index of the node.
 ---@param static_text? string|LuaSnip.SnippetString
@@ -44,7 +92,7 @@ local function I(pos, static_text, node_opts)
 	if not snippet_string.isinstance(static_text) then
 		static_text = snippet_string.new(util.to_string_table(static_text))
 	end
-	---@cast snippet_string LuaSnip.SnippetString
+	---@cast static_text LuaSnip.SnippetString
 
 	local node
 	if pos == 0 then
