@@ -123,7 +123,7 @@ function ChoiceNode:subsnip_init()
 		choice.parent = self.parent
 		-- only insertNode needs this. (?)
 		if
-			vim.list_contains(
+			util.list_contains(
 				{ types.textNode, types.insertNode, types.functionNode },
 				choice.type
 			)

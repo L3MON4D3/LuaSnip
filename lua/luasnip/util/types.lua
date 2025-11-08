@@ -12,6 +12,9 @@ local NodeType = {
 }
 
 local M = setmetatable({}, { __index = NodeType })
+-- NOTE: The metatable is set so that callers of this `types` module can do
+-- `types.insertNode` to get a named value from the enum, while leaving the
+-- enum definition standalone to avoid adding unnecessary enum fields.
 
 local refs = {
 	{ value = NodeType.textNode, name = "textNode", pascal_name = "TextNode" },

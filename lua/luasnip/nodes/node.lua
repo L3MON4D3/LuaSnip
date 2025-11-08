@@ -14,7 +14,7 @@ local describe = require("luasnip.util.log").describe
 ---@field key? any Key to identify the node with.
 ---@field node_ext_opts LuaSnip.NodeExtOpts
 ---@field merge_node_ext_opts boolean
----@field node_callbacks {["enter"|"leave"]: fun(node:LuaSnip.Node)}
+---@field node_callbacks {[LuaSnip.EventType]: fun(node:LuaSnip.Node)}
 
 ---@class LuaSnip.Node: LuaSnip.NormalizedNodeOpts
 ---@field pos? integer Jump-index of the node
@@ -254,9 +254,6 @@ end
 
 ---@param event LuaSnip.EventType
 function Node:event(event)
-	-- FIXME(@bew): wrong type for node_callbacks ?
-	-- We index witha EventType(integer), but the field definition uses string
-	-- keys "enter"/"leave" 🤔
 	local node_callback = self.node_callbacks[event]
 	if node_callback then
 		node_callback(self)
@@ -264,11 +261,9 @@ function Node:event(event)
 
 	-- try to get the callback from the parent.
 	if self.pos then
-		-- node needs position to get callback (nodes may not have position if
-		-- defined in a choiceNode, ie. c(1, {
-		--	i(nil, {"works!"})
-		-- }))
-		-- works just fine.
+		-- The node needs position to get callback
+		-- (nodes may not have position if defined in a choiceNode)
+		-- ie. `c(1, { i(nil, {"works!"}) }))` works just fine.
 		local parent_callback = self.parent.callbacks[self.pos][event]
 		if parent_callback then
 			parent_callback(self)

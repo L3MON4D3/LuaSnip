@@ -479,6 +479,21 @@ local function copy3(obj, seen)
 	return setmetatable(res, getmetatable(obj))
 end
 
+--- Checks if a list-like table (integer keys without gaps) contains `needle`.
+---@param t table Table to check (must be list-like, not validated)
+---@param needle any Value to compare
+---@return boolean _ `true` if `t` contains `needle`
+local function list_contains(t, needle)
+  vim.validate('t', t, 'table')
+
+  for _, v in ipairs(t) do
+    if v == needle then
+      return true
+    end
+  end
+  return false
+end
+
 return {
 	get_cursor_0ind = get_cursor_0ind,
 	set_cursor_0ind = set_cursor_0ind,
@@ -525,4 +540,5 @@ return {
 	pos_from_offset = pos_from_offset,
 	shallow_copy = shallow_copy,
 	copy3 = copy3,
+	list_contains = list_contains,
 }

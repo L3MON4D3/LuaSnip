@@ -9,6 +9,9 @@ local EventType = {
 }
 
 local M = setmetatable({}, { __index = EventType })
+-- NOTE: The metatable is set so that callers of this `events` module can do
+-- `events.change_choice` to get a named value from the enum, while leaving the
+-- enum definition standalone to avoid adding unnecessary enum fields.
 
 ---@param node_type LuaSnip.NodeType
 ---@param event_id LuaSnip.EventType

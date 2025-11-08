@@ -60,16 +60,6 @@ local callbacks_mt = {
 -- declare SN here, is needed in metatable.
 local SN
 
-local stored_mt = {
-	__index = function(table, key)
-		-- default-node is just empty text.
-		local val = SN(nil, { iNode.I(1) })
-		val.is_default = true
-		rawset(table, key, val)
-		return val
-	end,
-}
-
 ---@class LuaSnip.BareInternalSnippet: LuaSnip.Node
 ---  To be used as a base for all snippet-like nodes (Snippet, SnippetProxy, ..)
 ---
@@ -237,6 +227,16 @@ local function init_snippetNode_opts(opts)
 
 	return in_node
 end
+
+local stored_mt = {
+	__index = function(table, key)
+		-- default-node is just empty text.
+		local val = SN(nil, { iNode.I(1) })
+		val.is_default = true
+		rawset(table, key, val)
+		return val
+	end,
+}
 
 ---@param opts LuaSnip.Opts.Snippet
 ---@return LuaSnip.NormalizedSnippetOpts
@@ -628,7 +628,7 @@ end
 ---  This overrides the filetype the snippet is added (via `add_snippet`) as.
 
 ---@class LuaSnip.Opts.Snippet: LuaSnip.Opts.SnippetNode
----@field stored? {[string]: LuaSnip.Node}
+---@field stored? {[string]: LuaSnip.Node} Snippet-level state for restore node.
 
 ---@param context string|LuaSnip.SnipContext The snippet context.
 ---  Passing a string is equivalent to passing `{ trig = <the string> }`.

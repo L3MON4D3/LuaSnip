@@ -122,7 +122,7 @@ return {
 	--- s("extras4", { i(1), t { "", "" }, extras.rep(1) })
 	--- ```
 	---
-	---@param node_ref LuaSnip.NodeRef a single [Node Reference](#node-reference).
+	---@param node_ref LuaSnip.NodeRef a single [Node Reference](../../../DOC.md#node-reference).
 	---@return LuaSnip.FunctionNode
 	rep = function(node_ref)
 		return F(function(args)
