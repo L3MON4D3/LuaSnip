@@ -2,7 +2,7 @@ local str_util = require("luasnip.util.str")
 local util = require("luasnip.util.util")
 
 ---@class LuaSnip.SnippetString.Mark
----  A kind-of extmark to the text in this buffer.
+---  A kind of extmark, but for a string not a Neovim buffer.
 ---
 ---  It moves with inserted text, and has a gravity to control into which
 ---  direction it shifts. pos is 1-based and refers to one character in the
@@ -10,8 +10,6 @@ local util = require("luasnip.util.util")
 ---
 ---  If the edge is in the middle of multiple characters (for example rgrav=true,
 ---  and chars at pos and pos+1 are replaced), the mark is removed.
----
----  FIXME(@bew): How is it different than extmarks? (-> why not use them?)
 ---
 ---@field id string ID of the mark
 ---@field pos integer 1-based, refers to one character in the string
@@ -152,7 +150,7 @@ function SnippetString:put(pos)
 	end
 end
 
--- FIXME(@bew): what is the return type here?
+---@return LuaSnip.SnippetString
 function SnippetString:copy()
 	-- on 0.7 vim.deepcopy does not behave correctly on snippets => have to manually copy.
 	return setmetatable(

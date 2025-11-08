@@ -167,6 +167,7 @@ function Node:jumpable(dir)
 	end
 end
 
+---@return string[]?
 function Node:get_text()
 	if not self.visible then
 		return nil
@@ -192,11 +193,13 @@ function Node:get_text()
 	return ok and text or { "" }
 end
 
+---@return LuaSnip.SnippetString
 function Node:get_snippetstring()
 	-- if this is not overridden, get_text returns a multiline string.
 	return snippet_string.new(self:get_text())
 end
 
+---@return LuaSnip.SnippetString
 function Node:get_static_snippetstring()
 	-- if this is not overridden, get_static_text() is a multiline string.
 	return snippet_string.new(self:get_static_text())
@@ -252,6 +255,11 @@ function Node:init_insert_positions(position_so_far)
 	self.absolute_insert_position = vim.deepcopy(position_so_far)
 end
 
+--- Run event handlers for the given event type.
+--- - runs node callback if defined
+--- - runs parent callback for the node if defined
+--- - fires `User LuaSnip<Event>` autocmd
+---
 ---@param event LuaSnip.EventType
 function Node:event(event)
 	local node_callback = self.node_callbacks[event]
@@ -277,7 +285,7 @@ function Node:event(event)
 	})
 end
 
----@return (string[])?
+---@return string[]?
 local function get_args(node, get_text_func_name, static)
 	local argnodes_text = {}
 	for key, arg in ipairs(node.args_absolute) do
@@ -342,9 +350,11 @@ local function get_args(node, get_text_func_name, static)
 	return argnodes_text
 end
 
+---@return string[]?
 function Node:get_args()
 	return get_args(self, "argnode_text", false)
 end
+---@return string[]?
 function Node:get_static_args()
 	return get_args(self, "get_static_snippetstring", true)
 end
@@ -431,7 +441,8 @@ function Node:resolve_node_ext_opts(base_prio, parent_ext_opts)
 	)
 end
 
-function Node:is_interactive()
+---@param info any (note: this is used in ast_parser)
+function Node:is_interactive(info)
 	-- safe default.
 	return true
 end
@@ -701,6 +712,7 @@ end
 -- those that don't.
 function Node:subtree_leave_entered() end
 
+---@return LuaSnip.SnippetString
 function Node:argnode_text()
 	return self:get_snippetstring()
 end

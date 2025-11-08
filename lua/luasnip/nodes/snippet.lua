@@ -63,7 +63,7 @@ local SN
 ---@class LuaSnip.BareInternalSnippet: LuaSnip.Node
 ---  To be used as a base for all snippet-like nodes (Snippet, SnippetProxy, ..)
 ---
----@field _source? {file: string, line: integer}
+---@field _source? LuaSnip.Source
 ---@field nodes LuaSnip.Node[]
 ---@field insert_nodes LuaSnip.InsertNode[]
 ---@field snippet LuaSnip.Snippet
@@ -113,7 +113,8 @@ local Snippet = node_mod.Node:new()
 ---@field docTrig? string
 ---@field trig_matcher LuaSnip.SnipContext.TrigMatcher
 ---@field resolveExpandParams LuaSnip.ResolveExpandParamsFn
----@field show_condition fun(line_to_cursor: string): boolean
+---@field show_condition LuaSnip.SnipContext.ShowCondition
+---@field condition LuaSnip.SnipContext.Condition
 ---@field invalidated boolean
 
 ---@class LuaSnip.NormalizedSnippetNodeOpts
@@ -638,10 +639,12 @@ end
 local function S(context, nodes, opts)
 	opts = opts or {}
 
-	local snip = init_snippet_context(node_util.wrap_context(context), opts)
-	local snip = vim.tbl_extend("error", snip, init_snippet_opts(opts))
+	local snip_with_ctx = init_snippet_context(node_util.wrap_context(context), opts)
+	local snip_with_opts = init_snippet_opts(opts)
 
-	local snip = _S(snip, nodes, opts)
+	local base_snip = vim.tbl_extend("error", snip_with_ctx, snip_with_opts)
+	local snip = _S(base_snip, nodes, opts)
+	---@cast snip LuaSnip.Snippet
 
 	if __luasnip_get_loaded_file_frame_debuginfo ~= nil then
 		-- this snippet is being lua-loaded, and the source should be recorded.
@@ -649,7 +652,6 @@ local function S(context, nodes, opts)
 			source.from_debuginfo(__luasnip_get_loaded_file_frame_debuginfo())
 	end
 
-	---@type LuaSnip.Snippet
 	return snip
 end
 extend_decorator.register(
@@ -1160,7 +1162,6 @@ function Snippet:del_marks()
 	end
 end
 
--- FIXME: `info` is _never_ used anywhere?
 function Snippet:is_interactive(info)
 	for _, node in ipairs(self.nodes) do
 		-- return true if any node depends on another node or is an insertNode.

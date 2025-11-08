@@ -45,6 +45,7 @@ end
 ---@param args LuaSnip.NodeRef[]
 ---@param parent_insert_position integer[]
 ---@param target LuaSnip.NormalizedNodeRef[] Target for the normalized node refs
+-- FIXME(@bew): Why is the `target` param updated instead of returning a new table?
 local function make_args_absolute(args, parent_insert_position, target)
 	for i, arg in ipairs(args) do
 		if type(arg) == "number" then
@@ -188,6 +189,8 @@ local function snippet_extend_context(arg, extend)
 	return vim.tbl_extend("keep", arg or {}, extend or {})
 end
 
+---@param context LuaSnip.SnipContext|string
+---@return LuaSnip.SnipContext
 local function wrap_context(context)
 	if type(context) == "string" then
 		return { trig = context }
@@ -863,8 +866,8 @@ local function collect_dependents(node, which, static)
 	return tbl_util.set_to_list(dependents_set)
 end
 
----@param args (string[])?
----@return ((string[])[])?
+---@param args string[]?
+---@return string[][]?
 local function str_args(args)
 	return args
 		and vim.tbl_map(function(arg)

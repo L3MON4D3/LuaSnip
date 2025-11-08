@@ -1,6 +1,6 @@
 ---Convert set of values to a list of those values.
 ---@generic T
----@param tbl T[]|{[T]: boolean}
+---@param tbl {[T]: boolean}
 ---@return T[]
 local function set_to_list(tbl)
 	local ls = {}
