@@ -484,14 +484,14 @@ end
 ---@param needle any Value to compare
 ---@return boolean _ `true` if `t` contains `needle`
 local function list_contains(t, needle)
-  vim.validate('t', t, 'table')
+	vim.validate("t", t, "table")
 
-  for _, v in ipairs(t) do
-    if v == needle then
-      return true
-    end
-  end
-  return false
+	for _, v in ipairs(t) do
+		if v == needle then
+			return true
+		end
+	end
+	return false
 end
 
 return {
