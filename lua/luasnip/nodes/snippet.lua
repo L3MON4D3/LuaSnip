@@ -639,7 +639,8 @@ end
 local function S(context, nodes, opts)
 	opts = opts or {}
 
-	local snip_with_ctx = init_snippet_context(node_util.wrap_context(context), opts)
+	local snip_with_ctx =
+		init_snippet_context(node_util.wrap_context(context), opts)
 	local snip_with_opts = init_snippet_opts(opts)
 
 	local base_snip = vim.tbl_extend("error", snip_with_ctx, snip_with_opts)
