@@ -43,6 +43,8 @@ function M.set(snippet, source)
 	id_to_source[snippet.id] = source
 end
 
+---@param snippet LuaSnip.Snippet
+---@return LuaSnip.Source
 function M.get(snippet)
 	return id_to_source[snippet.id]
 end

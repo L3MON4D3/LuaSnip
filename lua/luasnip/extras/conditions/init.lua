@@ -29,7 +29,7 @@
 --- ```
 ---
 ---@class LuaSnip.SnipContext.ConditionObj
----@field func LuaSnip.SnipContext.ConditionFn
+---@field func LuaSnip.SnipContext.ConditionFn|LuaSnip.SnipContext.ShowConditionFn
 ---
 ---@overload fun(line_to_cursor: string, matched_trigger: string, captures: string[]): boolean
 ---  (note: same signature as `func` field)

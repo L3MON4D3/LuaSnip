@@ -63,17 +63,20 @@ local SN
 ---@class LuaSnip.BareInternalSnippet: LuaSnip.Node
 ---  To be used as a base for all snippet-like nodes (Snippet, SnippetProxy, ..)
 ---
----@field _source? LuaSnip.Source
 ---@field nodes LuaSnip.Node[]
 ---@field insert_nodes LuaSnip.InsertNode[]
+---
+---(FIXME(@bew): these fields are only for ExpandedSnippet?)
 ---@field snippet LuaSnip.Snippet
----@field dependents_dict table (FIXME(@bew): type!)
----@field child_snippets table[] (FIXME(@bew): type!)
+---@field dependents table (FIXME(@L3MON4D3): type/doc!)
+---@field dependents_dict table (FIXME(@L3MON4D3): type/doc!)
+---@field child_snippets table[] (FIXME(@L3MON4D3): type/doc!)
 ---@field static_text string[]?
 ---@field indentstr string
 local Snippet = node_mod.Node:new()
 
 ---@class LuaSnip.Snippet: LuaSnip.BareInternalSnippet, LuaSnip.NormalizedSnippetContext, LuaSnip.NormalizedSnippetOpts, LuaSnip.Addable
+---@field _source? LuaSnip.Source
 ---@field node_store_id integer
 
 -- very approximate classes, for now.
@@ -113,7 +116,7 @@ local Snippet = node_mod.Node:new()
 ---@field docTrig? string
 ---@field trig_matcher LuaSnip.SnipContext.TrigMatcher
 ---@field resolveExpandParams LuaSnip.ResolveExpandParamsFn
----@field show_condition LuaSnip.SnipContext.ShowConditionFn
+---@field show_condition LuaSnip.SnipContext.ShowCondition
 ---@field condition LuaSnip.SnipContext.Condition
 ---@field invalidated boolean
 
@@ -125,6 +128,8 @@ local Snippet = node_mod.Node:new()
 ---@class LuaSnip.NormalizedSnippetOpts: LuaSnip.NormalizedSnippetNodeOpts
 ---@field stored {[string]: LuaSnip.SnippetNode}
 
+-- FIXME(@bew): What is this for? (not documented..)
+-- FIXME(@bew): Should be moved to its own file? (like the other indexers)
 local Parent_indexer = {}
 
 function Parent_indexer:new(o)
@@ -146,6 +151,12 @@ end
 local function P(indx)
 	return Parent_indexer:new({ indx = indx })
 end
+
+-- TODO(@bew): Categorize each Snippet method, between:
+-- - InitializedSnippet (created, not yet added)
+-- - RegisteredSnippet (added in collection)
+-- - ExpandedSnippet
+-- - ..(?)
 
 function Snippet:init_nodes()
 	local insert_nodes = {}
@@ -393,7 +404,6 @@ local function _S(snip, nodes, opts)
 		vim.tbl_extend("error", snip, {
 			nodes = nodes,
 			insert_nodes = {},
-			current_insert = 0,
 			mark = nil,
 			dependents = {},
 			active = false,
@@ -535,9 +545,10 @@ end
 ---@field env_override? {[string]: string[]|string} Override or extend
 ---  the snippet's environment (`snip.env`)
 
+---@alias LuaSnip.SnipContext.ShowConditionFn fun(line_to_cursor: string): boolean
+---@alias LuaSnip.SnipContext.ShowCondition LuaSnip.SnipContext.ShowConditionFn|LuaSnip.SnipContext.ConditionObj
 ---@alias LuaSnip.SnipContext.ConditionFn fun(line_to_cursor: string, matched_trigger: string, captures: string[]): boolean
 ---@alias LuaSnip.SnipContext.Condition LuaSnip.SnipContext.ConditionFn|LuaSnip.SnipContext.ConditionObj
----@alias LuaSnip.SnipContext.ShowConditionFn fun(line_to_cursor: string): boolean
 
 ---@class LuaSnip.SnipContext
 ---
@@ -621,7 +632,7 @@ end
 ---  This function can prevent manual snippet expansion via `ls.expand()`.
 ---  Return `true` to allow expansion, and `false` to prevent it.
 ---
----@field show_condition? LuaSnip.SnipContext.ShowConditionFn
+---@field show_condition? LuaSnip.SnipContext.ShowCondition
 ---  This function is (should be) evaluated by completion engines, indicating
 ---  whether the snippet should be included in current completion candidates.
 ---  Defaults to a function returning `true`.
@@ -637,7 +648,7 @@ end
 ---@class LuaSnip.Opts.Snippet: LuaSnip.Opts.SnippetNode
 ---@field stored? {[string]: LuaSnip.Node} Snippet-level state for restore node.
 ---
----@field show_condition? LuaSnip.SnipContext.ShowConditionFn Same as
+---@field show_condition? LuaSnip.SnipContext.ShowCondition Same as
 ---  `show_condition` in snippet context. (here for backward compat)
 ---@field condition? LuaSnip.SnipContext.Condition Same as `condition` in
 ---  snippet context. (here for backward compat)
@@ -710,7 +721,6 @@ function SN(pos, nodes, opts)
 			pos = pos,
 			nodes = util.wrap_nodes(nodes),
 			insert_nodes = {},
-			current_insert = 0,
 			mark = nil,
 			dependents = {},
 			active = false,
@@ -1119,6 +1129,9 @@ end
 --
 -- IDEA(THINKING, @bew): Similar to `trigger_expand`, this uses fields from
 -- Snippet (from its context & opts) not BareInternalSnippet, should be moved.
+---@param line_to_cursor string
+---@param opts? {fallback_match?: string}
+---@return LuaSnip.ExpandParams?
 function Snippet:matches(line_to_cursor, opts)
 	local fallback_match = util.default_tbl_get(nil, opts, "fallback_match")
 
