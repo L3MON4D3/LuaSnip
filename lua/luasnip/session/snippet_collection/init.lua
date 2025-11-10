@@ -1,5 +1,5 @@
 local source = require("luasnip.session.snippet_collection.source")
-local u_table = require("luasnip.util.table")
+local table_util = require("luasnip.util.table")
 local auto_creating_tables =
 	require("luasnip.util.auto_table").warn_depth_autotable
 local session = require("luasnip.session")
@@ -328,7 +328,7 @@ local function get_all_snippet_fts()
 		ft_set[ft] = true
 	end
 
-	return u_table.set_to_list(ft_set)
+	return table_util.set_to_list(ft_set)
 end
 
 -- modules that want to call refresh_notify probably also want to notify others

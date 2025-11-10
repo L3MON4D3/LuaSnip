@@ -1,7 +1,28 @@
 local str_util = require("luasnip.util.str")
 local util = require("luasnip.util.util")
 
----@class SnippetString
+---@class LuaSnip.SnippetString.Mark
+---  A kind of extmark, but for a string not a Neovim buffer.
+---
+---  It moves with inserted text, and has a gravity to control into which
+---  direction it shifts. pos is 1-based and refers to one character in the
+---  string
+---
+---  If the edge is in the middle of multiple characters (for example rgrav=true,
+---  and chars at pos and pos+1 are replaced), the mark is removed.
+---
+---@field id string ID of the mark
+---@field pos integer 1-based, refers to one character in the string
+---@field rgrav boolean The gravity of the mark.
+---  - When rgrav=true, the mark being incident with the characters right edge.
+---    (replace character at pos with multiple characters => mark will move to
+---    the right of the newly inserted chars)
+---  - When rgrav=false, the mark follows the the left edge.
+---    (replace char with multiple chars => mark stays at char)
+
+---@class LuaSnip.SnippetString
+---@field marks LuaSnip.SnippetString.Mark[]
+---@field metadata? table
 local SnippetString = {}
 local SnippetString_mt = {
 	__index = SnippetString,
@@ -9,12 +30,11 @@ local SnippetString_mt = {
 	-- __concat and __tostring will be set later on.
 }
 
-local M = {}
-
 ---Create new SnippetString.
 ---@param initial_str string[]?, optional initial multiline string.
----@return SnippetString
-function M.new(initial_str, metadata)
+---@param metadata? table
+---@return LuaSnip.SnippetString
+function SnippetString.new(initial_str, metadata)
 	local o = {
 		initial_str and table.concat(initial_str, "\n"),
 		marks = {},
@@ -23,7 +43,7 @@ function M.new(initial_str, metadata)
 	return setmetatable(o, SnippetString_mt)
 end
 
-function M.isinstance(o)
+function SnippetString.isinstance(o)
 	return getmetatable(o) == SnippetString_mt
 end
 
@@ -50,7 +70,7 @@ local function gen_snipstr_map(self, map, from_offset)
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							local nested_str = gen_snipstr_map(
 								node.static_text,
 								map,
@@ -130,6 +150,7 @@ function SnippetString:put(pos)
 	end
 end
 
+---@return LuaSnip.SnippetString
 function SnippetString:copy()
 	-- on 0.7 vim.deepcopy does not behave correctly on snippets => have to manually copy.
 	return setmetatable(
@@ -178,6 +199,7 @@ function SnippetString:copy()
 end
 
 -- copy without copying snippets.
+---@return LuaSnip.SnippetString
 function SnippetString:flatcopy()
 	local res = {}
 	for i, v in ipairs(self) do
@@ -189,17 +211,21 @@ function SnippetString:flatcopy()
 	return setmetatable(res, SnippetString_mt)
 end
 
--- where o is string, string[] or SnippetString.
+---@param o string|string[]|LuaSnip.SnippetString
+---@return LuaSnip.SnippetString
 local function to_snippetstring(o)
 	if type(o) == "string" then
-		return M.new({ o })
+		return SnippetString.new({ o })
 	elseif getmetatable(o) == SnippetString_mt then
 		return o
 	else
-		return M.new(o)
+		return SnippetString.new(o)
 	end
 end
 
+---@param a string|string[]|LuaSnip.SnippetString
+---@param b string|string[]|LuaSnip.SnippetString
+---@return LuaSnip.SnippetString
 function SnippetString.concat(a, b)
 	a = to_snippetstring(a):flatcopy()
 	b = to_snippetstring(b):flatcopy()
@@ -272,7 +298,7 @@ local function nodetext_len(node, snipstr_map)
 		return 0
 	end
 
-	if M.isinstance(node.static_text) then
+	if SnippetString.isinstance(node.static_text) then
 		return #snipstr_map[node.static_text].str
 	else
 		-- +1 for each newline.
@@ -324,7 +350,9 @@ local function _replace(self, replacements, snipstr_map)
 							and node_relative_repl_from <= node_len
 						then
 							if node_relative_repl_to <= node_len then
-								if M.isinstance(node.static_text) then
+								if
+									SnippetString.isinstance(node.static_text)
+								then
 									-- node contains a snippetString, recurse!
 									-- since we only check string-positions via
 									-- snipstr_map, we don't even have to
@@ -432,7 +460,7 @@ local function upper(self)
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							node.static_text:_upper()
 						else
 							str_util.multiline_upper(node.static_text)
@@ -453,7 +481,7 @@ local function lower(self)
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							node.static_text:_lower()
 						else
 							str_util.multiline_lower(node.static_text)
@@ -532,7 +560,7 @@ function SnippetString:sub(from, to)
 
 	-- empty range => return empty snippetString.
 	if from > #str or to < from or to < 1 then
-		return M.new({ "" })
+		return SnippetString.new({ "" })
 	end
 
 	from = math.max(from, 1)
@@ -552,15 +580,10 @@ function SnippetString:sub(from, to)
 	return self
 end
 
--- add a kind-of extmark to the text in this buffer. It moves with inserted
--- text, and has a gravity to control into which direction it shifts.
--- pos is 1-based and refers to one character in the string, rgrav = true can be
--- understood as the mark being incident with the characters right edge (replace
--- character at pos with multiple characters => mark will move to the right of
--- the newly inserted chars), and rgrav = false with the left edge (replace char
--- with multiple chars => mark stays at char).
--- If the edge is in the middle of multiple characters (for example rgrav=true,
--- and chars at pos and pos+1 are replaced), the mark is removed.
+--- Add a kind-of extmark to the text in this buffer.
+---@param id string ID of the mark
+---@param pos integer 1-based, refers to one character in the string.
+---@param rgrav boolean The gravity of the mark, true=right, false=left.
 function SnippetString:add_mark(id, pos, rgrav)
 	-- I'd expect there to be at most 0-2 marks in any given static_text, which
 	-- are those set to track the cursor-position.
@@ -578,6 +601,8 @@ function SnippetString:add_mark(id, pos, rgrav)
 	})
 end
 
+---@param id string ID of the mark
+---@return integer?
 function SnippetString:get_mark_pos(id)
 	for _, mark in ipairs(self.marks) do
 		if mark.id == id then
@@ -590,4 +615,4 @@ function SnippetString:clear_marks()
 	self.marks = {}
 end
 
-return M
+return SnippetString
