@@ -23,7 +23,8 @@ local rp = require("luasnip.extras").rep
 ---   counting from the new value (e.g. `{} {3} {}` is `{1} {3} {4}`)
 ---
 ---@param fmt string String with placeholders
----@param args {[integer|string]: LuaSnip.Node} Table with list-like and/or map-like keys
+---@param args LuaSnip.Node[]|{[string]: LuaSnip.Node} Table with list-like
+---  and/or map-like keys
 ---@param opts? LuaSnip.Opts.Extra.FmtInterpolate
 ---@return (string|LuaSnip.Node)[] _ A list of strings & elements of `args`
 ---  inserted into placeholders.
@@ -175,7 +176,7 @@ end
 --- See `interpolate` documentation for details on the format.
 ---
 ---@param str string The format string
----@param nodes LuaSnip.Node|LuaSnip.Node[]
+---@param nodes LuaSnip.Node|LuaSnip.Node[]|{[string]: LuaSnip.Node}
 ---@param opts? LuaSnip.Opts.Extra.Fmt
 ---@return LuaSnip.Node[]
 local function format_nodes(str, nodes, opts)

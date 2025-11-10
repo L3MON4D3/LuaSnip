@@ -44,23 +44,25 @@ end
 
 ---@param args LuaSnip.NodeRef[]
 ---@param parent_insert_position integer[]
----@param target LuaSnip.NormalizedNodeRef[] Target for the normalized node refs
--- FIXME(@bew): Why is the `target` param updated instead of returning a new table?
-local function make_args_absolute(args, parent_insert_position, target)
+---@return LuaSnip.NormalizedNodeRef[] _ The normalized node refs
+local function make_args_absolute(args, parent_insert_position)
+	---@type LuaSnip.NormalizedNodeRef[]
+	local normalized_args = {}
 	for i, arg in ipairs(args) do
 		if type(arg) == "number" then
 			-- the arg is a number, should be interpreted relative to direct
 			-- parent.
 			local t = vim.deepcopy(parent_insert_position)
 			table.insert(t, arg)
-			target[i] = { absolute_insert_position = t }
+			normalized_args[i] = { absolute_insert_position = t }
 		else
 			-- insert node, absolute_indexer, or key itself, node's
 			-- absolute_insert_position may be nil, check for that during
 			-- usage.
-			target[i] = arg
+			normalized_args[i] = arg
 		end
 	end
+	return normalized_args
 end
 
 --- Normarlizes node references
@@ -866,7 +868,7 @@ local function collect_dependents(node, which, static)
 	return tbl_util.set_to_list(dependents_set)
 end
 
----@param args string[]?
+---@param args (string|LuaSnip.SnippetString)[]?
 ---@return string[][]?
 local function str_args(args)
 	return args

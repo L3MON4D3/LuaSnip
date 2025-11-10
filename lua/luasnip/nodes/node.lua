@@ -29,8 +29,9 @@ local describe = require("luasnip.util.log").describe
 ---  snippet node.
 ---@field indx integer Index of the node in the snippet or snippet node.
 ---
+---(FIXME(@L3MON4D3): Document these)
 ---@field visible boolean
----@field static_text string[] (FIXME(@bew): What is this for?)
+---@field static_text string[]
 ---@field static_visible boolean
 ---@field visited boolean
 ---@field old_text ... (?)

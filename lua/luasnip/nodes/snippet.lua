@@ -336,7 +336,12 @@ local function init_snippet_context(context, opts)
 			util.ternary(context.regTrig ~= nil, "pattern", "plain")
 		)
 		engine = trig_engines[engine_name]
+		if not engine then
+		  error("Unknown trigEngine '".. engine_name.."'")
+		end
 	end
+	---@cast engine -nil (We know it's valid here)
+
 	-- make sure to pass through nil-trigEngineOpts, they will be recognized and
 	-- we will get a default-version of that function instead of generating a
 	-- curried (?) version of it (which would waste space I think).

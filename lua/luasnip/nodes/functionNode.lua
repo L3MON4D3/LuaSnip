@@ -206,8 +206,7 @@ function FunctionNode:indent(_) end
 function FunctionNode:expand_tabs(_) end
 
 function FunctionNode:make_args_absolute(position_so_far)
-	self.args_absolute = {}
-	node_util.make_args_absolute(self.args, position_so_far, self.args_absolute)
+	self.args_absolute = node_util.make_args_absolute(self.args, position_so_far)
 end
 
 function FunctionNode:set_dependents()
