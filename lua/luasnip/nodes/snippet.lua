@@ -113,7 +113,7 @@ local Snippet = node_mod.Node:new()
 ---@field docTrig? string
 ---@field trig_matcher LuaSnip.SnipContext.TrigMatcher
 ---@field resolveExpandParams LuaSnip.ResolveExpandParamsFn
----@field show_condition LuaSnip.SnipContext.ShowCondition
+---@field show_condition LuaSnip.SnipContext.ShowConditionFn
 ---@field condition LuaSnip.SnipContext.Condition
 ---@field invalidated boolean
 
@@ -530,8 +530,9 @@ end
 ---@field env_override? {[string]: string[]|string} Override or extend
 ---  the snippet's environment (`snip.env`)
 
----@alias LuaSnip.SnipContext.Condition fun(line_to_cursor: string, matched_trigger: string, captures: string[]): boolean
----@alias LuaSnip.SnipContext.ShowCondition fun(line_to_cursor: string): boolean
+---@alias LuaSnip.SnipContext.ConditionFn fun(line_to_cursor: string, matched_trigger: string, captures: string[]): boolean
+---@alias LuaSnip.SnipContext.Condition LuaSnip.SnipContext.ConditionFn|LuaSnip.SnipContext.ConditionObj
+---@alias LuaSnip.SnipContext.ShowConditionFn fun(line_to_cursor: string): boolean
 
 ---@class LuaSnip.SnipContext
 ---
@@ -615,7 +616,7 @@ end
 ---  This function can prevent manual snippet expansion via `ls.expand()`.
 ---  Return `true` to allow expansion, and `false` to prevent it.
 ---
----@field show_condition? LuaSnip.SnipContext.ShowCondition
+---@field show_condition? LuaSnip.SnipContext.ShowConditionFn
 ---  This function is (should be) evaluated by completion engines, indicating
 ---  whether the snippet should be included in current completion candidates.
 ---  Defaults to a function returning `true`.
@@ -630,6 +631,11 @@ end
 
 ---@class LuaSnip.Opts.Snippet: LuaSnip.Opts.SnippetNode
 ---@field stored? {[string]: LuaSnip.Node} Snippet-level state for restore node.
+---
+---@field show_condition? LuaSnip.SnipContext.ShowConditionFn Same as
+---  `show_condition` in snippet context. (here for backward compat)
+---@field condition? LuaSnip.SnipContext.Condition Same as `condition` in
+---  snippet context. (here for backward compat)
 
 ---@param context string|LuaSnip.SnipContext The snippet context.
 ---  Passing a string is equivalent to passing `{ trig = <the string> }`.
