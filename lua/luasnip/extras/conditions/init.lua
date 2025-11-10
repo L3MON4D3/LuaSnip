@@ -1,4 +1,3 @@
-
 --- A composable condition object. It can be used for `condition` in a snippet
 --- context but can also be logically combined with other condition
 --- function/object to build complex conditions.
