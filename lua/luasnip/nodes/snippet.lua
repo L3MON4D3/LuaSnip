@@ -337,7 +337,7 @@ local function init_snippet_context(context, opts)
 		)
 		engine = trig_engines[engine_name]
 		if not engine then
-		  error("Unknown trigEngine '".. engine_name.."'")
+			error("Unknown trigEngine '" .. engine_name .. "'")
 		end
 	end
 	---@cast engine -nil (We know it's valid here)

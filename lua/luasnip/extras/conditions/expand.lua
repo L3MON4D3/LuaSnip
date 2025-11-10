@@ -50,7 +50,8 @@ function M.trigger_not_preceded_by(pattern)
 		if line_to_trigger_len == 0 then
 			return true
 		end
-		local char_before_trigger = line_to_cursor:sub(line_to_trigger_len, line_to_trigger_len)
+		local char_before_trigger =
+			line_to_cursor:sub(line_to_trigger_len, line_to_trigger_len)
 		return not char_before_trigger:match(pattern)
 	end
 	return cond_obj.make_condition(condition)
