@@ -61,7 +61,7 @@ end
 ---  ```
 ---  Consider passing this override into `snip_env`.
 ---
----@field node_callbacks? {["change_choice"|"enter"|"leave"]: fun(node:LuaSnip.Node)}
+---@field node_callbacks? {[LuaSnip.EventType]: fun(node:LuaSnip.Node)}
 ---  Specify functions to call after changing the choice, or entering or leaving
 ---  the node. The callback receives the `node` the callback was called on.
 

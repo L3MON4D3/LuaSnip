@@ -62,7 +62,7 @@ local Node = {}
 ---  to return a keyed node from a dynamicNode, because even if it will be
 ---  generated multiple times, the same key not occur twice at the same time.
 ---
----@field node_callbacks? {["enter"|"leave"]: fun(node:LuaSnip.Node)}
+---@field node_callbacks? {[LuaSnip.EventType]: fun(node:LuaSnip.Node)}
 ---  Specify functions to call after changing the choice, or entering or leaving
 ---  the node. The callback receives the `node` the callback was called on.
 

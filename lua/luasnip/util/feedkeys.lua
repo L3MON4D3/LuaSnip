@@ -75,7 +75,13 @@ function M.feedkeys_insert(keys)
 	end, next_id())
 end
 
--- pos: (0,0)-indexed.
+--- Returns keybind-expr actions to place the cursor at the given position,
+--- optionally on the previous char on the left or previous line.
+---
+---@param pos LuaSnip.RawPos0 Position, 0-indexed
+---@param before? boolean Place the cursor on the previous char,
+---  on the left or previous line.
+---@return string
 local function cursor_set_keys(pos, before)
 	if before then
 		if pos[2] == 0 then
@@ -115,10 +121,12 @@ local function cursor_set_keys(pos, before)
 		.. ","
 		-- -1 works for multibyte because of rounding, apparently.
 		.. pos[2]
-		.. "})"
-		.. "<cr><cmd>:silent! foldopen!<cr>"
+		.. "})<cr>"
+		.. "<cmd>:silent! foldopen!<cr>"
 end
 
+---@param b LuaSnip.RawPos0
+---@param e LuaSnip.RawPos0
 function M.select_range(b, e)
 	local id = next_id()
 	enqueued_cursor_state =

@@ -140,6 +140,7 @@ local function enter_nodes_between(parent, child, no_move)
 	nodes[#nodes]:input_enter(no_move)
 end
 
+---@param node LuaSnip.Node
 local function select_node(node)
 	local node_begin, node_end = node.mark:pos_begin_end_raw()
 	feedkeys.select_range(node_begin, node_end)
