@@ -785,7 +785,7 @@ the latter is special-cased to have a jump-point at the beginning of its text.
     end
     ```
     Consider passing this override into `snip_env`.
-  * `node_callbacks?: { [("change_choice"|"enter"...)]: fun(...) -> ... }?`
+  * `node_callbacks?: { [LuaSnip.EventType]: fun(...) -> ... }?`
   * `node_ext_opts?: LuaSnip.NodeExtOpts?` Pass these opts through to the underlying extmarks
     representing the node. Notably, this enables highlighting the nodes, and allows the highlight to
     be different based on the state of the node/snippet. See [ext_opts](#ext_opts)
