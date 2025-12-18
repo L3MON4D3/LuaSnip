@@ -196,4 +196,139 @@ Here are some LuaSnip videos and tutorials on the Web:
 - A [collection of LuaSnip guides](https://evesdropper.dev/files/luasnip) by [@evesdropper](https://github.com/evesdropper), with most of them also in a LaTeX context
 - An introductory LuaSnip [video tutorial for beginners](https://www.youtube.com/watch?v=ub0REXjhpmk) by Ziontee113
 
+### Quickstart for luasnip
+
+Using pure luasnip functions on simple day to day use may be hard, here's some templates you get you started quickly (the equal signs are just for readability):
+
+snippets/luasnip/lua.lua
+
+```lua
+local ls = require("luasnip")
+local snippet = ls.snippet
+local insert_node = ls.insert_node
+local function_node = ls.function_node
+-- :help luasnip-extras-fmt
+local fmt = require("luasnip.extras.fmt").fmt
+
+return {
+  -- a simple snippet with placeholders
+  snippet(
+    "snippet_name",
+    fmt(
+      [================================================[
+      hello: {1}
+      hola: {2}
+      final position: {}
+      ]================================================],
+      {
+        insert_node(1, "world"),
+        insert_node(2, "mundo"),
+        insert_node(0, ""),
+      }
+    )
+  ),
+  -- a snippet can also call functions
+  snippet(
+    "snippet_name2",
+    fmt(
+      [================================================[
+      Filename is: {1}
+      Now is: {2}
+      List files: {3}
+      ]================================================],
+      {
+        function_node(function()
+          -- call a vim function
+          return vim.fn.expand("%:t")
+        end),
+        function_node(function()
+          -- call a lua function
+          return os.date("%Y-%m-%dT%H:%M:%S")
+        end),
+        function_node(function()
+          -- call a shell command
+          return vim.fn.systemlist("ls -l")
+        end),
+      }
+    )
+  ),
+  -- duplicate placeholders
+  snippet(
+    "snippet_name3",
+    fmt(
+      [================================================[
+      hello: {who}
+      hello again: {who}
+      ]================================================],
+      {
+        who = insert_node(1, "world"),
+      },
+      {
+        repeat_duplicates = true,
+      }
+    )
+  ),
+}
+```
+
+The following (lazy) config loads snippets from folder `./snippets/luasnip` and adds two commands:
+
+- `EditLuasnipSnippets` to quickly jump to your luasnip snippets
+- `PasteAsLuasnipSnippet` to paste your clipboard content as a snippet (escaping { } signs as {{ }})
+
+Here's how to quickly create your snippets:
+
+https://github.com/user-attachments/assets/d9a399b3-c497-47d5-98f3-cf872f227cd6
+
+lua/plugins/snippets.lua
+
+```lua
+  {
+    "L3MON4D3/LuaSnip",
+    config = function()
+      -- load luasnip snippets from folder ./snippets/luasnip
+      -- example snippets for markdown: ./snippets/luasnip/markdown.lua
+      require("luasnip.loaders.from_lua").lazy_load({ paths = { "./snippets/luasnip" } })
+
+      -- EditLuasnipSnippets command to edit luasnip snippets
+      vim.api.nvim_create_user_command("EditLuasnipSnippets", function()
+        require("luasnip.loaders").edit_snippet_files({
+          -- pick current filetype
+          ft_filter = function(filetype)
+            return filetype == vim.bo.filetype
+          end,
+          -- pick luasnip type
+          format = function(_, source_name)
+            return source_name == "lua"
+          end,
+        })
+      end, { bang = true })
+
+      -- Copy clipboard content as a LuaSnip snippet
+      vim.api.nvim_create_user_command("PasteAsLuasnipSnippet", function()
+        -- Get clipboard content and escape braces for fmt: { -> {{ and } -> }}
+        local escaped = vim.fn.getreg("+"):gsub("{", "{{"):gsub("}", "}}")
+
+        -- Build the snippet template.
+        -- Equal signs === are just for readability
+        local result = [[  snippet(
+    "snippet_name",
+    fmt(
+      [================================================[
+]] .. escaped .. [[
+      {1}
+      ]================================================],
+      {
+        insert_node(1, ""),
+      }
+    )
+  ),]]
+
+        -- paste at cursor
+        vim.api.nvim_put(vim.split(result, "\n"), "l", true, true)
+      end, {})
+    end,
+  },
+```
+
 Inspired by [vsnip.vim](https://github.com/hrsh7th/vim-vsnip/)
