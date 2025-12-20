@@ -66,6 +66,11 @@ Neovim >= 0.7 (extmarks)
 > specify the `CC` variable in the build command: `make install_jsregexp
 > CC=your_compiler_program`. Also, make sure `%GIT%/bin` directory is added in
 > the `$PATH` so that `make` can use `%GIT%/bin/sh.exe`.
+> 
+> On FreeBSD (and/or systems that do not install the GNU make package as the default)
+> make commands will fail as the Makefile does not align with the expected syntax of the
+> BSD variant of make. The solution is to install the GNU variant of make:
+> 'pkg install gmake' on FreeBSD.
 
 ## Keymaps
 In Vim script, with `<Tab>` for jumping forward/expanding a snippet, `<Shift-Tab>` for
