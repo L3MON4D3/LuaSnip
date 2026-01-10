@@ -566,7 +566,7 @@ end
 ---  })
 ---  ```
 ---
----@field pos? [integer, integer] Position at which the snippet should be
+---@field pos? LuaSnip.RawPos00 Position at which the snippet should be
 ---  inserted. Pass as `(row,col)`, both 0-based, the `col` given in bytes.
 ---
 ---@field indent? boolean Whether to prepend the current lines' indent to all

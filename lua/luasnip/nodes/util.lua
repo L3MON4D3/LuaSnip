@@ -1015,6 +1015,8 @@ local function store_cursor_node_relative(node, opts)
 	return data
 end
 
+---@param node LuaSnip.Node
+---@param data LuaSnip.SnippetCursorRestoreData
 local function restore_cursor_pos_relative(node, data)
 	local cursor_pos = data.cursor_start_relative
 	local cursor_pos_v = data.selection_end_start_relative

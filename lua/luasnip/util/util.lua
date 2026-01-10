@@ -1,6 +1,7 @@
 local session = require("luasnip.session")
 local vimversion = require("luasnip.util.vimversion")
 
+---@return LuaSnip.RawPos00
 local function get_cursor_0ind()
 	local c = vim.api.nvim_win_get_cursor(0)
 	c[1] = c[1] - 1
@@ -8,12 +9,13 @@ local function get_cursor_0ind()
 end
 
 -- don't use utf-indexed column, win_set_cursor ignores these.
+---@param c LuaSnip.RawPos00
 local function set_cursor_0ind(c)
 	c[1] = c[1] + 1
 	vim.api.nvim_win_set_cursor(0, c)
 end
 
--- pos: (0,0)-indexed.
+---@param pos LuaSnip.RawPos00
 local function line_chars_before(pos)
 	-- cur-rows are 1-indexed, api-rows 0.
 	local line = vim.api.nvim_buf_get_lines(0, pos[1], pos[1] + 1, false)
@@ -117,6 +119,7 @@ local function move_to_mark(id)
 		id,
 		{ details = false }
 	)
+	---@cast new_cur_pos LuaSnip.RawPos00
 	set_cursor_0ind(new_cur_pos)
 end
 
@@ -163,12 +166,14 @@ local function word_under_cursor(cur, line)
 end
 
 -- Put text and update cursor(pos) where cursor is byte-indexed.
-local function put(text, pos)
-	vim.api.nvim_buf_set_text(0, pos[1], pos[2], pos[1], pos[2], text)
+---@param lines string[]
+---@param pos LuaSnip.RawPos00
+local function put(lines, pos)
+	vim.api.nvim_buf_set_text(0, pos[1], pos[2], pos[1], pos[2], lines)
 	-- add rows
-	pos[1] = pos[1] + #text - 1
+	pos[1] = pos[1] + #lines - 1
 	-- add columns, start at 0 if no rows were added, else at old col-value.
-	pos[2] = (#text > 1 and 0 or pos[2]) + #text[#text]
+	pos[2] = (#lines > 1 and 0 or pos[2]) + #lines[#lines]
 end
 
 --[[ Wraps the value in a table if it's not one, makes
@@ -199,6 +204,13 @@ local function wrap_nodes(nodes)
 	end
 end
 
+--- Returns whether the given positions are equal
+---
+---@param p1 LuaSnip.RawPos00|LuaSnip.Pos00
+---@param p2 LuaSnip.RawPos00|LuaSnip.Pos00
+---@return boolean
+--
+-- FIXME(@bew): I don't know how to enforce the use of the same type of pos..
 local function pos_equal(p1, p2)
 	return p1[1] == p2[1] and p1[2] == p2[2]
 end
@@ -305,6 +317,7 @@ local function get_snippet_filetypes()
 	return deduplicate(redirect_filetypes(fts))
 end
 
+-- FIXME(@L3MON4D3): these 2 functions are not used anywhere?
 local function pos_add(p1, p2)
 	return { p1[1] + p2[1], p1[2] + p2[2] }
 end
@@ -397,7 +410,17 @@ local function cmp(i1, i2)
 	return 0
 end
 
--- compare two positions, <0 => pos1<pos2,  0 => pos1=pos2,  >0 => pos1 > pos2.
+--- Compare two positions
+---
+--- Returns <0 when pos1 < pos2
+--- Returns  0 when pos1 == pos2
+--- Returns >0 when pos1 > pos2
+---
+---@param pos1 LuaSnip.RawPos00|LuaSnip.Pos00
+---@param pos2 LuaSnip.RawPos00|LuaSnip.Pos00
+---@return integer
+--
+-- FIXME(@bew): I don't know how to enforce the use of the same type of pos..
 local function pos_cmp(pos1, pos2)
 	-- if row is different it determines result, otherwise the column does.
 	return 2 * cmp(pos1[1], pos2[1]) + cmp(pos1[2], pos2[2])
@@ -413,19 +436,37 @@ local function default_tbl_get(default, t, ...)
 	return default
 end
 
--- compute offset of `pos` into multiline string starting at `base_pos`.
--- This is different from pos_sub because here the column-offset starts at zero
--- when `pos` is on a line different from `base_pos`.
--- Assumption: `pos` occurs after `base_pos`.
+--- Compute offset of `pos` into multiline string starting at `base_pos`.
+---
+--- This is different from pos_sub because here the column-offset starts at zero
+--- when `pos` is on a line different from `base_pos`.
+---
+--- Assumption: `pos` occurs after `base_pos`.
+---
+---@param base_pos LuaSnip.RawPos00
+---@param pos LuaSnip.RawPos00
+---@return LuaSnip.RawPos00
 local function pos_offset(base_pos, pos)
 	local row_offset = pos[1] - base_pos[1]
-	return { row_offset, row_offset == 0 and pos[2] - base_pos[2] or pos[2] }
+	return {
+		row_offset,
+		row_offset == 0 and pos[2] - base_pos[2] or pos[2],
+	}
 end
 
--- compute offset of `pos` into multiline string starting at `base_pos`.
--- This is different from pos_sub because here the column-offset starts at zero
--- when `pos` is on a line different from `base_pos`.
--- Assumption: `pos` occurs after `base_pos`.
+-- FIXME(@L3MON4D3): Is this documentation correct? It looks the same as
+-- `pos_offset` above 🤔
+--
+--- Compute offset of `pos` into multiline string starting at `base_pos`.
+---
+--- This is different from pos_sub because here the column-offset starts at zero
+--- when `pos` is on a line different from `base_pos`.
+---
+--- Assumption: `offset` occurs after `base_pos`.
+---
+---@param base_pos LuaSnip.RawPos00
+---@param offset LuaSnip.RawPos00
+---@return LuaSnip.RawPos00
 local function pos_from_offset(base_pos, offset)
 	return {
 		base_pos[1] + offset[1],

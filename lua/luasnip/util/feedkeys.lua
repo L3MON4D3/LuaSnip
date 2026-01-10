@@ -75,7 +75,8 @@ function M.feedkeys_insert(keys)
 	end, next_id())
 end
 
--- pos: (0,0)-indexed.
+---@param pos LuaSnip.RawPos00
+---@param before? boolean
 local function cursor_set_keys(pos, before)
 	if before then
 		if pos[2] == 0 then
@@ -119,6 +120,9 @@ local function cursor_set_keys(pos, before)
 		.. "<cr><cmd>:silent! foldopen!<cr>"
 end
 
+--- Visual select between the given begin/end positions
+---@param b LuaSnip.RawPos00 Starting position
+---@param e LuaSnip.RawPos00 Ending position (inclusive)
 function M.select_range(b, e)
 	local id = next_id()
 	enqueued_cursor_state =
@@ -152,7 +156,8 @@ function M.select_range(b, e)
 	end, id)
 end
 
--- move the cursor to a position and enter insert-mode (or stay in it).
+--- Move the cursor to a position and enter insert-mode (or stay in it).
+---@param pos LuaSnip.RawPos00
 function M.insert_at(pos)
 	local id = next_id()
 	enqueued_cursor_state = { pos = pos, mode = "i", id = id }
