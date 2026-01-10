@@ -4,30 +4,37 @@ local extend_decorator = require("luasnip.util.extend_decorator")
 local Str = require("luasnip.util.str")
 local rp = require("luasnip.extras").rep
 
--- Interpolate elements from `args` into format string with placeholders.
---
--- The placeholder syntax for selecting from `args` is similar to fmtlib and
--- Python's .format(), with some notable differences:
--- * no format options (like `{:.2f}`)
--- * 1-based indexing
--- * numbered/auto-numbered placeholders can be mixed; numbered ones set the
---   current index to new value, so following auto-numbered placeholders start
---   counting from the new value (e.g. `{} {3} {}` is `{1} {3} {4}`)
---
--- Arguments:
---   fmt: string with placeholders
---   args: table with list-like and/or map-like keys
---   opts:
---     delimiters: string, 2 distinct characters (left, right), default "{}"
---     strict: boolean, set to false to allow for unused `args`, default true
---     repeat_duplicates: boolean, repeat nodes which have jump_index instead of copying them, default false
--- Returns: a list of strings and elements of `args` inserted into placeholders
+---@class LuaSnip.Opts.Extra.FmtInterpolate
+---@field delimiters? string String of 2 distinct characters (left, right).
+---  Defaults to "{}".
+---@field strict? boolean Whether to allow error out on unused `args`.
+---  Defaults to true.
+---@field repeat_duplicates? boolean Repeat nodes which have the same jump_index
+---  instead of copying them. Default to false.
+
+--- Interpolate elements from `args` into format string with placeholders.
+---
+--- The placeholder syntax for selecting from `args` is similar to fmtlib and
+--- Python's .format(), with some notable differences:
+--- * no format options (like `{:.2f}`)
+--- * 1-based indexing
+--- * numbered/auto-numbered placeholders can be mixed; numbered ones set the
+---   current index to new value, so following auto-numbered placeholders start
+---   counting from the new value (e.g. `{} {3} {}` is `{1} {3} {4}`)
+---
+---@param fmt string String with placeholders
+---@param args LuaSnip.Node[]|{[string]: LuaSnip.Node} Table with list-like
+---  and/or map-like keys
+---@param opts? LuaSnip.Opts.Extra.FmtInterpolate
+---@return (string|LuaSnip.Node)[] _ A list of strings & elements of `args`
+---  inserted into placeholders.
 local function interpolate(fmt, args, opts)
 	local defaults = {
 		delimiters = "{}",
 		strict = true,
 		repeat_duplicates = false,
 	}
+	---@type LuaSnip.Opts.Extra.FmtInterpolate
 	opts = vim.tbl_extend("force", defaults, opts or {})
 
 	-- sanitize delimiters
@@ -47,9 +54,9 @@ local function interpolate(fmt, args, opts)
 	}
 
 	-- manage insertion of text/args
-	local elements = {}
+	local elements = {} ---@type (string|LuaSnip.Node)[]
 	local last_index = 0
-	local used_keys = {}
+	local used_keys = {} ---@type {[any]: boolean}
 
 	local add_text = function(text)
 		if #text > 0 then
@@ -155,26 +162,30 @@ local function interpolate(fmt, args, opts)
 	return elements
 end
 
--- Use a format string with placeholders to interpolate nodes.
---
--- See `interpolate` documentation for details on the format.
---
--- Arguments:
---   str: format string
---   nodes: snippet node or list of nodes
---   opts: optional table
---     trim_empty: boolean, remove whitespace-only first/last lines, default true
---     dedent: boolean, remove all common indent in `str`, default true
---     indent_string: string, convert `indent_string` at beginning of each line to unit indent ('\t')
---                            after applying `dedent`, default empty string (disabled)
---     ... the rest is passed to `interpolate`
--- Returns: list of snippet nodes
+---@class LuaSnip.Opts.Extra.Fmt: LuaSnip.Opts.Extra.FmtInterpolate
+---@field trim_empty? boolean Whether to remove whitespace-only first/last lines
+---  Defaults to true.
+---@field dedent? boolean Whether to remove all common indent in `str`.
+---  Defaults to true.
+---@field indent_string? string When set, will convert `indent_string` at
+---  beginning of each line to unit indent ('\t') after applying `dedent`.
+---  Defaults to empty string (disabled).
+
+--- Use a format string with placeholders to interpolate nodes.
+---
+--- See `interpolate` documentation for details on the format.
+---
+---@param str string The format string
+---@param nodes LuaSnip.Node|LuaSnip.Node[]|{[string]: LuaSnip.Node}
+---@param opts? LuaSnip.Opts.Extra.Fmt
+---@return LuaSnip.Node[]
 local function format_nodes(str, nodes, opts)
 	local defaults = {
 		trim_empty = true,
 		dedent = true,
 		indent_string = "",
 	}
+	---@type LuaSnip.Opts.Extra.Fmt
 	opts = vim.tbl_extend("force", defaults, opts or {})
 
 	-- allow to pass a single node
@@ -183,7 +194,7 @@ local function format_nodes(str, nodes, opts)
 	-- optimization: avoid splitting multiple times
 	local lines = nil
 
-	lines = vim.split(str, "\n", true)
+	lines = vim.split(str, "\n", {plain=true})
 	Str.process_multiline(lines, opts)
 	str = table.concat(lines, "\n")
 
@@ -196,7 +207,7 @@ local function format_nodes(str, nodes, opts)
 	return vim.tbl_map(function(part)
 		-- wrap strings in text nodes
 		if type(part) == "string" then
-			return text_node(vim.split(part, "\n", true))
+			return text_node(vim.split(part, "\n", {plain=true}))
 		else
 			return part
 		end
