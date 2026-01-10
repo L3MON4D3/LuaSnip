@@ -194,7 +194,7 @@ local function format_nodes(str, nodes, opts)
 	-- optimization: avoid splitting multiple times
 	local lines = nil
 
-	lines = vim.split(str, "\n", {plain=true})
+	lines = vim.split(str, "\n", { plain = true })
 	Str.process_multiline(lines, opts)
 	str = table.concat(lines, "\n")
 
@@ -207,7 +207,7 @@ local function format_nodes(str, nodes, opts)
 	return vim.tbl_map(function(part)
 		-- wrap strings in text nodes
 		if type(part) == "string" then
-			return text_node(vim.split(part, "\n", {plain=true}))
+			return text_node(vim.split(part, "\n", { plain = true }))
 		else
 			return part
 		end
