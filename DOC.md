@@ -4066,8 +4066,8 @@ Expand a snippet in the current buffer.
     * `captures?: string[]?` Set as the expanded snippets' captures (Defaults to `{}`).
     * `env_override?: { [string]: string }?` Set or override environment variables of the expanded
       snippet (Defaults to `{}`).
-  * `pos?: (integer,integer)?` Position at which the snippet should be inserted. Pass as
-    `(row,col)`, both 0-based, the `col` given in bytes.
+  * `pos?: LuaSnip.RawPos00?` Position at which the snippet should be inserted. Pass as `(row,col)`,
+    both 0-based, the `col` given in bytes.
   * `indent?: boolean?` Whether to prepend the current lines' indent to all lines of the snippet.
     (Defaults to `true`) Turning this off is a good idea when a LSP server already takes indents
     into consideration. In such cases, LuaSnip should not add additional indents. If you are using
