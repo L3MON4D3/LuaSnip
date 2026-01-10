@@ -16,6 +16,12 @@ local M = {
 	invalidated_count = 0,
 }
 
+--- Stores given addables for a given `key`
+--- Allows to invalidates all snippets added for that key later on.
+---
+--- See `key` in `add_snippets`'s opts param.
+---
+---@type {[string]: LuaSnip.Addable[]}
 local by_key = {}
 
 -- stores snippets/autosnippets by priority.
@@ -211,9 +217,10 @@ function M.clean_invalidated(opts)
 	M.invalidated_count = 0
 end
 
+---@param addables_by_ft {[string]: LuaSnip.Addable[]}
 local function invalidate_addables(addables_by_ft)
-	for _, addables in pairs(addables_by_ft) do
-		for _, addable in ipairs(addables) do
+	for _, ft_addables in pairs(addables_by_ft) do
+		for _, addable in ipairs(ft_addables) do
 			for _, expandable in ipairs(addable:retrieve_all()) do
 				expandable:invalidate()
 			end
@@ -241,10 +248,10 @@ end
 local current_id = 0
 --- Add snippets to the collection of snippets.
 ---
----@param snippets {[string]: LuaSnip.Addable[]}
+---@param snippets_by_ft {[string]: LuaSnip.Addable[]}
 ---@param opts LuaSnip.Opts.SessionAddSnippets
-function M.add_snippets(snippets, opts)
-	for ft, ft_snippets in pairs(snippets) do
+function M.add_snippets(snippets_by_ft, opts)
+	for ft, ft_snippets in pairs(snippets_by_ft) do
 		for _, addable in ipairs(ft_snippets) do
 			for _, snip in ipairs(addable:retrieve_all()) do
 				local snip_prio = opts.override_priority
@@ -285,7 +292,7 @@ function M.add_snippets(snippets, opts)
 		if by_key[opts.key] then
 			invalidate_addables(by_key[opts.key])
 		end
-		by_key[opts.key] = snippets
+		by_key[opts.key] = snippets_by_ft
 	end
 end
 
