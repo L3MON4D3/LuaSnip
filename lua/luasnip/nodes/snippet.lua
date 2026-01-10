@@ -60,6 +60,7 @@ local callbacks_mt = {
 -- declare SN here, is needed in metatable.
 local SN
 
+-- TODO(@bew): rename to LuaSnip.CommonSnippetData (?)
 ---@class LuaSnip.BareInternalSnippet: LuaSnip.Node
 ---  To be used as a base for all snippet-like nodes (Snippet, SnippetProxy, ..)
 ---
@@ -84,8 +85,11 @@ local Snippet = node_mod.Node:new()
 
 ---Anything that can be passed to ls.add_snippets().
 ---@class LuaSnip.Addable
----@field id? integer Internal ID of this snippet (used for source mapping)
 ---@field retrieve_all (fun(self: LuaSnip.Addable): LuaSnip.Snippet[])
+---
+---(FIXME(@bew): these fields are only for RegisteredSnippet? (not nil!))
+---@field id? integer Internal ID of this snippet (used for source mapping)
+---@field effective_priority? integer Effective priority of the added snippet
 
 ---Represents an expanded snippet.
 ---@class LuaSnip.ExpandedSnippet: LuaSnip.Snippet
@@ -153,7 +157,7 @@ local function P(indx)
 end
 
 -- TODO(@bew): Categorize each Snippet method, between:
--- - InitializedSnippet (created, not yet added)
+-- - DefinedSnippet (created, not yet added)
 -- - RegisteredSnippet (added in collection)
 -- - ExpandedSnippet
 -- - ..(?)
