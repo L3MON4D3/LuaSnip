@@ -4040,7 +4040,7 @@ Expand a snippet in the current buffer.
 * `opts?: LuaSnip.Opts.SnipExpand?` Optional additional arguments.  
   Valid keys are:
 
-  * `clear_region?: LuaSnip.BufferRegion?` A region of text to clear after populating env-variables,
+  * `clear_region?: LuaSnip.RawRegion00?` A region of text to clear after populating env-variables,
     but before jumping into `snip`. If `nil`, no clearing is performed. Being able to remove text at
     this point is useful as clearing before calling this function would populate `TM_CURRENT_LINE`
     and `TM_CURRENT_WORD` with wrong values (they would miss the snippet trigger). The actual values
@@ -4295,8 +4295,7 @@ Lookup a node by position and activate (ie. jump into) it.
   * `strict?: boolean?` Only activate nodes one could usually jump to. (Defaults to false)
   * `select?: boolean?` Whether to select the entire node, or leave the cursor at the position it is
     currently at. (Defaults to true)
-  * `pos?: LuaSnip.BytecolBufferPosition?` Where to look for the node. (Defaults to the position of
-    the cursor)
+  * `pos?: LuaSnip.RawPos00?` Where to look for the node. (Defaults to the position of the cursor)
 
 Not covered in this section are the various node-constructors exposed by
 the module, their usage is shown either previously in this file or in
