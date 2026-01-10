@@ -1,26 +1,46 @@
 local M = {}
 
--- map fn -> {arg_indx = int, extend = fn}[]
+---@alias LuaSnip.Opts.Util.ExtendDecoratorFn fun(arg: any[], extend_value: any[]): any[]
+
+---@class LuaSnip.Opts.Util.ExtendDecoratorRegister
+---@field arg_indx integer The position of the parameter to override
+---@field extend? LuaSnip.Opts.Util.ExtendDecoratorFn A function used to extend
+---  the args passed to the decorated function.
+---  Defaults to a function which extends the arg-table with the extend-table.
+---  This extend-behaviour is adaptable to accomodate `s`, where the first
+---  argument may be string or table.
+
+---@type {[fun(...): any]: LuaSnip.Opts.Util.ExtendDecoratorRegister[]}
 local function_properties = setmetatable({}, { __mode = "k" })
 
+--- The default extend function implementation.
+---
+---@param arg any[]
+---@param extend any[]
+---@return any[]
 local function default_extend(arg, extend)
 	return vim.tbl_extend("keep", arg or {}, extend or {})
 end
 
----Create a new decorated version of `fn`.
----@param fn The function to create a decorator for.
----@vararg The values to extend with. These should match the descriptions passed
----in `register`:
----```lua
----local function somefn(arg1, arg2, opts1, opts2)
----...
----end
----register(somefn, {arg_indx=4}, {arg_indx=3})
----apply(somefn,
----	{key = "opts2 is extended with this"},
----	{key = "and opts1 with this"})
----```
----@return function: The decorated function.
+--- Create a new decorated version of `fn`.
+---
+---@generic T: fun(...: any): any
+---@param fn T The function to create a decorator for.
+---@vararg any The values to extend with.
+---  These should match the descriptions passed in `register`.
+---
+---  Example:
+---  ```lua
+---  local function somefn(arg1, arg2, opts1, opts2)
+---  ...
+---  end
+---  register(somefn, {arg_indx=4}, {arg_indx=3})
+---  apply(somefn,
+---  	{key = "opts2 is extended with this"},
+---  	{key = "and opts1 with this"}
+---  )
+---  ```
+---@return T _ The decorated function.
 function M.apply(fn, ...)
 	local extend_properties = function_properties[fn]
 	assert(
@@ -54,20 +74,16 @@ function M.apply(fn, ...)
 	return decorated_fn
 end
 
----Prepare a function for usage with extend_decorator.
----To create a decorated function which extends `opts`-style tables passed to it, we need to know
---- 1. which parameter-position the opts are in and
---- 2. how to extend them.
----@param fn function: the function that should be registered.
----@vararg tables. Each describes how to extend one parameter to `fn`.
----The tables accept the following keys:
---- - arg_indx, number (required): the position of the parameter to override.
---- - extend, fn(arg, extend_value) -> effective_arg (optional): this function
----   is used to extend the args passed to the decorated function.
----   It defaults to a function which just extends the the arg-table with the
----   extend-table.
----   This extend-behaviour is adaptable to accomodate `s`, where the first
----   argument may be string or table.
+--- Prepare a function for usage with extend_decorator.
+---
+--- To create a decorated function which extends `opts`-style tables passed to
+--- it, we need to know:
+---   1. which parameter-position the opts are in and
+---   2. how to extend them.
+---
+---@param fn function The function that should be registered.
+---@vararg LuaSnip.Opts.Util.ExtendDecoratorRegister Each describes how to
+---  extend one parameter to `fn`.
 function M.register(fn, ...)
 	local fn_eps = { ... }
 
