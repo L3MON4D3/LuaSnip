@@ -868,12 +868,11 @@ end
 ---of more than one restore data, and the correct ones can be identified via
 ---store_id.
 ---@field node LuaSnip.Node The node the cursor will be stored relative to.
----@field cursor_start_relative LuaSnip.BytecolBufferPosition The position of
----the cursor, or beginning of selected area, relative to the beginning of
----`node`.
----@field selection_end_start_relative LuaSnip.BytecolBufferPosition The
----position of the cursor, or end of selected area, relative to the beginning of
----`node`. The column is one beyond the byte where the selection ends.
+---@field cursor_start_relative LuaSnip.RawPos00 The position of the cursor,
+---or beginning of selected area, relative to the beginning of `node`.
+---@field selection_end_start_relative LuaSnip.RawPos00 The position of the
+---cursor, or end of selected area, relative to the beginning of `node`. The
+---column is one beyond the byte where the selection ends.
 ---@field mode string The first character (see `vim.fn.mode()`) of the mode at
 ---the time of `store`.
 

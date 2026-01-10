@@ -542,7 +542,7 @@ end
 --This can also use `jump_into_func`.
 ---@class LuaSnip.Opts.SnipExpand: LuaSnip.Opts.Expand
 ---
----@field clear_region? LuaSnip.BufferRegion A region of text to clear after
+---@field clear_region? LuaSnip.RawRegion00 A region of text to clear after
 ---  populating env-variables, but before jumping into `snip`. If `nil`, no
 ---  clearing is performed.
 ---  Being able to remove text at this point is useful as clearing before calling
@@ -1301,7 +1301,7 @@ end
 ---  (Defaults to false)
 ---@field select? boolean Whether to select the entire node, or leave the
 ---  cursor at the position it is currently at. (Defaults to true)
----@field pos? LuaSnip.BytecolBufferPosition Where to look for the node.
+---@field pos? LuaSnip.RawPos00 Where to look for the node.
 ---  (Defaults to the position of the cursor)
 
 --- Lookup a node by position and activate (ie. jump into) it.

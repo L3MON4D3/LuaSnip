@@ -205,12 +205,12 @@ function M.confirm(id)
 end
 
 ---@class LuaSnip.Feedkeys.LastState
----@field pos LuaSnip.BytecolBufferPosition Position of the cursor or beginning of visual
----area.
----@field pos_v LuaSnip.BytecolBufferPosition Position of the cursor or end of visual
----area.
----@field mode string Represents the current mode. Only the first character of
----`vim.fn.mode()`, so not completely exact.
+---@field pos LuaSnip.RawPos00 Position of the cursor or beginning of visual
+---  area.
+---@field pos_v LuaSnip.RawPos00 Position of the cursor or end of visual
+---  area.
+---@field mode string Represents the current mode.
+---  Only the first character of `vim.fn.mode()`, so not completely exact.
 
 ---if there are some operations that move the cursor enqueued, retrieve their
 ---target-state, otherwise return the current cursor state.

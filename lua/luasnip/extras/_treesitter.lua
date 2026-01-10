@@ -28,7 +28,7 @@ local function inspect_node(node)
 end
 
 ---@param bufnr number
----@param region LuaSnip.MatchRegion
+---@param region LuaSnip.Region00InLine
 ---@return LanguageTree, string
 local function reparse_buffer_after_removing_match(bufnr, region)
 	local lang = get_lang(bufnr)
@@ -56,11 +56,11 @@ end
 ---@class LuaSnip.extra.FixBufferContext
 ---@field ori_bufnr number
 ---@field ori_text string
----@field region LuaSnip.MatchRegion
+---@field region LuaSnip.Region00InLine
 local FixBufferContext = {}
 
 ---@param ori_bufnr number
----@param region LuaSnip.MatchRegion
+---@param region LuaSnip.Region00InLine
 ---@return LuaSnip.extra.FixBufferContext
 function FixBufferContext.new(ori_bufnr, region, region_content)
 	local o = {
