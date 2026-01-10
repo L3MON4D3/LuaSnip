@@ -246,7 +246,7 @@ local function to_line_table(table_or_string)
 	-- split entries at \n.
 	local line_table = {}
 	for _, str in ipairs(tbl) do
-		local split = vim.split(str, "\n", {plain=true})
+		local split = vim.split(str, "\n", { plain = true })
 		for i = 1, #split do
 			line_table[#line_table + 1] = split[i]
 		end
