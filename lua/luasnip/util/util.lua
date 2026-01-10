@@ -68,7 +68,7 @@ end
 --- by.
 ---@param parent_indent_displaycolumns number, displaycolumn this text is
 --- already at.
----@return string[], `text` (only for simple nesting).
+---@return string[] _ `text` (only for simple nesting).
 local function expand_tabs(text, tabwidth, parent_indent_displaycolumns)
 	for i, line in ipairs(text) do
 		local new_line = ""
@@ -246,7 +246,7 @@ local function to_line_table(table_or_string)
 	-- split entries at \n.
 	local line_table = {}
 	for _, str in ipairs(tbl) do
-		local split = vim.split(str, "\n", true)
+		local split = vim.split(str, "\n", {plain=true})
 		for i = 1, #split do
 			line_table[#line_table + 1] = split[i]
 		end
