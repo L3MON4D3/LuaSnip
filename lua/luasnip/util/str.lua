@@ -1,7 +1,7 @@
 -- Some string processing utility functions
 local M = {}
 
----In-place dedents strings in lines.
+--- In-place dedents strings in lines.
 ---@param lines string[].
 local function dedent(lines)
 	if #lines > 0 then
@@ -18,7 +18,7 @@ local function dedent(lines)
 	end
 end
 
----Convert string `from` to unit indent
+--- In-place convert string `from` to unit indent in lines.
 ---@param lines string[]
 ---@param from string
 ---@param unit_indent string
@@ -51,15 +51,17 @@ local function convert_indent(lines, from, unit_indent)
 	end
 end
 
----Applies opts to lines.
----lines is modified in-place.
----@param lines string[].
----@param options table, required, can have values:
----  - trim_empty: removes empty first and last lines.
----  - dedent: removes indent common to all lines.
----  - indent_string: an unit indent at beginning of each line after applying `dedent`, default empty string (disabled)
-function M.process_multiline(lines, options)
-	if options.trim_empty then
+---@class LuaSnip.Opts.Str.MultilineProcess
+---@field trim_empty? boolean Whether to remove whitespace-only first/last lines
+---@field dedent? boolean Whether to remove all common indent in `str`.
+---@field indent_string? string When set, will convert `indent_string` at
+---  beginning of each line to unit indent ('\t') after applying `dedent`.
+
+--- In-place process lines with given opts.
+---@param lines string[]
+---@param opts LuaSnip.Opts.Str.MultilineProcess
+function M.process_multiline(lines, opts)
+	if opts.trim_empty then
 		if lines[1]:match("^%s*$") then
 			table.remove(lines, 1)
 		end
@@ -68,15 +70,16 @@ function M.process_multiline(lines, options)
 		end
 	end
 
-	if options.dedent then
+	if opts.dedent then
 		dedent(lines)
 	end
 
-	if options.indent_string and #options.indent_string > 0 then
-		convert_indent(lines, options.indent_string, "\t")
+	if opts.indent_string and #opts.indent_string > 0 then
+		convert_indent(lines, opts.indent_string, "\t")
 	end
 end
 
+--- Remove common indentation from the given string.
 ---@param s string
 ---@return string
 function M.dedent(s)
@@ -85,6 +88,7 @@ function M.dedent(s)
 	return table.concat(lst, "\n")
 end
 
+--- Convert string `indent_string` to unit indent (\t) in given string.
 ---@param s string
 ---@param indent_string string
 ---@return string
@@ -150,6 +154,7 @@ function M.unescaped_pairs(s, left, right)
 	end
 end
 
+-- FIXME(@L3MON4D3): not used anywhere?
 function M.aupatescape(s)
 	if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
 		-- windows: replace \ with / for au-pattern.
@@ -159,20 +164,26 @@ function M.aupatescape(s)
 	return vim.fn.fnameescape(escaped)
 end
 
+--- Sanitize the given string (e.g. \r)
+---@param str string
+---@return string
 function M.sanitize(str)
-	return str:gsub("%\r", "")
+	local ret = str:gsub("%\r", "")
+	return ret -- note: local var required for correct typing
 end
 
--- requires that from and to are within the region of str.
--- str is treated as a 0,0-indexed, and the character at `to` is excluded from
--- the result.
--- `from` may not be before `to`.
-function M.multiline_substr(str, from, to)
+--- Extract a rectangular block of lines in a multiline string area.
+---@param lines string[]
+---@param from LuaSnip.Pos0 From this position, MUST be within `lines`.
+---@param to LuaSnip.Pos0 To this position (excluded), MUST be within `lines`
+---  and before `from`.
+---@return string[]
+function M.multiline_substr(lines, from, to)
 	local res = {}
 
 	-- include all rows
 	for i = from[1], to[1] do
-		table.insert(res, str[i + 1])
+		table.insert(res, lines[i + 1])
 	end
 
 	-- trim text before from and after to.
@@ -185,18 +196,24 @@ function M.multiline_substr(str, from, to)
 	return res
 end
 
-function M.multiline_upper(str)
-	for i, s in ipairs(str) do
-		str[i] = s:upper()
+--- In-place uppercase all text in `lines`
+---@param lines string[]
+function M.multiline_upper(lines)
+	for i, s in ipairs(lines) do
+		lines[i] = s:upper()
 	end
 end
-function M.multiline_lower(str)
-	for i, s in ipairs(str) do
-		str[i] = s:lower()
+
+--- In-place lowercase all text in `lines`
+---@param lines string[]
+function M.multiline_lower(lines)
+	for i, s in ipairs(lines) do
+		lines[i] = s:lower()
 	end
 end
 
 -- modifies strmod
+-- FIXME(@L3MON4D3): not used anywhere?
 function M.multiline_append(strmod, strappend)
 	strmod[#strmod] = strmod[#strmod] .. strappend[1]
 	for i = 2, #strappend do
@@ -208,13 +225,13 @@ end
 --- given in bytes and 0-based) into an offset (in bytes, 1-based) for
 --- the \n-concatenated version of that string.
 ---
----@param str string[], a multiline string
----@param pos LuaSnip.ApiPosition, an api-position relative to the start of str.
+---@param lines string[] a multiline string
+---@param pos LuaSnip.ApiPosition an api-position relative to the start of str.
 ---@return integer?
-function M.multiline_to_byte_offset(str, pos)
-	if pos[1] < 0 or pos[1] + 1 > #str or pos[2] < 0 then
+function M.multiline_to_byte_offset(lines, pos)
+	if pos[1] < 0 or pos[1] + 1 > #lines or pos[2] < 0 then
 		-- pos is trivially (row negative or beyond str, or col negative)
-		-- outside of str, can't represent position in str.
+		-- outside of lines, can't represent position in lines.
 		-- col-wise outside will be determined later, but we want this
 		-- precondition for following code.
 		return nil
@@ -223,12 +240,12 @@ function M.multiline_to_byte_offset(str, pos)
 	local byte_pos = 0
 	for i = 1, pos[1] do
 		-- increase index by full lines, don't forget +1 for \n.
-		byte_pos = byte_pos + #str[i] + 1
+		byte_pos = byte_pos + #lines[i] + 1
 	end
 
 	-- allow positions one beyond the last character for all lines (even the
 	-- last line).
-	if pos[2] >= #str[pos[1] + 1] + 1 then
+	if pos[2] >= #lines[pos[1] + 1] + 1 then
 		-- in this case, pos is outside of the multiline-region.
 		return nil
 	end
@@ -240,17 +257,18 @@ function M.multiline_to_byte_offset(str, pos)
 	return byte_pos + 1
 end
 
--- inverse of multiline_to_byte_offset, 1-based byte to 0,0-based row,column.
----@param str string[], the multiline string
----@param byte_pos number, a 1-based index into the \n-concatenated `str`.
----@return [integer, integer]?
-function M.byte_to_multiline_offset(str, byte_pos)
+--- Convert a 1-based byte index in a multiline string to 0,0-based row,column.
+--- (It is functionally the inverse of multiline_to_byte_offset)
+---@param lines string[] the multiline string
+---@param byte_pos number 1-based index into the \n-concatenated `lines`.
+---@return LuaSnip.Pos0?
+function M.byte_to_multiline_offset(lines, byte_pos)
 	if byte_pos < 0 then
 		return nil
 	end
 
 	local byte_pos_so_far = 0
-	for i, line in ipairs(str) do
+	for i, line in ipairs(lines) do
 		-- line-length + \n.
 		local line_i_end = byte_pos_so_far + #line + 1
 		if byte_pos <= line_i_end then

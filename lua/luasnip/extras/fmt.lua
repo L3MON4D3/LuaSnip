@@ -194,8 +194,12 @@ local function format_nodes(str, nodes, opts)
 	-- optimization: avoid splitting multiple times
 	local lines = nil
 
-	lines = vim.split(str, "\n", true)
-	Str.process_multiline(lines, opts)
+	lines = vim.split(str, "\n", { plain = true })
+	Str.process_multiline(lines, {
+		trim_empty = opts.trim_empty,
+		dedent = opts.dedent,
+		indent_string = opts.indent_string,
+	})
 	str = table.concat(lines, "\n")
 
 	-- pop format_nodes's opts
@@ -207,7 +211,7 @@ local function format_nodes(str, nodes, opts)
 	return vim.tbl_map(function(part)
 		-- wrap strings in text nodes
 		if type(part) == "string" then
-			return text_node(vim.split(part, "\n", true))
+			return text_node(vim.split(part, "\n", { plain = true }))
 		else
 			return part
 		end
@@ -219,7 +223,7 @@ extend_decorator.register(format_nodes, { arg_indx = 3 })
 return {
 	interpolate = interpolate,
 	format_nodes = format_nodes,
-	-- alias
+	-- aliases
 	fmt = format_nodes,
 	fmta = extend_decorator.apply(format_nodes, { delimiters = "<>" }),
 }
