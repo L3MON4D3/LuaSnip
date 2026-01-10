@@ -607,6 +607,7 @@ function DynamicNode:extmarks_valid()
 	return true
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function DynamicNode:subtree_do(opts)
 	opts.pre(self)
 	if opts.static then

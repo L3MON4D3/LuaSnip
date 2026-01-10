@@ -31,7 +31,7 @@ local describe = require("luasnip.util.log").describe
 ---
 ---(FIXME(@L3MON4D3): Document these)
 ---@field visible boolean
----@field static_text string[]
+---@field static_text string[] (FIXME(@bew): can also be a `SnippetString`?)
 ---@field static_visible boolean
 ---@field visited boolean
 ---@field old_text ... (?)
@@ -697,6 +697,13 @@ function Node:update_dependents_static(which)
 	end
 end
 
+---@class LuaSnip.Opts.NodeSubtreeDo
+---@field pre fun(node: LuaSnip.Node)
+---@field post fun(node: LuaSnip.Node)
+---@field static? boolean
+---@field do_child_snippets? boolean
+
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function Node:subtree_do(opts)
 	opts.pre(self)
 	opts.post(self)

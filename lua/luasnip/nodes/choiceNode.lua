@@ -458,6 +458,7 @@ function ChoiceNode:extmarks_valid()
 	return node_util.generic_extmarks_valid(self, self.active_choice)
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function ChoiceNode:subtree_do(opts)
 	opts.pre(self)
 	self.active_choice:subtree_do(opts)

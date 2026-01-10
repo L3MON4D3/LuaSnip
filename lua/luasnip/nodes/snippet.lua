@@ -1886,6 +1886,7 @@ function Snippet:extmarks_valid()
 	return true
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function Snippet:subtree_do(opts)
 	opts.pre(self)
 	for _, child in ipairs(self.nodes) do

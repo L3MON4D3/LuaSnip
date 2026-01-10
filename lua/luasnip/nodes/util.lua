@@ -817,6 +817,13 @@ local function find_node_dependents(node)
 	return nodes
 end
 
+-- (note: same as LuaSnip.Opts.NodeSubtreeDo, with default hooks)
+---@class LuaSnip.Opts.NodeSubtreeDoWithDefault: LuaSnip.Opts.NodeSubtreeDo
+---@field pre? fun(node: LuaSnip.Node)
+---@field post? fun(node: LuaSnip.Node)
+
+---@param node LuaSnip.Node
+---@param opts LuaSnip.Opts.NodeSubtreeDoWithDefault
 local function node_subtree_do(node, opts)
 	-- provide default-values.
 	if not opts.pre then

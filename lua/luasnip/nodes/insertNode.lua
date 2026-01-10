@@ -577,6 +577,7 @@ function InsertNode:update_restore()
 	end
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function InsertNode:subtree_do(opts)
 	opts.pre(self)
 	if opts.do_child_snippets then
