@@ -288,6 +288,7 @@ function RestoreNode:extmarks_valid()
 	return node_util.generic_extmarks_valid(self, self.snip)
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function RestoreNode:subtree_do(opts)
 	opts.pre(self)
 	if self.snip then

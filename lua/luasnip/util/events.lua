@@ -1,18 +1,30 @@
 local node_names = require("luasnip.util.types").names_pascal_case
 
-return {
+---@enum LuaSnip.EventType
+local EventType = {
 	enter = 1,
 	leave = 2,
 	change_choice = 3,
 	pre_expand = 4,
-	to_string = function(node_type, event_id)
-		if event_id == 3 then
-			return "ChangeChoice"
-		elseif event_id == 4 then
-			return "PreExpand"
-		else
-			return node_names[node_type]
-				.. (event_id == 1 and "Enter" or "Leave")
-		end
-	end,
 }
+
+local M = setmetatable({}, { __index = EventType })
+-- NOTE: The metatable is set so that callers of this `events` module can do
+-- `events.change_choice` to get a named value from the enum, while leaving the
+-- enum definition standalone to avoid adding unnecessary enum fields.
+
+---@param node_type LuaSnip.NodeType
+---@param event_id LuaSnip.EventType
+---@return string
+function M.to_string(node_type, event_id)
+	if event_id == EventType.change_choice then
+		return "ChangeChoice"
+	elseif event_id == EventType.pre_expand then
+		return "PreExpand"
+	else
+		return node_names[node_type]
+			.. (event_id == EventType.enter and "Enter" or "Leave")
+	end
+end
+
+return M

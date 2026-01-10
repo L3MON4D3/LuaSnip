@@ -21,6 +21,9 @@ local true_func = function()
 	return true
 end
 
+---@param condition LuaSnip.SnipContext.Condition
+---@param user_resolve LuaSnip.ResolveExpandParamsFn
+---@return LuaSnip.ResolveExpandParamsFn
 local generate_resolve_expand_params_func = function(condition, user_resolve)
 	return function(self, line_to_cursor, match, captures)
 		if condition then
@@ -29,6 +32,7 @@ local generate_resolve_expand_params_func = function(condition, user_resolve)
 			end
 		end
 
+		---@type LuaSnip.ExpandParams
 		local default_expand_params = {
 			trigger = match,
 			captures = captures,
@@ -56,31 +60,80 @@ local callbacks_mt = {
 -- declare SN here, is needed in metatable.
 local SN
 
-local stored_mt = {
-	__index = function(table, key)
-		-- default-node is just empty text.
-		local val = SN(nil, { iNode.I(1) })
-		val.is_default = true
-		rawset(table, key, val)
-		return val
-	end,
-}
-
----@class LuaSnip.Snippet: LuaSnip.Addable, LuaSnip.ExpandedSnippet
+-- TODO(@bew): rename to LuaSnip.CommonSnippetData (?)
+---@class LuaSnip.BareInternalSnippet: LuaSnip.Node
+---  To be used as a base for all snippet-like nodes (Snippet, SnippetProxy, ..)
+---
 ---@field nodes LuaSnip.Node[]
+---@field insert_nodes LuaSnip.InsertNode[]
+---
+---(FIXME(@bew): these fields are only for ExpandedSnippet?)
+---@field snippet LuaSnip.Snippet
+---@field dependents table (FIXME(@L3MON4D3): type/doc!)
+---@field dependents_dict table (FIXME(@L3MON4D3): type/doc!)
+---@field child_snippets table[] (FIXME(@L3MON4D3): type/doc!)
+---@field static_text string[]?
+---@field indentstr string
 local Snippet = node_mod.Node:new()
+
+---@class LuaSnip.Snippet: LuaSnip.BareInternalSnippet, LuaSnip.NormalizedSnippetContext, LuaSnip.NormalizedSnippetOpts, LuaSnip.Addable
+---@field _source? LuaSnip.Source
+---@field node_store_id integer
 
 -- very approximate classes, for now.
 ---@alias LuaSnip.SnippetID integer
 
 ---Anything that can be passed to ls.add_snippets().
 ---@class LuaSnip.Addable
+---@field retrieve_all (fun(self: LuaSnip.Addable): LuaSnip.Snippet[])
+---
+---(FIXME(@bew): these fields are only for RegisteredSnippet? (not nil!))
+---@field id? integer Internal ID of this snippet (used for source mapping)
+---@field effective_priority? integer Effective priority of the added snippet
 
 ---Represents an expanded snippet.
----@class LuaSnip.ExpandedSnippet: LuaSnip.Node
+---@class LuaSnip.ExpandedSnippet: LuaSnip.Snippet
+---@field env table<string, any> Variables used in the LSP-protocol
+---  (e.g. `TM_CURRENT_LINE` or `TM_FILENAME`).
+---@field trigger string The string that triggered this snipper.
+---  Only interesting when the snippet was triggered with a non-"plain"
+---  `trigEngine` for getting the full match.
+---@field captures string[] The capture-groups when the snippet was triggered
+---  with a non-"plain" `trigEngine`.
+---
+---@field prev LuaSnip.Node
+---@field next LuaSnip.Node
 
----@class LuaSnip.SnippetNode: LuaSnip.Node
+---@class LuaSnip.NormalizedSnippetContext
+---@field trigger string The trigger of the snippet
+---@field name string
+---@field description string[]
+---@field dscr string[] Same as `description`, kept to avoid breaking downstream
+---  usages.
+---@field docstring? string[]
+---@field priority? integer
+---@field snippetType? "snippets"|"autosnippets"
+---@field filetype? string
+---@field wordTrig boolean
+---@field hidden boolean
+---@field regTrig boolean
+---@field docTrig? string
+---@field trig_matcher LuaSnip.SnipContext.TrigMatcher
+---@field resolveExpandParams LuaSnip.ResolveExpandParamsFn
+---@field show_condition LuaSnip.SnipContext.ShowCondition
+---@field condition LuaSnip.SnipContext.Condition
+---@field invalidated boolean
 
+---@class LuaSnip.NormalizedSnippetNodeOpts
+---@field callbacks {[integer]: {[LuaSnip.EventType]: fun(node: LuaSnip.Node, event_args?: table)}}
+---@field child_ext_opts LuaSnip.ChildExtOpts
+---@field merge_child_ext_opts boolean
+
+---@class LuaSnip.NormalizedSnippetOpts: LuaSnip.NormalizedSnippetNodeOpts
+---@field stored {[string]: LuaSnip.SnippetNode}
+
+-- FIXME(@bew): What is this for? (not documented..)
+-- FIXME(@bew): Should be moved to its own file? (like the other indexers)
 local Parent_indexer = {}
 
 function Parent_indexer:new(o)
@@ -103,9 +156,17 @@ local function P(indx)
 	return Parent_indexer:new({ indx = indx })
 end
 
+-- TODO(@bew): Categorize each Snippet method, between:
+-- - DefinedSnippet (created, not yet added)
+-- - RegisteredSnippet (added in collection)
+-- - ExpandedSnippet
+-- - ..(?)
+
 function Snippet:init_nodes()
 	local insert_nodes = {}
 	for i, node in ipairs(self.nodes) do
+		---(allowed: A BareInternalSnippet will later be a full snippet)
+		---@diagnostic disable-next-line: assign-type-mismatch
 		node.parent = self
 		node.indx = i
 		if
@@ -140,6 +201,8 @@ function Snippet:init_nodes()
 	self.insert_nodes = insert_nodes
 end
 
+---@param nodes LuaSnip.Node|LuaSnip.Node[]
+---@return LuaSnip.SnippetNode
 local function wrap_nodes_in_snippetNode(nodes)
 	if getmetatable(nodes) then
 		-- is a node, not a table.
@@ -151,7 +214,7 @@ local function wrap_nodes_in_snippetNode(nodes)
 			return SN(nil, { nodes })
 		else
 			-- is a snippetNode, wrapping it twice is unnecessary.
-			return nodes
+			return nodes ---@type LuaSnip.SnippetNode
 		end
 	else
 		-- is a table of nodes.
@@ -159,8 +222,11 @@ local function wrap_nodes_in_snippetNode(nodes)
 	end
 end
 
+---@param opts LuaSnip.Opts.SnippetNode
+---@return LuaSnip.NormalizedSnippetNodeOpts
 local function init_snippetNode_opts(opts)
-	local in_node = {}
+	---@type LuaSnip.NormalizedSnippetNodeOpts
+	local in_node = {} ---@diagnostic disable-line: missing-fields
 
 	in_node.child_ext_opts =
 		ext_util.child_complete(vim.deepcopy(opts.child_ext_opts or {}))
@@ -178,34 +244,56 @@ local function init_snippetNode_opts(opts)
 	return in_node
 end
 
-local function init_snippet_opts(opts)
-	local in_node = {}
+local stored_mt = {
+	__index = function(table, key)
+		-- default-node is just empty text.
+		local val = SN(nil, { iNode.I(1) })
+		val.is_default = true
+		rawset(table, key, val)
+		return val
+	end,
+}
 
-	-- return sn(t("")) for so-far-undefined keys.
-	in_node.stored = setmetatable(opts.stored or {}, stored_mt)
+---@param opts LuaSnip.Opts.Snippet
+---@return LuaSnip.NormalizedSnippetOpts
+local function init_snippet_opts(opts)
+	---@type LuaSnip.NormalizedSnippetOpts
+	local in_node = {} ---@diagnostic disable-line: missing-fields
+
+	-- The metatable will return `sn(t(""))` for so-far-undefined keys.
+	in_node.stored = setmetatable({}, stored_mt)
 
 	-- wrap non-snippetNode in snippetNode.
-	for key, nodes in pairs(in_node.stored) do
+	for key, nodes in pairs(opts.stored or {}) do
 		in_node.stored[key] = wrap_nodes_in_snippetNode(nodes)
 	end
 
 	return vim.tbl_extend("error", in_node, init_snippetNode_opts(opts))
 end
 
--- context, opts non-nil tables.
+---@param context LuaSnip.SnipContext
+---@param opts LuaSnip.Opts.Snippet
+---@return LuaSnip.NormalizedSnippetContext
 local function init_snippet_context(context, opts)
-	local effective_context = {}
+	---@type LuaSnip.NormalizedSnippetContext
+	local effective_context = {} ---@diagnostic disable-line: missing-fields
+
+	local given_trigger = context.trig
+	if not given_trigger then
+		error("Snippet trigger is not set!")
+	end
+	-- note: at this point `given_trigger` is guaranteed to be a string
 
 	-- trig is set by user, trigger is used internally.
 	-- not worth a breaking change, we just make it compatible here.
-	effective_context.trigger = context.trig
+	effective_context.trigger = given_trigger
 
-	effective_context.name = context.name or context.trig
+	effective_context.name = context.name or given_trigger
 
 	-- context.{desc,dscr} could be nil, string or table.
 	-- (defaults to trigger)
 	effective_context.description =
-		util.to_line_table(context.desc or context.dscr or context.trig)
+		util.to_line_table(context.desc or context.dscr or given_trigger)
 	-- (keep dscr to avoid breaking downstream usages)
 	effective_context.dscr = effective_context.description
 
@@ -263,7 +351,12 @@ local function init_snippet_context(context, opts)
 			util.ternary(context.regTrig ~= nil, "pattern", "plain")
 		)
 		engine = trig_engines[engine_name]
+		if not engine then
+			error("Unknown trigEngine '" .. engine_name .. "'")
+		end
 	end
+	---@cast engine -nil (We know it's valid here)
+
 	-- make sure to pass through nil-trigEngineOpts, they will be recognized and
 	-- we will get a default-version of that function instead of generating a
 	-- curried (?) version of it (which would waste space I think).
@@ -303,6 +396,10 @@ end
 
 -- Create snippet without initializing opts+context.
 -- this might be called from snippetProxy.
+---@param snip table
+---@param nodes LuaSnip.Node|LuaSnip.Node[]
+---@param opts? LuaSnip.Opts.Node
+---@return LuaSnip.BareInternalSnippet
 local function _S(snip, nodes, opts)
 	nodes = util.wrap_nodes(nodes)
 	-- tbl_extend creates a new table! Important with Proxy, metatable of snip
@@ -311,7 +408,6 @@ local function _S(snip, nodes, opts)
 		vim.tbl_extend("error", snip, {
 			nodes = nodes,
 			insert_nodes = {},
-			current_insert = 0,
 			mark = nil,
 			dependents = {},
 			active = false,
@@ -378,9 +474,13 @@ local function _S(snip, nodes, opts)
 		}),
 		opts
 	)
+	---@cast snip LuaSnip.BareInternalSnippet
 
 	-- is propagated to all subsnippets, used to quickly find the outer snippet
 	snip.snippet = snip
+	-- FIXME(@bew): typing is annoying here, because at this stage we only have
+	--   the guarentee that snip is a BareInternalSnippet.
+	--   (and we know this function's return might never be a full snippet..)
 
 	verify_nodes(nodes)
 	snip:init_nodes()
@@ -389,6 +489,7 @@ local function _S(snip, nodes, opts)
 		-- Generate implied i(0)
 		local i0 = iNode.I(0)
 		local i0_indx = #nodes + 1
+		-- FIXME(@bew): same comment as for `snip.snippet`'s typing..
 		i0.parent = snip
 		i0.indx = i0_indx
 		snip.insert_nodes[0] = i0
@@ -398,13 +499,179 @@ local function _S(snip, nodes, opts)
 	return snip
 end
 
+---@alias LuaSnip.SnipContext.BuiltinTrigEngine
+---| '"plain"' # The default behavior, the trigger has to match the text before the
+---    cursor exactly.
+---
+---| '"pattern"' # The trigger is interpreted as a Lua pattern, and is a match
+---    if `trig .. "$"` matches the line up to the cursor.
+---    Capture-groups will be accessible as `snippet.captures`.
+---
+---| '"ecma"' # The trigger is interpreted as an ECMAscript-regex, and is a
+---    match if `trig .. "$"` matches the line up to the cursor.
+---    Capture-groups will be accessible as `snippet.captures`.
+---    This `trigEngine` requires `jsregexp` (see
+---    [LSP-snippets-transformations](#transformations)) to be installed, if it
+---    is not, this engine will behave like `"plain"`.
+---
+---| '"vim"' # The trigger is interpreted as a vim-regex, and is a match if
+---    `trig .. "$"` matches the line up to the cursor.
+---    Capture-groups will be accessible as `snippet.captures`, but there is one
+---    caveat: the matching is done using `matchlist`, so for now empty-string
+---    submatches will be interpreted as unmatched, and the corresponding
+---    `snippet.captures[i]` will be `nil` (this will most likely change, don't
+---    rely on this behavior).
+
+---@class LuaSnip.SnipContext.TrigEngineFn.Opts
+---@field max_len integer Upper bound on the length of the trigger.
+--   If set, the `line_to_cursor` will be truncated (from the cursor of
+--   course) to `max_len` characters before performing the match.
+--   This is implemented because feeding long `line_to_cursor` into e.g. the
+--   pattern-`trigEngine` will hurt performance quite a bit.
+--   (see issue Luasnip#1103)
+--   This option is implemented for all `trigEngines`.
+
+---@alias LuaSnip.SnipContext.TrigMatcher fun(line_to_cursor: string, trigger: string): [string, string[]]
+---@alias LuaSnip.SnipContext.TrigEngineFn fun(trigger: string, opts: LuaSnip.SnipContext.TrigEngineFn.Opts): LuaSnip.SnipContext.TrigMatcher
+
+---@alias LuaSnip.ResolveExpandParamsFn fun(snippet: LuaSnip.Snippet, line_to_cursor: string, matched_trigger: string, captures: string[]): LuaSnip.ExpandParams?
+
+---@class LuaSnip.ExpandParams
+---
+---@field trigger? string The fully matched trigger.
+---@field captures? string[] Updated capture-groups from parameter in snippet
+---  expansion.
+---  NOTE: Both `trigger` and `captures` can override the values returned via
+---  `trigEngine`.
+---@field clear_region? {from: [integer, integer], to: [integer, integer]}
+---  Both (0, 0)-indexed {<row>, <column>}, the region where text has to be
+---  cleared before inserting the snippet.
+---@field env_override? {[string]: string[]|string} Override or extend
+---  the snippet's environment (`snip.env`)
+
+---@alias LuaSnip.SnipContext.ShowConditionFn fun(line_to_cursor: string): boolean
+---@alias LuaSnip.SnipContext.ShowCondition LuaSnip.SnipContext.ShowConditionFn|LuaSnip.SnipContext.ConditionObj
+---@alias LuaSnip.SnipContext.ConditionFn fun(line_to_cursor: string, matched_trigger: string, captures: string[]): boolean
+---@alias LuaSnip.SnipContext.Condition LuaSnip.SnipContext.ConditionFn|LuaSnip.SnipContext.ConditionObj
+
+---@class LuaSnip.SnipContext
+---
+---@field trig? string The trigger of the snippet.
+---  If the text in front of (to the left of) the cursor when `ls.expand()` is
+---  called matches it, the snippet will be expanded.
+---  By default, "matches" means the text in front of the cursor matches the
+---  trigger exactly, this behavior can be modified through `trigEngine`.
+---
+---@field name? string Can be used to identify the snippet.
+---
+---@field desc? string|string[] Description of the snippet.
+---
+---@field dscr? string|string[] Same as `desc`.
+---
+---@field wordTrig? boolean If true, the snippet is only expanded if the word
+---  (`[%w_]+`) before the cursor matches the trigger entirely.
+---  Defaults to true.
+---
+---@field regTrig? boolean whether the trigger should be interpreted as a
+---  Lua pattern. Defaults to false.
+---  Consider setting `trigEngine` to `"pattern"` instead, it is more expressive,
+---  and in line with other settings.
+---
+---@field trigEngine? LuaSnip.SnipContext.BuiltinTrigEngine|LuaSnip.SnipContext.TrigEngineFn
+---  Determines how `trig` is interpreted, and what it means for it to "match"
+---  the text in front of the cursor.
+---  This behavior can be completely customized by passing a function, but the
+---  predefined ones should suffice in most cases.
+---
+---@field trigEngineOpts? LuaSnip.SnipContext.TrigEngineFn.Opts Options for the
+---  used `trigEngine`.
+---
+---@field docstring? string|string[] Textual representation of the snippet, specified like
+---  `desc`. Overrides docstrings loaded from `json`.
+---
+---@field docTrig? string used as `line_to_cursor` during docstring-generation.
+---  This might be relevant if the snippet relies on specific values in the
+---  capture-groups (for example, numbers, which won't work with the default
+---  `$CAPTURESN` used during docstring-generation)
+---
+---@field hidden? boolean Hint for completion-engines.
+---  If set, the snippet should not show up when querying snippets.
+---
+---@field priority? number Priority of the snippet. Defaults to 1000.
+---  Snippets with high priority will be matched to a trigger before those with
+---  a lower one.
+---  The priority for multiple snippets can also be set in `add_snippets`.
+---
+---@field snippetType? "snippet"|"autosnippet" Decides whether this snippet has
+---  to be triggered by `ls.expand()` or whether is triggered automatically.
+---  (don't forget to set `ls.config.setup({ enable_autosnippets = true })` if
+---  you want to use this feature).
+---  If unset, the snippet type will be determined by how the snippet is added.
+---
+---@field resolveExpandParams? LuaSnip.ResolveExpandParamsFn
+---  - `snippet`: The expanding snippet object
+---  - `line_to_cursor`: The line up to the cursor.
+---  - `matched_trigger`: The fully matched trigger (can be retrieved
+---    from `line_to_cursor`, but we already have that info here :D)
+---  - `captures`: Captures as returned by `trigEngine`.
+---
+---  This function will be evaluated in `Snippet:matches()` to decide whether
+---  the snippet can be expanded or not.
+---  Returns a table if the snippet can be expanded, `nil` if can not.
+---
+---  If any field in the returned table is `nil`, the default is used (`trigger` and `captures` as
+---  returned by `trigEngine`, `clear_region` such that exactly the trigger is
+---  deleted, no overridden environment-variables).
+---
+---  A good example for the usage of `resolveExpandParams` can be found in the
+---  implementation of [`postfix`](https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/extras/postfix.lua).
+---
+---@field condition? LuaSnip.SnipContext.Condition
+---  - `line_to_cursor`: the line up to the cursor.
+---  - `matched_trigger`: the fully matched trigger (can be retrieved
+---    from `line_to_cursor`, but we already have that info here :D).
+---  - `captures`: if the trigger is pattern, contains the capture-groups.
+---    Again, could be computed from `line_to_cursor`, but we already did so.
+---
+---  This function can prevent manual snippet expansion via `ls.expand()`.
+---  Return `true` to allow expansion, and `false` to prevent it.
+---
+---@field show_condition? LuaSnip.SnipContext.ShowCondition
+---  This function is (should be) evaluated by completion engines, indicating
+---  whether the snippet should be included in current completion candidates.
+---  Defaults to a function returning `true`.
+---
+---  This is different from `condition` because `condition` is evaluated by
+---  LuaSnip on snippet expansion (and thus has access to the matched trigger and
+---  captures), while `show_condition` is (should be) evaluated by the
+---  completion engines when scanning for available snippet candidates.
+---
+---@field filetype? string The filetype of the snippet.
+---  This overrides the filetype the snippet is added (via `add_snippet`) as.
+
+---@class LuaSnip.Opts.Snippet: LuaSnip.Opts.SnippetNode
+---@field stored? {[string]: LuaSnip.Node} Snippet-level state for restore node.
+---
+---@field show_condition? LuaSnip.SnipContext.ShowCondition Same as
+---  `show_condition` in snippet context. (here for backward compat)
+---@field condition? LuaSnip.SnipContext.Condition Same as `condition` in
+---  snippet context. (here for backward compat)
+
+---@param context string|LuaSnip.SnipContext The snippet context.
+---  Passing a string is equivalent to passing `{ trig = <the string> }`.
+---@param nodes LuaSnip.Node|LuaSnip.Node[] The nodes that make up the snippet.
+---@param opts? LuaSnip.Opts.Snippet
+---@return LuaSnip.Snippet
 local function S(context, nodes, opts)
 	opts = opts or {}
 
-	local snip = init_snippet_context(node_util.wrap_context(context), opts)
-	snip = vim.tbl_extend("error", snip, init_snippet_opts(opts))
+	local snip_with_ctx =
+		init_snippet_context(node_util.wrap_context(context), opts)
+	local snip_with_opts = init_snippet_opts(opts)
 
-	snip = _S(snip, nodes, opts)
+	local base_snip = vim.tbl_extend("error", snip_with_ctx, snip_with_opts)
+	local snip = _S(base_snip, nodes, opts)
+	---@cast snip LuaSnip.Snippet
 
 	if __luasnip_get_loaded_file_frame_debuginfo ~= nil then
 		-- this snippet is being lua-loaded, and the source should be recorded.
@@ -420,6 +687,36 @@ extend_decorator.register(
 	{ arg_indx = 3 }
 )
 
+---@class LuaSnip.SnippetNode: LuaSnip.BareInternalSnippet, LuaSnip.NormalizedSnippetNodeOpts
+---@field is_default boolean
+
+---@class LuaSnip.Opts.SnippetNode: LuaSnip.Opts.Node
+---@field callbacks? {[integer]: {[LuaSnip.EventType]: fun(node: LuaSnip.Node, event_args?: table)}}
+---  Contains functions by node position, that are called upon entering/leaving
+---  a node of this snippet.
+---  To register a callback for the snippets' own events, the key `[-1]` may
+---  be used.
+---
+---  For example: to print text upon entering the _second_ node of a snippet,
+---  `callbacks` should be set as follows:
+---  ```lua
+---  {
+---    -- position of the node, not the jump-index!!
+---    -- s("trig", {t"first node", t"second node", i(1, "third node")}).
+---    [2] = {
+---      [events.enter] = function(node, _event_args) print("2!") end
+---    }
+---  }
+---  ```
+---  More info on events in [events](#events).
+---
+---@field child_ext_opts? `false`|LuaSnip.ChildExtOpts (TODO: doc!)
+---@field merge_child_ext_opts? boolean (TODO: doc!)
+
+---@param pos integer?
+---@param nodes LuaSnip.Node|LuaSnip.Node[] The nodes that make up the snippet.
+---@param opts? LuaSnip.Opts.SnippetNode
+---@return LuaSnip.SnippetNode
 function SN(pos, nodes, opts)
 	opts = opts or {}
 
@@ -428,7 +725,6 @@ function SN(pos, nodes, opts)
 			pos = pos,
 			nodes = util.wrap_nodes(nodes),
 			insert_nodes = {},
-			current_insert = 0,
 			mark = nil,
 			dependents = {},
 			active = false,
@@ -436,6 +732,8 @@ function SN(pos, nodes, opts)
 		}, init_snippetNode_opts(opts)),
 		opts
 	)
+	---@cast snip LuaSnip.SnippetNode
+
 	verify_nodes(nodes)
 	snip:init_nodes()
 
@@ -443,6 +741,13 @@ function SN(pos, nodes, opts)
 end
 extend_decorator.register(SN, { arg_indx = 3 })
 
+---@param pos integer?
+---@param nodes LuaSnip.Node|LuaSnip.Node[] The nodes that make up the `snippetNode`.
+---@param indent_text string Used to indent the nodes inside this `snippetNode`.
+---  All occurrences of `"$PARENT_INDENT"` are replaced with the actual indent
+---  of the parent.
+---@param opts? LuaSnip.Opts.SnippetNode
+---@return LuaSnip.SnippetNode
 local function ISN(pos, nodes, indent_text, opts)
 	local snip = SN(pos, nodes, opts)
 
@@ -487,6 +792,7 @@ local function ISN(pos, nodes, indent_text, opts)
 end
 extend_decorator.register(ISN, { arg_indx = 4 })
 
+-- FIXME(@bew): should only be on ExpandedSnippet 🤔
 function Snippet:remove_from_jumplist()
 	if not self.visible then
 		-- snippet not visible => already removed.
@@ -545,6 +851,7 @@ function Snippet:remove_from_jumplist()
 	end
 end
 
+-- FIXME(@bew): should only be on ExpandedSnippet 🤔
 function Snippet:insert_into_jumplist(
 	current_node,
 	parent_node,
@@ -650,6 +957,12 @@ function Snippet:insert_into_jumplist(
 	table.insert(sibling_snippets, own_indx, self)
 end
 
+-- IDEA(THINKING, @bew): Most methods in Snippet should really be on a BareInternalSnippet class
+-- But this method should be on an actual Snippet class
+-- (so it can be called on a full Snippet, but not a BareInternalSnippet)
+-- This came to my mind because this function uses `self.stored` &
+-- `self.merge_child_ext_opts` that _only_ exist on full Snippet but not on
+-- BareInternalSnippet.
 function Snippet:trigger_expand(current_node, pos_id, env, indent_nodes)
 	local pos = vim.api.nvim_buf_get_extmark_by_id(0, session.ns_id, pos_id, {})
 
@@ -817,6 +1130,12 @@ end
 -- the text does usually not match, but resolveExpandParams may still give
 -- useful data (e.g. when the snippet is a treesitter_postfix, see
 -- https://github.com/L3MON4D3/LuaSnip/issues/1374)
+--
+-- IDEA(THINKING, @bew): Similar to `trigger_expand`, this uses fields from
+-- Snippet (from its context & opts) not BareInternalSnippet, should be moved.
+---@param line_to_cursor string
+---@param opts? {fallback_match?: string}
+---@return LuaSnip.ExpandParams?
 function Snippet:matches(line_to_cursor, opts)
 	local fallback_match = util.default_tbl_get(nil, opts, "fallback_match")
 
@@ -859,28 +1178,11 @@ function Snippet:matches(line_to_cursor, opts)
 	return expand_params
 end
 
--- https://gist.github.com/tylerneylon/81333721109155b2d244
-local function copy3(obj, seen)
-	-- Handle non-tables and previously-seen tables.
-	if type(obj) ~= "table" then
-		return obj
-	end
-	if seen and seen[obj] then
-		return seen[obj]
-	end
-
-	-- New table; mark it as seen an copy recursively.
-	local s = seen or {}
-	local res = {}
-	s[obj] = res
-	for k, v in next, obj do
-		res[copy3(k, s)] = copy3(v, s)
-	end
-	return setmetatable(res, getmetatable(obj))
-end
-
+---@generic T
+---@param self T
+---@return T
 function Snippet:copy()
-	return copy3(self)
+	return util.copy3(self)
 end
 
 function Snippet:del_marks()
@@ -929,6 +1231,9 @@ end
 -- populate env,inden,captures,trigger(regex),... but don't put any text.
 -- the env may be passed in opts via opts.env, if none is passed a new one is
 -- generated.
+--
+-- IDEA(THINKING, @bew): Similar to `trigger_expand`, this uses fields from
+-- Snippet (from its context & opts) not BareInternalSnippet, should be moved.
 function Snippet:fake_expand(opts)
 	if not opts then
 		opts = {}
@@ -983,6 +1288,7 @@ end
 
 -- to work correctly, this may require that the snippets' env,indent,captures? are
 -- set.
+---@return string[]?
 function Snippet:get_static_text()
 	if self.static_text then
 		return self.static_text
@@ -1015,6 +1321,7 @@ function Snippet:get_static_text()
 	return text
 end
 
+---@return string[]
 function Snippet:get_docstring()
 	if self.docstring then
 		return self.docstring
@@ -1099,6 +1406,8 @@ Snippet.init_insert_positions = node_util.init_child_positions_func(
 
 function Snippet:make_args_absolute()
 	for _, node in ipairs(self.nodes) do
+		---(allowed: this arg only exists for some node types)
+		---@diagnostic disable-next-line: redundant-parameter
 		node:make_args_absolute(self.absolute_insert_position)
 	end
 end
@@ -1198,6 +1507,12 @@ function Snippet:text_only()
 	return true
 end
 
+--- Trigger event with args
+---@param event LuaSnip.EventType
+---@param event_args? table
+---@return any
+-- FIXME(@bew): This should only be on SnippetNode & Snippet 🤔
+--   (to access callbacks)
 function Snippet:event(event, event_args)
 	-- there are 3 sources of a callback, for a snippetNode:
 	-- self.callbacks[-1], self.node_callbacks, and parent.callbacks[self.pos].
@@ -1347,6 +1662,7 @@ function Snippet:static_init()
 end
 
 -- called only for snippetNodes!
+-- => FIXME(@bew): should then be in a SnippetNode class?
 function Snippet:resolve_child_ext_opts()
 	if self.merge_child_ext_opts then
 		self.effective_child_ext_opts = ext_util.child_extend(
@@ -1570,6 +1886,7 @@ function Snippet:extmarks_valid()
 	return true
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function Snippet:subtree_do(opts)
 	opts.pre(self)
 	for _, child in ipairs(self.nodes) do

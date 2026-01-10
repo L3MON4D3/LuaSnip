@@ -1,4 +1,3 @@
-local DynamicNode = require("luasnip.nodes.node").Node:new()
 local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local Node = require("luasnip.nodes.node").Node
@@ -12,20 +11,90 @@ local log = require("luasnip.util.log").new("dynamicNode")
 local describe = require("luasnip.util.log").describe
 local session = require("luasnip.session")
 
-local function D(pos, fn, args, opts)
-	opts = opts or {}
+---@class LuaSnip.SnippetNodeForDynNode: LuaSnip.SnippetNode
+---@field old_state? any
+---@field dynamicNode? LuaSnip.DynamicNode
 
-	return DynamicNode:new({
+---@alias LuaSnip.DynamicNode.Fn fun(args: (string[])[], parent: LuaSnip.Snippet | LuaSnip.SnippetNode, old_state?: table, ...: any): LuaSnip.SnippetNode
+
+---@class LuaSnip.DynamicNode: LuaSnip.Node
+---@field fn LuaSnip.DynamicNode.Fn
+---@field user_args any[] Additional args that will be passed to `fn`
+---@field args LuaSnip.NodeRef[]
+---@field snip? LuaSnip.SnippetNodeForDynNode
+---@field static_snip? LuaSnip.SnippetNodeForDynNode
+---@field last_static_args? (string[])[]
+---@field snippetstring_args boolean
+local DynamicNode = Node:new()
+
+---@class LuaSnip.Opts.DynamicNode: LuaSnip.Opts.FunctionNode
+---@field snippetstring_args? boolean (FIXME: not documented?)
+
+--- Very similar to functionNode, but returns a snippetNode instead of just text,
+--- which makes them very powerful as parts of the snippet can be changed based on
+--- user input.
+---
+---@param pos integer? Just like all jumpable nodes, its' position in the
+---  jump-list ([Basics-Jump-Index](#jump-index)).
+---
+---@param fn LuaSnip.DynamicNode.Fn
+---  This function is called when the argnodes' text changes.
+---  It should generate and return (wrapped inside a `snippetNode`) nodes, which
+---  will be inserted at the dynamicNode's place.
+---
+---  note: `args`, `parent` and `user_args` are also explained in
+---  [FunctionNode](#functionnode)
+---
+---  - `argnode_text`: The text currently contained in the argnodes
+---    (e.g. `{{line1}, {line1, line2}}`).
+---
+---  - `parent`: The immediate parent of the `functionNode`. It is included here
+---    as it allows easy access to some information that could be useful in
+---    functionNodes (see [Snippets-Data](#data) for some examples).
+---
+---    Many snippets access the surrounding snippet just as `parent`, but if the
+---    `functionNode` is nested within a `snippetNode`, the immediate parent is
+---    a `snippetNode`, not the surrounding snippet (only the surrounding
+---    snippet contains data like `env` or `captures`).
+---
+---  - `old_state`: a user-defined table.
+---    This table may contain anything; its intended usage is to preserve
+---    information from the previously generated `snippetNode`.
+---    If the `dynamicNode` depends on other nodes, it may be
+---    reconstructed, which means all user input (text inserted in
+---    `insertNodes`, changed choices) to the previous `dynamicNode` is lost.
+---
+---    The `old_state` table must be stored in `snippetNode` returned by
+---    the function (`snippetNode.old_state`).
+---    The second example below illustrates the usage of `old_state`.
+---
+---  - `user_args`: The `user_args` passed in `opts`.
+---    Note that there may be multiple `user_args`.
+---    (e.g. `user_args1, ..., user_argsn`)
+---
+---@param argsnode_refs? LuaSnip.NodeRef[]|LuaSnip.NodeRef
+---  [Node References](#node-reference) to the nodes the dynamicNode depends on.
+---  Changing any of these will trigger a re-evaluation of `fn`, and the result will be inserted at the `dynamicNode`'s place.
+---  (`dynamicNode` behaves exactly the same as `functionNode` in this regard)
+---
+---@param node_opts? LuaSnip.Opts.DynamicNode
+---@return LuaSnip.DynamicNode
+local function D(pos, fn, argsnode_refs, node_opts)
+	node_opts = node_opts or {}
+
+	local node = DynamicNode:new({
 		pos = pos,
 		fn = fn,
-		args = node_util.wrap_args(args),
+		args = node_util.wrap_args(argsnode_refs or {}),
 		type = types.dynamicNode,
 		mark = nil,
-		user_args = opts.user_args or {},
-		snippetstring_args = opts.snippetstring_args or false,
+		user_args = node_opts.user_args or {},
+		snippetstring_args = node_opts.snippetstring_args or false,
 		dependents = {},
 		active = false,
-	}, opts)
+	}, node_opts)
+	---@cast node LuaSnip.DynamicNode
+	return node
 end
 extend_decorator.register(D, { arg_indx = 4 })
 
@@ -148,6 +217,8 @@ function DynamicNode:jump_into_snippet(no_move)
 	return self:jump_into(1, no_move, false)
 end
 
+-- FIXME(@bew): This should be on a `ExpandedDynamicNode` class?
+-- To have access to `next`/`prev` (that would go on a `ExpandedNode` 🤔)
 function DynamicNode:update()
 	local args = self:get_args()
 	local str_args = node_util.str_args(args)
@@ -194,8 +265,13 @@ function DynamicNode:update()
 
 	-- build new snippet before exiting, markers may be needed for
 	-- construncting.
-	tmp =
-		self.fn(effective_args, self.parent, old_state, unpack(self.user_args))
+	tmp = self.fn(
+		effective_args or {},
+		self.parent,
+		old_state,
+		unpack(self.user_args)
+	)
+	---@cast tmp LuaSnip.SnippetNodeForDynNode
 
 	if self.snip then
 		self.snip:exit()
@@ -332,6 +408,8 @@ function DynamicNode:update_static()
 		-- set empty snippet on failure
 		tmp = SnippetNode(nil, {})
 	end
+	---@cast tmp LuaSnip.SnippetNodeForDynNode
+
 	self.last_static_args = str_args
 
 	-- act as if snip is directly inside parent.
@@ -419,6 +497,7 @@ function DynamicNode:update_restore()
 		and vim.deep_equal(str_args, self.last_args)
 	then
 		local tmp = self.snip
+		---@cast tmp -nil
 
 		-- position might (will probably!!) still have changed, so update it
 		-- here too (as opposed to only in update).
@@ -498,7 +577,7 @@ end
 DynamicNode.make_args_absolute = FunctionNode.make_args_absolute
 DynamicNode.set_dependents = FunctionNode.set_dependents
 
-function DynamicNode:resolve_position(position, static)
+function DynamicNode:resolve_position(_position, static)
 	-- position must be 0, there are no other options.
 	if static then
 		return self.static_snip
@@ -528,6 +607,7 @@ function DynamicNode:extmarks_valid()
 	return true
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function DynamicNode:subtree_do(opts)
 	opts.pre(self)
 	if opts.static then

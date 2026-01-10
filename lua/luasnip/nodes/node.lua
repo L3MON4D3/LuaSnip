@@ -10,37 +10,65 @@ local snippet_string = require("luasnip.nodes.util.snippet_string")
 local log = require("luasnip.util.log").new("node")
 local describe = require("luasnip.util.log").describe
 
----@class LuaSnip.Node
+---@class LuaSnip.NormalizedNodeOpts
 ---@field key? any Key to identify the node with.
----@field store_id? number May be set when the node is used to store/restore.
----A generic node.
+---@field node_ext_opts LuaSnip.NodeExtOpts
+---@field merge_node_ext_opts boolean
+---@field node_callbacks {[LuaSnip.EventType]: fun(node:LuaSnip.Node)}
+
+---@class LuaSnip.Node: LuaSnip.NormalizedNodeOpts
+---@field pos? integer Jump-index of the node
+---@field store_id? number May be set when the node is used to store/restore a
+---  generic node.
 ---@field mark? LuaSnip.Mark The mark associated with this node.
----@field type number Identifies the type of the snippet.
+---@field active? boolean
+---@field type LuaSnip.NodeType Identifies the type of the snippet.
 ---@field next LuaSnip.Node Link to the next node in jump-order.
 ---@field prev LuaSnip.Node Link to the previous node in jump-order.
+---@field parent LuaSnip.Snippet|LuaSnip.SnippetNode The parent snippet or
+---  snippet node.
+---@field indx integer Index of the node in the snippet or snippet node.
+---
+---(FIXME(@L3MON4D3): Document these)
+---@field visible boolean
+---@field static_text string[] (FIXME(@bew): can also be a `SnippetString`?)
+---@field static_visible boolean
+---@field visited boolean
+---@field old_text ... (?)
 local Node = {}
 
----@alias LuaSnip.NodeExtOpts {["active"|"passive"|"visited"|"unvisited"|"snippet_passive"]: vim.api.keyset.set_extmark}
+---@class LuaSnip.NodeExtOpts: {["active"|"passive"|"visited"|"unvisited"|"snippet_passive"]: vim.api.keyset.set_extmark}
+---  Extmark options by node state.
 
----@class LuaSnip.Opts.Node
----@field node_ext_opts LuaSnip.NodeExtOpts? Pass these opts through to the
----underlying extmarks representing the node. Notably, this enables highlighting
----the nodes, and allows the highlight to be different based on the state of the
----node/snippet. See [ext_opts](../../../DOC.md#ext_opts)
----@field merge_node_ext_opts boolean? Whether to use the parents' `ext_opts` to
----compute this nodes' `ext_opts`.
----@field key any? Some unique value (strings seem useful) to identify this
----node.
----This is useful for [Key Indexer](../../../DOC.md#key-indexer) or for finding the node at
----runtime (See [Snippets-API](../../../DOC.md#snippets-api)
----These keys don't have to be unique across the entire lifetime of the snippet,
----but every key should occur only once at the same time. This means it is fine
----to return a keyed node from a dynamicNode, because even if it will be
----generated multiple times, the same key not occur twice at the same time.
----@field node_callbacks {["enter"|"leave"]: fun(node:LuaSnip.Node)}
----Specify functions to call after changing the choice, or entering or leaving
----the node. The callback receives the `node` the callback was called on.
+---@class LuaSnip.ChildExtOpts: {[LuaSnip.NodeType]: LuaSnip.NodeExtOpts}
+---  Extmark options by node state, by node type.
 
+---@class LuaSnip.Opts.Node Common options for nodes
+---
+---@field node_ext_opts? LuaSnip.NodeExtOpts Pass these opts through to the
+---  underlying extmarks representing the node. Notably, this enables highlighting
+---  the nodes, and allows the highlight to be different based on the state of the
+---  node/snippet. See [ext_opts](../../../DOC.md#ext_opts)
+---
+---@field merge_node_ext_opts? boolean Whether to use the parents' `ext_opts` to
+---  compute this nodes' `ext_opts`.
+---
+---@field key? any Some unique value (strings seem useful) to identify this
+---  node.
+---  This is useful for [Key Indexer](../../../DOC.md#key-indexer) or for finding the node at
+---  runtime (See [Snippets-API](../../../DOC.md#snippets-api)
+---  These keys don't have to be unique across the entire lifetime of the snippet,
+---  but every key should occur only once at the same time. This means it is fine
+---  to return a keyed node from a dynamicNode, because even if it will be
+---  generated multiple times, the same key not occur twice at the same time.
+---
+---@field node_callbacks? {[LuaSnip.EventType]: fun(node:LuaSnip.Node)}
+---  Specify functions to call after changing the choice, or entering or leaving
+---  the node. The callback receives the `node` the callback was called on.
+
+---@param o? table
+---@param opts? LuaSnip.Opts.Node
+---@return LuaSnip.Node
 function Node:new(o, opts)
 	o = o or {}
 
@@ -138,6 +166,7 @@ function Node:jumpable(dir)
 	end
 end
 
+---@return string[]?
 function Node:get_text()
 	if not self.visible then
 		return nil
@@ -163,11 +192,13 @@ function Node:get_text()
 	return ok and text or { "" }
 end
 
+---@return LuaSnip.SnippetString
 function Node:get_snippetstring()
 	-- if this is not overridden, get_text returns a multiline string.
 	return snippet_string.new(self:get_text())
 end
 
+---@return LuaSnip.SnippetString
 function Node:get_static_snippetstring()
 	-- if this is not overridden, get_static_text() is a multiline string.
 	return snippet_string.new(self:get_static_text())
@@ -223,6 +254,12 @@ function Node:init_insert_positions(position_so_far)
 	self.absolute_insert_position = vim.deepcopy(position_so_far)
 end
 
+--- Run event handlers for the given event type.
+--- - runs node callback if defined
+--- - runs parent callback for the node if defined
+--- - fires `User LuaSnip<Event>` autocmd
+---
+---@param event LuaSnip.EventType
 function Node:event(event)
 	local node_callback = self.node_callbacks[event]
 	if node_callback then
@@ -231,11 +268,9 @@ function Node:event(event)
 
 	-- try to get the callback from the parent.
 	if self.pos then
-		-- node needs position to get callback (nodes may not have position if
-		-- defined in a choiceNode, ie. c(1, {
-		--	i(nil, {"works!"})
-		-- }))
-		-- works just fine.
+		-- The node needs position to get callback
+		-- (nodes may not have position if defined in a choiceNode)
+		-- ie. `c(1, { i(nil, {"works!"}) }))` works just fine.
 		local parent_callback = self.parent.callbacks[self.pos][event]
 		if parent_callback then
 			parent_callback(self)
@@ -249,6 +284,7 @@ function Node:event(event)
 	})
 end
 
+---@return string[]?
 local function get_args(node, get_text_func_name, static)
 	local argnodes_text = {}
 	for key, arg in ipairs(node.args_absolute) do
@@ -313,9 +349,11 @@ local function get_args(node, get_text_func_name, static)
 	return argnodes_text
 end
 
+---@return string[]?
 function Node:get_args()
 	return get_args(self, "argnode_text", false)
 end
+---@return string[]?
 function Node:get_static_args()
 	return get_args(self, "get_static_snippetstring", true)
 end
@@ -339,13 +377,14 @@ function Node:store() end
 function Node:update_restore() end
 
 -- find_node only needs to check children, self is checked by the parent.
-function Node:find_node()
+---@return LuaSnip.Node?
+function Node:find_node(_predicate, _opts)
 	return nil
 end
 
 Node.ext_gravities_active = { false, true }
 
-function Node:insert_to_node_absolute(position)
+function Node:insert_to_node_absolute(_position)
 	-- this node is a leaf, just return its position
 	return self.absolute_position
 end
@@ -401,7 +440,8 @@ function Node:resolve_node_ext_opts(base_prio, parent_ext_opts)
 	)
 end
 
-function Node:is_interactive()
+---@param info any (note: this is used in ast_parser)
+function Node:is_interactive(info)
 	-- safe default.
 	return true
 end
@@ -604,6 +644,8 @@ end
 function Node:interactive()
 	-- interactive if immediately inside choiceNode.
 	return vim.tbl_contains({ types.insertNode, types.exitNode }, self.type)
+		---(allowed: exists only in ChoiceNode)
+		---@diagnostic disable-next-line: undefined-field
 		or self.choice ~= nil
 end
 function Node:leaf()
@@ -655,11 +697,19 @@ function Node:update_dependents_static(which)
 	end
 end
 
+---@class LuaSnip.Opts.NodeSubtreeDo
+---@field pre fun(node: LuaSnip.Node)
+---@field post fun(node: LuaSnip.Node)
+---@field static? boolean
+---@field do_child_snippets? boolean
+
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function Node:subtree_do(opts)
 	opts.pre(self)
 	opts.post(self)
 end
 
+---@return LuaSnip.Snippet
 function Node:get_snippet()
 	return self.parent.snippet
 end
@@ -668,6 +718,7 @@ end
 -- those that don't.
 function Node:subtree_leave_entered() end
 
+---@return LuaSnip.SnippetString
 function Node:argnode_text()
 	return self:get_snippetstring()
 end
