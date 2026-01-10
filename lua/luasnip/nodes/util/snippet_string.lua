@@ -20,10 +20,8 @@ local util = require("luasnip.util.util")
 ---  - When rgrav=false, the mark follows the the left edge.
 ---    (replace char with multiple chars => mark stays at char)
 
--- FIXME(@bew): I cannot find a way to type the SnippetString properly to be a
--- list of (string|{snip: LuaSnip.Snippet}) with additional fields..
-
 ---@class LuaSnip.SnippetString: any[]
+---@field [integer] string|{snip: LuaSnip.Snippet} Items (raw text or snippet)
 ---@field marks LuaSnip.SnippetString.Mark[]
 ---@field metadata? table Arbitrary metadata attached to this snippet string
 local SnippetString = {}
@@ -120,6 +118,7 @@ function SnippetString:indent(indentstr)
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:indent(indentstr)
 		else
+			---@cast snipstr_or_str string
 			local str_tmp = vim.split(snipstr_or_str, "\n")
 			util.indent(str_tmp, indentstr)
 			self[k] = table.concat(str_tmp, "\n")
@@ -134,6 +133,7 @@ function SnippetString:expand_tabs(tabwidth, indenstrlen)
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:expand_tabs(tabwidth, indenstrlen)
 		else
+			---@cast snipstr_or_str string
 			local str_tmp = vim.split(snipstr_or_str, "\n")
 			util.expand_tabs(str_tmp, tabwidth, indenstrlen)
 			self[k] = table.concat(str_tmp, "\n")
@@ -162,6 +162,7 @@ function SnippetString:put(pos)
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:put(pos)
 		else
+			---@cast snipstr_or_str string
 			util.put(vim.split(snipstr_or_str, "\n"), pos)
 		end
 	end
@@ -509,6 +510,7 @@ local function upper(self)
 				post = util.nop,
 			})
 		else
+			---@cast v string
 			self[i] = v:upper()
 		end
 	end
@@ -532,6 +534,7 @@ local function lower(self)
 				post = util.nop,
 			})
 		else
+			---@cast v string
 			self[i] = v:lower()
 		end
 	end
