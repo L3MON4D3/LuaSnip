@@ -17,6 +17,18 @@ jobs:
       - uses: nixbuild/nix-quick-install-action@v30
       - run: nix develop -i -c bash -c 'make doc'
 
+      - name: Ignore doc date-only changes
+        run: |
+          # Get "<added> <deleted>" for doc/luasnip.txt, e.g. "1 1"
+          changed="$(git diff --numstat -- doc/luasnip.txt | awk '{print $1, $2}')"
+
+          if [[ "$changed" == "1 1" ]]; then
+            echo "doc/luasnip.txt: 1 added, 1 deleted -> assuming date-only change, revert diff"
+            git restore doc/luasnip.txt
+          else
+            echo "doc/luasnip.txt: change is not exactly 1/1, keeping diff"
+          fi
+
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Auto generate docs"
