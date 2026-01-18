@@ -317,14 +317,6 @@ local function get_snippet_filetypes()
 	return deduplicate(redirect_filetypes(fts))
 end
 
--- FIXME(@L3MON4D3): these 2 functions are not used anywhere?
-local function pos_add(p1, p2)
-	return { p1[1] + p2[1], p1[2] + p2[2] }
-end
-local function pos_sub(p1, p2)
-	return { p1[1] - p2[1], p1[2] - p2[2] }
-end
-
 local function pop_front(list)
 	local front = list[1]
 	for i = 2, #list do
@@ -511,8 +503,6 @@ return {
 	get_snippet_filetypes = get_snippet_filetypes,
 	json_decode = vim.json.decode,
 	json_encode = vim.json.encode,
-	pos_sub = pos_sub,
-	pos_add = pos_add,
 	deduplicate = deduplicate,
 	pop_front = pop_front,
 	key_sorted_pairs = key_sorted_pairs,
