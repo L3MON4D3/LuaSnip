@@ -136,7 +136,7 @@ end
 ---@param s string
 ---@param left string
 ---@param right string
----@return fun(): (integer?, integer?) An iterator returning pairs from,to.
+---@return fun(): (integer?, integer?) _ An iterator returning pairs from,to.
 function M.unescaped_pairs(s, left, right)
 	local search_from = 1
 
