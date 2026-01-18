@@ -155,16 +155,6 @@ function M.unescaped_pairs(s, left, right)
 	end
 end
 
--- FIXME(@L3MON4D3): not used anywhere?
-function M.aupatescape(s)
-	if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
-		-- windows: replace \ with / for au-pattern.
-		s, _ = s:gsub("\\", "/")
-	end
-	local escaped, _ = s:gsub(",", "\\,")
-	return vim.fn.fnameescape(escaped)
-end
-
 --- Sanitize the given string (e.g. \r)
 ---@param str string
 ---@return string
@@ -175,8 +165,8 @@ end
 
 --- Extract a rectangular block of lines in a multiline string area.
 ---@param lines string[]
----@param from LuaSnip.Pos00 From this position, MUST be within `lines`.
----@param to LuaSnip.Pos00 To this position (excluded), MUST be within `lines`
+---@param from LuaSnip.RawPos00 From this position, MUST be within `lines`.
+---@param to LuaSnip.RawPos00 To this position (excluded), MUST be within `lines`
 ---  and before `from`.
 ---@return string[]
 function M.multiline_substr(lines, from, to)
@@ -213,21 +203,12 @@ function M.multiline_lower(lines)
 	end
 end
 
--- modifies strmod
--- FIXME(@L3MON4D3): not used anywhere?
-function M.multiline_append(strmod, strappend)
-	strmod[#strmod] = strmod[#strmod] .. strappend[1]
-	for i = 2, #strappend do
-		table.insert(strmod, strappend[i])
-	end
-end
-
 --- Turns a row+col-offset for a multiline-string (string[]) (where the column is
 --- given in bytes and 0-based) into an offset (in bytes, 1-based) for
 --- the \n-concatenated version of that string.
 ---
 ---@param lines string[] a multiline string
----@param pos LuaSnip.ApiPosition an api-position relative to the start of str.
+---@param pos LuaSnip.RawPos00 position relative to the start of str.
 ---@return integer?
 function M.multiline_to_byte_offset(lines, pos)
 	if pos[1] < 0 or pos[1] + 1 > #lines or pos[2] < 0 then
