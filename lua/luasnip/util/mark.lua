@@ -223,7 +223,7 @@ end
 function Mark:clear()
 	if self.id then
 		vim.api.nvim_buf_del_extmark(0, session.ns_id, self.id)
-		-- FIXME(@bew): Should also invalidate the Mark obj? (self.id = nil)
+		self.id = nil
 	end
 end
 
