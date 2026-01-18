@@ -43,8 +43,8 @@ function SnippetString.new(initial_str, metadata)
 	return setmetatable(o, SnippetString_mt)
 end
 
---- Returns whether the given obj is a SnippetString instance.
----@param o table
+--- Returns whether the given value is a SnippetString instance.
+---@param o any
 ---@return boolean
 function SnippetString.isinstance(o)
 	return getmetatable(o) == SnippetString_mt
