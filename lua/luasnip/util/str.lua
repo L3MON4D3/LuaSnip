@@ -2,13 +2,14 @@
 local M = {}
 
 --- In-place dedents strings in lines.
----@param lines string[].
+---@param lines string[]
 local function dedent(lines)
 	if #lines > 0 then
 		local ind_size = math.huge
 		for i, _ in ipairs(lines) do
 			local i1, i2 = lines[i]:find("^%s*[^%s]")
-			if i1 and i2 and i2 < ind_size then
+			if i1 and i2 < ind_size then
+				---@cast i2 -nil
 				ind_size = i2
 			end
 		end
