@@ -446,13 +446,8 @@ local function pos_offset(base_pos, pos)
 	}
 end
 
--- FIXME(@L3MON4D3): Is this documentation correct? It looks the same as
--- `pos_offset` above 🤔
---
---- Compute offset of `pos` into multiline string starting at `base_pos`.
----
---- This is different from pos_sub because here the column-offset starts at zero
---- when `pos` is on a line different from `base_pos`.
+--- Given an offset computed via `pos_offset`, compute its position when
+--- applied to `base_pos`.
 ---
 --- Assumption: `offset` occurs after `base_pos`.
 ---
