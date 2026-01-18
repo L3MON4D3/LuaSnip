@@ -50,8 +50,8 @@ local function bytecol_to_utfcol(pos)
 end
 
 --- Returns the (utf-32) begin/end positions of the mark.
----@return LuaSnip.Pos00 _ begin position, (0,0)-indexed
----@return LuaSnip.Pos00 _ end position, (0,0)-indexed
+---@return LuaSnip.Pos00 begin Begin position, (0,0)-indexed
+---@return LuaSnip.Pos00 end End position, (0,0)-indexed
 function Mark:pos_begin_end()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
@@ -91,8 +91,8 @@ function Mark:pos_end()
 end
 
 --- Returns the raw (byte) begin/end positions of the mark.
----@return LuaSnip.RawPos00 _ begin position, (0,0)-indexed
----@return LuaSnip.RawPos00 _ end position, (0,0)-indexed
+---@return LuaSnip.RawPos00 begin Begin position, (0,0)-indexed
+---@return LuaSnip.RawPos00 end End position, (0,0)-indexed
 function Mark:pos_begin_end_raw()
 	local mark_info = vim.api.nvim_buf_get_extmark_by_id(
 		0,
