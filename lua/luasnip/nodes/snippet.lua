@@ -909,6 +909,7 @@ function Snippet:dump()
 	end
 end
 
+---@param pos LuaSnip.RawPos00
 function Snippet:put_initial(pos)
 	for _, node in ipairs(self.nodes) do
 		-- save pos to compare to later.
@@ -1603,6 +1604,7 @@ function Snippet:subtree_leave_entered()
 	end
 end
 
+---@param pos LuaSnip.RawPos00
 function Snippet:put(pos)
 	--- Put text-content of snippet into buffer and set marks.
 	local old_pos = vim.deepcopy(pos)

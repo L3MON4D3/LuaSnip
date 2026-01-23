@@ -43,7 +43,7 @@ local function generate_match_tsnode_func(opts)
 	end
 
 	---@param parser LuaSnip.extra.TSParser
-	---@param pos { [1]: number, [2]: number }
+	---@param pos LuaSnip.RawPos00
 	return function(parser, pos)
 		return parser:match_at(
 			match_opts, --[[@as LuaSnip.extra.MatchTSNodeOpts]]
@@ -140,7 +140,7 @@ local function generate_resolve_expand_param(match_tsnode, user_resolver)
 	---@param parser vim.treesitter.LanguageTree
 	---@param source number|string
 	---@param bufnr number
-	---@param pos { [1]: number, [2]: number }
+	---@param pos LuaSnip.RawPos00
 	return function(
 		snippet,
 		line_to_cursor,
@@ -227,7 +227,7 @@ local function generate_simple_parent_lookup_function(lookup_fun)
 	return function(types)
 		local type_checker = tbl.list_to_set(types)
 		---@param parser LuaSnip.extra.TSParser
-		---@param pos { [1]: number, [2]: number }
+		---@param pos LuaSnip.RawPos00
 		return function(parser, pos)
 			-- check node just before the position.
 			local root = parser:get_node_at_pos({ pos[1], pos[2] - 1 })
@@ -260,7 +260,7 @@ end
 ---@param n number
 local function find_nth_parent(n)
 	---@param parser LuaSnip.extra.TSParser
-	---@param pos { [1]: number, [2]: number }
+	---@param pos LuaSnip.RawPos00
 	return function(parser, pos)
 		local inner_node = parser:get_node_at_pos({ pos[1], pos[2] - 1 })
 

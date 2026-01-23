@@ -28,7 +28,7 @@ local function inspect_node(node)
 end
 
 ---@param bufnr number
----@param region LuaSnip.MatchRegion
+---@param region LuaSnip.Region00InLine
 ---@return vim.treesitter.LanguageTree, string
 local function reparse_buffer_after_removing_match(bufnr, region)
 	local lang = get_lang(bufnr)
@@ -56,11 +56,11 @@ end
 ---@class LuaSnip.extra.FixBufferContext
 ---@field ori_bufnr number
 ---@field ori_text string
----@field region LuaSnip.MatchRegion
+---@field region LuaSnip.Region00InLine
 local FixBufferContext = {}
 
 ---@param ori_bufnr number
----@param region LuaSnip.MatchRegion
+---@param region LuaSnip.Region00InLine
 ---@return LuaSnip.extra.FixBufferContext
 function FixBufferContext.new(ori_bufnr, region, region_content)
 	local o = {
@@ -291,10 +291,10 @@ function TSParser.new(bufnr, parser, source)
 	return o
 end
 
----@param pos { [1]: number, [2]: number }?
+---@param pos LuaSnip.RawPos00
 ---@return TSNode?
 function TSParser:get_node_at_pos(pos)
-	pos = vim.F.if_nil(pos, util.get_cursor_0ind())
+	local pos = pos or util.get_cursor_0ind()
 	local row, col = pos[1], pos[2]
 	assert(
 		row >= 0 and col >= 0,
@@ -308,7 +308,7 @@ function TSParser:get_node_at_pos(pos)
 end
 
 ---Get the root for the smallest tree containing `pos`.
----@param pos { [1]: number, [2]: number }
+---@param pos LuaSnip.RawPos00
 ---@return TSNode?
 function TSParser:root_at(pos)
 	local tree = self.parser:tree_for_range(
@@ -323,7 +323,7 @@ function TSParser:root_at(pos)
 end
 
 ---@param match_opts LuaSnip.extra.EffectiveMatchTSNodeOpts
----@param pos { [1]: number, [2]: number }
+---@param pos LuaSnip.RawPos00
 ---@return LuaSnip.extra.NamedTSMatch?, TSNode?
 function TSParser:match_at(match_opts, pos)
 	-- Since we want to find a match to the left of pos, and if we accept there
