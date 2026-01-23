@@ -29,7 +29,7 @@ end
 
 ---@param bufnr number
 ---@param region LuaSnip.Region00InLine
----@return LanguageTree, string
+---@return vim.treesitter.LanguageTree, string
 local function reparse_buffer_after_removing_match(bufnr, region)
 	local lang = get_lang(bufnr)
 
@@ -45,7 +45,7 @@ local function reparse_buffer_after_removing_match(bufnr, region)
 
 	local source = table.concat(lines, "\n")
 
-	---@type LanguageTree
+	---@type vim.treesitter.LanguageTree
 	local parser = vim.treesitter.get_string_parser(source, lang, nil)
 	if parser then
 		parser:parse()
@@ -260,12 +260,12 @@ local builtin_tsnode_selectors = {
 }
 
 ---@class LuaSnip.extra.TSParser
----@field parser LanguageTree
+---@field parser vim.treesitter.LanguageTree
 ---@field source string|number
 local TSParser = {}
 
 ---@param bufnr number?
----@param parser LanguageTree
+---@param parser vim.treesitter.LanguageTree
 ---@param source string|number
 ---@return LuaSnip.extra.TSParser?
 function TSParser.new(bufnr, parser, source)
