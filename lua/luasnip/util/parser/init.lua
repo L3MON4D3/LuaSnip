@@ -1,4 +1,5 @@
 local sNode = require("luasnip.nodes.snippet")
+local node_util = require("luasnip.nodes.util")
 local ast_parser = require("luasnip.util.parser.ast_parser")
 local parse = require("luasnip.util.parser.neovim_parser").parse
 local Ast = require("luasnip.util.parser.neovim_ast")
@@ -65,23 +66,10 @@ function M.parse_snippet(context, body, opts)
 
 	return sNode.S(context, nodes)
 end
-local function context_extend(arg, extend)
-	local argtype = type(arg)
-	if argtype == "string" then
-		arg = { trig = arg }
-	end
 
-	if argtype == "table" then
-		return vim.tbl_extend("keep", arg, extend or {})
-	end
-
-	-- fall back to unchanged arg.
-	-- log this, probably.
-	return arg
-end
 extend_decorator.register(
 	M.parse_snippet,
-	{ arg_indx = 1, extend = context_extend },
+	{ arg_indx = 1, extend = node_util.snippet_extend_context },
 	{ arg_indx = 3 }
 )
 
@@ -132,9 +120,10 @@ function M.parse_snipmate(context, body, opts)
 	end
 	return M.parse_snippet(context, body, opts)
 end
+
 extend_decorator.register(
 	M.parse_snipmate,
-	{ arg_indx = 1, extend = context_extend },
+	{ arg_indx = 1, extend = node_util.snippet_extend_context },
 	{ arg_indx = 3 }
 )
 
