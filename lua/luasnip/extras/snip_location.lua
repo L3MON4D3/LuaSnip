@@ -13,7 +13,7 @@ local M = {}
 -- function-call.
 local function lua_find_function_call_node_at(bufnr, line)
 	local has_parser, parser = pcall(vim.treesitter.get_parser, bufnr, "lua")
-	if not has_parser then
+	if not has_parser or not parser then
 		error("Error while getting parser: " .. parser)
 	end
 
