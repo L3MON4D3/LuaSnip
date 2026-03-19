@@ -12,7 +12,7 @@ local function fts_from_ts_lang(lang)
 end
 
 local function from_cursor_pos()
-	local parser = vim.treesitter.get_parser()
+	local parser = require("luasnip.extras._treesitter").get_parser()
 
 	if parser then
 		local cursor = require("luasnip.util.util").get_cursor_0ind()
