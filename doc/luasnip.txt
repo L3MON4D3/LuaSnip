@@ -1,4 +1,4 @@
-*luasnip.txt*         For NeoVim 0.7-0.11         Last change: 2026 January 23
+*luasnip.txt*          For NeoVim 0.7-0.11          Last change: 2026 April 05
 
 ==============================================================================
 Table of Contents                                  *luasnip-table-of-contents*

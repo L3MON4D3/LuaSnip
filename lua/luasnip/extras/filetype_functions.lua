@@ -12,10 +12,9 @@ local function fts_from_ts_lang(lang)
 end
 
 local function from_cursor_pos()
-	-- get_parser errors if parser not present (no grammar for language).
-	local has_parser, parser = pcall(vim.treesitter.get_parser)
+	local parser = require("luasnip.extras._treesitter").get_parser()
 
-	if has_parser then
+	if parser then
 		local cursor = require("luasnip.util.util").get_cursor_0ind()
 		-- assumption: languagetree uses 0-indexed byte-ranges.
 		local lang = parser
