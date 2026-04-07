@@ -1,28 +1,8 @@
 local text_node = require("luasnip.nodes.textNode").T
-local wrap_nodes = require("luasnip.util.util").wrap_nodes
+local util = require("luasnip.util.util")
 local extend_decorator = require("luasnip.util.extend_decorator")
 local Str = require("luasnip.util.str")
 local rp = require("luasnip.extras").rep
-
--- https://gist.github.com/tylerneylon/81333721109155b2d244
-local function copy3(obj, seen)
-	-- Handle non-tables and previously-seen tables.
-	if type(obj) ~= "table" then
-		return obj
-	end
-	if seen and seen[obj] then
-		return seen[obj]
-	end
-
-	-- New table; mark it as seen an copy recursively.
-	local s = seen or {}
-	local res = {}
-	s[obj] = res
-	for k, v in next, obj do
-		res[copy3(k, s)] = copy3(v, s)
-	end
-	return setmetatable(res, getmetatable(obj))
-end
 
 -- Interpolate elements from `args` into format string with placeholders.
 --
@@ -102,7 +82,7 @@ local function interpolate(fmt, args, opts)
 		if used_keys[key] then
 			local jump_index = args[key]:get_jump_index() -- For nodes that don't have a jump index, copy it instead
 			if not opts.repeat_duplicates or jump_index == nil then
-				table.insert(elements, copy3(args[key]))
+				table.insert(elements, util.copy3(args[key]))
 			else
 				table.insert(elements, rp(jump_index))
 			end
@@ -198,7 +178,7 @@ local function format_nodes(str, nodes, opts)
 	opts = vim.tbl_extend("force", defaults, opts or {})
 
 	-- allow to pass a single node
-	nodes = wrap_nodes(nodes)
+	nodes = util.wrap_nodes(nodes)
 
 	-- optimization: avoid splitting multiple times
 	local lines = nil

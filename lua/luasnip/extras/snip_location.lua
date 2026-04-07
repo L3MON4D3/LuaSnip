@@ -12,9 +12,10 @@ local M = {}
 -- return: 4-tuple, {start_line, start_col, end_line, end_col}, range of
 -- function-call.
 local function lua_find_function_call_node_at(bufnr, line)
-	local has_parser, parser = pcall(vim.treesitter.get_parser, bufnr, "lua")
-	if not has_parser then
-		error("Error while getting parser: " .. parser)
+	local parser, err =
+		require("luasnip.extras._treesitter").get_parser(bufnr, "lua")
+	if not parser then
+		error("Error while getting parser: " .. err)
 	end
 
 	local root = parser:parse()[1]:root()
@@ -56,9 +57,10 @@ local function range_highlight(line_start, line_end, hl_duration_ms)
 end
 
 local function json_find_snippet_definition(bufnr, filetype, snippet_name)
-	local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
-	if not parser_ok then
-		error("Error while getting parser: " .. parser)
+	local parser, err =
+		require("luasnip.extras._treesitter").get_parser(bufnr, filetype)
+	if not parser then
+		error("Error while getting parser: " .. err)
 	end
 
 	local root = parser:parse()[1]:root()
