@@ -442,6 +442,7 @@ function InsertNode:argnode_text()
 	return self.static_text
 end
 
+---@param pos LuaSnip.RawPos00
 function InsertNode:put_initial(pos)
 	self.static_text:put(pos)
 	self.visible = true

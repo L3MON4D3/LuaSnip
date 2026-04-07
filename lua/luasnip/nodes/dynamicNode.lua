@@ -80,6 +80,7 @@ function DynamicNode:get_docstring()
 end
 
 -- DynamicNode's don't have static text, only set as visible.
+---@param pos LuaSnip.RawPos00
 function DynamicNode:put_initial(pos)
 	-- if we generated a snippet before, insert it into the buffer now. This
 	-- can happen if this dynamicNode was removed (eg. because of a

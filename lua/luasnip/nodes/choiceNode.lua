@@ -145,6 +145,7 @@ function ChoiceNode:make_args_absolute()
 	self.absolute_insert_position[last_indx] = last
 end
 
+---@param pos LuaSnip.RawPos00
 function ChoiceNode:put_initial(pos)
 	local old_pos = vim.deepcopy(pos)
 

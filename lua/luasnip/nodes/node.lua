@@ -73,6 +73,7 @@ function Node:get_docstring()
 	return self.static_text
 end
 
+---@param pos LuaSnip.RawPos00
 function Node:put_initial(pos)
 	-- access static text directly, get_static_text() won't work due to
 	-- static_visible not being set.
