@@ -7,6 +7,31 @@ local function get_lang(bufnr)
 	return lang
 end
 
+---Returns the parser for a specific buffer and attaches it to the buffer
+---
+---If needed, this will create the parser.
+---
+---If no parser can be created, nil (and an error message) is returned.
+---
+---This is a wrapper around Neovim's `vim.treesitter.get_parser()`, to normalize
+---the behavior of the old and new versions. The old version threw errors, the
+---new version returns them as values. This wrapper normalizes both to the new
+---version.
+---@param bufnr integer|nil Buffer the parser should be tied to (default: current buffer)
+---@param lang string|nil Language of this parser (default: from buffer filetype)
+---@param opts table|nil Options to pass to the created language tree
+---@return vim.treesitter.LanguageTree? object to use for parsing
+---@return string? error message, if applicable
+local function get_parser(bufnr, lang, opts)
+	local has_parser, parser_or_err, err =
+		pcall(vim.treesitter.get_parser, bufnr, lang, opts)
+	if not has_parser then
+		return nil, tostring(parser_or_err)
+	end
+
+	return parser_or_err, err
+end
+
 -- Inspect node
 ---@param node TSNode?
 ---@return string
@@ -85,13 +110,12 @@ function FixBufferContext:enter()
 		{ "" }
 	)
 
-	local parser, source =
-		vim.treesitter.get_parser(self.ori_bufnr), self.ori_bufnr
+	local parser = get_parser(self.ori_bufnr)
 	if parser then
 		parser:parse()
 	end
 
-	return parser, source
+	return parser, self.ori_bufnr
 end
 
 function FixBufferContext:leave()
@@ -113,12 +137,11 @@ function FixBufferContext:leave()
 		{ self.region.row + 1, self.region.col_range[2] }
 	)
 
-	local parser, source =
-		vim.treesitter.get_parser(self.ori_bufnr), self.ori_bufnr
+	local parser = get_parser(self.ori_bufnr)
 	if parser then
 		parser:parse()
 	end
-	return parser, source
+	return parser, self.ori_bufnr
 end
 
 local function capture_to_node(capture)
@@ -439,6 +462,7 @@ end
 
 return {
 	get_lang = get_lang,
+	get_parser = get_parser,
 	reparse_buffer_after_removing_match = reparse_buffer_after_removing_match,
 	TSParser = TSParser,
 	FixBufferContext = FixBufferContext,

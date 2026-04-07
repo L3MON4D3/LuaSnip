@@ -77,7 +77,8 @@ local function make_reparse_enter_and_leave_func(
 		end
 	else
 		return function()
-			local parser = vim.treesitter.get_parser(bufnr)
+			local parser =
+				require("luasnip.extras._treesitter").get_parser(bufnr)
 			if parser then
 				parser:parse()
 			end
