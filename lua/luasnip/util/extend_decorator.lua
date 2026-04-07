@@ -40,7 +40,7 @@ end
 ---  	{key = "and opts1 with this"}
 ---  )
 ---  ```
----@return T The decorated function.
+---@return T _ The decorated function.
 function M.apply(fn, ...)
 	local extend_properties = function_properties[fn]
 	assert(

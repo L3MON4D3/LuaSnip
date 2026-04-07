@@ -77,7 +77,8 @@ local function make_reparse_enter_and_leave_func(
 		end
 	else
 		return function()
-			local parser = vim.treesitter.get_parser(bufnr)
+			local parser =
+				require("luasnip.extras._treesitter").get_parser(bufnr)
 			if parser then
 				parser:parse()
 			end
@@ -137,7 +138,7 @@ local function generate_resolve_expand_param(match_tsnode, user_resolver)
 	---@param line_to_cursor string
 	---@param matched_trigger string
 	---@param captures any
-	---@param parser LanguageTree
+	---@param parser vim.treesitter.LanguageTree
 	---@param source number|string
 	---@param bufnr number
 	---@param pos { [1]: number, [2]: number }

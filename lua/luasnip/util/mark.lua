@@ -130,37 +130,6 @@ function Mark:copy_pos_gravs(opts)
 	return mark(pos_beg, pos_end, opts)
 end
 
---- Update the extmark with the given opts & positions.
----
---- note: opts as first arg because positions are pretty likely to stay the same.
----
----@param opts vim.api.keyset.set_extmark
----@param pos_begin LuaSnip.RawPos0
----@param pos_end LuaSnip.RawPos0
-function Mark:update(opts, pos_begin, pos_end)
-	-- if one is changed, the other is likely as well.
-	if not pos_begin then
-		-- FIXME(@bew): old_pos_begin & old_pos_end don't exist??
-		pos_begin = old_pos_begin
-		if not pos_end then
-			pos_end = old_pos_end
-		end
-	end
-	-- override with new.
-	self.opts = vim.tbl_extend("force", self.opts, opts)
-	vim.api.nvim_buf_set_extmark(
-		0,
-		session.ns_id,
-		pos_begin[1],
-		pos_begin[2],
-		vim.tbl_extend(
-			"force",
-			self.opts,
-			{ id = self.id, end_line = pos_end[1], end_col = pos_end[2] }
-		)
-	)
-end
-
 ---@param opts vim.api.keyset.set_extmark
 function Mark:set_opts(opts)
 	local pos_begin, pos_end = self:pos_begin_end_raw()
