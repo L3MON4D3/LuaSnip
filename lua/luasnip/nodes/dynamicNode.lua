@@ -28,7 +28,8 @@ local session = require("luasnip.session")
 local DynamicNode = Node:new()
 
 ---@class LuaSnip.Opts.DynamicNode: LuaSnip.Opts.FunctionNode
----@field snippetstring_args? boolean (FIXME: not documented?)
+---@field snippetstring_args? boolean Preserve expanded inner snippets as
+---  snippet strings. Helps keep jump-points in self-dependent dynamic nodes.
 
 --- Very similar to functionNode, but returns a snippetNode instead of just text,
 --- which makes them very powerful as parts of the snippet can be changed based on
