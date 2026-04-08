@@ -11,9 +11,17 @@ local feedkeys = require("luasnip.util.feedkeys")
 local log = require("luasnip.util.log").new("choice")
 
 ---@class LuaSnip.ChoiceNode.ItemNode: LuaSnip.Node
+---@field choice LuaSnip.ChoiceNode
+---@field next_choice LuaSnip.ChoiceNode.ItemNode
+---@field prev_choice LuaSnip.ChoiceNode.ItemNode
 
 ---@class LuaSnip.ChoiceNode: LuaSnip.Node
 ---@field choices LuaSnip.ChoiceNode.ItemNode[]
+---@field active_choice LuaSnip.ChoiceNode.ItemNode The active choice item node
+---@field restore_cursor boolean Whether the cursor should be restored when
+---  changing the current choice.
+---@field absolute_position integer[] (note: init when a choice is set)
+---@field absolute_insert_position integer[] (note: init when a choice is set)
 local ChoiceNode = Node:new()
 
 function ChoiceNode:init_nodes()
@@ -53,7 +61,7 @@ end
 ---  ```
 ---  Consider passing this override into `snip_env`.
 ---
----@field node_callbacks? {["change_choice"|"enter"|"leave"]: fun(node:LuaSnip.Node)}
+---@field node_callbacks? {[LuaSnip.EventType]: fun(node:LuaSnip.Node)}
 ---  Specify functions to call after changing the choice, or entering or leaving
 ---  the node. The callback receives the `node` the callback was called on.
 
@@ -66,7 +74,8 @@ end
 --- `nodes` have to contain an `insertNode` (e.g. `i(1)`). Using an `insertNode`
 --- or `textNode` directly as a choice is also fine, the latter is special-cased
 --- to have a jump-point at the beginning of its text.
----@param pos integer Jump-index of the node.
+---
+---@param pos integer? Jump-index of the node.
 ---  (See [Basics-Jump-Index](../../../DOC.md#jump-index))
 ---
 ---@param choices (LuaSnip.Node|LuaSnip.Node[])[] A list of nodes that can be
@@ -75,13 +84,13 @@ end
 ---  Jumpable nodes that generally need a jump-index don't need one when used as
 ---  a choice since they inherit the choiceNode's jump-index anyway.
 ---
----@param opts? LuaSnip.Opts.ChoiceNode Additional optional arguments.
+---@param node_opts? LuaSnip.Opts.ChoiceNode Additional optional arguments.
 ---@return LuaSnip.ChoiceNode
-function ChoiceNode.C(pos, choices, opts)
-	opts = opts or {}
-	if opts.restore_cursor == nil then
+function ChoiceNode.C(pos, choices, node_opts)
+	node_opts = node_opts or {}
+	if node_opts.restore_cursor == nil then
 		-- disable by default, can affect performance.
-		opts.restore_cursor = false
+		node_opts.restore_cursor = false
 	end
 
 	-- allow passing table of nodes in choices, will be turned into a
@@ -101,8 +110,9 @@ function ChoiceNode.C(pos, choices, opts)
 		mark = nil,
 		dependents = {},
 		-- default to true.
-		restore_cursor = opts.restore_cursor,
-	}, opts)
+		restore_cursor = node_opts.restore_cursor,
+	}, node_opts)
+	---@cast c LuaSnip.ChoiceNode
 	c:init_nodes()
 	return c
 end
@@ -111,8 +121,13 @@ extend_decorator.register(ChoiceNode.C, { arg_indx = 3 })
 function ChoiceNode:subsnip_init()
 	for _, choice in ipairs(self.choices) do
 		choice.parent = self.parent
-		-- only insertNode needs this.
-		if choice.type == 2 or choice.type == 1 or choice.type == 3 then
+		-- only insertNode needs this. (?)
+		if
+			vim.tbl_contains(
+				{ types.textNode, types.insertNode, types.functionNode },
+				choice.type
+			)
+		then
 			choice.pos = self.pos
 		end
 	end
@@ -139,6 +154,8 @@ function ChoiceNode:make_args_absolute()
 
 	for _, choice in ipairs(self.choices) do
 		-- relative to choiceNode!!
+		---(allowed: this arg only exists for some node types)
+		---@diagnostic disable-next-line: redundant-parameter
 		choice:make_args_absolute(self.absolute_insert_position)
 	end
 
@@ -258,6 +275,7 @@ end
 
 function ChoiceNode:setup_choice_jumps() end
 
+---@return LuaSnip.Node?
 function ChoiceNode:find_node(predicate, opts)
 	if self.active_choice then
 		if predicate(self.active_choice) then
@@ -354,7 +372,12 @@ function ChoiceNode:copy()
 	local o = vim.deepcopy(self)
 	for i, node in ipairs(self.choices) do
 		if node.type == types.snippetNode or node.type == types.choiceNode then
-			o.choices[i] = node:copy()
+			---@diagnostic disable-next-line: cast-type-mismatch (not smart enough..)
+			---@cast node LuaSnip.SnippetNode|LuaSnip.ChoiceNode
+			local nodecopy = node:copy()
+			---@diagnostic disable-next-line: cast-type-mismatch (not smart enough..)
+			---@cast nodecopy LuaSnip.ChoiceNode.ItemNode
+			o.choices[i] = nodecopy
 		else
 			setmetatable(o.choices[i], getmetatable(node))
 		end
@@ -435,6 +458,7 @@ function ChoiceNode:extmarks_valid()
 	return node_util.generic_extmarks_valid(self, self.active_choice)
 end
 
+---@param opts LuaSnip.Opts.NodeSubtreeDo
 function ChoiceNode:subtree_do(opts)
 	opts.pre(self)
 	self.active_choice:subtree_do(opts)

@@ -9,6 +9,7 @@ local function line_begin(line_to_cursor, matched_trigger)
 	-- +1 because `string.sub("abcd", 1, -2)` -> abc
 	return line_to_cursor:sub(1, -(#matched_trigger + 1)):match("^%s*$")
 end
+--- A condition obj that is true when the trigger is at start of line (maybe after indent).
 M.line_begin = cond_obj.make_condition(line_begin)
 
 --- The wordTrig flag will only expand the snippet if
@@ -41,16 +42,17 @@ M.line_begin = cond_obj.make_condition(line_begin)
 --- I think the character wordTrig=true uses should be customized
 --- A condtion seems like the best way to do it
 ---
---- @param pattern string should be a character class eg `[%w]`
+---@param pattern string should be a character class eg `[%w]`
+---@return LuaSnip.SnipContext.ConditionObj
 function M.trigger_not_preceded_by(pattern)
 	local condition = function(line_to_cursor, matched_trigger)
 		local line_to_trigger_len = #line_to_cursor - #matched_trigger
 		if line_to_trigger_len == 0 then
 			return true
 		end
-		return not string
-			.sub(line_to_cursor, line_to_trigger_len, line_to_trigger_len)
-			:match(pattern)
+		local char_before_trigger =
+			line_to_cursor:sub(line_to_trigger_len, line_to_trigger_len)
+		return not char_before_trigger:match(pattern)
 	end
 	return cond_obj.make_condition(condition)
 end
