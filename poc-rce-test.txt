@@ -1,0 +1,1 @@
+RCE verified via flake.nix shellHook on L3MON4D3/LuaSnip at 2026-05-08T00:17:22Z
