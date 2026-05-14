@@ -2,7 +2,7 @@ local util = require("luasnip.util.util")
 local tbl = require("luasnip.util.table")
 
 local function get_lang(bufnr)
-	local ft = vim.api.nvim_buf_get_option(bufnr, "ft")
+	local ft = vim.api.nvim_get_option_value("ft", { buf = bufnr })
 	local lang = vim.treesitter.language.get_lang(ft) or ft
 	return lang
 end
