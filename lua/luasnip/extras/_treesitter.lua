@@ -2,7 +2,7 @@ local util = require("luasnip.util.util")
 local tbl = require("luasnip.util.table")
 
 local function get_lang(bufnr)
-	local ft = vim.api.nvim_buf_get_option(bufnr, "ft")
+	local ft = vim.api.nvim_get_option_value("ft", { buf = bufnr })
 	local lang = vim.treesitter.language.get_lang(ft) or ft
 	return lang
 end
@@ -317,7 +317,7 @@ end
 ---@param pos { [1]: number, [2]: number }?
 ---@return TSNode?
 function TSParser:get_node_at_pos(pos)
-	pos = vim.F.if_nil(pos, util.get_cursor_0ind())
+	pos = util.if_nil(pos, util.get_cursor_0ind())
 	local row, col = pos[1], pos[2]
 	assert(
 		row >= 0 and col >= 0,
@@ -436,7 +436,7 @@ local function find_topmost_parent(root, matcher)
 		if matcher == nil or matcher(node) then
 			current = node
 		end
-		return vim.F.if_nil(_impl(node:parent()), current)
+		return util.if_nil(_impl(node:parent()), current)
 	end
 
 	return _impl(root)

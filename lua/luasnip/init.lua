@@ -2,7 +2,6 @@ local util = require("luasnip.util.util")
 local lazy_table = require("luasnip.util.lazy_table")
 local types = require("luasnip.util.types")
 local node_util = require("luasnip.nodes.util")
-local tbl_util = require("luasnip.util.table")
 local feedkeys = require("luasnip.util.feedkeys")
 
 local session = require("luasnip.session")
@@ -598,7 +597,7 @@ local function _snip_expand(snippet, opts)
 	-- override with current position if none given.
 	opts.pos = opts.pos or util.get_cursor_0ind()
 	opts.jump_into_func = opts.jump_into_func or _jump_into_default
-	opts.indent = vim.F.if_nil(opts.indent, true)
+	opts.indent = util.if_nil(opts.indent, true)
 
 	snip.trigger = opts.expand_params.trigger or snip.trigger
 	snip.captures = opts.expand_params.captures or {}
@@ -1309,8 +1308,8 @@ end
 function API.activate_node(opts)
 	opts = opts or {}
 	local pos = opts.pos or util.get_cursor_0ind()
-	local strict = vim.F.if_nil(opts.strict, false)
-	local select = vim.F.if_nil(opts.select, true)
+	local strict = util.if_nil(opts.strict, false)
+	local select = util.if_nil(opts.select, true)
 
 	-- find tree-node the snippet should be inserted at (could be before another node).
 	local _, _, _, node = node_util.snippettree_find_undamaged_node(pos, {
