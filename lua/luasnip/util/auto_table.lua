@@ -35,9 +35,10 @@ end
 
 local M = {}
 
+local if_nil = vim.nonnil or vim.F.if_nil --todo(clason): remove when dropping Nvim 0.12 support
 function M.autotable(max_depth, opts)
 	opts = opts or {}
-	local warn = vim.F.if_nil(opts.warn, false)
+	local warn = if_nil(opts.warn, false)
 
 	local auto_table_func = warn and auto_creating_tables_warn_depth
 		or auto_creating_tables
