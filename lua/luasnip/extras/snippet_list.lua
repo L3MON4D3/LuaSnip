@@ -20,13 +20,13 @@ local buf_opts = { filetype = "lua" }
 
 local function set_win_opts(win, opts)
 	for opt, val in pairs(opts) do
-		vim.api.nvim_win_set_option(win, opt, val)
+		vim.api.nvim_set_option_value(opt, val, { win = win })
 	end
 end
 
 local function set_buf_opts(buf, opts)
 	for opt, val in pairs(opts) do
-		vim.api.nvim_buf_set_option(buf, opt, val)
+		vim.api.nvim_set_option_value(opt, val, { buf = buf })
 	end
 end
 
@@ -73,7 +73,7 @@ local function display_split(opts)
 		vim.api.nvim_buf_set_lines(buf, 0, 0, false, replacement)
 
 		-- make it unmodifiable at this point
-		vim.api.nvim_buf_set_option(buf, "modifiable", false)
+		vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 	end
 end
 

@@ -47,7 +47,11 @@ local function from_pos_or_filetype()
 end
 
 local function from_filetype_load(bufnr)
-	return vim.split(vim.api.nvim_buf_get_option(bufnr, "filetype"), ".", true)
+	return vim.split(
+		vim.api.nvim_get_option_value("filetype", { buf = bufnr }),
+		".",
+		true
+	)
 end
 
 local function extend_load_ft(extend_fts)
@@ -67,8 +71,11 @@ local function extend_load_ft(extend_fts)
 	end
 
 	return function(bufnr)
-		local fts =
-			vim.split(vim.api.nvim_buf_get_option(bufnr, "filetype"), ".", true)
+		local fts = vim.split(
+			vim.api.nvim_get_option_value("filetype", { buf = bufnr }),
+			".",
+			true
+		)
 		local res = {}
 
 		for _, ft in ipairs(fts) do
