@@ -516,4 +516,5 @@ return {
 	pos_from_offset = pos_from_offset,
 	shallow_copy = shallow_copy,
 	copy3 = copy3,
+	if_nil = vim.nonnil or vim.F.if_nil, --todo(clason): remove when dropping Nvim 0.12 support
 }

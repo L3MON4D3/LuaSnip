@@ -1212,7 +1212,7 @@ function Snippet:event(event, event_args)
 		modeline = false,
 	})
 
-	return vim.F.if_nil(cb_res, m1_cb_res, parent_cb_res)
+	return util.if_nil(cb_res, m1_cb_res, parent_cb_res)
 end
 
 local function nodes_from_pattern(pattern)

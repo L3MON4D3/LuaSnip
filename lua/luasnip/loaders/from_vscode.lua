@@ -598,10 +598,10 @@ end
 function M.load_standalone(opts)
 	opts = opts or {}
 
-	local lazy = vim.F.if_nil(opts.lazy, false)
+	local lazy = util.if_nil(opts.lazy, false)
 	local add_opts = loader_util.make_add_opts(opts)
 	local fs_event_providers =
-		vim.F.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
+		util.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
 
 	local path
 	if not lazy then

@@ -49,9 +49,9 @@ local callback_mt = {
 
 local function get_opts(opts)
 	opts = opts or {}
-	local lazy = vim.F.if_nil(opts.lazy, false)
+	local lazy = util.if_nil(opts.lazy, false)
 	local fs_event_providers =
-		vim.F.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
+		util.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
 
 	return lazy, fs_event_providers
 end

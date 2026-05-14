@@ -274,7 +274,7 @@ local function normalize_opts(opts)
 	end
 
 	local fs_event_providers =
-		vim.F.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
+		util.if_nil(opts.fs_event_providers, { autocmd = true, libuv = false })
 
 	return {
 		paths = paths,
