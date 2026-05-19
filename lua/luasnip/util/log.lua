@@ -1,11 +1,7 @@
 local util = require("luasnip.util.util")
 local tbl = require("luasnip.util.table")
 
--- older neovim-versions (even 0.7.2) do not have stdpath("log").
-local logpath_ok, logpath = pcall(vim.fn.stdpath, "log")
-if not logpath_ok then
-	logpath = vim.fn.stdpath("cache")
-end
+logpath = vim.fn.stdpath("log")
 
 local override_logpath = os.getenv("LUASNIP_OVERRIDE_LOGPATH")
 if override_logpath then

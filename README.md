@@ -23,7 +23,7 @@ https://user-images.githubusercontent.com/41961280/122515860-5179fa00-d00e-11eb-
 - Snippets that make use of the entire functionality of this plugin have to be defined in Lua (but 95% of snippets can be written in LSP-syntax).
 
 # Requirements
-Neovim >= 0.7 (extmarks)
+Neovim >= 0.9
 `jsregexp` for `lsp-snippet-transformations` (see [here](https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#transformations) for some tips on installing it).
 
 # Setup

@@ -169,21 +169,6 @@
     },
     "flake-utils_4": {
       "locked": {
-        "lastModified": 1644229661,
-        "narHash": "sha256-1YdnJAsNy69bpcjuoKdOYQX0YxZBiCYZo4Twxerqv7k=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "3cecb5b042f7f209c56ffd8371b2711a290ec797",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "flake-utils_5": {
-      "locked": {
         "lastModified": 1667395993,
         "narHash": "sha256-nuEHfE/LcWyuSWnS8t12N1wc105Qtau+/OdUAjtQ0rA=",
         "owner": "numtide",
@@ -197,7 +182,7 @@
         "type": "github"
       }
     },
-    "flake-utils_6": {
+    "flake-utils_5": {
       "inputs": {
         "systems": "systems_4"
       },
@@ -417,22 +402,6 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1646254136,
-        "narHash": "sha256-8nQx02tTzgYO21BP/dy5BCRopE8OwE8Drsw98j+Qoaw=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "3e072546ea98db00c2364b81491b893673267827",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_6": {
-      "locked": {
         "lastModified": 1671983799,
         "narHash": "sha256-Z2Ro6hFPZHkBqkVXY5/aBUzxi5xizQGvuHQ9+T5B/ks=",
         "owner": "nixos",
@@ -447,7 +416,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_7": {
+    "nixpkgs_6": {
       "locked": {
         "lastModified": 1745377448,
         "narHash": "sha256-jhZDfXVKdD7TSEGgzFJQvEEZ2K65UMiqW5YJ2aIqxMA=",
@@ -475,32 +444,10 @@
         "url": "https://raw.githubusercontent.com/mfussenegger/nlua/8a2d76043d94ed4130ae703f13f393bb9132d259/nlua"
       }
     },
-    "nvim_07": {
+    "nvim_09": {
       "inputs": {
         "flake-utils": "flake-utils_4",
         "nixpkgs": "nixpkgs_5"
-      },
-      "locked": {
-        "dir": "contrib",
-        "lastModified": 1650022724,
-        "narHash": "sha256-eYYaHpfSaYYrLkcD81Y4rsAMYDP1IJ7fLJJepkACkA8=",
-        "owner": "neovim",
-        "repo": "neovim",
-        "rev": "333ba6569d833e22c0d291547d740d4bbfa3fdab",
-        "type": "github"
-      },
-      "original": {
-        "dir": "contrib",
-        "owner": "neovim",
-        "ref": "v0.7.0",
-        "repo": "neovim",
-        "type": "github"
-      }
-    },
-    "nvim_09": {
-      "inputs": {
-        "flake-utils": "flake-utils_5",
-        "nixpkgs": "nixpkgs_6"
       },
       "locked": {
         "dir": "contrib",
@@ -526,7 +473,7 @@
         "git-hooks": "git-hooks",
         "hercules-ci-effects": "hercules-ci-effects",
         "neovim-src": "neovim-src",
-        "nixpkgs": "nixpkgs_7",
+        "nixpkgs": "nixpkgs_6",
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
@@ -545,7 +492,7 @@
     },
     "panvimdoc": {
       "inputs": {
-        "flake-utils": "flake-utils_6",
+        "flake-utils": "flake-utils_5",
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
@@ -568,7 +515,6 @@
         "luals-mdgen": "luals-mdgen",
         "nixpkgs": "nixpkgs_4",
         "nixpkgs-treesitter": "nixpkgs-treesitter",
-        "nvim_07": "nvim_07",
         "nvim_09": "nvim_09",
         "nvim_master": "nvim_master",
         "panvimdoc": "panvimdoc"
