@@ -34,7 +34,15 @@ return {
 		return function()
 			-- 'echo'd string is returned to lua.
 			return sn(nil, {
-				t(vim.split(vim.api.nvim_exec2("echo " .. vimstring, {output = true}).output, "\n")),
+				t(
+					vim.split(
+						vim.api.nvim_exec2(
+							"echo " .. vimstring,
+							{ output = true }
+						).output,
+						"\n"
+					)
+				),
 			})
 		end
 	end,
