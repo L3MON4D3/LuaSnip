@@ -102,6 +102,7 @@ local function _luasnip_load_file(file)
 		log.error("Failed to load %s\n: %s", file, error_msg)
 		error(string.format("Failed to load %s\n: %s", file, error_msg))
 	end
+	---@cast func -nil
 
 	-- the loaded file may add snippets to these tables, they'll be
 	-- combined with the snippets returned regularly.

@@ -1,7 +1,14 @@
+---@class LuaSnip.Source
+---@field file string
+---@field line? integer
+---@field line_end? integer
+
+---@type {[integer]: LuaSnip.Source}
 local id_to_source = {}
 
 local M = {}
 
+---@return LuaSnip.Source
 function M.from_debuginfo(debuginfo)
 	assert(debuginfo.source, "debuginfo contains source")
 	assert(
@@ -16,6 +23,9 @@ function M.from_debuginfo(debuginfo)
 	}
 end
 
+---@param file string
+---@param opts? {line: integer, line_end: integer}
+---@return LuaSnip.Source
 function M.from_location(file, opts)
 	assert(file, "source needs file")
 	opts = opts or {}
@@ -23,6 +33,8 @@ function M.from_location(file, opts)
 	return { file = file, line = opts.line, line_end = opts.line_end }
 end
 
+---@param snippet LuaSnip.Snippet
+---@param source LuaSnip.Source
 function M.set(snippet, source)
 	-- snippets only get their id after being added, make sure this is the
 	-- case.
@@ -31,6 +43,8 @@ function M.set(snippet, source)
 	id_to_source[snippet.id] = source
 end
 
+---@param snippet LuaSnip.Snippet
+---@return LuaSnip.Source
 function M.get(snippet)
 	return id_to_source[snippet.id]
 end

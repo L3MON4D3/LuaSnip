@@ -1,5 +1,9 @@
 -- absolute_indexer[0][1][2][3] -> { absolute_insert_position = {0,1,2,3} }
 
+---@class LuaSnip.AbsoluteIndexer: {[integer]: LuaSnip.AbsoluteIndexer}
+---@field absolute_insert_position integer[]
+
+---@return LuaSnip.AbsoluteIndexer
 local function new()
 	return setmetatable({
 		absolute_insert_position = {},

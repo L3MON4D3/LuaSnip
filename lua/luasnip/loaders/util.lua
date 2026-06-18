@@ -87,7 +87,7 @@ end
 
 ---Get paths of .snippets files
 ---@param root string @snippet directory path
----@return table @keys are file types, values are paths
+---@return table _ @keys are file types, values are paths
 local function get_ft_paths(root, extension)
 	local ft_path = {}
 	local files, dirs = Path.scandir(root)
@@ -155,7 +155,7 @@ end
 --- directory named `rtp_dirname` in the runtimepath.
 ---@param extension string: extension of valid snippet-files for the given
 --- collection (eg `.lua` or `.snippets`)
----@return table: a list of tables, each of the inner tables contains two
+---@return table _ a list of tables, each of the inner tables contains two
 --- entries:
 --- - collection_paths: ft->files for the entire collection and
 --- - load_paths: ft->files for only the files that should be loaded.

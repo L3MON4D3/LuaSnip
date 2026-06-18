@@ -1,6 +1,8 @@
 local tbl_util = require("luasnip.util.table")
 local autotable = require("luasnip.util.auto_table").autotable
 
+---@class LuaSnip.Util.DirectedGraph
+---@field vertices LuaSnip.Util.Vertex[]
 local DirectedGraph = {}
 
 -- set __index directly in DirectedGraph, otherwise each DirectedGraph-object would have its'
@@ -8,15 +10,22 @@ local DirectedGraph = {}
 -- unnecessary nonetheless.
 DirectedGraph.__index = DirectedGraph
 
+---@alias LuaSnip.Util.VertexSet {[LuaSnip.Util.Vertex]: boolean}
+
+---@class LuaSnip.Util.Vertex
+---@field incoming_edge_verts LuaSnip.Util.VertexSet
+---@field outgoing_edge_verts LuaSnip.Util.VertexSet
 local Vertex = {}
 Vertex.__index = Vertex
 
+---@return LuaSnip.Util.DirectedGraph
 local function new_graph()
 	return setmetatable({
 		-- all vertices of this graph.
 		vertices = {},
 	}, DirectedGraph)
 end
+---@return LuaSnip.Util.Vertex
 local function new_vertex()
 	return setmetatable({
 		-- vertices this vertex has an edge from/to.
@@ -27,7 +36,7 @@ local function new_vertex()
 end
 
 ---Add new vertex to the DirectedGraph
----@return table: the generated vertex, to be used in `set_edge`, for example.
+---@return LuaSnip.Util.Vertex _ the generated vertex, to be used in `set_edge`, for example.
 function DirectedGraph:add_vertex()
 	local vert = new_vertex()
 	table.insert(self.vertices, vert)
@@ -35,7 +44,7 @@ function DirectedGraph:add_vertex()
 end
 
 ---Remove vertex and its edges from DirectedGraph.
----@param v table: the vertex.
+---@param v LuaSnip.Util.Vertex The vertex.
 function DirectedGraph:clear_vertex(v)
 	if not vim.tbl_contains(self.vertices, v) then
 		-- vertex does not belong to this graph. Maybe throw error/make
@@ -53,8 +62,8 @@ function DirectedGraph:clear_vertex(v)
 end
 
 ---Add edge from v1 to v2
----@param v1 table: vertex in the graph.
----@param v2 table: vertex in the graph.
+---@param v1 LuaSnip.Util.Vertex Vertex in the graph.
+---@param v2 LuaSnip.Util.Vertex Vertex in the graph.
 function DirectedGraph:set_edge(v1, v2)
 	if v1.outgoing_edge_verts[v2] then
 		-- the edge already exists. Don't return an error, for now.
@@ -66,8 +75,8 @@ function DirectedGraph:set_edge(v1, v2)
 end
 
 ---Remove edge from v1 to v2
----@param v1 table: vertex in the graph.
----@param v2 table: vertex in the graph.
+---@param v1 LuaSnip.Util.Vertex Vertex in the graph.
+---@param v2 LuaSnip.Util.Vertex Vertex in the graph.
 function DirectedGraph:clear_edge(v1, v2)
 	assert(v1.outgoing_edge_verts[v2], "nonexistent edge cannot be removed.")
 	-- unlink vertices.
@@ -76,8 +85,8 @@ function DirectedGraph:clear_edge(v1, v2)
 end
 
 ---Find and return verts with indegree 0.
----@param graph table: graph.
----@return table of vertices.
+---@param graph LuaSnip.Util.DirectedGraph
+---@return LuaSnip.Util.Vertex[]
 local function source_verts(graph)
 	local indegree_0_verts = {}
 	for _, vert in ipairs(graph.vertices) do
@@ -89,10 +98,10 @@ local function source_verts(graph)
 end
 
 ---Copy graph.
----@param graph table: graph.
----@return table,table: copied graph and table for mapping copied node to
----original node(original_vert[some_vert_from_copy] -> corresponding original
----vert).
+---@param graph LuaSnip.Util.DirectedGraph
+---@return LuaSnip.Util.DirectedGraph, table<LuaSnip.Util.Vertex, LuaSnip.Util.Vertex> _
+---  Copied graph and table mapping for copied node to original node.
+---  (original_vert[some_vert_from_copy] -> corresponding original vert)
 local function graph_copy(graph)
 	local copy = vim.deepcopy(graph)
 	local original_vert = {}
@@ -105,8 +114,8 @@ end
 ---Generate a (it's not necessarily unique) topological sorting of this graphs
 ---vertices.
 ---https://en.wikipedia.org/wiki/Topological_sorting, this uses Kahn's Algorithm.
----@return table|nil: sorted vertices of this graph, nil if there is no
----topological sorting (eg. if the graph has a cycle).
+---@return LuaSnip.Util.Vertex[]? _ Sorted vertices of this graph, nil if there
+---  is no topological sorting (eg. if the graph has a cycle).
 function DirectedGraph:topological_sort()
 	local sorting = {}
 
@@ -148,13 +157,18 @@ function DirectedGraph:topological_sort()
 	return sorting
 end
 
--- return all vertices reachable from this one.
+--- Return all vertices reachable from this one.
+---@param vert LuaSnip.Util.Vertex
+---@param edge_direction "Forward"|"Backward"
+---@return LuaSnip.Util.Vertex[]
 function DirectedGraph:connected_component(vert, edge_direction)
 	local outgoing_vertices_field = edge_direction == "Backward"
 			and "incoming_edge_verts"
 		or "outgoing_edge_verts"
 
+	---@type LuaSnip.Util.VertexSet
 	local visited = {}
+	---@type LuaSnip.Util.VertexSet
 	local to_visit = { [vert] = true }
 
 	-- get any value in table.
@@ -164,6 +178,7 @@ function DirectedGraph:connected_component(vert, edge_direction)
 		visited[next_vert] = true
 
 		for neighbor, _ in pairs(next_vert[outgoing_vertices_field]) do
+			---@cast neighbor LuaSnip.Util.Vertex
 			if not visited[neighbor] then
 				to_visit[neighbor] = true
 			end

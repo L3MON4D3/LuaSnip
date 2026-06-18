@@ -752,21 +752,21 @@ ChoiceNodes allow choosing between multiple nodes.
 
 <!-- panvimdoc-ignore-end -->
 
-`c(pos, choices, opts?): LuaSnip.ChoiceNode`: Create a new choiceNode from a list of choices. The
-first item in this list is the initial choice, and it can be changed while any node of a choice is
-active. So, if all choices should be reachable, every choice has to have a place for the cursor to
-stop at.
+`c(pos?, choices, node_opts?): LuaSnip.ChoiceNode`: Create a new choiceNode from a list of choices.
+The first item in this list is the initial choice, and it can be changed while any node of a choice
+is active. So, if all choices should be reachable, every choice has to have a place for the cursor
+to stop at.
 
 If the choice is a snippetNode like `sn(nil, {...nodes...})` the given `nodes` have to contain an
 `insertNode` (e.g. `i(1)`). Using an `insertNode` or `textNode` directly as a choice is also fine,
 the latter is special-cased to have a jump-point at the beginning of its text.
 
-* `pos: integer` Jump-index of the node. (See [Basics-Jump-Index](#jump-index))
+* `pos?: integer?` Jump-index of the node. (See [Basics-Jump-Index](#jump-index))
 * `choices: (LuaSnip.Node|LuaSnip.Node[])[]` A list of nodes that can be switched between
   interactively. If a list of nodes is passed as a choice, it will be turned into a snippetNode.
   Jumpable nodes that generally need a jump-index don't need one when used as a choice since they
   inherit the choiceNode's jump-index anyway.
-* `opts?: LuaSnip.Opts.ChoiceNode?` Additional optional arguments.  
+* `node_opts?: LuaSnip.Opts.ChoiceNode?` Additional optional arguments.  
   Valid keys are:
 
   * `restore_cursor?: boolean?` If set, the currently active node is looked up in the switched-to
@@ -785,7 +785,7 @@ the latter is special-cased to have a jump-point at the beginning of its text.
     end
     ```
     Consider passing this override into `snip_env`.
-  * `node_callbacks?: { [("change_choice"|"enter"...)]: fun(...) -> ... }?`
+  * `node_callbacks?: { [LuaSnip.EventType]: fun(...) -> ... }?`
   * `node_ext_opts?: LuaSnip.NodeExtOpts?` Pass these opts through to the underlying extmarks
     representing the node. Notably, this enables highlighting the nodes, and allows the highlight to
     be different based on the state of the node/snippet. See [ext_opts](#ext_opts)

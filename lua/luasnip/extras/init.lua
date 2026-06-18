@@ -116,11 +116,18 @@ end
 return {
 	lambda = lambda,
 	match = match,
-	-- repeat a node.
-	rep = function(node_indx)
+	--- Repeat a node, by inserting the text of the passed node.
+	---
+	--- ```lua
+	--- s("extras4", { i(1), t { "", "" }, extras.rep(1) })
+	--- ```
+	---
+	---@param node_ref LuaSnip.NodeRef a single [Node Reference](../../../DOC.md#node-reference).
+	---@return LuaSnip.FunctionNode
+	rep = function(node_ref)
 		return F(function(args)
 			return args[1]
-		end, node_indx)
+		end, node_ref)
 	end,
 	-- Insert the output of a function.
 	partial = function(func, ...)

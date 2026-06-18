@@ -35,6 +35,8 @@ local function clear_invalid(opts)
 	--stylua: ignore end
 end
 
+---@param ext_opts? LuaSnip.NodeExtOpts
+---@return LuaSnip.NodeExtOpts
 local function _complete_ext_opts(ext_opts)
 	if not ext_opts then
 		ext_opts = {}
@@ -78,18 +80,22 @@ end
 -- active inherits unset values from passive, which in turn inherits from
 -- snippet_passive.
 -- Also make sure that all keys have a table, and are not nil!
+---@param ext_opts LuaSnip.ChildExtOpts
+---@return LuaSnip.ChildExtOpts
 local function child_complete(ext_opts)
 	for _, node_type in pairs(types.node_types) do
 		ext_opts[node_type] = _complete_ext_opts(ext_opts[node_type])
 	end
-	ext_opts.base_prio = 0
+	ext_opts.base_prio = 0 ---@diagnostic disable-line: inject-field
 
 	return ext_opts
 end
 
+---@param ext_opts? LuaSnip.NodeExtOpts
+---@return LuaSnip.NodeExtOpts
 local function complete(ext_opts)
-	_complete_ext_opts(ext_opts)
-	ext_opts.base_prio = 0
+	local ext_opts = _complete_ext_opts(ext_opts)
+	ext_opts.base_prio = 0 ---@diagnostic disable-line: inject-field
 
 	return ext_opts
 end

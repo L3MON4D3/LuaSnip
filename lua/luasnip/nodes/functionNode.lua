@@ -1,5 +1,4 @@
 local Node = require("luasnip.nodes.node").Node
-local FunctionNode = Node:new()
 local util = require("luasnip.util.util")
 local node_util = require("luasnip.nodes.util")
 local types = require("luasnip.util.types")
@@ -9,16 +8,104 @@ local key_indexer = require("luasnip.nodes.key_indexer")
 local opt_args = require("luasnip.nodes.optional_arg")
 local snippet_string = require("luasnip.nodes.util.snippet_string")
 
-local function F(fn, args, opts)
-	opts = opts or {}
+---@alias LuaSnip.FunctionNode.Fn fun(args: (string[])[], parent: LuaSnip.Snippet | LuaSnip.SnippetNode, ...: table): string|string[]
 
-	return FunctionNode:new({
+---@class LuaSnip.FunctionNode: LuaSnip.Node
+---@field fn LuaSnip.FunctionNode.Fn
+---@field user_args any[] Additional args that will be passed to `fn`
+---@field args LuaSnip.NodeRef[]
+---@field args_absolute LuaSnip.NormalizedNodeRef[]
+---@field last_args ((string[])[])?
+local FunctionNode = Node:new()
+
+---@class LuaSnip.Opts.FunctionNode: LuaSnip.Opts.Node
+---@field user_args? any[] Additional args that will be passed to `fn` as
+---  `user_arg1`-`user_argn`.
+---
+---  These make it easier to reuse similar functions, for example a functionNode
+---  that wraps some text in different delimiters (`()`, `[]`, ...).
+---  ```lua
+---  local function reused_func(_,_, user_arg1)
+---      return user_arg1
+---  end
+---
+---  s("trig", {
+---      f(reused_func, {}, {
+---          user_args = {"text"}
+---      }),
+---      f(reused_func, {}, {
+---          user_args = {"different text"}
+---      }),
+---  })
+---  ```
+
+--- Function Nodes insert text based on the content of other nodes using a
+--- user-defined function:
+---
+--- ```lua
+--- local function fn(
+---   args,     -- text from i(2) in this example i.e. { { "456" } }
+---   parent,   -- parent snippet or parent node
+---   user_args -- user_args from opts.user_args
+--- )
+---    return '[' .. args[1][1] .. user_args .. ']'
+--- end
+---
+--- s("trig", {
+---   i(1), t '<-i(1) ',
+---   f(fn,  -- callback (args, parent, user_args) -> string
+---     {2}, -- node indice(s) whose text is passed to fn, i.e. i(2)
+---     { user_args = { "user_args_value" }} -- opts
+---   ),
+---   t ' i(2)->', i(2), t '<-i(2) i(0)->', i(0)
+--- })
+--- ```
+---
+---@param fn LuaSnip.FunctionNode.Fn
+---
+---  - `argnode_text`: The text currently contained in the argnodes
+---    (e.g. `{{line1}, {line1, line2}}`).
+---    The snippet indent will be removed from all lines following the first.
+---
+---  - `parent`: The immediate parent of the `functionNode`. It is included here
+---    as it allows easy access to some information that could be useful in
+---    functionNodes (see [Snippets-Data](#data) for some examples).
+---
+---    Many snippets access the surrounding snippet just as `parent`, but if the
+---    `functionNode` is nested within a `snippetNode`, the immediate parent is
+---    a `snippetNode`, not the surrounding snippet (only the surrounding
+---    snippet contains data like `env` or `captures`).
+---
+---  - `user_args`: The `user_args` passed in `opts`. Note that there may be
+---    multiple `user_args` (e.g. `user_args1, ..., user_argsn`).
+---
+---  The function shall return a string, which will be inserted as is, or a
+---  table of strings for multiline strings, where all lines following the first
+---  will be prefixed with the snippets' indentation.
+---
+---@param argsnode_refs? LuaSnip.NodeRef[]|LuaSnip.NodeRef
+---  [Node References](#node-reference) to the nodes the functionNode depends
+---  on.
+---  Changing any of these will trigger a re-evaluation of `fn`, and insertion of
+---  the updated text.
+---  If no node reference is passed, the `functionNode` is evaluated once upon
+---  expansion.
+---
+---@param node_opts? LuaSnip.Opts.FunctionNode
+---@return LuaSnip.FunctionNode
+local function F(fn, argsnode_refs, node_opts)
+	node_opts = node_opts or {}
+
+	local node = FunctionNode:new({
 		fn = fn,
-		args = node_util.wrap_args(args),
+		args = node_util.wrap_args(argsnode_refs or {}),
+		args_absolute = {},
 		type = types.functionNode,
 		mark = nil,
-		user_args = opts.user_args or {},
-	}, opts)
+		user_args = node_opts.user_args or {},
+	}, node_opts)
+	---@cast node LuaSnip.FunctionNode
+	return node
 end
 extend_decorator.register(F, { arg_indx = 3 })
 
@@ -119,8 +206,8 @@ function FunctionNode:indent(_) end
 function FunctionNode:expand_tabs(_) end
 
 function FunctionNode:make_args_absolute(position_so_far)
-	self.args_absolute = {}
-	node_util.make_args_absolute(self.args, position_so_far, self.args_absolute)
+	self.args_absolute =
+		node_util.make_args_absolute(self.args, position_so_far)
 end
 
 function FunctionNode:set_dependents()

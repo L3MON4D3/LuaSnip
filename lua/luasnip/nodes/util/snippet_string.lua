@@ -1,20 +1,40 @@
 local str_util = require("luasnip.util.str")
 local util = require("luasnip.util.util")
 
----@class SnippetString
+---@class LuaSnip.SnippetString.Mark
+---  A kind of extmark, but for a string not a Neovim buffer.
+---
+---  It moves with inserted text, and has a gravity to control into which
+---  direction it shifts. pos is 1-based and refers to one character in the
+---  string
+---
+---  If the edge is in the middle of multiple characters (for example rgrav=true,
+---  and chars at pos and pos+1 are replaced), the mark is removed.
+---
+---@field id string ID of the mark
+---@field pos integer 1-based, refers to one character in the string
+---@field rgrav boolean The gravity of the mark.
+---  - When rgrav=true, the mark being incident with the characters right edge.
+---    (replace character at pos with multiple characters => mark will move to
+---    the right of the newly inserted chars)
+---  - When rgrav=false, the mark follows the the left edge.
+---    (replace char with multiple chars => mark stays at char)
+
+---@class LuaSnip.SnippetString: any[]
+---@field [integer] string|{snip: LuaSnip.Snippet} Items (raw text or snippet)
+---@field marks LuaSnip.SnippetString.Mark[]
+---@field metadata? table Arbitrary metadata attached to this snippet string
 local SnippetString = {}
 local SnippetString_mt = {
 	__index = SnippetString,
-
-	-- __concat and __tostring will be set later on.
+	-- `__concat` and `__tostring` are set later on.
 }
 
-local M = {}
-
----Create new SnippetString.
----@param initial_str string[]?, optional initial multiline string.
----@return SnippetString
-function M.new(initial_str, metadata)
+--- Create new SnippetString.
+---@param initial_str? string[] initial multiline string.
+---@param metadata? table Arbitrary metadata attached to this snippet string
+---@return LuaSnip.SnippetString
+function SnippetString.new(initial_str, metadata)
 	local o = {
 		initial_str and table.concat(initial_str, "\n"),
 		marks = {},
@@ -23,13 +43,18 @@ function M.new(initial_str, metadata)
 	return setmetatable(o, SnippetString_mt)
 end
 
-function M.isinstance(o)
+--- Returns whether the given obj is a SnippetString instance.
+---@param o table
+---@return boolean
+function SnippetString.isinstance(o)
 	return getmetatable(o) == SnippetString_mt
 end
 
+---@param snip LuaSnip.Snippet
 function SnippetString:append_snip(snip)
 	table.insert(self, { snip = snip })
 end
+---@param str string[]
 function SnippetString:append_text(str)
 	table.insert(self, table.concat(str, "\n"))
 end
@@ -39,6 +64,10 @@ end
 -- * each component in the snippet_string (including nested) to the text-index
 --   of its first character.
 -- * the string of each nested snippetString.
+---@param self LuaSnip.SnippetString
+---@param map table
+---@param from_offset integer
+---@return string
 local function gen_snipstr_map(self, map, from_offset)
 	map[self] = {}
 
@@ -50,7 +79,7 @@ local function gen_snipstr_map(self, map, from_offset)
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							local nested_str = gen_snipstr_map(
 								node.static_text,
 								map,
@@ -75,6 +104,7 @@ local function gen_snipstr_map(self, map, from_offset)
 	return str
 end
 
+---@return string
 function SnippetString:str()
 	-- if too slow, generate another version of that function without the
 	-- snipstr_map-calls.
@@ -82,11 +112,13 @@ function SnippetString:str()
 end
 SnippetString_mt.__tostring = SnippetString.str
 
+---@param indentstr string
 function SnippetString:indent(indentstr)
 	for k, snipstr_or_str in ipairs(self) do
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:indent(indentstr)
 		else
+			---@cast snipstr_or_str string
 			local str_tmp = vim.split(snipstr_or_str, "\n")
 			util.indent(str_tmp, indentstr)
 			self[k] = table.concat(str_tmp, "\n")
@@ -94,11 +126,14 @@ function SnippetString:indent(indentstr)
 	end
 end
 
+---@param tabwidth integer
+---@param indenstrlen integer
 function SnippetString:expand_tabs(tabwidth, indenstrlen)
 	for k, snipstr_or_str in ipairs(self) do
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:expand_tabs(tabwidth, indenstrlen)
 		else
+			---@cast snipstr_or_str string
 			local str_tmp = vim.split(snipstr_or_str, "\n")
 			util.expand_tabs(str_tmp, tabwidth, indenstrlen)
 			self[k] = table.concat(str_tmp, "\n")
@@ -106,6 +141,7 @@ function SnippetString:expand_tabs(tabwidth, indenstrlen)
 	end
 end
 
+---@return (fun(): LuaSnip.Snippet)
 function SnippetString:iter_snippets()
 	local i = 1
 	return function()
@@ -119,17 +155,21 @@ function SnippetString:iter_snippets()
 	end
 end
 
--- pos is modified to reflect the new cursor-position!
+--- Put the content of the snippet string at the given position.
+---@param pos LuaSnip.Pos0 (note: modified to reflect the new cursor-position!)
 function SnippetString:put(pos)
 	for _, snipstr_or_str in ipairs(self) do
 		if snipstr_or_str.snip then
 			snipstr_or_str.snip:put(pos)
 		else
+			---@cast snipstr_or_str string
 			util.put(vim.split(snipstr_or_str, "\n"), pos)
 		end
 	end
 end
 
+--- Copy a SnippetString, duplicating its inner snippets.
+---@return LuaSnip.SnippetString
 function SnippetString:copy()
 	-- on 0.7 vim.deepcopy does not behave correctly on snippets => have to manually copy.
 	return setmetatable(
@@ -177,7 +217,8 @@ function SnippetString:copy()
 	)
 end
 
--- copy without copying snippets.
+--- Copy a SnippetString without copying snippets.
+---@return LuaSnip.SnippetString
 function SnippetString:flatcopy()
 	local res = {}
 	for i, v in ipairs(self) do
@@ -189,17 +230,21 @@ function SnippetString:flatcopy()
 	return setmetatable(res, SnippetString_mt)
 end
 
--- where o is string, string[] or SnippetString.
+---@param o string|string[]|LuaSnip.SnippetString
+---@return LuaSnip.SnippetString
 local function to_snippetstring(o)
 	if type(o) == "string" then
-		return M.new({ o })
-	elseif getmetatable(o) == SnippetString_mt then
+		return SnippetString.new({ o })
+	elseif SnippetString.isinstance(o) then
 		return o
 	else
-		return M.new(o)
+		return SnippetString.new(o)
 	end
 end
 
+---@param a string|string[]|LuaSnip.SnippetString
+---@param b string|string[]|LuaSnip.SnippetString
+---@return LuaSnip.SnippetString
 function SnippetString.concat(a, b)
 	a = to_snippetstring(a):flatcopy()
 	b = to_snippetstring(b):flatcopy()
@@ -241,7 +286,12 @@ SnippetString_mt.__concat = SnippetString.concat
 -- is much better than converting all the time when a string-operation is
 -- involved.
 
--- only call after it's clear that char_i is contained in self.
+---@param self LuaSnip.SnippetString
+---@param start_i integer
+---@param i_inc integer
+---@param char_i integer (MUST be contained in self)
+---@param snipstr_map table
+---@return integer
 local function find(self, start_i, i_inc, char_i, snipstr_map)
 	local i = start_i
 	while true do
@@ -267,12 +317,16 @@ local function find(self, start_i, i_inc, char_i, snipstr_map)
 	end
 end
 
+--- Returns the length of the text represented by the given node.
+---@param node LuaSnip.Node
+---@param snipstr_map table
+---@return integer
 local function nodetext_len(node, snipstr_map)
 	if not node.static_text then
 		return 0
 	end
 
-	if M.isinstance(node.static_text) then
+	if SnippetString.isinstance(node.static_text) then
 		return #snipstr_map[node.static_text].str
 	else
 		-- +1 for each newline.
@@ -284,7 +338,15 @@ local function nodetext_len(node, snipstr_map)
 	end
 end
 
--- replacements may not be zero-width!
+---@class LuaSnip.SnippetString.Replacement
+---@field from integer
+---@field to integer
+---@field str string
+
+---@param self LuaSnip.SnippetString
+---@param replacements LuaSnip.SnippetString.Replacement[]
+---  (may not be zero-width!)
+---@param snipstr_map any
 local function _replace(self, replacements, snipstr_map)
 	-- first character of currently-looked-at text.
 	local v_i_search_from = #self
@@ -324,7 +386,9 @@ local function _replace(self, replacements, snipstr_map)
 							and node_relative_repl_from <= node_len
 						then
 							if node_relative_repl_to <= node_len then
-								if M.isinstance(node.static_text) then
+								if
+									SnippetString.isinstance(node.static_text)
+								then
 									-- node contains a snippetString, recurse!
 									-- since we only check string-positions via
 									-- snipstr_map, we don't even have to
@@ -420,19 +484,23 @@ local function _replace(self, replacements, snipstr_map)
 end
 
 -- replacements may not be zero-width!
+---@param self LuaSnip.SnippetString
+---@param replacements LuaSnip.SnippetString.Replacement[]
 local function replace(self, replacements)
 	local snipstr_map = {}
 	gen_snipstr_map(self, snipstr_map, 1)
 	_replace(self, replacements, snipstr_map)
 end
 
+--- Edit the snippet string in-place to make all text uppercase.
+---@param self LuaSnip.SnippetString
 local function upper(self)
 	for i, v in ipairs(self) do
 		if v.snip then
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							node.static_text:_upper()
 						else
 							str_util.multiline_upper(node.static_text)
@@ -442,18 +510,21 @@ local function upper(self)
 				post = util.nop,
 			})
 		else
+			---@cast v string
 			self[i] = v:upper()
 		end
 	end
 end
 
+--- Edit the snippet string in-place to make all text lowercase.
+---@param self LuaSnip.SnippetString
 local function lower(self)
 	for i, v in ipairs(self) do
 		if v.snip then
 			v.snip:subtree_do({
 				pre = function(node)
 					if node.static_text then
-						if M.isinstance(node.static_text) then
+						if SnippetString.isinstance(node.static_text) then
 							node.static_text:_lower()
 						else
 							str_util.multiline_lower(node.static_text)
@@ -463,16 +534,19 @@ local function lower(self)
 				post = util.nop,
 			})
 		else
+			---@cast v string
 			self[i] = v:lower()
 		end
 	end
 end
 
+---@return LuaSnip.SnippetString
 function SnippetString:lower()
 	local cop = self:copy()
 	lower(cop)
 	return cop
 end
+---@return LuaSnip.SnippetString
 function SnippetString:upper()
 	local cop = self:copy()
 	upper(cop)
@@ -488,15 +562,18 @@ end
 -- Also, it should be straightforward to circumvent this by doing something
 -- like :gsub("(.)", "%1_") or :gsub("(.)", "_%1") to choose the "side" where a
 -- new char is inserted,
+--
+---@param pattern string
+---@param repl string
 function SnippetString:gsub(pattern, repl)
-	self = self:copy()
+	local self = self:copy()
 
 	local find_from = 1
 	local str = self:str()
-	local replacements = {}
+	local replacements = {} ---@type LuaSnip.SnippetString.Replacement[]
 	while true do
 		local match_from, match_to = str:find(pattern, find_from)
-		if not match_from then
+		if not (match_from and match_to) then
 			break
 		end
 		-- only allow matches that are not empty.
@@ -532,13 +609,13 @@ function SnippetString:sub(from, to)
 
 	-- empty range => return empty snippetString.
 	if from > #str or to < from or to < 1 then
-		return M.new({ "" })
+		return SnippetString.new({ "" })
 	end
 
 	from = math.max(from, 1)
 	to = math.min(to, #str)
 
-	local replacements = {}
+	local replacements = {} ---@type LuaSnip.SnippetString.Replacement[]
 	-- from <= 1 => don't need to remove from beginning.
 	if from > 1 then
 		table.insert(replacements, { from = 1, to = from - 1, str = "" })
@@ -552,15 +629,10 @@ function SnippetString:sub(from, to)
 	return self
 end
 
--- add a kind-of extmark to the text in this buffer. It moves with inserted
--- text, and has a gravity to control into which direction it shifts.
--- pos is 1-based and refers to one character in the string, rgrav = true can be
--- understood as the mark being incident with the characters right edge (replace
--- character at pos with multiple characters => mark will move to the right of
--- the newly inserted chars), and rgrav = false with the left edge (replace char
--- with multiple chars => mark stays at char).
--- If the edge is in the middle of multiple characters (for example rgrav=true,
--- and chars at pos and pos+1 are replaced), the mark is removed.
+--- Add a kind-of extmark to the text in this buffer.
+---@param id string ID of the mark
+---@param pos integer 1-based, refers to one character in the string.
+---@param rgrav boolean The gravity of the mark, true=right, false=left.
 function SnippetString:add_mark(id, pos, rgrav)
 	-- I'd expect there to be at most 0-2 marks in any given static_text, which
 	-- are those set to track the cursor-position.
@@ -578,6 +650,8 @@ function SnippetString:add_mark(id, pos, rgrav)
 	})
 end
 
+---@param id string ID of the mark
+---@return integer?
 function SnippetString:get_mark_pos(id)
 	for _, mark in ipairs(self.marks) do
 		if mark.id == id then
@@ -590,4 +664,4 @@ function SnippetString:clear_marks()
 	self.marks = {}
 end
 
-return M
+return SnippetString
