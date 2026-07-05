@@ -254,7 +254,9 @@ S.format = P.any(
 				P.token("downcase"),
 				P.token("capitalize"),
 				P.token("camelcase"),
-				P.token("pascalcase")
+				P.token("pascalcase"),
+				P.token("snakecase"),
+				P.token("kebabcase")
 			),
 			S.close
 		),

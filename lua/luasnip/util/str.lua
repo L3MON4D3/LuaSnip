@@ -267,6 +267,12 @@ local function pascalcase(str)
 	end
 	return pascalcased
 end
+local function snakecase(str)
+	return string
+		.lower(str:gsub("(%l)(%u)", "%1_%2"))
+		:gsub("(%l)%s(%l)", "%1_%2")
+		:gsub("-", "_")
+end
 
 M.vscode_string_modifiers = {
 	upcase = string.upper,
@@ -276,6 +282,10 @@ M.vscode_string_modifiers = {
 	camelcase = function(str)
 		-- same as pascalcase, but first character lowercased.
 		return pascalcase(str):gsub("^.", string.lower)
+	end,
+	snakecase = snakecase,
+	kebabcase = function(str)
+		return snakecase(str):gsub("_", "-")
 	end,
 }
 
