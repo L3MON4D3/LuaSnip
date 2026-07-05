@@ -301,6 +301,8 @@ describe("Parser", function()
 			capitalize = true,
 			camelcase = true,
 			pascalcase = true,
+			snakecase = true,
+			kebabcase = true,
 		}
 
 		for modifier, modified_expected in pairs(expected_map) do
@@ -335,6 +337,8 @@ describe("Parser", function()
 		capitalize = "Test text Text",
 		camelcase = "testTextText",
 		pascalcase = "TestTextText",
+		snakecase = "test_text_text",
+		kebabcase = "test-text-text",
 	})
 
 	it("modifies invalid $0 with choice.", function()
