@@ -94,42 +94,56 @@
           shellHook = "";
         });
 
-        test_nvim_012 = nvim_master.outputs.devShells.${pkgs.system}.minimal.overrideAttrs(attrs: {
-          TEST_09=false_bin;
-          TEST_012=true_bin;
-          TEST_MASTER=false_bin;
+        # the package is used here instead of the dev shell that neovim-nightly-overlay provides
+        # since, for some reason, it uses an older version of fetch-cargo-vendor-util which
+        # makes crates.io return a 403 error (https://github.com/rust-lang/crates.io/issues/13482)
+        test_nvim_012 = nvim_master.packages.${pkgs.system}.neovim-developer.overrideAttrs(attrs: {
+          nativeBuildInputs = attrs.nativeBuildInputs ++ [
+            pkgs.stylua
+            pkgs.include-what-you-use
+            pkgs.clang-tools
+          ];
 
-          # same reasoning as in nvim_09
-          DEPS_CMAKE_FLAGS="-D USE_BUNDLED=OFF -D USE_BUNDLED_TS_PARSERS=ON";
+          # a shell hook must be used when setting env variables when using a package derivation
+          # as a dev shell
+          shellHook = /* sh */ ''
+            export TEST_09=${false_bin};
+            export TEST_012=${true_bin};
+            export TEST_MASTER=${false_bin};
 
-          # unset lua-path here, to make sure the global env does not leak, and
-          # prevent unset later, s.t. the lua env imported by this flake
-          # exists.
-          LUA_PATH="";
-          LUA_CPATH="";
-          PREVENT_LUA_PATH_LEAK=false_bin;
-
-          # clear shellHook, it doesn't do anything we really need.
-          shellHook = "";
+            # unset lua-path here, to make sure the global env does not leak, and
+            # prevent unset later, s.t. the lua env imported by this flake
+            # exists.
+            export LUA_PATH="";
+            export LUA_CPATH="";
+            export PREVENT_LUA_PATH_LEAK=${false_bin};
+          '';
         });
 
-        test_nvim_master = nvim_master.outputs.devShells.${pkgs.system}.minimal.overrideAttrs(attrs: {
-          TEST_09=false_bin;
-          TEST_012=false_bin;
-          TEST_MASTER=true_bin;
+        # the package is used here instead of the dev shell that neovim-nightly-overlay provides
+        # since, for some reason, it uses an older version of fetch-cargo-vendor-util which
+        # makes crates.io return a 403 error (https://github.com/rust-lang/crates.io/issues/13482)
+        test_nvim_master = nvim_master.packages.${pkgs.system}.neovim-developer.overrideAttrs(attrs: {
+          nativeBuildInputs = attrs.nativeBuildInputs ++ [
+            pkgs.stylua
+            pkgs.include-what-you-use
+            pkgs.clang-tools
+          ];
 
-          # same reasoning as in nvim_09
-          DEPS_CMAKE_FLAGS="-D USE_BUNDLED=OFF -D USE_BUNDLED_TS_PARSERS=ON";
+          # a shell hook must be used when setting env variables when using a package derivation
+          # as a dev shell
+          shellHook = /* sh */ ''
+            export TEST_09=${false_bin};
+            export TEST_012=${false_bin};
+            export TEST_MASTER=${true_bin};
 
-          # unset lua-path here, to make sure the global env does not leak, and
-          # prevent unset later, s.t. the lua env imported by this flake
-          # exists.
-          LUA_PATH="";
-          LUA_CPATH="";
-          PREVENT_LUA_PATH_LEAK=false_bin;
-
-          # clear shellHook, it doesn't do anything we really need.
-          shellHook = "";
+            # unset lua-path here, to make sure the global env does not leak, and
+            # prevent unset later, s.t. the lua env imported by this flake
+            # exists.
+            export LUA_PATH="";
+            export LUA_CPATH="";
+            export PREVENT_LUA_PATH_LEAK=${false_bin};
+          '';
         });
       });
     };
