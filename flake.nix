@@ -94,10 +94,10 @@
           shellHook = "";
         });
 
-        test_nvim_012 = nvim_master.outputs.devShells.${pkgs.system}.default.overrideAttrs(attrs: {
+        test_nvim_012 = nvim_master.outputs.devShells.${pkgs.system}.minimal.overrideAttrs(attrs: {
           TEST_09=false_bin;
           TEST_012=true_bin;
-          TEST_MASTER=true_bin;
+          TEST_MASTER=false_bin;
 
           # same reasoning as in nvim_09
           DEPS_CMAKE_FLAGS="-D USE_BUNDLED=OFF -D USE_BUNDLED_TS_PARSERS=ON";
@@ -113,7 +113,7 @@
           shellHook = "";
         });
 
-        test_nvim_master = nvim_master.outputs.devShells.${pkgs.system}.default.overrideAttrs(attrs: {
+        test_nvim_master = nvim_master.outputs.devShells.${pkgs.system}.minimal.overrideAttrs(attrs: {
           TEST_09=false_bin;
           TEST_012=false_bin;
           TEST_MASTER=true_bin;
