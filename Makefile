@@ -80,19 +80,24 @@ else ifneq (,$(or $(findstring $(WINDOWS_NT),$(LUASNIP_DETECTED_OS)), $(findstri
 # If neovim is installed by scoop, only scoop/shims is exposed. We need to find original nvim/bin that contains lua51.dll
 # If neovim is installed by winget or other methods, nvim/bin is already included in PATH.
 
-# `scoop prefix neovim` outputs either
-# 	1. C:\Users\MyUsername\scoop\apps\neovim\current
-# 	2. Could not find app path for 'neovim'.
+# `scoop prefix neovim` outputs:
+# 	found: stable: `C:\Users\MyUsername\scoop\apps\neovim\current`
+# 	nightly or not found: `Could not find app path for 'neovim'.`
+# `scoop which nvim` outputs:
+# 	found: stable: `~\scoop\apps\neovim\current\bin\nvim.exe` or nightly: `~\scoop\apps\neovim-nightly\current\bin\nvim.exe`
+# 	not found: `WARN  'nvim' not found, not a scoop shim, or a broken shim.`
+# To include lua51.dll, we need: `C:/Users/MyUsername/scoop/apps/neovim[-nightly]/current/bin`
+#
 # On Git Bash, scoop returns 0 and writes error to stdout in case 2. This is tracked by
 # @link: https://github.com/ScoopInstaller/Scoop/issues/6228
 # The following code will also work if future scoop returns 1 for unknown `package`
 #
-# On Git Bash, `which nvim` returns a Unix style path: `/c/Program Files/Git/bin/nvim`
+# On Git Bash, `command -v nvim` returns a Unix style path: `/c/Program Files/Git/bin/nvim`
 # Always convert to `C:/Program Files/Git/bin/nvim` for powershell and pwsh users
 NEOVIM_BIN_PATH:=$(or \
-	$(shell (scoop prefix neovim | grep -q '^[A-Z]:[/\\\\]') 2>/dev/null && \
-	echo "$$(scoop prefix neovim)/bin" | sed 's/\\\\/\\//g';), \
-	$(shell which nvim >/dev/null && dirname "$$(which nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//';) \
+	$(shell (scoop which nvim | grep -q 'nvim.exe$$') && \
+	scoop which nvim | sed -e 's|\\\\|/|g' -e "s|^~|$(subst \,/,$(USERPROFILE))|" -e 's|/nvim.exe$$||';), \
+	$(shell dirname "$$(command -v nvim)" | sed 's/^\\/\\(.\\)\\//\\U\\1:\\//';) \
 )
 # Always double quote the absolute path as it may contain spaces
 LUA_LDLIBS?=$(if $(NEOVIM_BIN_PATH),-L'$(NEOVIM_BIN_PATH)' -llua51,)
