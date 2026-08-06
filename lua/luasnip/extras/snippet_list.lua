@@ -62,7 +62,7 @@ local function display_split(opts)
 		make_scratch_buf(buf)
 
 		-- disable diagnostics
-		vim.diagnostic.disable(buf)
+		vim.diagnostic.enable(false, {bufnr = buf})
 
 		-- set any extra win and buf opts
 		set_win_opts(win, opts.win_opts)
