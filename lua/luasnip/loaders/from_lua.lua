@@ -43,7 +43,7 @@ local M = {}
 -- It is not exported, because it will (in its current state) only ever be used
 -- in one place, and it feels a bit wrong to expose put a function into `M`.
 -- Instead, it is inserted into the global environment before a luasnippet-file
--- is loaded, and removed from it immediately when this is done
+-- is loaded, and the previous value restored immediately when this is done
 local function get_loaded_file_debuginfo()
 	-- we can skip looking at the first four stackframes, since
 	-- 1   is this function
@@ -155,14 +155,20 @@ local function _luasnip_load_file(file)
 	-- Since this function has to reach the snippet-constructor, and fenvs
 	-- aren't inherited by called functions, we have to set it in the global
 	-- environment.
+	-- Save and restore, don't unconditionally nil: this function is re-entrant.
+	-- A snippet-file may, while it is executing, cause another file to be
+	-- loaded (for example by requiring a module from a plugin that registers a
+	-- collection in its setup), and clearing the global on return from that
+	-- inner load would silence source-recording for the rest of the outer file.
+	local prev_get_debuginfo = _G.__luasnip_get_loaded_file_frame_debuginfo
 	_G.__luasnip_get_loaded_file_frame_debuginfo = util.ternary(
 		session.config.loaders_store_source,
 		get_loaded_file_debuginfo,
 		nil
 	)
 	local run_ok, file_snippets_or_err, file_autosnippets = pcall(func)
-	-- immediately nil it.
-	_G.__luasnip_get_loaded_file_frame_debuginfo = nil
+	-- immediately restore it.
+	_G.__luasnip_get_loaded_file_frame_debuginfo = prev_get_debuginfo
 
 	if not run_ok then
 		local err = file_snippets_or_err
