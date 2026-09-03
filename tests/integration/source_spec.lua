@@ -2,6 +2,7 @@ local ls_helpers = require("helpers")
 local exec_lua, feed, exec =
 	ls_helpers.exec_lua, ls_helpers.feed, ls_helpers.exec
 local Screen = require("test.functional.ui.screen")
+local assert = ls_helpers.assert
 
 describe("loaders:", function()
 	local screen
@@ -57,6 +58,37 @@ describe("loaders:", function()
 			{0:~                                                 }|
 			Snippet does not have a source.                   |]],
 		})
+	end)
+
+	it("lua: stores source after a nested load.", function()
+		setup({
+			no_snip_globals = true,
+			setup_extend = { loaders_store_source = true },
+		})
+		exec_lua(
+			string.format(
+				[[require("luasnip.loaders.from_lua").load({paths="%s"})]],
+				os.getenv("LUASNIP_SOURCE")
+					.. "/tests/data/lua-snippets/nested-load/outer"
+			)
+		)
+
+		-- `nested_after` is defined after the outer file triggers a load of
+		-- the inner collection, and used to end up without a source.
+		assert.eq(
+			{
+				nested_before = true,
+				nested_inner = true,
+				nested_after = true,
+			},
+			exec_lua([[
+				local has_source = {}
+				for _, snip in ipairs(ls.get_snippets("all")) do
+					has_source[snip.trigger] = ls.snippet_source.get(snip) ~= nil
+				end
+				return has_source
+			]])
+		)
 	end)
 
 	it("vscode: error-message when parser not installed.", function()
