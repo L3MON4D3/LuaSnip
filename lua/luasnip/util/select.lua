@@ -114,20 +114,12 @@ function M.post_yank(yank_register)
 		-- behaviour, the last line of `chunks` is always empty.
 		-- Keep this
 	elseif mode == "v" then
-		-- if selection starts inside indent, remove indent.
-		if #min_indent > start_col then
-			select_dedent[1] = lines[1]:gsub(min_indent, "")
-		end
-		for i = 2, #select_dedent - 1 do
-			select_dedent[i] = select_dedent[i]:gsub(min_indent, "")
-		end
-
-		-- remove as much indent from the last line as possible.
-		if #min_indent > end_col then
-			select_dedent[#select_dedent] = ""
-		else
-			select_dedent[#select_dedent] =
-				select_dedent[#select_dedent]:gsub("^" .. min_indent, "")
+		for i, line in ipairs(chunks) do
+			-- Only remove indentation that overlaps the selected text. The
+			-- first chunk may start within/after the indent, and the last
+			-- chunk may end within it, including single-line selections.
+			local offset = i == 1 and start_col - 1 or 0
+			select_dedent[i] = line:sub(math.max(#min_indent - offset, 0) + 1)
 		end
 	else
 		-- in block: if indent is in block, remove the part of it that is inside
