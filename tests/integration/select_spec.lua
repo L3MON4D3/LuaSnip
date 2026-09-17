@@ -123,6 +123,26 @@ describe("Selection", function()
 		})
 	end)
 
+	it("dedents the same block in all four directions", function()
+		for _, keys in ipairs({
+			"gg01l<C-v>2j6l",
+			"gg07l<C-v>2j6h",
+			"G07l<C-v>2k6h",
+			"G01l<C-v>2k6l",
+		}) do
+			exec_lua([[
+				vim.api.nvim_buf_set_lines(0, 0, -1, true, {
+					"    first", "      keep    gap", "    last",
+				})
+			]])
+			feed(keys .. "<Tab><Esc>")
+			ls_helpers.assert.eq(
+				{ "firs", "  ke", "last" },
+				exec_lua("return vim.b.LUASNIP_SELECT_DEDENT")
+			)
+		end
+	end)
+
 	it("works with block-select.", function()
 		feed("iasdf qwer<Cr>asdf qwer<Cr>asdf qwer")
 		screen:expect({
