@@ -92,6 +92,10 @@ function M.pre_yank(yank_register)
 	-- +1: include final line.
 	lines = vim.api.nvim_buf_get_lines(0, start_line, end_line + 1, true)
 	mode = vim.fn.visualmode()
+	-- Block selection marks do not necessarily put the left edge first.
+	if mode == "\22" then
+		start_col = math.min(start_col, end_col)
+	end
 end
 
 function M.post_yank(yank_register)
