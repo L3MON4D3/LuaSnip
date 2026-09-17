@@ -39,8 +39,25 @@ local function get_min_indent(lines)
 	return min_indent
 end
 
-local function store_registers(...)
-	local names = { ... }
+local function dedent_selection(chunks, selection)
+	local dedented = {}
+	for i, line in ipairs(chunks) do
+		if selection.mode == "v" then
+			-- Only the first chunk can start partway through a source line.
+			local offset = i == 1 and selection.first_byte or 0
+			dedented[i] = line:sub(math.max(#selection.indent - offset, 0) + 1)
+		else
+			dedented[i] = line:gsub("^" .. selection.indent, "")
+		end
+	end
+	return dedented
+end
+
+local function store_registers(yank_register)
+	-- Cutting can affect the unnamed and numbered registers as well as the
+	-- named register used to capture the selection.
+	local names =
+		{ "", "1", "2", "3", "4", "5", "6", "7", "8", "9", yank_register }
 	local restore_data = {}
 	for _, name in ipairs(names) do
 		restore_data[name] = {
@@ -57,92 +74,53 @@ local function restore_registers(restore_data)
 	end
 end
 
--- subtle: `:lua` exits VISUAL, which means that the '< '>-marks will be set correctly!
--- Afterwards, we can just use <cmd>lua, which does not change the mode.
+-- Leave Visual mode first so '< and '> describe the current selection.
 M.cut_keys =
 	[[<Esc><cmd>lua require("luasnip.util.select").pre_yank("z")<Cr>gv"zs<cmd>lua require('luasnip.util.select').post_yank("z")<Cr>]]
 
-local saved_registers
-local lines
-local start_line, start_col, end_line, end_col
-local mode
+-- State shared by the two halves of the selection mapping.
+local pending_yank
 function M.pre_yank(yank_register)
-	-- store registers so we don't change any of them.
-	-- "" is affected since we perform a cut (s), 1-9 also (although :h
-	-- quote_number seems to state otherwise for cuts to specific registers..?).
-	saved_registers = store_registers(
-		"",
-		"1",
-		"2",
-		"3",
-		"4",
-		"5",
-		"6",
-		"7",
-		"8",
-		"9",
-		yank_register
-	)
-
-	-- store data needed for de-indenting lines.
-	start_line = vim.fn.line("'<") - 1
-	start_col = vim.fn.col("'<")
-	end_line = vim.fn.line("'>") - 1
-	end_col = vim.fn.col("'>")
-	-- +1: include final line.
-	lines = vim.api.nvim_buf_get_lines(0, start_line, end_line + 1, true)
-	mode = vim.fn.visualmode()
-	-- Block selection marks do not necessarily put the left edge first.
-	if mode == "\22" then
-		start_col = math.min(start_col, end_col)
+	local start_pos, end_pos = vim.fn.getpos("'<"), vim.fn.getpos("'>")
+	local lines =
+		vim.api.nvim_buf_get_lines(0, start_pos[2] - 1, end_pos[2], true)
+	local mode = vim.fn.visualmode()
+	local min_indent = get_min_indent(lines) or ""
+	local selection = { mode = mode, indent = min_indent }
+	if mode == "v" then
+		selection.first_byte = start_pos[3] - 1
+	elseif mode == "\22" then
+		local start_col = math.min(start_pos[3], end_pos[3])
+		-- Preserve the original byte-based prefix matching for blocks.
+		selection.indent = #min_indent > start_col and min_indent:sub(start_col)
+			or ""
 	end
+	pending_yank = {
+		registers = store_registers(yank_register),
+		selection = selection,
+	}
 end
 
 function M.post_yank(yank_register)
+	local yank = pending_yank
+	pending_yank = nil
 	-- remove trailing newline.
 	local chunks = vim.split(vim.fn.getreg(yank_register):gsub("\n$", ""), "\n")
 
 	-- make sure to restore the registers to the state they were before cutting.
-	restore_registers(saved_registers)
+	restore_registers(yank.registers)
 
-	local tm_select, select_dedent = vim.deepcopy(chunks), vim.deepcopy(chunks)
-
-	local min_indent = get_min_indent(lines) or ""
-	if mode == "V" then
+	local selection = yank.selection
+	local select_dedent = dedent_selection(chunks, selection)
+	local tm_select = vim.list_extend({}, chunks)
+	if selection.mode == "V" then
+		-- VSCode removes all leading whitespace from the first selected line.
 		tm_select[1] = tm_select[1]:gsub("^%s+", "")
-		-- remove indent from all lines:
-		for i = 1, #select_dedent do
-			select_dedent[i] = select_dedent[i]:gsub("^" .. min_indent, "")
-		end
-		-- due to the trailing newline of the last line, and vim.split's
-		-- behaviour, the last line of `chunks` is always empty.
-		-- Keep this
-	elseif mode == "v" then
-		for i, line in ipairs(chunks) do
-			-- Only remove indentation that overlaps the selected text. The
-			-- first chunk may start within/after the indent, and the last
-			-- chunk may end within it, including single-line selections.
-			local offset = i == 1 and start_col - 1 or 0
-			select_dedent[i] = line:sub(math.max(#min_indent - offset, 0) + 1)
-		end
-	else
-		-- in block: if indent is in block, remove the part of it that is inside
-		-- it for select_dedent.
-		if #min_indent > start_col then
-			local indent_in_block = min_indent:sub(start_col, #min_indent)
-			for i, line in ipairs(chunks) do
-				select_dedent[i] = line:gsub("^" .. indent_in_block, "")
-			end
-		end
 	end
 
 	vim.api.nvim_buf_set_var(0, SELECT_RAW, chunks)
 	vim.api.nvim_buf_set_var(0, SELECT_DEDENT, select_dedent)
 	vim.api.nvim_buf_set_var(0, TM_SELECT, tm_select)
-
-	lines = nil
-	start_line, start_col, end_line, end_col = nil, nil, nil, nil
-	mode = nil
 end
 
 return M
