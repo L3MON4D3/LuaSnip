@@ -32,8 +32,13 @@ local function set_snip_env(target_conf_defaults, user_config)
 end
 
 -- declare here to use in set_config.
+---@class LuaSnip.Config
+---@field set_config fun(user_config?: table)
+---@field setup fun(user_config?: table)
+---@field _setup fun()
 local c
 
+---@diagnostic disable-next-line: missing-fields
 c = {
 	set_config = function(user_config)
 		user_config = user_config or {}
